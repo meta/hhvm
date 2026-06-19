@@ -184,6 +184,9 @@ void RequestWorkloadStats::requestShutdown() {
 }
 
 ALWAYS_INLINE void RequestWorkloadStats::transition(State from, State to) {
+// Disable this logic in OSS as these timing measurements
+// are uneconomical without kernel-level nanosecond timing.
+#ifdef HHVM_FACEBOOK
   switch (from) {
   case State::InRequest:
     switch (to) {
@@ -228,6 +231,7 @@ ALWAYS_INLINE void RequestWorkloadStats::transition(State from, State to) {
     }
     break;
   }
+#endif // HHVM_FACEBOOK
 }
 
 void RequestWorkloadStats::enter(State to) {
