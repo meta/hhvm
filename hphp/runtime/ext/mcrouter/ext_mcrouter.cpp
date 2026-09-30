@@ -8,6 +8,7 @@
 #include "hphp/runtime/ext/asio/asio-external-thread-event.h"
 
 #include <memory>
+#include <stdexcept>
 
 #include <folly/Memory.h>
 #include <folly/Range.h>
@@ -168,11 +169,15 @@ struct MCRouter {
     parseOptions(opts, options);
 
     mcr::McrouterInstance* router;
-    if (pid.empty()) {
-      m_transientRouter = mcr::McrouterInstance::create(opts.clone());
-      router = m_transientRouter.get();
-    } else {
-      router = mcr::McrouterInstance::init(pid.toCppString(), opts);
+    try {
+      if (pid.empty()) {
+        m_transientRouter = mcr::McrouterInstance::create(opts.clone());
+        router = m_transientRouter.get();
+      } else {
+        router = mcr::McrouterInstance::init(pid.toCppString(), opts);
+      }
+    } catch (const std::runtime_error& e) {
+      mcr_throwException(e.what());
     }
 
     if (!router) {
