@@ -472,6 +472,7 @@ private:
   bool diffSTagSubclassData(rep relevant_bits, AliasClass) const;
   bool diffSTagMaybeData(rep relevant_bits, AliasClass) const;
   Optional<UFrameBase> asUFrameBase() const;
+  rep unionSTagBits(AliasClass) const;
   static AliasClass unionData(rep newBits, AliasClass, AliasClass);
   static STag stagFor(rep bits);
 

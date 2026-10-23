@@ -413,9 +413,20 @@ bool AliasClass::operator==(AliasClass o) const {
          equivData(o);
 }
 
+/*
+ * A category can stay specialized only if every operand containing it
+ * specializes it. Otherwise the union would narrow that operand's generic
+ * effects, even if the operands' specialized frame indices agree. Callers
+ * separately check that the specialization data can be combined.
+ */
+AliasClass::rep AliasClass::unionSTagBits(AliasClass o) const {
+  auto const generic = (m_bits & ~m_stagBits) | (o.m_bits & ~o.m_stagBits);
+  return static_cast<rep>((m_stagBits | o.m_stagBits) & ~generic);
+}
+
 AliasClass AliasClass::unionData(rep newBits, AliasClass a, AliasClass b) {
   assertx(stagFor(a.m_stagBits) == stagFor(b.m_stagBits));
-  auto const frm = static_cast<rep>((a.m_stagBits | b.m_stagBits) & BActRec);
+  auto const frm = static_cast<rep>(a.unionSTagBits(b) & BActRec);
   switch (stagFor(a.m_stagBits)) {
   case STag::None:
     break;
@@ -476,7 +487,7 @@ Optional<AliasClass> AliasClass::precise_union(AliasClass o) const {
     if (uf1 && uf2 && uf1->frameIdx == uf2->frameIdx) {
       auto ret = stag1 == STag::FrameAll ? o : *this;
       ret.m_bits = unioned;
-      ret.m_stagBits = static_cast<rep>(o.m_stagBits | m_stagBits);
+      ret.m_stagBits = unionSTagBits(o);
       return ret;
     }
   }
@@ -503,14 +514,6 @@ AliasClass AliasClass::operator|(AliasClass o) const {
 
   auto const frame1 = asUFrameBase();
   auto const frame2 = o.asUFrameBase();
-  if (frame1 && frame2 && frame1->frameIdx == frame2->frameIdx) {
-    if (stag1 == STag::FrameAll || stag2 == STag::FrameAll) {
-      auto ret = stag1 == STag::FrameAll ? o : *this;
-      ret.m_bits = unioned;
-      ret.m_stagBits = static_cast<rep>(m_stagBits | o.m_stagBits);
-      return ret;
-    }
-  }
 
   // If one of the alias classes have a non-None stag, we can only keep it if
   // the other doesn't have any of the corresponding bits set.
@@ -565,7 +568,7 @@ AliasClass AliasClass::operator|(AliasClass o) const {
   // If both alias classes have compatible frames we can merge their frame
   // specific specializations.
   if (frame1 && frame2 && frame1->frameIdx == frame2->frameIdx) {
-    auto const frameBits = (m_stagBits | o.m_stagBits) & BActRec;
+    auto const frameBits = unionSTagBits(o) & BActRec;
     ret.m_stagBits = static_cast<rep>(ret.m_stagBits | frameBits);
   }
 

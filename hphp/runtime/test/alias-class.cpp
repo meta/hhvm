@@ -531,27 +531,25 @@ TEST(AliasClass, RematerializationWriteUnion) {
   auto const expected = ALocalAny | AActRec { 2u } | AVMRegAny | AMIStateAny;
 
   EXPECT_TRUE(writes.maybe(callerLocal));
-  // FIXME: The union must retain writes to caller locals.
-  EXPECT_FALSE((writes | inlineExit).maybe(callerLocal));
-  EXPECT_FALSE(callerLocal <= (writes | inlineExit));
-  EXPECT_NE(expected, writes | inlineExit);
-  EXPECT_NE(expected, inlineExit | writes);
+  EXPECT_TRUE((writes | inlineExit).maybe(callerLocal));
+  EXPECT_TRUE(callerLocal <= (writes | inlineExit));
+  EXPECT_EQ(expected, writes | inlineExit);
+  EXPECT_EQ(expected, inlineExit | writes);
   auto const precise = writes.precise_union(inlineExit);
   ASSERT_TRUE(precise.has_value());
-  EXPECT_NE(expected, *precise);
+  EXPECT_EQ(expected, *precise);
 }
 
 TEST(AliasClass, FrameUnionGenericIterators) {
   auto const a = AIterAny | AFContext { 2u };
   auto const b = AliasClass { AIter { 2u, 0 } } | AActRec { 2u };
   auto const expected = AIterAny | AActRec { 2u };
-  // FIXME: The union must retain generic iterator effects.
-  EXPECT_FALSE(AIterAny <= (a | b));
-  EXPECT_NE(expected, a | b);
-  EXPECT_NE(expected, b | a);
+  EXPECT_TRUE(AIterAny <= (a | b));
+  EXPECT_EQ(expected, a | b);
+  EXPECT_EQ(expected, b | a);
   auto const precise = a.precise_union(b);
   ASSERT_TRUE(precise.has_value());
-  EXPECT_NE(expected, *precise);
+  EXPECT_EQ(expected, *precise);
 }
 
 TEST(AliasClass, FrameUnionGenericActRec) {
@@ -571,10 +569,9 @@ TEST(AliasClass, FrameUnionGenericActRec) {
     SCOPED_TRACE(show(a) + " | " + show(b));
     auto const combined = a | b;
     EXPECT_EQ(combined, b | a);
-    // FIXME: A frame specialization must not narrow generic context effects.
-    EXPECT_FALSE(AFContextAny <= combined);
-    EXPECT_FALSE(combined.maybe(AFContext { 0u }));
-    EXPECT_FALSE(a <= combined);
+    EXPECT_TRUE(AFContextAny <= combined);
+    EXPECT_TRUE(combined.maybe(AFContext { 0u }));
+    EXPECT_TRUE(a <= combined);
   }
 }
 
