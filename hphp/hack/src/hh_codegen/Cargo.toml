@@ -18,5 +18,5 @@ hash = { path = "../utils/hash" }
 proc-macro2 = { version = "1.0.107", features = ["span-locations"] }
 quote = "1.0.47"
 signed_source = { path = "../utils/rust/signed_source" }
-syn = { version = "3.0.6", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
+syn = { version = "3.0.9", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 synstructure = "0.14.0"

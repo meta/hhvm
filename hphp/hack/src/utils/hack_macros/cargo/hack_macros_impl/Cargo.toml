@@ -23,7 +23,7 @@ quote = "1.0.47"
 regex = "1.13.1"
 relative_path = { path = "../../../rust/relative_path" }
 serde = { version = "1.0.229", features = ["derive", "rc"] }
-syn = { version = "3.0.6", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
+syn = { version = "3.0.9", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
 thiserror = "2.0.21"
 
 [dev-dependencies]

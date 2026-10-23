@@ -11,4 +11,4 @@ license = "MIT"
 path = "attr_parser.rs"
 
 [dependencies]
-syn = { version = "3.0.6", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
+syn = { version = "3.0.9", features = ["extra-traits", "fold", "full", "visit", "visit-mut"] }
