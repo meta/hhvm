@@ -139,10 +139,7 @@ type result = {
 let drive
     ?(movability = Some Server_isolation_types.Movable)
     ?(unseen = false)
-    ?(late = 0)
-    ?(wait_seconds = 0.)
     ?(stuck = false)
-    ?(stale = [])
     ?(after_move = (fun () -> ()))
     ?(when_asked_after_move = (fun () -> ()))
     ?(output_json = true)
@@ -157,20 +154,10 @@ let drive
   let after_move_ran = ref false in
   let asked = ref [] in
   let status_asked = ref 0 in
-  (* How many times the server answers for the target as if the files were not
-     there, before it has caught up. *)
-  let behind =
-    ref
-      (if unseen then
-        Int.max_value
-      else
-        late)
-  in
   let (exit_status, output) =
     capture_stdout (fun () ->
         Lwt_main.run
           (Client_isolation_move.move_into
-             ~wait_seconds
              ~options:(options ~source)
              ~parent
              ~output_json
@@ -180,10 +167,9 @@ let drive
                  Option.value_exn options.Server_isolation_types.seed_dir
                in
                if moved () then when_asked_after_move ();
-               if String.equal dir target && !behind > 0 then begin
-                 Int.decr behind;
+               if unseen && String.equal dir target then
                  Lwt.return { (answer (path dir)) with total_seeds = 0 }
-               end else
+               else
                  Lwt.return (answer ~movability (path dir)))
              ~status:(fun () ->
                Int.incr status_asked;
@@ -195,9 +181,7 @@ let drive
                   files are back, which is the third answer it gives. *)
                Lwt.return
                  (status
-                    (if moved () && !behind > 0 then
-                      stale
-                    else if moved () || (stuck && !status_asked >= 3) then
+                    (if moved () || (stuck && !status_asked >= 3) then
                       after
                     else
                       before)))))
@@ -377,16 +361,6 @@ let test_a_move_that_fails_after_making_the_parents_is_undone () =
       same_status result.exit_status Exit_status.Input_error
       && the_directory_is_back ~root)
 
-let test_a_server_that_catches_up_late_is_waited_for () =
-  with_repo @@ fun root ->
-  (* Until it has caught up, the server answers for the tree as it was, which
-     here is an error that is not in the moved one. *)
-  let stale = [diagnostic ~code:4110 ~file:"lib/o.php" ~line:1 "stale"] in
-  let result =
-    drive ~late:2 ~stale ~wait_seconds:5. ~root ~before:[] ~after:[] ()
-  in
-  is_json (field "moved" result) (`Bool true) && exists ~root target
-
 let test_a_target_that_exists_is_refused () =
   with_repo @@ fun root ->
   Disk.mkdir_p (Filename.concat root target);
@@ -542,8 +516,6 @@ let tests =
       test_a_move_the_server_did_not_see_is_undone );
     ( "test_a_move_that_fails_after_making_the_parents_is_undone",
       test_a_move_that_fails_after_making_the_parents_is_undone );
-    ( "test_a_server_that_catches_up_late_is_waited_for",
-      test_a_server_that_catches_up_late_is_waited_for );
     ( "test_a_target_that_exists_is_refused",
       test_a_target_that_exists_is_refused );
     ( "test_a_directory_without_hack_files_is_refused",

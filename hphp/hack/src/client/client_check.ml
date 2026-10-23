@@ -1146,7 +1146,6 @@ let main_internal
     in
     let%lwt exit_status =
       Client_isolation_move.move_into
-        ~wait_seconds:Client_isolation_move.default_wait_seconds
         ~options
         ~parent
         ~output_json:args.output_json

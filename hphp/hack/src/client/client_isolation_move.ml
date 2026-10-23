@@ -347,52 +347,34 @@ let refusal ~source ~target =
   else
     None
 
-let default_wait_seconds = 60.
-
-let poll_seconds = 0.5
-
-(** The server hears of changes on disk from a file watcher, which is not
-    instant. Asks until the server has seen a move of [files] Hack files from
+(** Asks the server whether it has seen a move of [files] Hack files from
     [old_dir] to [new_dir]: it knows all of them in [new_dir] and none in
-    [old_dir]. Gives up after [wait_seconds], with how many it knew in each. *)
-let rec wait_until_seen ~ask_movable ~new_dir ~old_dir ~files ~wait_seconds =
+    [old_dir]. Otherwise says how many it knew in each. *)
+let check_seen ~ask_movable ~new_dir ~old_dir ~files =
   let%lwt asked_new = ask_movable ~dir:new_dir in
   let%lwt asked_old = ask_movable ~dir:old_dir in
   let files_in_new_dir = asked_new.Server_isolation_types.total_seeds in
   let files_in_old_dir = asked_old.Server_isolation_types.total_seeds in
   if files_in_new_dir = files && files_in_old_dir = 0 then
     Lwt.return (Ok ())
-  else if Float.(wait_seconds <= 0.) then
-    Lwt.return (Error (files_in_new_dir, files_in_old_dir))
   else
-    let%lwt () = Lwt_unix.sleep poll_seconds in
-    wait_until_seen
-      ~ask_movable
-      ~new_dir
-      ~old_dir
-      ~files
-      ~wait_seconds:(wait_seconds -. poll_seconds)
+    Lwt.return (Error (files_in_new_dir, files_in_old_dir))
 
-let unseen_message
-    ~source ~target ~files ~wait_seconds (files_in_target, files_in_source) =
+let unseen_message ~source ~target ~files (files_in_target, files_in_source) =
   Printf.sprintf
-    "the server still knew %d of the %d Hack files at %s, and %d at %s, %.0f seconds after the move, so a typecheck would not reflect it; the move was undone. The server may not see a renamed directory unless it runs with `--config edenfs_file_watcher_enabled=true`"
+    "the server knew %d of the %d Hack files at %s, and %d at %s, after the move, so a typecheck would not reflect it; the move was undone. The server may not see a renamed directory unless it runs with `--config edenfs_file_watcher_enabled=true`"
     files_in_target
     files
     (Relative_path.suffix target)
     files_in_source
     (Relative_path.suffix source)
-    wait_seconds
 
 (** The errors the server reports once it has seen the move from [old_dir] to
-    [new_dir], or how many Hack files it knew in each when [wait_seconds] ran
-    out. The typecheck only means something once the server has seen the move:
-    one that missed it would answer for the tree as it was, and pass. *)
-let errors_after_move
-    ~ask_movable ~status ~wait_seconds ~files ~new_dir ~old_dir =
-  match%lwt
-    wait_until_seen ~ask_movable ~new_dir ~old_dir ~files ~wait_seconds
-  with
+    [new_dir], or how many Hack files it knew in each if it has not. The
+    typecheck only means something once the server has seen the move: one that
+    missed it would answer for the tree as it was, and pass. *)
+let errors_after_move ~ask_movable ~status ~files ~new_dir ~old_dir =
+  match%lwt check_seen ~ask_movable ~new_dir ~old_dir ~files with
   | Error counts -> Lwt.return (Error counts)
   | Ok () ->
     let%lwt after = status () in
@@ -401,8 +383,8 @@ let errors_after_move
 (** What the server says about a directory moved to [target]. *)
 type verdict =
   | Unseen of (int * int)
-      (** It had not seen the move in time: how many Hack files it knew at
-          [target] and at [source]. *)
+      (** It had not seen the move: how many Hack files it knew at [target]
+          and at [source]. *)
   | Clean  (** It saw the move and reports no new errors. *)
   | Introduced of Move_error.t list  (** It saw the move and reports these. *)
 
@@ -424,10 +406,8 @@ let verdict ~source ~target ~baseline ~errors_after_move =
       | [] -> Clean
       | errors -> Introduced errors)
 
-let move_and_check ~source ~target ~files ~ask_movable ~status ~wait_seconds =
-  let errors_after_move =
-    errors_after_move ~ask_movable ~status ~wait_seconds ~files
-  in
+let move_and_check ~source ~target ~files ~ask_movable ~status =
+  let errors_after_move = errors_after_move ~ask_movable ~status ~files in
   let%lwt baseline = status () in
   let baseline = Move_error.of_status baseline in
   match
@@ -452,8 +432,7 @@ let move_and_check ~source ~target ~files ~ask_movable ~status ~wait_seconds =
     (match verdict with
     | Unseen counts ->
       revert ();
-      Lwt.return
-        (Refused (unseen_message ~source ~target ~files ~wait_seconds counts))
+      Lwt.return (Refused (unseen_message ~source ~target ~files counts))
     | Clean -> Lwt.return (Moved { files })
     | Introduced errors ->
       revert ();
@@ -465,7 +444,7 @@ let move_and_check ~source ~target ~files ~ask_movable ~status ~wait_seconds =
       in
       Lwt.return (Not_moved { errors; baseline_restored }))
 
-let try_move ~source ~target ~ask_movable ~status ~wait_seconds =
+let try_move ~source ~target ~ask_movable ~status =
   match refusal ~source ~target with
   | Some reason -> Lwt.return (Refused reason)
   | None ->
@@ -489,15 +468,14 @@ let try_move ~source ~target ~ask_movable ~status ~wait_seconds =
                 "%s holds no Hack files"
                 (Relative_path.suffix source)))
       else
-        move_and_check ~source ~target ~files ~ask_movable ~status ~wait_seconds)
+        move_and_check ~source ~target ~files ~ask_movable ~status)
 
 (** Moves [options.seed_dir] into [parent], then prints the outcome and gives
     its exit status. It first asks the server whether the directory can move at
     all, and moves it only if so. The server is asked about one directory at a
     time, so each question is [options] with that directory as the seed and no
     file for the clusters. *)
-let move_into
-    ~wait_seconds ~options ~parent ~output_json ~isolation_query ~status =
+let move_into ~options ~parent ~output_json ~isolation_query ~status =
   let seed_dir = Option.value_exn options.Server_isolation_types.seed_dir in
   let ask_movable ~dir =
     isolation_query
@@ -514,9 +492,7 @@ let move_into
     with
     | (Some source, Some parent) ->
       let target = Paths.target_under ~parent ~source in
-      let%lwt outcome =
-        try_move ~source ~target ~ask_movable ~status ~wait_seconds
-      in
+      let%lwt outcome = try_move ~source ~target ~ask_movable ~status in
       Lwt.return
         (Relative_path.suffix source, Relative_path.suffix target, outcome)
     | _ ->
