@@ -16,15 +16,22 @@
 
 #include "hphp/runtime/vm/jit/irlower-internal.h"
 
+#include "hphp/runtime/base/array-data.h"
+#include "hphp/runtime/base/attr.h"
+#include "hphp/runtime/base/bespoke-array.h"
 #include "hphp/runtime/base/datatype.h"
+#include "hphp/runtime/base/header-kind.h"
+#include "hphp/runtime/base/object-data.h"
 
 #include "hphp/runtime/vm/jit/abi.h"
 #include "hphp/runtime/vm/jit/code-gen-cf.h"
 #include "hphp/runtime/vm/jit/extra-data.h"
+#include "hphp/runtime/vm/jit/guard-type-profile.h"
 #include "hphp/runtime/vm/jit/ir-instruction.h"
 #include "hphp/runtime/vm/jit/ssa-tmp.h"
 #include "hphp/runtime/vm/jit/translator-inline.h"
 #include "hphp/runtime/vm/jit/type-profile.h"
+#include "hphp/runtime/vm/jit/type-specialization.h"
 #include "hphp/runtime/vm/jit/type.h"
 #include "hphp/runtime/vm/jit/types.h"
 #include "hphp/runtime/vm/jit/vasm-gen.h"
@@ -32,11 +39,96 @@
 #include "hphp/runtime/vm/jit/vasm-reg.h"
 
 #include "hphp/util/asm-x64.h"
+#include "hphp/util/configs/jit.h"
 #include "hphp/util/trace.h"
 
 namespace HPHP::jit::irlower {
 
 TRACE_SET_MOD(irlower)
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace {
+
+template <class JmpFn>
+void emitBespokeLayoutTest(Vout& v, ArrayLayout layout, Vreg r, JmpFn doJcc) {
+  auto const test = layout.bespokeLayoutTest();
+  auto const imm = static_cast<int16_t>(test.imm);
+  auto const sf = v.makeReg();
+
+  switch (test.mode) {
+    case LayoutTest::And1Byte:
+      v << testbim{imm, r[ArrayData::offsetOfBespokeIndex() + 1], sf};
+      break;
+    case LayoutTest::And2Byte:
+      v << testwim{imm, r[ArrayData::offsetOfBespokeIndex()], sf};
+      break;
+    case LayoutTest::Cmp1Byte:
+      v << cmpbim{imm, r[ArrayData::offsetOfBespokeIndex() + 1], sf};
+      break;
+    case LayoutTest::Cmp2Byte:
+      v << cmpwim{imm, r[ArrayData::offsetOfBespokeIndex()], sf};
+      break;
+  }
+
+  doJcc(CC_Z, sf);
+  auto const doneBlock = v.makeBlock();
+  v << jmp{doneBlock};
+  v = doneBlock;
+}
+
+/*
+ * Test whether the value given by `dataSrc' has the same type specialization
+ * as `type' does.
+ *
+ * Assumes that the DataType corresponding to `dataSrc' already matches `type'.
+ */
+template <class JmpFn>
+void emitSpecializedTypeTest(Vout& v, Type type, Vreg dataSrc, JmpFn doJcc) {
+  if (type < TRes) {
+    // No cls field in Resource.
+    always_assert(false && "unexpected guard on specialized Resource");
+  }
+
+  if (type == TStaticStr) {
+    auto const sf = emitCmpRefCount(v, StaticValue, dataSrc);
+    doJcc(CC_E, sf);
+    return;
+  }
+
+  if (type < TObj || type < TCls) {
+    // Emit the specific class test.
+    assertx(type.clsSpec());
+    assertx(type.clsSpec().exact() ||
+            type.clsSpec().cls()->attrs() & AttrNoOverride);
+
+    auto const sf = v.makeReg();
+    if (type < TObj) {
+      emitCmpPackedPtr(v, sf, type.clsSpec().cls(),
+                       dataSrc[ObjectData::getVMClassOffset()]);
+    } else {
+      v << cmpq{v.cns(type.clsSpec().cls()), dataSrc, sf};
+    }
+    doJcc(CC_E, sf);
+    return;
+  }
+
+  auto const spec = type.arrSpec();
+  assertx(allowBespokeArrayLikes());
+  assertx(!spec.type());
+
+  auto const layout = spec.layout();
+  if (layout == ArrayLayout::Vanilla() || layout == ArrayLayout::Bespoke()) {
+    auto const sf = v.makeReg();
+    auto const cc = layout == ArrayLayout::Vanilla() ? CC_Z : CC_NZ;
+    v << testbim{ArrayData::kBespokeKindMask, dataSrc[HeaderKindOffset], sf};
+    doJcc(cc, sf);
+  } else {
+    emitBespokeLayoutTest(v, layout, dataSrc, doJcc);
+  }
+}
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -93,7 +185,7 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
    */
   if (typeParam.isSpecialized() &&
       typeParam.unspecialize() >= src->type()) {
-    detail::emitSpecializedTypeTest(v, env, typeParam, srcData, doJcc);
+    emitSpecializedTypeTest(v, typeParam, srcData, doJcc);
     doMov();
     return;
   }
@@ -102,8 +194,63 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
     // CheckType<UncountedInit> requires two tests: Uncounted, and not Uninit.
     // If we already know the value is an InitCell, skip the second.
     auto const relax = typeParam == TUncountedInit && src->isA(TInitCell);
-    auto const typeToCheck = relax ? TUncounted : typeParam;
-    emitTypeTest(v, env, typeToCheck, srcType, srcData, v.makeReg(), doJcc);
+    auto const type = relax ? TUncounted : typeParam;
+    auto const sf = v.makeReg();
+    always_assert(type <= TCls || !type.hasConstVal());
+    always_assert_flog(
+      !type.subtypeOfAny(TCountedStr, TPersistentArrLike),
+      "Unsupported type in cgCheckType(): {}", type
+    );
+
+    // Profile the type being guarded. TUncounted is handled by
+    // emitIsTVTypeRefCounted below.
+    if (Cfg::Jit::ProfileGuardTypes && type != TUncounted) {
+      emitProfileGuardType(v, type);
+    }
+
+    auto const cc = [&] {
+      auto const test = [&] (DataType kind) {
+        assertx(kind == dt_modulo_persistence(kind));
+        auto const mask = ~static_cast<data_type_t>(kind);
+        emitTestTVType(v, sf, mask, srcType);
+        return CC_E;
+      };
+
+      auto const cmp = [&] (DataType kind, ConditionCode cc) {
+        emitCmpTVType(v, sf, kind, srcType);
+        return cc;
+      };
+
+      auto const base = type.unspecialize();
+      if (type == TStaticStr)     return test(KindOfString);
+      if (type.isKnownDataType()) return test(type.toDataType());
+      if (base == TArrLike)       return cmp(KindOfKeyset, CC_BE);
+      if (type == (TVec|TDict))   return cmp(KindOfVec, CC_BE);
+      if (type == TNull)          return cmp(KindOfUninit, CC_AE);
+      if (type == TNonNull)       return cmp(KindOfUninit, CC_B);
+
+      if (type == TUncountedInit) {
+        auto const sf2 = v.makeReg();
+        emitTestTVType(v, sf2, kRefCountedBit, srcType);
+        doJcc(CC_Z, sf2);
+        return cmp(KindOfUninit, CC_NZ);
+      }
+
+      if (type == TUncounted) {
+        return ccNegate(emitIsTVTypeRefCounted(v, sf, srcType));
+      }
+
+      if (type == TInitCell) return cmp(KindOfUninit, CC_NZ);
+
+      // All other valid types must not be unions.
+      always_assert_flog(false, "Uncheckable type: {}", type);
+    }();
+
+    doJcc(cc, sf);
+
+    if (type.isSpecialized() || type == TStaticStr) {
+      emitSpecializedTypeTest(v, type, srcData, doJcc);
+    }
     doMov();
     return;
   }
@@ -116,7 +263,7 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
       v << jmp{label(env, inst->taken())};
       return;
     }
-    detail::emitSpecializedTypeTest(v, env, typeParam, srcData, doJcc);
+    emitSpecializedTypeTest(v, typeParam, srcData, doJcc);
     doMov();
     return;
   }
@@ -124,12 +271,12 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
   /*
    * Since not all of our unions carry a type register, there are some
    * situations with strings and arrays that are neither constantly-foldable
-   * nor in the emitTypeTest() code path.
+   * nor in the type-register code path above.
    *
    * We currently actually check their persistent bit here, which will let
    * both static and uncounted strings through.  Also note that
    * CheckType<Uncounted> t1:{Null|Str} doesn't get this treatment currently---
-   * the emitTypeTest() path above will only check the type register.
+   * the path above will only check the type register.
    */
   if (!typeParam.isSpecialized() &&
       typeParam <= TUncounted &&

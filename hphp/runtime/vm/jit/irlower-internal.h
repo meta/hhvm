@@ -105,27 +105,6 @@ void cgCallNative(Vout& v, IRLS& env, const IRInstruction* inst);
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
- * Test whether the TypedValue given by (`typeSrc', `dataSrc') matches `type',
- * setting the result in `sf', and delegating conditional work to `doJcc':
- *
- *    void doJcc(ConditionCode cc, Vreg sf)
- *
- * `doJcc' is passed `sf', and can check whether `cc' is set to determine if
- * the type matched.
- */
-template<class Loc, class JmpFn>
-void emitTypeTest(Vout& v, IRLS& env, Type type,
-                  Loc typeSrc, Loc dataSrc, Vreg sf, JmpFn doJcc);
-
-/*
- * Does the work of emitTypeTest(), then branches to `taken' if the type does
- * not match.
- */
-template<class Loc>
-void emitTypeCheck(Vout& v, IRLS& env, Type type,
-                   Loc typeSrc, Loc dataSrc, Block* taken);
-
-/*
  * Check the surprise flags, and jmp to handleSurprise label if they are set.
  */
 void emitCheckSurpriseFlags(Vout& v, Vreg fp, Vlabel handleSurprise);
