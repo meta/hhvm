@@ -21,6 +21,8 @@
 
 #include <boost/operators.hpp>
 
+#include <fmt/format.h>
+
 #include <folly/Range.h>
 #include <folly/String.h>
 
@@ -179,6 +181,13 @@ struct SHA1 : private boost::totally_ordered<SHA1> {
 }
 
 //////////////////////////////////////////////////////////////////////
+
+template <>
+struct fmt::formatter<HPHP::SHA1> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::SHA1& sha, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(sha.toString(), ctx);
+  }
+};
 
 namespace std {
 template<>

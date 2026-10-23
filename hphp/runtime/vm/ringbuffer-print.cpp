@@ -18,7 +18,6 @@
 #include <iostream>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include "hphp/runtime/vm/jit/service-requests.h"
 #include "hphp/runtime/vm/srckey.h"
@@ -29,9 +28,9 @@ void dumpEntry(const RingBufferEntry* e) {
   if (e->type == RBTypeUninit) return;
 
   std::cerr <<
-    folly::format("{:#x} {:10} {:20}",
+    fmt::format("{:#x} {:10} {:20}",
                   e->threadId, e->seq, ringbufferName(e->type));
-  auto const msgFormat = "{:50} {:#16x}\n";
+  static constexpr auto msgFormat = "{:50} {:#16x}\n";
 
   switch (e->type) {
     case RBTypeUninit: return;
@@ -45,7 +44,7 @@ void dumpEntry(const RingBufferEntry* e) {
       // We append our own newline so ignore any newlines in the msg.
       while (len > 0 && info.msg[len - 1] == '\n') --len;
       std::cerr <<
-        folly::format(msgFormat,
+        fmt::format(msgFormat,
                       folly::StringPiece(info.msg, info.msg + len),
                       info.truncatedRip);
       break;
@@ -69,14 +68,14 @@ void dumpEntry(const RingBufferEntry* e) {
       if (indentDepth < 0) indentDepth = 0;
       auto const indentedName =
         fmt::format("{}{}", std::string(indentDepth * 4, ' '), info.msg);
-      std::cerr << folly::format(msgFormat,
+      std::cerr << fmt::format(msgFormat,
                                  indentedName, info.truncatedRip);
       indentDepth += e->type == RBTypeFuncEntry;
       break;
     }
     case RBTypeGeneric: {
       auto& info = e->generic;
-      std::cerr << folly::format(msgFormat, info.name, info.data);
+      std::cerr << fmt::format(msgFormat, info.name, info.data);
       break;
     }
     case RBTypeAPCHandleEnqueue:
@@ -94,7 +93,7 @@ void dumpEntry(const RingBufferEntry* e) {
     default: {
       auto& info = e->vmPoint;
       std::cerr <<
-        folly::format(msgFormat,
+        fmt::format(msgFormat,
                       showShort(SrcKey::fromAtomicInt(info.sk)),
                       info.data);
       break;

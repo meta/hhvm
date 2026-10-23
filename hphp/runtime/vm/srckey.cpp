@@ -16,7 +16,7 @@
 
 #include "hphp/runtime/vm/srckey.h"
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include "hphp/runtime/vm/hhbc.h"
 
@@ -37,7 +37,7 @@ std::string show(SrcKey sk) {
   if (unit->origFilepath()->data() && unit->origFilepath()->size()) {
     filepath = unit->origFilepath()->data();
   }
-  return folly::sformat("{}:{} in {}(id 0x{:#x})@{: >6}{}{}{}{}{}",
+  return fmt::format("{}:{} in {}(id 0x{:#x})@{: >6}{}{}{}{}{}",
                         filepath, sk.lineNumber(),
                         func->fullName()->data(),
                         sk.funcID().toInt(), sk.printableOffset(),
@@ -50,9 +50,9 @@ std::string show(SrcKey sk) {
 
 std::string showShort(SrcKey sk) {
   if (!sk.valid()) return "<invalid SrcKey>";
-  return folly::sformat(
+  return fmt::format(
     "{}(id {:#x})@{}{}{}{}{}{}",
-    sk.func()->fullName(),
+    sk.func()->fullName()->slice(),
     sk.funcID(),
     sk.printableOffset(),
     resumeModeShortName(sk.resumeMode()),
@@ -82,20 +82,20 @@ std::string SrcKey::getSymbol() const {
   }
 
   if (f->isMethod() && !f->cls()) {
-    return folly::format(
+    return fmt::format(
       "{}::{}::line-{}",
-      f->preClass()->name(),
-      f->name(),
+      f->preClass()->name()->slice(),
+      f->name()->slice(),
       lineNumber()
-    ).str();
+    );
   }
 
   // methods with a cls() and functions
-  return folly::format(
+  return fmt::format(
     "{}::line-{}",
-    f->fullName(),
+    f->fullName()->slice(),
     lineNumber()
-  ).str();
+  );
 }
 
 }

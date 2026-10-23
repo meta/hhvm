@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <fmt/format.h>
 #include <folly/Range.h>
 
 #include "hphp/util/alloc.h"
@@ -693,5 +694,28 @@ template<> class FormatValue<HPHP::StringData*> {
   const HPHP::StringData* m_val;
 };
 }
+
+// Formats the string contents, like folly::FormatValue<StringData*> above.
+template <typename S, typename P>
+struct fmt::formatter<HPHP::ptrimpl::PtrImpl<const HPHP::StringData, S, P>>
+    : fmt::formatter<std::string_view> {
+  auto format(
+      const HPHP::ptrimpl::PtrImpl<const HPHP::StringData, S, P>& v,
+      fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(
+        std::string_view(v->data(), v->size()), ctx);
+  }
+};
+
+template <typename S, typename P>
+struct fmt::formatter<HPHP::ptrimpl::PtrImpl<HPHP::StringData, S, P>>
+    : fmt::formatter<std::string_view> {
+  auto format(
+      const HPHP::ptrimpl::PtrImpl<HPHP::StringData, S, P>& v,
+      fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(
+        std::string_view(v->data(), v->size()), ctx);
+  }
+};
 
 #include "hphp/runtime/base/string-data-inl.h"

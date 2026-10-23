@@ -150,9 +150,9 @@ struct FuncChecker {
     );
   }
   template<class... Args>
-  void ferror(Args&&... args) {
+  void ferror(fmt::format_string<Args...> fmt, Args&&... args) {
     verify_error(unit(), m_func, m_errmode == kThrow, "%s",
-                 folly::sformat(std::forward<Args>(args)...).c_str());
+                 fmt::format(fmt, std::forward<Args>(args)...).c_str());
   }
 
  private:
@@ -791,7 +791,7 @@ bool FuncChecker::checkImmediates(const char* name, PC const instr) {
   auto const expectPC = instr + instrLen(instr);
   if (pc != expectPC) {
     ferror("PC after decoding {} at {} is {} instead of expected {}\n",
-           opcodeToName(op), instr, pc, expectPC);
+           opcodeToName(op), fmt::ptr(instr), fmt::ptr(pc), fmt::ptr(expectPC));
     return false;
   }
   return ok;
@@ -1241,27 +1241,27 @@ bool FuncChecker::checkOp(State* cur, PC pc, Op op, Block* b, PC prev_pc) {
       }
       if (!preCls->parentName() ||
           preCls->parentName()->toCppString() != "Closure") {
-        ferror("CreateCl references non-closure class {}\n", preCls->name());
+        ferror("CreateCl references non-closure class {}\n", preCls->name()->slice());
         return false;
       }
       auto const [existing, emplaced] =
         m_createCls.emplace(preCls->name(), m_func->name);
       if (!emplaced && !existing->second->fsame(m_func->name)) {
         ferror("Closure {} referenced in multiple funcs {} and {}\n",
-               preCls->name(), existing->second, m_func->name);
+               preCls->name()->slice(), existing->second->slice(), m_func->name);
         return false;
       }
       auto const numBound = getImm(pc, 0).u_IVA;
       auto const invoke = preCls->lookupMethod(s_invoke.get());
       if (invoke && numBound != preCls->numProperties()) {
         ferror("CreateCl bound Closure {} with {} params instead of {}\n",
-               preCls->name(), numBound, preCls->numProperties());
+               preCls->name()->slice(), numBound, preCls->numProperties());
         return false;
       }
       if (!m_func->pce() || (m_func->attrs & AttrStatic)) {
         if (!(invoke->attrs & AttrStatic)) {
           ferror("CreateCl bound Closure {} without AttrStatic in a {}\n",
-                 preCls->name(), m_func->pce() ? "static method" : "function");
+                 preCls->name()->slice(), m_func->pce() ? "static method" : "function");
           return false;
         }
       }
@@ -1277,7 +1277,7 @@ bool FuncChecker::checkOp(State* cur, PC pc, Op op, Block* b, PC prev_pc) {
       } \
       auto const dt = unit()->lookupArrayIdCopy(id)->toDataType(); \
       if (dt != KindOf##name) { \
-        ferror("{} references array data that is a {}\n", #name, dt); \
+        ferror("{} references array data that is a {}\n", #name, tname(dt)); \
         return false; \
       } \
       break; \

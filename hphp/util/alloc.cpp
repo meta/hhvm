@@ -26,7 +26,7 @@
 #include <sanitizer/asan_interface.h>
 #endif
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 #include <folly/portability/SysMman.h>
 #include <folly/portability/SysResource.h>
 
@@ -387,7 +387,7 @@ static void check_arena_base(const char* what,
                              uintptr_t desired, uintptr_t actual) {
   if (actual == desired) return;
   alloc_warn(
-    folly::sformat("{}: reserved {:#x}, requested {:#x}; "
+    fmt::format("{}: reserved {:#x}, requested {:#x}; "
                    "another mapping already occupies that range",
                    what, actual, desired));
 }
@@ -406,7 +406,7 @@ void setup_auto_arenas(PageSpec s) {
     // -- the binary, the TC and the low arena, all of which is_low_mem() calls
     // static. Huge pages for arena 0 are an optimization, so skip them.
     alloc_warn(
-      folly::sformat("arena 0 huge page range: mmap failed with error {}; "
+      fmt::format("arena 0 huge page range: mmap failed with error {}; "
                      "continuing without huge pages for arena 0", errno));
     return;
   }

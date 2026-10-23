@@ -313,7 +313,7 @@ namespace {
 
 std::string formatArgumentErrMsg(const Func* func, const char* amount,
                                  uint32_t expected, uint32_t got) {
-  return folly::sformat(
+  return fmt::format(
     "{}() expects {} {} positional parameter{}, {} given",
     func->fullNameWithClosureName(),
     amount,
@@ -334,10 +334,10 @@ void throwMissingPositionalArgument(const Func* func, int got) {
 }
 
 void throwMissingNamedParam(const Func* func, const StringData* paramName) {
-  auto const errMsg = folly::sformat(
+  auto const errMsg = fmt::format(
     "Call to {}() has no argument matching required named parameter {}",
     func->fullNameWithClosureName(),
-    paramName
+    paramName->slice()
   );
 
   SystemLib::throwRuntimeExceptionObject(Variant(errMsg));
@@ -345,7 +345,7 @@ void throwMissingNamedParam(const Func* func, const StringData* paramName) {
 
 void throwUnexpectedNamedArguments(const Func* func) {
   assertx(func->numNamedParams() == 0);
-  auto const errMsg = folly::sformat(
+  auto const errMsg = fmt::format(
     "{}() has no named parameters but was called with named arguments.",
     func->fullNameWithClosureName());
 
@@ -353,7 +353,7 @@ void throwUnexpectedNamedArguments(const Func* func) {
 }
 
 void throwNamedArgumentNameMismatch(const Func* func, const StringData* argName) {
-  auto const errMsg = folly::sformat(
+  auto const errMsg = fmt::format(
     "Named argument {} does not match any named parameter in call to {}",
     argName->toCppString(),
     func->fullNameWithClosureName()
@@ -420,7 +420,7 @@ void raiseCoeffectsCallViolation(const Func* callee,
   };
 
   auto const errMsg = [&] {
-    return folly::sformat(
+    return fmt::format(
       "Call to {}() requires [{}] coeffects but {}() provided [{}]",
       callee->fullNameWithClosureName(),
       required.toString(),
@@ -460,7 +460,7 @@ void raiseCoeffectsFunParamTypeViolation(TypedValue tv,
 void raiseCoeffectsFunParamCoeffectRulesViolation(const Func* f) {
   assertx(f);
   auto const errMsg =
-    folly::sformat("Function/method pointer to {}() contains polymorphic "
+    fmt::format("Function/method pointer to {}() contains polymorphic "
                    "coeffects but is used as a coeffect rule",
                    f->fullNameWithClosureName());
   if (CoeffectsConfig::throws()) {
@@ -485,14 +485,14 @@ void moduleBoundaryViolationImpl(
   assertx(!symbol.empty());
   // Don't throw error in debugger when bypassCheck is on
   if (!g_context.isNull() && g_context->debuggerSettings.bypassCheck) return;
-  auto const errMsg = folly::sformat(
+  auto const errMsg = fmt::format(
     "Accessing {}internal {} in module {} from {} is not allowed",
     soft ? "soft " : "",
     symbol,
-    symbolModule,
+    symbolModule->slice(),
     Module::isDefault(fromModule)
       ? "the default module"
-      : folly::sformat("module {}", fromModule)
+      : fmt::format("module {}", fromModule->slice())
   );
   if (Cfg::Eval::EnforceModules > 1 && !soft) {
     SystemLib::throwModuleBoundaryViolationExceptionObject(errMsg);
@@ -522,9 +522,11 @@ void raiseModulePropertyViolation(
   assertx(attrs & AttrInternal);
   auto const soft = attrs & AttrInternalSoft;
 
-  auto const msg = is_static ? "static property {}::${}" : "property {}::${}";
   return moduleBoundaryViolationImpl(
-    folly::sformat(msg, cls->name(), prop->data()),
+    is_static
+      ? fmt::format(
+          "static property {}::${}", cls->name()->slice(), prop->data())
+      : fmt::format("property {}::${}", cls->name()->slice(), prop->data()),
     cls->moduleName(),
     callerModule,
     soft
@@ -541,8 +543,8 @@ void raiseModuleBoundaryViolation(const Class* ctx,
   assertx(callee->isInternal());
   return moduleBoundaryViolationImpl(
     ctx && callee->isMethod()
-        ? folly::sformat("method {}::{}", ctx->name(), callee->name())
-        : folly::sformat("function {}", callee->name()),
+        ? fmt::format("method {}::{}", ctx->name()->slice(), callee->name()->slice())
+        : fmt::format("function {}", callee->name()->slice()),
     callee->moduleName(),
     callerModule,
     callee->attrs() & AttrInternalSoft
@@ -561,7 +563,7 @@ void raiseModuleBoundaryViolation(const Class* cls,
   auto const symbolType =
     isEnum(cls) ? "enum" : (isEnumClass(cls) ? "enum class" : "class");
   return moduleBoundaryViolationImpl(
-    folly::sformat("{} {}", symbolType, cls->name()),
+    fmt::format("{} {}", symbolType, cls->name()->slice()),
     cls->moduleName(),
     callerModule,
     cls->attrs() & AttrInternalSoft

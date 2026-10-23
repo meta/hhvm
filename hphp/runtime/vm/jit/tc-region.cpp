@@ -53,6 +53,7 @@
 #include "hphp/util/trace.h"
 
 #include <folly/Range.h>
+#include <fmt/format.h>
 
 TRACE_SET_MOD(mcg)
 
@@ -484,9 +485,9 @@ void publishSortedOptFuncsCode(std::vector<FuncMetaInfo>& infos,
 std::string show(const SrcKeyTransMap& map) {
   std::string ret;
   for (auto& skt : map) {
-    folly::format(&ret, "  - [{}]:", showShort(skt.first));
+    fmt::format_to(std::back_inserter(ret), "  - [{}]:", showShort(skt.first));
     for (auto tca : skt.second) {
-      folly::format(&ret, " {},", tca);
+      fmt::format_to(std::back_inserter(ret), " {},", fmt::ptr(tca));
     }
     ret += "\n";
   }

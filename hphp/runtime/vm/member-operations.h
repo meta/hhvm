@@ -51,8 +51,8 @@ struct InvalidSetMException : std::runtime_error {
   {}
 
   explicit InvalidSetMException(const TypedValue& value)
-    : std::runtime_error(folly::format("InvalidSetMException containing {}",
-                                       value.pretty()).str())
+    : std::runtime_error(fmt::format("InvalidSetMException containing {}",
+                                       value.pretty()))
     , m_tv(value)
   {}
 

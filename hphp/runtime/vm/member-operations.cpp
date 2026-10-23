@@ -89,7 +89,7 @@ void throw_cannot_use_newelem_for_lval_read_col() {
 
 void throw_cannot_use_newelem_for_lval_read(const ArrayData* ad) {
   SystemLib::throwInvalidOperationExceptionObject(
-    folly::sformat("Cannot use [] with {}s for reading in an lvalue context",
+    fmt::format("Cannot use [] with {}s for reading in an lvalue context",
                    getDataTypeString(ad->toDataType(), ad->isLegacyArray()))
   );
 }
@@ -148,17 +148,17 @@ void copy_int(void* dest, int64_t src, size_t size) {
 
 template<typename... Args>
 [[noreturn]] NEVER_INLINE
-void fail_oob(folly::StringPiece fmt, Args&&... args) {
+void fail_oob(fmt::format_string<Args...> fmt, Args&&... args) {
   SystemLib::throwOutOfBoundsExceptionObject(
-    folly::sformat(fmt, std::forward<Args>(args)...)
+    fmt::format(fmt, std::forward<Args>(args)...)
   );
 }
 
 template<typename... Args>
 [[noreturn]] NEVER_INLINE
-void fail_invalid(folly::StringPiece fmt, Args&&... args) {
+void fail_invalid(fmt::format_string<Args...> fmt, Args&&... args) {
   SystemLib::throwInvalidOperationExceptionObject(
-    folly::sformat(fmt, std::forward<Args>(args)...)
+    fmt::format(fmt, std::forward<Args>(args)...)
   );
 }
 

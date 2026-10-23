@@ -26,6 +26,8 @@
 
 #include <algorithm>
 
+#include <fmt/format.h>
+
 namespace HPHP {
 
 // Forward decl for `StringRet` (defined in type-nonnull-ret.h after this file).
@@ -687,3 +689,15 @@ template<> class FormatValue<HPHP::StaticString> {
   const HPHP::StaticString& m_val;
 };
 }
+
+template <>
+struct fmt::formatter<HPHP::OptString> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::OptString& str, fmt::format_context& ctx) const {
+    auto const sd = str.get();
+    return fmt::formatter<std::string_view>::format(
+        std::string_view(sd->data(), sd->size()), ctx);
+  }
+};
+
+template <>
+struct fmt::formatter<HPHP::StaticString> : fmt::formatter<HPHP::OptString> {};

@@ -17,6 +17,7 @@
 #include "hphp/tools/tc-print/printir-annotation.h"
 
 #include <limits>
+#include <fmt/format.h>
 
 using std::string;
 using std::vector;
@@ -41,7 +42,7 @@ void typeError(const std::string& name,
                const dynamic::Type expectedType,
                const dynamic::Type actualType) {
   throw HPHP::printir::ParseError(
-    sformat("{} must have type {}, got type {}",
+    fmt::format("{} must have type {}, got type {}",
             name,
             typeToName(expectedType),
             typeToName(actualType)));
@@ -50,7 +51,7 @@ void typeError(const std::string& name,
 void enumError(const std::string& enumName,
                const std::string& incorrectValue) {
   throw HPHP::printir::ParseError(
-    sformat("\"{}\" is not a valid value for enum {}",
+    fmt::format("\"{}\" is not a valid value for enum {}",
             incorrectValue,
             enumName));
 }
@@ -61,7 +62,7 @@ HPHP::jit::TCA parseTCA(const std::string& raw) {
   unsigned long long ull;
   if (std::sscanf(raw.c_str(), "%llx", &ull) != 1) {
     throw HPHP::printir::ParseError(
-      sformat("Unable to parse value \"{}\" as TCA", raw));
+      fmt::format("Unable to parse value \"{}\" as TCA", raw));
   }
 
   return reinterpret_cast<jit::TCA>(ull);
@@ -178,7 +179,7 @@ printir::Instr DynamicConverter<printir::Instr>::convert(const dynamic& d) {
     // Unique error case, no one "expected" type, but we know this current shape
     // is incorrect
     throw HPHP::printir::ParseError(
-      sformat("Field \"srcs\" has incorrect type {}", d_srcs.typeName()));
+      fmt::format("Field \"srcs\" has incorrect type {}", d_srcs.typeName()));
   }
 
   return printir::Instr{id, std::move(maybeMarker), std::move(phiPseudoInstrs),
@@ -294,7 +295,7 @@ printir::Unit DynamicConverter<printir::Unit>::convert(const dynamic& d) {
                                         convertedBlock);
     if (!success.second) {
       throw HPHP::printir::ParseError(
-        sformat("Block has repeated id: {}", blockId));
+        fmt::format("Block has repeated id: {}", blockId));
     }
   }
 
@@ -324,8 +325,8 @@ dynamic DynamicConstructor<printir::PhiPseudoInstr>::construct(
 dynamic DynamicConstructor<printir::TCRange>::construct(
   const printir::TCRange& t) {
   return dynamic::object("area", jit::areaAsString(t.area))
-                        ("start", sformat("{}", static_cast<void*>(t.start)))
-                        ("end", sformat("{}", static_cast<void*>(t.end)))
+                        ("start", fmt::format("{}", static_cast<void*>(t.start)))
+                        ("end", fmt::format("{}", static_cast<void*>(t.end)))
                         ("disasm", t.disasm);
 }
 
@@ -357,7 +358,7 @@ dynamic DynamicConstructor<printir::Instr>::construct(const printir::Instr& i) {
 dynamic DynamicConstructor<printir::Block>::construct(const printir::Block& b) {
   dynamic instrMap = dynamic::object();
   for (auto const& item: b.instrs) {
-    instrMap[sformat("{}", item.id)] = toDynamic(item);
+    instrMap[fmt::format("{}", item.id)] = toDynamic(item);
   }
 
   return dynamic::object("id", b.id)
@@ -403,7 +404,7 @@ dynamic DynamicConstructor<printir::InliningDecision>::construct(
 dynamic DynamicConstructor<printir::Unit>::construct(const printir::Unit &u) {
   dynamic blockMap = dynamic::object();
   for (auto const& item: u.blocks) {
-    blockMap[sformat("{}", item.first)] = toDynamic(item.second);
+    blockMap[fmt::format("{}", item.first)] = toDynamic(item.second);
   }
 
   return dynamic::object("transContext", toDynamic(u.transContext))

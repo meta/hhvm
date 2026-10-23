@@ -20,8 +20,7 @@
 #include <algorithm>
 #include <array>
 #include <iterator>
-
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include "hphp/runtime/base/execution-context.h"
 #include "hphp/util/configs/jit.h"
@@ -124,8 +123,10 @@ void Timer::Dump() {
 }
 
 std::string Timer::Show() {
-  auto const header = "{:<30} | {:>15} {:>15} {:>15} {:>15}\n";
-  auto const row    = "{:<30} | {:>15} {:>13,}us {:>13,}ns {:>13,}ns\n";
+  static constexpr auto header = "{:<30} | {:>15} {:>15} {:>15} {:>15}\n";
+  auto const grouped = [](int64_t value) {
+    return fmt::format("{}", fmt::group_digits(value));
+  };
 
   std::array<TimerName,kNumTimers> names_copy;
   std::copy(s_names, s_names + kNumTimers, begin(names_copy));
@@ -142,14 +143,14 @@ std::string Timer::Show() {
     auto const& counter = s_counters[pair.name];
     if (counter.total == 0 && counter.count == 0) continue;
 
-    folly::format(
-      &rows,
-      row,
+    fmt::format_to(
+      std::back_inserter(rows),
+      "{:<30} | {:>15} {:>13}us {:>13}ns {:>13}ns\n",
       pair.str,
       counter.count,
-      counter.total / 1000,
-      counter.mean(),
-      counter.max
+      grouped(counter.total / 1000),
+      grouped(counter.mean()),
+      grouped(counter.max)
     );
   }
 
@@ -157,9 +158,9 @@ std::string Timer::Show() {
 
   std::string ret;
   auto const url = g_context->getRequestUrl(75);
-  folly::format(&ret, "\nJIT timers for {}\n", url);
-  folly::format(&ret, header, "name", "count", "total", "average", "max");
-  folly::format(&ret, "{:-^30}-+{:-^64}\n{}\n", "", "", rows);
+  fmt::format_to(std::back_inserter(ret), "\nJIT timers for {}\n", url);
+  fmt::format_to(std::back_inserter(ret), header, "name", "count", "total", "average", "max");
+  fmt::format_to(std::back_inserter(ret), "{:-^30}-+{:-^64}\n{}\n", "", "", rows);
   return ret;
 }
 

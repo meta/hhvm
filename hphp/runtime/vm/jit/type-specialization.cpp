@@ -20,6 +20,8 @@
 #include "hphp/runtime/base/string-data.h"
 #include "hphp/runtime/vm/class.h"
 
+#include <fmt/format.h>
+
 namespace HPHP::jit {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -164,7 +166,7 @@ std::string ArraySpec::toString() const {
   std::string result;
 
   if (vanilla() || bespoke()) {
-    folly::format(&result, "={}", layout().describe());
+    fmt::format_to(std::back_inserter(result), "={}", layout().describe());
   }
 
   if (auto const t = type()) {

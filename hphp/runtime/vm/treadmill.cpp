@@ -401,9 +401,7 @@ std::string dumpActiveRequestInfo() {
   out += "\nActive Requests:\n";
   for (auto& req : s_inflightRequests) {
     if (req.startTime != kNoStartTime) {
-      folly::format(
-        &out,
-        "  {} {} {} (age {}ms){} {}{}\n",
+      fmt::format_to(std::back_inserter(out), "  {} {} {} (age {}ms){} {}{}\n",
         req.pthreadId,
         req.requestInfo ? req.requestInfo->m_id.toString() : "none",
         req.startTime.time_since_epoch().count(),
@@ -450,26 +448,20 @@ std::string dumpTreadmillInfo(bool forCrash) {
   }
 
   if (!s_killMessage.empty()) {
-    folly::format(&out, "{}\n\n", s_killMessage);
+    fmt::format_to(std::back_inserter(out), "{}\n\n", s_killMessage);
   }
 
   auto const oldestStart = getOldestRequestStartTime();
 
-  folly::format(
-    &out,
-    "Now: {}\n",
+  fmt::format_to(std::back_inserter(out), "Now: {}\n",
     Clock::now().time_since_epoch().count()
   );
 
-  folly::format(
-    &out,
-    "OldestStartTime: {}\n",
+  fmt::format_to(std::back_inserter(out), "OldestStartTime: {}\n",
     oldestStart.time_since_epoch().count()
   );
 
-  folly::format(
-    &out,
-    "InflightRequestsSize: {}\n",
+  fmt::format_to(std::back_inserter(out), "InflightRequestsSize: {}\n",
     s_inflightRequests.size()
   );
 

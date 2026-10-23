@@ -56,6 +56,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <fmt/format.h>
 
 namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////
@@ -697,7 +698,7 @@ std::unique_ptr<Unit> UnitEmitter::create() const {
     auto const verbose = kVerifyVerbose;
     if (!check(verbose)) {
       if (!verbose) {
-        std::cerr << folly::format(
+        std::cerr << fmt::format(
           "Verification failed for unit {}. Re-run with "
           "HHVM_VERIFY_VERBOSE{}=1 to see more details.\n",
           m_filepath->data(), isSystemLib_ ? "_SYSTEM" : ""

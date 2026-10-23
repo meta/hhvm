@@ -47,6 +47,8 @@
 #include "hphp/runtime/vm/jit/timer.h"
 #include "hphp/runtime/vm/jit/type.h"
 
+#include <fmt/format.h>
+
 TRACE_SET_MOD(trans)
 
 namespace HPHP::jit {
@@ -861,7 +863,7 @@ std::unique_ptr<IRUnit> irGenRegion(const RegionDesc& region,
                [&]{
                  std::string ret;
                  for (auto& me : mainExits) {
-                   folly::format(&ret, "B{}, ", me->id());
+                   fmt::format_to(std::back_inserter(ret), "B{}, ", me->id());
                  }
                  return ret;
                }(),

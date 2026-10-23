@@ -28,7 +28,7 @@
 #include "hphp/util/data-block.h"
 #include "hphp/util/build-info.h"
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 #include <folly/json/dynamic.h>
 #include <folly/json/json.h>
 
@@ -203,10 +203,10 @@ std::string getTCSpace() {
   auto const add_row = [&] (const UsageInfo& ui) {
     auto const percent = ui.capacity ?  100 * ui.used / ui.capacity : 0;
 
-    usage += folly::format(
+    usage += fmt::format(
       "mcg: {:9} bytes ({}%) in {}\n",
       ui.used, percent, ui.name
-    ).str();
+    );
 
     if (ui.global) {
       total_size += ui.used;
@@ -225,7 +225,7 @@ std::string getTCAddrs() {
   std::string addrs;
 
   code().forEachSection([&] (const char* name, auto const&) {
-    addrs += folly::format("{}: {}\n", name, code().base()).str();
+    addrs += fmt::format("{}: {}\n", name, fmt::ptr(code().base()));
   });
   return addrs;
 }

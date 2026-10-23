@@ -19,7 +19,6 @@
 #include <variant>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 #include <folly/MapUtil.h>
 #include <folly/Random.h>
 
@@ -326,7 +325,7 @@ TypeConstraint TypeConstraint::UnionBuilder::finish() && {
   }
 
   if (m_classes.m_list.size() > Cfg::Eval::MaxCaseTypeVariants) {
-    auto msg = folly::sformat(
+    auto msg = fmt::format(
       "Case type '{}' exceeds allowed variants of {} ({} requested)",
       m_typeName,
       Cfg::Eval::MaxCaseTypeVariants,
@@ -776,7 +775,7 @@ std::string TypeConstraint::displayName(const Class* context /*= nullptr*/,
         case AnnotType::Unresolved:
           not_reached();
       }
-      if (str) folly::format(&name, " ({})", str);
+      if (str) fmt::format_to(std::back_inserter(name), " ({})", str);
     }
   }
   return name;
@@ -1886,16 +1885,16 @@ void TypeConstraint::verifyOutParamFail(TypedValue* c,
                                         const Func* func,
                                         int paramNum) const {
   auto const tcInfo = [&] {
-    return folly::sformat("argument {} returned from {}() as an inout parameter",
-      paramNum+1, func->fullName());
+    return fmt::format("argument {} returned from {}() as an inout parameter",
+      paramNum+1, func->fullName()->slice());
   };
   if (tryCommonCoercions(c, ctx, nullptr, tcInfo)) return;
 
-  std::string msg = folly::sformat(
+  std::string msg = fmt::format(
       "Argument {} returned from {}() as an inout parameter must be {} "
       "{}, {} given",
       paramNum + 1,
-      func->fullName(),
+      func->fullName()->slice(),
       isUpperBound() ? "upper-bounded by" : "of type",
       displayName(func->cls()),
       describe_actual_type(c)
@@ -1916,15 +1915,15 @@ void TypeConstraint::verifyPropFail(const Class* thisCls,
   assertx(Cfg::Eval::CheckPropTypeHints > 0);
   assertx(validForProp());
 
-  auto const tcInfo = [&]{ return folly::sformat("property {}", propName);};
+  auto const tcInfo = [&]{ return fmt::format("property {}", propName->slice());};
   if (tryCommonCoercions(val, thisCls, declCls, tcInfo)) return;
 
   raise_property_typehint_error(
-    folly::sformat(
+    fmt::format(
       "{} '{}::{}' {} type {}, {} assigned",
       isStatic ? "Static property" : "Property",
-      declCls->name(),
-      propName,
+      declCls->name()->slice(),
+      propName->slice(),
       isUpperBound() ? "upper-bounded by" : "declared as",
       displayName(nullptr),
       describe_actual_type(val)
@@ -1951,7 +1950,7 @@ void TypeConstraint::verifyParamFail(tv_lval c,
                                      int id) const {
   assertx(id != ReturnId);
   auto const tcInfo = [&] {
-    return folly::sformat("argument {} passed to {}()", id+1, func->fullName());
+    return fmt::format("argument {} passed to {}()", id+1, func->fullName()->slice());
   };
   if (tryCommonCoercions(c, ctx, nullptr, tcInfo)) return;
 
@@ -1962,41 +1961,41 @@ void TypeConstraint::verifyParamFail(tv_lval c,
   if (isSoft()) {
     // Soft type hints raise warnings instead of recoverable errors
     raise_warning_unsampled(
-      folly::format(
+      fmt::format(
         "Argument {} to {}() must be {} {}, {} given",
-        id + 1, func->fullName(),
+        id + 1, func->fullName()->slice(),
         isUpperBound() ? "upper-bounded by" : "of type",
         name, givenType
-      ).str()
+      )
     );
   } else if (isDisplayNullable()) {
     raise_typehint_error(
-      folly::format(
+      fmt::format(
         "Argument {} to {}() must be {} {}, {} given",
-        id + 1, func->fullName(),
+        id + 1, func->fullName()->slice(),
         isUpperBound() ? "upper-bounded by" : "of type",
         name, givenType
-      ).str()
+      )
     );
   } else {
     auto cls = isUnion() ? nullptr : Class::lookup(typeName());
     if (cls && isInterface(cls)) {
       auto const msg =
-        folly::format(
+        fmt::format(
           "Argument {} passed to {}() must {} interface {}, {} given",
-          id + 1, func->fullName(),
+          id + 1, func->fullName()->slice(),
           isUpperBound() ? "be upper-bounded by" : "implement",
           name, givenType
-        ).str();
+        );
       raise_typehint_error(msg);
     } else {
       auto const msg =
-        folly::format(
+        fmt::format(
           "Argument {} passed to {}() must be {} {}, {} given",
-          id + 1, func->fullName(),
+          id + 1, func->fullName()->slice(),
           isUpperBound() ? "upper-bounded by" : "an instance of",
           name, givenType
-        ).str();
+        );
       raise_typehint_error(msg);
     }
   }
@@ -2007,7 +2006,7 @@ void TypeConstraint::verifyParamFail(tv_lval c,
 void TypeConstraint::verifyReturnFail(tv_lval c, const Class* ctx,
                                       const Func* func) const {
   auto const tcInfo = [&] {
-    return folly::sformat("return of {}()", func->fullName());
+    return fmt::format("return of {}()", func->fullName()->slice());
   };
   if (tryCommonCoercions(c, ctx, nullptr, tcInfo)) return;
 
@@ -2017,24 +2016,24 @@ void TypeConstraint::verifyReturnFail(tv_lval c, const Class* ctx,
   std::string msg;
   if (func->isClosureBody()) {
     msg =
-      folly::format(
+      fmt::format(
         "Value returned from {}closure must be of type {}, {} given",
         func->isAsync() ? "async " : "",
         name,
         givenType
-      ).str();
+      );
   } else {
     msg =
-      folly::format(
+      fmt::format(
         "Value returned from {}{} {}() must be {}{} {}, {} given",
         func->isAsync() ? "async " : "",
         func->preClass() ? "method" : "function",
-        func->fullName(),
+        func->fullName()->slice(),
         isUpperBound() ? "upper-bounded by" : "of",
         isInherited() ? " inherited type" : (isUpperBound() ? "" : " type"),
         name,
         givenType
-      ).str();
+      );
   }
   if (!isSoft()) {
     raise_return_typehint_error(msg);

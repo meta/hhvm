@@ -74,7 +74,6 @@
 #include "hphp/util/trace.h"
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include <algorithm>
 #include <cxxabi.h>
@@ -1720,7 +1719,7 @@ std::string UniqueStubs::describe(TCA address) const {
 
   --lower;
   if (lower->contains(address)) {
-    return folly::sformat("{}+{:#x}", lower->name, address - lower->start);
+    return fmt::format("{}+{:#x}", lower->name, address - lower->start);
   }
   return raw();
 }

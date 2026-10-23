@@ -136,7 +136,7 @@ static InitFiniNode initCodeSizeCounters([] {
   s_used_counters = buildCodeSizeCounters();
   CodeCache::forEachName([](const char* name) {
     #define F(n) s_ ## n ## _counters[name] = \
-      ServiceData::createCounter(folly::sformat("jit.code.{}." #n , name));
+      ServiceData::createCounter(fmt::format("jit.code.{}." #n , name));
     FOREACH_ALLOC_FREE_COUNTER;
     #undef F
   });

@@ -21,6 +21,7 @@
 #include <folly/ScopeGuard.h>
 
 #include <hphp/system/systemlib.h>
+#include <fmt/format.h>
 #include "hphp/util/trace.h"
 
 #include "hphp/runtime/ext/asio/ext_async-function-wait-handle.h"
@@ -52,11 +53,11 @@ namespace {
 #if (!defined(NDEBUG) || defined(USE_TRACE))
 std::string describeEx(Either<ObjectData*, Exception*> exception) {
   if (exception.left()) {
-    return folly::format("[user exception] {}",
-                         implicit_cast<void*>(exception.left())).str();
+    return fmt::format("[user exception] {}",
+                         implicit_cast<void*>(exception.left()));
   }
-  return folly::format("[C++ exception] {}",
-                       implicit_cast<void*>(exception.right())).str();
+  return fmt::format("[C++ exception] {}",
+                       implicit_cast<void*>(exception.right()));
 }
 #endif
 

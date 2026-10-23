@@ -24,6 +24,7 @@
 #include "hphp/runtime/vm/jit/type.h"
 
 #include <boost/intrusive/list.hpp>
+#include <fmt/format.h>
 #include <folly/Range.h>
 
 #include <cstdint>
@@ -512,6 +513,15 @@ Type callCtxType(const Func* func);
 ///////////////////////////////////////////////////////////////////////////////
 
 }
+
+template <>
+struct fmt::formatter<HPHP::jit::IRInstruction>
+    : fmt::formatter<std::string_view> {
+  auto format(const HPHP::jit::IRInstruction& inst, fmt::format_context& ctx)
+      const {
+    return fmt::formatter<std::string_view>::format(inst.toString(), ctx);
+  }
+};
 
 #define incl_HPHP_VM_JIT_INSTRUCTION_INL_H_
 #include "hphp/runtime/vm/jit/ir-instruction-inl.h"

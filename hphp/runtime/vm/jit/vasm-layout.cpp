@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <fmt/format.h>
 
 /*
  * This module implements two code layout strategies for sorting a Vunit's
@@ -271,14 +272,14 @@ std::string Scale::toString() const {
   for (auto b : m_blocks) {
     auto const& block = m_unit.blocks[b];
     unsigned coldness = 255 - (255 * weight(b) / maxWgt);
-    out << folly::format(
+    out << fmt::format(
       "{} [label=\"{}\\nw: {}\\nptid: {}\\narea: {}\\nprof: {}\\ninsts: {}\","
       "shape=box,style=filled,fillcolor=\"#ff{:02x}{:02x}\"]\n",
       b, b, weight(b), folly::join(',', findProfTransIDs(b)),
       unsigned(block.area_idx),
       findProfCount(b), block.code.size(), coldness, coldness);
     for (auto s : succs(block)) {
-      out << folly::format("{} -> {} [label={}];\n", b, s, weight(b, s));
+      out << fmt::format("{} -> {} [label={}];\n", b, s, weight(b, s));
     }
   }
   out << "}\n";
@@ -328,9 +329,9 @@ std::string Clusterizer::toString() const {
   std::ostringstream out;
   out << "clusterize: final clusters:\n";
   for (auto cid : m_clusterOrder) {
-    out << folly::sformat("  - cluster {}: ", cid);
+    out << fmt::format("  - cluster {}: ", cid);
     for (auto b : m_clusters[cid]) {
-      out << folly::sformat("{}, ", b);
+      out << fmt::format("{}, ", b);
     }
     out << "\n";
   }

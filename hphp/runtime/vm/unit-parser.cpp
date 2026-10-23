@@ -139,8 +139,8 @@ namespace {
 
 struct CompileException : Exception {
   template<class... A>
-  explicit CompileException(A&&... args)
-    : Exception(folly::sformat(std::forward<A>(args)...))
+  explicit CompileException(fmt::format_string<A...> fmt, A&&... args)
+    : Exception(fmt::format(fmt, std::forward<A>(args)...))
   {}
 };
 

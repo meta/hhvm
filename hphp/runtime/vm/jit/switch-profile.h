@@ -22,7 +22,7 @@
 #include <string>
 
 #include <folly/json/dynamic.h>
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 namespace HPHP::jit {
 
@@ -44,7 +44,7 @@ struct SwitchProfile {
   std::string toString(uint32_t size) const {
     auto const nCases = size / sizeof(uint32_t);
     std::string out;
-    for (int i = 0; i < nCases; ++i) folly::format(&out, "{},", cases()[i]);
+    for (int i = 0; i < nCases; ++i) fmt::format_to(std::back_inserter(out), "{},", cases()[i]);
     return out;
   }
 

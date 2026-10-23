@@ -24,6 +24,7 @@
 #include "hphp/util/safe-cast.h"
 
 #include <boost/dynamic_bitset.hpp>
+#include <fmt/format.h>
 #include <folly/Range.h>
 #include <iosfwd>
 
@@ -178,6 +179,15 @@ boost::dynamic_bitset<> backedgeTargets(const Vunit& unit,
 
 ///////////////////////////////////////////////////////////////////////////////
 }
+
+// Formats as `toString()` ("B5"), like the toString() folly::FormatValue in
+// hphp/util/trace.h, rather than through the implicit size_t conversion.
+template <>
+struct fmt::formatter<HPHP::jit::Vlabel> : fmt::formatter<std::string_view> {
+  auto format(HPHP::jit::Vlabel l, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(l.toString(), ctx);
+  }
+};
 
 namespace std {
 template<> struct hash<HPHP::jit::Vlabel> {

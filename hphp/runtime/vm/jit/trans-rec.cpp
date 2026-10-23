@@ -177,9 +177,7 @@ std::string TransRec::print() const {
   std::string funcName = src.func()->fullName()->data();
 
   // Split up the call to prevent template explosion
-  folly::format(
-    &ret,
-    "Translation {} {{\n"
+  fmt::format_to(std::back_inserter(ret), "Translation {} {{\n"
     "  src.sha1 = {}\n"
     "  src.sn = {}\n"
     "  src.funcName = {}\n"
@@ -190,9 +188,7 @@ std::string TransRec::print() const {
 
   for (auto const& block : blocks) {
     auto sk = block.sk;
-    folly::format(
-      &ret,
-      "    {} {} {} {} {}\n",
+    fmt::format_to(std::back_inserter(ret), "    {} {} {} {} {}\n",
       sk.unit()->sha1(),
       sk.unit()->sn(),
       sk.func()->sn(),
@@ -201,15 +197,13 @@ std::string TransRec::print() const {
     );
   }
 
-  folly::format( &ret, "  src.guards = {}\n", guards.size());
+  fmt::format_to(std::back_inserter(ret), "  src.guards = {}\n", guards.size());
 
   for (auto const& guard : guards) {
-    folly::format( &ret, "    {}\n", guard);
+    fmt::format_to(std::back_inserter(ret), "    {}\n", guard);
   }
 
-  folly::format(
-    &ret,
-    "  kind = {} ({})\n"
+  fmt::format_to(std::back_inserter(ret), "  kind = {} ({})\n"
     "  hasLoop = {:d}\n"
     "  aStart = {}\n"
     "  aLen = {:#x}\n"
@@ -219,41 +213,39 @@ std::string TransRec::print() const {
     "  frozenLen = {:#x}\n",
     static_cast<uint32_t>(kind), show(kind),
     hasLoop,
-    aStart, aLen,
-    acoldStart, acoldLen,
-    afrozenStart, afrozenLen);
+    fmt::ptr(aStart), aLen,
+    fmt::ptr(acoldStart), acoldLen,
+    fmt::ptr(afrozenStart), afrozenLen);
 
   // Prepend any target profile data to annotations list.
   if (auto const profD = profData()) {
     auto targetProfs = profD->getTargetProfiles(id);
-    folly::format(&ret, "  annotations = {}\n",
+    fmt::format_to(std::back_inserter(ret), "  annotations = {}\n",
                   annotations.size() + targetProfs.size());
     for (auto const& tProf : targetProfs) {
-      folly::format(&ret, "     [\"TargetProfile {}: {}\"] = {}\n",
+      fmt::format_to(std::back_inserter(ret), "     [\"TargetProfile {}: {}\"] = {}\n",
                     tProf.key.bcOff, tProf.key.name->data(), tProf.debugInfo);
     }
   } else {
-    folly::format(&ret, "  annotations = {}\n", annotations.size());
+    fmt::format_to(std::back_inserter(ret), "  annotations = {}\n", annotations.size());
   }
   for (auto const& annotation : annotations) {
-    folly::format(&ret, "     [\"{}\"] = {}\n",
+    fmt::format_to(std::back_inserter(ret), "     [\"{}\"] = {}\n",
                   annotation.first, annotation.second);
   }
 
-  folly::format(&ret, "  bcMapping = {}\n", bcMapping.size());
+  fmt::format_to(std::back_inserter(ret), "  bcMapping = {}\n", bcMapping.size());
 
   for (auto const& info : bcMapping) {
     auto sk = info.sk;
-    folly::format(
-      &ret,
-      "    {} {} {} {} {} {} {}\n",
+    fmt::format_to(std::back_inserter(ret), "    {} {} {} {} {} {} {}\n",
       sk.unit()->sha1(),
       sk.unit()->sn(),
       sk.func()->sn(),
       sk.toAtomicInt(),
-      info.aStart,
-      info.acoldStart,
-      info.afrozenStart
+      fmt::ptr(info.aStart),
+      fmt::ptr(info.acoldStart),
+      fmt::ptr(info.afrozenStart)
     );
   }
 

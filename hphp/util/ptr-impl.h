@@ -21,6 +21,7 @@
 #include "hphp/util/compilation-flags.h"
 
 #include <cstdint>
+#include <fmt/format.h>
 #include <folly/Format.h>
 #include <iostream>
 
@@ -296,6 +297,19 @@ template<class T, typename S, typename P> class FormatValue<HPHP::ptrimpl::PtrIm
 };
 
 }
+
+// Formats the address, like folly::FormatValue<T*>. StringData pointers are
+// specialized in string-data.h to format the string contents.
+template <class T, typename S, typename P>
+struct fmt::formatter<HPHP::ptrimpl::PtrImpl<T, S, P>>
+    : fmt::formatter<const void*> {
+  auto format(
+      const HPHP::ptrimpl::PtrImpl<T, S, P>& v,
+      fmt::format_context& ctx) const {
+    return fmt::formatter<const void*>::format(
+        static_cast<const void*>(v.get()), ctx);
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 

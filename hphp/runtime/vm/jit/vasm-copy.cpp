@@ -32,7 +32,6 @@
 #include "hphp/util/trace.h"
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include <algorithm>
 #include <limits>
@@ -255,26 +254,26 @@ DEBUG_ONLY std::string show_fixed_point(Env& env) {
 
   for (auto b : env.rpo_blocks) {
     auto const& state = env.block_states[b];
-    folly::format(&ret, "{: <4}:\n", b);
+    fmt::format_to(std::back_inserter(ret), "{: <4}:\n", b);
 
     for (auto const r : state.phys) {
       auto const expr = state.phys[r];
       if (expr == PhysExpr{}) continue;
 
-      folly::format(&ret, "  {} := {}\n", show(r), show(expr));
+      fmt::format_to(std::back_inserter(ret), "  {} := {}\n", show(r), show(expr));
     }
   }
 
-  folly::format(&ret, "virtuals:\n");
+  fmt::format_to(std::back_inserter(ret), "virtuals:\n");
   for (unsigned i = 0, n = env.defs.size(); i < n; ++i) {
     auto const& def = env.defs[i];
     if (!def.base.isValid()) continue;
 
-    folly::format(&ret, "  {} := {}", show(Vreg{i}), show(def));
+    fmt::format_to(std::back_inserter(ret), "  {} := {}", show(Vreg{i}), show(def));
     if (def.expr != PhysExpr{}) {
-      folly::format(&ret, " ({} := {})", show(def.base), show(def.expr));
+      fmt::format_to(std::back_inserter(ret), " ({} := {})", show(def.base), show(def.expr));
     }
-    folly::format(&ret, "\n");
+    fmt::format_to(std::back_inserter(ret), "\n");
   }
 
   return ret;

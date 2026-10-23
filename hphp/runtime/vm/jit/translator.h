@@ -36,7 +36,7 @@
 #include "hphp/util/hash-map.h"
 #include "hphp/util/mutex.h"
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include <functional>
 #include <map>
@@ -70,15 +70,15 @@ constexpr uint32_t transCountersPerChunk = 1024 * 1024 / 8;
 
 struct TranslationFailedExc : std::runtime_error {
   TranslationFailedExc(const char* file, int line)
-    : std::runtime_error(folly::format("TranslationFailedExc @ {}:{}",
-                                       file, line).str())
+    : std::runtime_error(fmt::format("TranslationFailedExc @ {}:{}",
+                                       file, line))
   {}
 };
 
 struct UnknownInputExc : std::runtime_error {
   UnknownInputExc(const char* file, int line)
-    : std::runtime_error(folly::format("UnknownInputExc @ {}:{}",
-                                       file, line).str())
+    : std::runtime_error(fmt::format("UnknownInputExc @ {}:{}",
+                                       file, line))
     , m_file(file)
     , m_line(line)
   {}

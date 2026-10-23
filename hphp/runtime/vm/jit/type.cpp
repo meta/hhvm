@@ -32,7 +32,6 @@
 #include <fmt/format.h>
 
 #include <folly/Conv.h>
-#include <folly/Format.h>
 #include <folly/MapUtil.h>
 
 #include <vector>
@@ -98,47 +97,47 @@ std::string Type::constValString() const {
     return m_boolVal ? "true" : "false";
   }
   if (*this <= TInt) {
-    return folly::format("{}", m_intVal).str();
+    return fmt::format("{}", m_intVal);
   }
   if (*this <= TDbl) {
     // don't format doubles as integers.
-    auto s = folly::format("{}", m_dblVal).str();
+    auto s = fmt::format("{}", m_dblVal);
     if (!strchr(s.c_str(), '.') && !strchr(s.c_str(), 'e')) {
-      return folly::format("{:.1f}", m_dblVal).str();
+      return fmt::format("{:.1f}", m_dblVal);
     }
     return s;
   }
   if (*this <= TStaticStr) {
     auto str = m_strVal;
-    return folly::format("\"{}\"", escapeStringForCPP(str->data(),
-                                                      str->size())).str();
+    return fmt::format("\"{}\"", escapeStringForCPP(str->data(),
+                                                      str->size()));
   }
   if (*this <= TArrLike) {
     auto const type = getDataTypeString(m_arrVal->toDataType());
     auto const layout = arrSpec().layout().describe();
     return m_arrVal->empty()
-      ? folly::sformat("{}[]={}", type, layout)
-      : folly::sformat("{}({})={}", type, m_arrVal, layout);
+      ? fmt::format("{}[]={}", type, layout)
+      : fmt::format("{}({})={}", type, fmt::ptr(m_arrVal), layout);
   }
   if (*this <= TFunc) {
-    return folly::format("Func({})", m_funcVal->fullName()->data()).str();
+    return fmt::format("Func({})", m_funcVal->fullName()->data());
   }
   if (*this <= TCls) {
-    return folly::format("Cls({})", m_clsVal->name()->data()).str();
+    return fmt::format("Cls({})", m_clsVal->name()->data());
   }
   if (*this <= TLazyCls) {
-    return folly::format("LazyCls({})", m_lclsVal.name()->data()).str();
+    return fmt::format("LazyCls({})", m_lclsVal.name()->data());
   }
   if (*this <= TClsMeth) {
-    return folly::format("ClsMeth({},{})",
+    return fmt::format("ClsMeth({},{})",
       m_clsmethVal->getCls() ?
       m_clsmethVal->getCls()->name()->data() : "nullptr",
       m_clsmethVal->getFunc() ?
       m_clsmethVal->getFunc()->fullName()->data() : "nullptr"
-    ).str();
+    );
   }
   if (*this <= TEnumClassLabel) {
-    return folly::format("EnumClassLabel({})", m_strVal->data()).str();
+    return fmt::format("EnumClassLabel({})", m_strVal->data());
   }
   if (*this <= TTCA) {
     auto name = getNativeFunctionName(m_tcaVal);
@@ -151,22 +150,22 @@ std::string Type::constValString() const {
     if (pos != std::string::npos) {
       name = name.substr(0, pos);
     }
-    return folly::format("TCA: {}({})", m_tcaVal, boost::trim_copy(name)).str();
+    return fmt::format("TCA: {}({})", fmt::ptr(m_tcaVal), boost::trim_copy(name));
   }
   if (*this <= TVoidPtr) {
-    return folly::format("VoidPtr({})", m_voidPtrVal).str();
+    return fmt::format("VoidPtr({})", m_voidPtrVal);
   }
   if (*this <= TRDSHandle) {
-    return folly::format("rds::Handle({:#x})", m_rdsHandleVal).str();
+    return fmt::format("rds::Handle({:#x})", m_rdsHandleVal);
   }
   if (*this <= TPtr) {
-    return folly::sformat("TV: {}", m_ptrVal);
+    return fmt::format("TV: {}", fmt::ptr(m_ptrVal));
   }
   if (*this <= TLval) {
-    return folly::sformat("Lval: {}", m_ptrVal);
+    return fmt::format("Lval: {}", fmt::ptr(m_ptrVal));
   }
   if (*this <= TMem) {
-    return folly::sformat("Mem: {}", m_ptrVal);
+    return fmt::format("Mem: {}", fmt::ptr(m_ptrVal));
   }
 
   always_assert_flog(

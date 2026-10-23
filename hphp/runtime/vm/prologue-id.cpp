@@ -16,6 +16,8 @@
 #include "hphp/runtime/vm/func.h"
 #include "hphp/runtime/vm/prologue-id.h"
 
+#include <fmt/format.h>
+
 namespace HPHP {
 
 PrologueID::PrologueID(const Func* func, uint32_t nargs)
@@ -28,7 +30,7 @@ const Func* PrologueID::func() const {
 
 std::string show(PrologueID pid) {
   auto func = pid.func();
-  return folly::sformat("{}(id 0x{:#x}) # of args: {}",
+  return fmt::format("{}(id 0x{:#x}) # of args: {}",
                         func->fullName()->data(),
                         pid.funcId().toInt(), pid.nargs());
 }

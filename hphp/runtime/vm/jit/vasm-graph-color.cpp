@@ -334,7 +334,7 @@ std::string show(const BlockVector& v) {
   return fmt::format(
     "[{}]",
     from(v)
-      | map([] (Vlabel b) { return folly::sformat("{}", b); })
+      | map([] (Vlabel b) { return fmt::format("{}", b); })
       | unsplit<std::string>(", ")
   );
 }
@@ -379,7 +379,7 @@ std::string show(const PenaltyVector& v) {
 }
 
 std::string show(const Vunit& unit, const RematInfo& remat) {
-  return folly::sformat("{} [{}]", show(unit, remat.instr), remat.block);
+  return fmt::format("{} [{}]", show(unit, remat.instr), remat.block);
 }
 
 std::string show(const Vunit& unit, const RegInfo& info) {
@@ -399,7 +399,7 @@ std::string show(const LoopInfo& info) {
     info.depth,
     show(info.uses),
     from(info.blocks)
-      | map([] (Vlabel b) { return folly::sformat("{}", b); })
+      | map([] (Vlabel b) { return fmt::format("{}", b); })
       | unsplit<std::string>(", ")
   );
 }
@@ -410,7 +410,7 @@ std::string show(const State& state) {
     std::string str;
     for (auto const b : state.rpo) {
       if (b >= info.size() || info[b].empty()) continue;
-      str += folly::sformat(
+      str += fmt::format(
         "  {:5} -> {}\n",
         b, show(info[b])
       );
@@ -466,7 +466,7 @@ std::string show(const State& state) {
       std::string str;
       for (auto const b : state.rpo) {
         if (b >= state.memWrites.size() || !state.memWrites[b]) continue;
-        str += folly::sformat(
+        str += fmt::format(
           "  {:5} -> {}\n",
           b, show(*state.memWrites[b])
         );
@@ -497,7 +497,7 @@ std::string show(const State& state) {
       using namespace folly::gen;
       return from(state.loopInfo)
         | map([] (std::pair<Vlabel, LoopInfo> kv) {
-            return folly::sformat(
+            return fmt::format(
               "  {:5} -> {}\n",
               kv.first,
               show(kv.second)
@@ -5079,7 +5079,7 @@ struct SpillerResults {
       } else {
         outPhi = "*";
       }
-      ret += folly::sformat(
+      ret += fmt::format(
         "  {:5}:{}\n"
         "    In      -> {}\n"
         "    Out     -> {}\n"
@@ -7190,7 +7190,7 @@ SpillerResults process_spills(State& state,
       setup_initial_spiller_state(state, b, results, needsSpilling.perBlock[b]);
     auto spiller = *results.perBlock[b].in;
     SCOPE_ASSERT_DETAIL("Current Spiller") {
-      return folly::sformat(
+      return fmt::format(
         "Block: {}\n{}",
         b, spiller.toString()
       );

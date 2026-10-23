@@ -19,7 +19,6 @@
 #include <string>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 #include <folly/ScopeGuard.h>
 
 #include "hphp/util/bisector.h"
@@ -1262,7 +1261,7 @@ void compute_available_stores(
           pp,
           [&](uint32_t i) {
             auto& ts = genv.trackedStoreMap[StoreKey { blk, w, i}];
-            folly::format(&r, " {}:{}", i, show(ts));
+            fmt::format_to(std::back_inserter(r), " {}:{}", i, show(ts));
           }
         );
         return r;
@@ -1429,9 +1428,7 @@ void optimizeStores(IRUnit& unit) {
       auto ret = std::string{};
       for (auto poId = uint32_t{0}; poId < poBlockList.size(); ++poId) {
         auto& analysis = blockAnalysis[poId];
-        folly::format(
-          &ret,
-          " B{}\n"
+        fmt::format_to(std::back_inserter(ret), " B{}\n"
           "   antLoc    : {}\n"
           "   alteredAnt: {}\n"
           "   alteredAvl: {}\n"
@@ -1462,9 +1459,7 @@ void optimizeStores(IRUnit& unit) {
              for (auto poId = uint32_t{0}; poId < poBlockList.size(); ++poId) {
                auto const blk = poBlockList[poId];
                auto const& state = genv.blockStates[blk];
-               folly::format(
-                 &ret,
-                 " B{: <3}: antOut {}\n",
+               fmt::format_to(std::back_inserter(ret), " B{: <3}: antOut {}\n",
                  blk->id(), show(state.antOut)
                );
              }

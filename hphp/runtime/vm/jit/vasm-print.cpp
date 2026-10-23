@@ -85,7 +85,7 @@ struct FormatVisitor {
   >::type imm(T s) {
     str << sep();
     if (s.fits(sz::byte)) str << s.l();
-    else str << folly::format("0x{:08x}", s.q());
+    else str << fmt::format("0x{:08x}", s.q());
   }
 
   void imm(SBInvOffset off) { str << sep() << off.offset; }
@@ -97,12 +97,12 @@ struct FormatVisitor {
     str << sep() << getNativeFunctionName(addr);
   }
   void imm(TCA* addr) {
-    str << sep() << folly::format("{}", addr);
+    str << sep() << fmt::format("{}", fmt::ptr(addr));
   }
   template<typename T>
   void imm(VdataPtr<T> ptr) {
-    str << folly::format("{}{}{}",
-                         sep(), ptr.getRaw(), ptr.bound() ? "" : "(unbound)");
+    str << fmt::format("{}{}{}",
+                         sep(), fmt::ptr(ptr.getRaw()), ptr.bound() ? "" : "(unbound)");
   }
   void imm(const CallSpec& call) {
     switch (call.kind()) {
@@ -113,10 +113,10 @@ struct FormatVisitor {
     case CallSpec::Kind::Smashable:
       return imm((TCA)call.address());
     case CallSpec::Kind::Destructor:
-      str << sep() << folly::format("destructor({})", show(call.reg()));
+      str << sep() << fmt::format("destructor({})", show(call.reg()));
       break;
     case CallSpec::Kind::ObjDestructor:
-      str << sep() << folly::format("obj-destructor({})", show(call.reg()));
+      str << sep() << fmt::format("obj-destructor({})", show(call.reg()));
       break;
     case CallSpec::Kind::Stub:
       return imm(call.stubAddr());
@@ -132,7 +132,7 @@ struct FormatVisitor {
   void imm(const Func* func) {
     str << sep();
     if (func) {
-      str << folly::format("{}(id {:#x})", func->fullName(),
+      str << fmt::format("{}(id {:#x})", func->fullName()->slice(),
                            func->getFuncId());
     } else {
       str << "nullptr";
@@ -142,7 +142,7 @@ struct FormatVisitor {
     str << sep() << destTypeName(dt);
   }
   void imm(RIPRelativeRef r) {
-    str << sep() << folly::format("ip[{:#x}]", r.r.disp);
+    str << sep() << fmt::format("ip[{:#x}]", r.r.disp);
   }
   void imm(RoundDirection rd) {
     str << sep() << show(rd);
@@ -287,7 +287,7 @@ std::string show(Vptr p) {
         prefix = true;
       }
       if (p.disp) {
-        folly::format(&str, "{}{:#x}",
+        fmt::format_to(std::back_inserter(str), "{}{:#x}",
                       prefix ? p.disp < 0 ? " - " : " + " : "",
                       prefix ? std::abs(p.disp) : p.disp);
         prefix = true;
@@ -322,18 +322,18 @@ std::string show(Vconst c) {
 
 std::string show(const Vunit& unit, const Vinstr& inst) {
   std::ostringstream out;
-  out << folly::format("{: <10} ", vinst_names[inst.op]);
+  out << fmt::format("{: <10} ", vinst_names[inst.op]);
   FormatVisitor pv(unit, out);
   visitOperands(inst, pv);
   auto labels = succs(inst);
   if (labels.size() == 1) {
-    out << pv.sep() << folly::format("B{}", size_t(labels[0]));
+    out << pv.sep() << fmt::format("B{}", size_t(labels[0]));
   } else if (labels.size() == 2) {
-    out << pv.sep() << folly::format("B{}, else B{}", size_t(labels[1]),
+    out << pv.sep() << fmt::format("B{}, else B{}", size_t(labels[1]),
                                      size_t(labels[0]));
   } else {
     for (auto succ : succs(inst)) {
-      out << folly::format("->B{} ", size_t(succ));
+      out << fmt::format("->B{} ", size_t(succ));
     }
   }
   return out.str();
@@ -344,7 +344,7 @@ void printBlock(std::ostream& out, const Vunit& unit,
                 const IRInstruction*& origin) {
   auto& block = unit.blocks[b];
   out << '\n' << color(ANSI_COLOR_MAGENTA);
-  out << folly::format(" B{: <6} {} ({})", size_t(b),
+  out << fmt::format(" B{: <6} {} ({})", size_t(b),
                        area_names[int(block.area_idx)],
                        block.weight);
   for (auto p : preds[b]) out << ", B" << size_t(p);
@@ -359,7 +359,7 @@ void printBlock(std::ostream& out, const Vunit& unit,
     out << "      ";
     if (origin != inst.origin && inst.origin) {
       origin = inst.origin;
-      out << folly::format("{:<45} # {}\n", show(unit, inst), *origin);
+      out << fmt::format("{:<45} # {}\n", show(unit, inst), *origin);
     } else {
       out << show(unit, inst) << '\n';
     }
@@ -423,7 +423,7 @@ std::string show(const Vunit& unit) {
       }
     }
   } else {
-    out << folly::format("\n{} unreachable blocks not shown. "
+    out << fmt::format("\n{} unreachable blocks not shown. "
                          "Set TRACE=vasm:{} or greater to print them.\n",
                          numUnreachable, kVasmUnreachableLevel);
   }

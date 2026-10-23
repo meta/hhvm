@@ -55,6 +55,7 @@
 #include "hphp/util/text-util.h"
 
 #include <limits>
+#include <fmt/format.h>
 
 namespace HPHP::jit {
 
@@ -2348,9 +2349,9 @@ bool handleConvThrowMode(
   const char* const from,
   const char* const to) {
   if (data->mode == ConvThrowMode::None) return false;
-  const auto str = cns(env, makeStaticString(folly::sformat(
+  const auto str = cns(env, makeStaticString(fmt::format(
     "Attempted {} to {} conversion for {}", from, to,
-    s_ConvThrowReasonConcat.get())));
+    s_ConvThrowReasonConcat.get()->slice())));
   gen(env, ThrowInvalidOperation, trace, str);
   return true;
 }

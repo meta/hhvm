@@ -25,7 +25,7 @@
 
 #include "hphp/util/blob-writer.h"
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 #include <folly/String.h>
 #include <folly/container/F14Map.h>
 #include <folly/container/F14Set.h>
@@ -770,7 +770,7 @@ void RepoFileBuilder::addFrom(
   };
   if (aliasesBase(m_data->destFilename) ||
       aliasesBase(m_data->sourceFilename)) {
-    throw std::runtime_error(folly::sformat(
+    throw std::runtime_error(fmt::format(
       "Incremental RepoFile output '{}' aliases its base '{}'",
       m_data->destFilename,
       baseData.inputPath
@@ -782,7 +782,7 @@ void RepoFileBuilder::addFrom(
     );
   }
   if (!baseData.canReuseUnitEmitters()) {
-    throw std::runtime_error(folly::sformat(
+    throw std::runtime_error(fmt::format(
       "RepoFile '{}' cannot be used as an incremental base",
       baseData.inputPath
     ));
@@ -838,7 +838,7 @@ void RepoFileBuilder::addFrom(
                                        const StringData* symbol,
                                        int64_t existingUnitSn,
                                        int64_t incomingUnitSn) {
-    throw std::runtime_error(folly::sformat(
+    throw std::runtime_error(fmt::format(
       "More than one {} with the name {}. In {} and {}",
       kind,
       symbol->data(),

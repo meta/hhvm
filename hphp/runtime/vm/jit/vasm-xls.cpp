@@ -34,7 +34,7 @@
 #include "hphp/util/trace.h"
 
 #include <boost/range/adaptor/reversed.hpp>
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <random>
@@ -2849,15 +2849,15 @@ std::string Interval::toString() const {
     delim = " ";
   }
   if (constant()) {
-    out << delim << folly::format("#{:08x}", var->val.val);
+    out << delim << fmt::format("#{:08x}", var->val.val);
   }
   if (var->slot >= 0) {
-    out << delim << folly::format("[%sp+{}]", slotOffset(var->slot));
+    out << delim << fmt::format("[%sp+{}]", slotOffset(var->slot));
   }
   delim = "";
   out << " [";
   for (auto const& r : ranges) {
-    out << delim << folly::format("{}-{}", r.start, r.end);
+    out << delim << fmt::format("{}-{}", r.start, r.end);
     delim = ",";
   }
   out << ") {";
@@ -2956,11 +2956,11 @@ DEBUG_ONLY void printInstr(std::ostringstream& str,
     return fixed_covers[p - inst.id];
   });
   if (inst.id == ctx.block_ranges[b].start) {
-    str << folly::format(" B{: <3}", size_t(b));
+    str << fmt::format(" B{: <3}", size_t(b));
   } else {
     str << "     ";
   }
-  str << folly::format(" {: <3} ", inst.id) << show(unit, inst) << "\n";
+  str << fmt::format(" {: <3} ", inst.id) << show(unit, inst) << "\n";
 }
 
 DEBUG_ONLY void printVariables(const char* caption,
@@ -2978,7 +2978,7 @@ DEBUG_ONLY void printVariables(const char* caption,
         continue;
       }
     }
-    str << folly::format(" {: <2}", size_t(var->vreg));
+    str << fmt::format(" {: <2}", size_t(var->vreg));
   }
   str << " FX\n";
   for (auto b : ctx.blocks) {
