@@ -33,7 +33,6 @@ use naming_special_names_rust::special_idents;
 use naming_special_names_rust::typehints as special_typehints;
 use naming_special_names_rust::user_attributes as special_attrs;
 use ocaml_helper::ParseIntError;
-use ocaml_helper::int_of_string_opt;
 use ocaml_helper::parse_int;
 use oxidized::aast;
 use oxidized::aast::Binop;
@@ -873,13 +872,6 @@ where
     }
 }
 
-// TODO(T291901865): Remove this gate after HHVM support has rolled out.
-fn is_disallowed_intish_shape_key(name: &[u8], env: &Env<'_>) -> bool {
-    env.is_typechecker()
-        && !env.parser_options.allow_intish_shape_keys
-        && int_of_string_opt(name).is_some()
-}
-
 fn p_shape_field_name<'a>(node: S<'a>, env: &mut Env<'a>) -> Result<ast::ShapeFieldName> {
     use ast::ShapeFieldName::*;
     let is_valid_shape_literal = |t: &PositionedToken<'a>| {
@@ -899,9 +891,6 @@ fn p_shape_field_name<'a>(node: S<'a>, env: &mut Env<'a>) -> Result<ast::ShapeFi
                     unesc_dbl
                 };
                 let str_ = mk_str(node, env, &n, unescp);
-                if is_disallowed_intish_shape_key(&str_, env) {
-                    raise_parsing_error(node, env, &syntax_error::shape_field_int_like_string)
-                }
                 return Ok(SFlitStr((p, str_)));
             }
         }

@@ -28,8 +28,6 @@ module Hhconfig : sig
 
   val abstract_static_props : string
 
-  val allow_intish_shape_keys : string
-
   val allowed_decl_fixme_codes : string
 
   val auto_namespace_map : string

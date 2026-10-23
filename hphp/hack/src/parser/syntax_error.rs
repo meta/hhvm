@@ -350,8 +350,6 @@ pub fn invalid_lazy_class_shape_field(class_name: &str) -> Error {
         class_name
     ))
 }
-pub const shape_field_int_like_string: Error =
-    Cow::Borrowed("Shape field name must not be an int-like string (i.e. \"123\")");
 pub const error2061: Error = Cow::Borrowed(concat!(
     "Non-static instance variables are not allowed in abstract ",
     "final classes."

@@ -1,11 +1,1 @@
-error: Parsing[1002] Shape field name must not be an int-like string (i.e. "123") [1]
-
-shapes_cc_16.php:4:3
-2 | 
-3 | type myshape = shape(
-4 |   '123' => int,
-  |   ^^^^^ [1]
-5 |   'field2' => bool
-6 | );
-
-1 error found
+No errors

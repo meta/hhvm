@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<995d8c4b014d0a1cdd034ca1256fb92a>>
+// @generated SignedSource<<59c9b3f89299c3f8f1898435833b8cdb>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -111,8 +111,6 @@ pub struct ParserOptions {
     /// DSL's shape wrapper type a transparent type alias, after which the unwrap call no longer
     /// typechecks.
     pub expression_tree_shape_no_unwrap: bool,
-    /// Allow int-like string literals as shape keys in the typechecker.
-    pub allow_intish_shape_keys: bool,
     /// Disallow late-bound class references in default values: `static` in parameter and XHP
     /// attribute defaults, and `self` or `parent` in a trait's parameter defaults.
     pub disallow_late_bound_defaults: bool,

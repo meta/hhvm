@@ -328,8 +328,6 @@ impl HhConfig {
                 "expression_tree_shape_no_unwrap",
                 default.expression_tree_shape_no_unwrap,
             )?,
-            allow_intish_shape_keys: hhconfig
-                .get_bool_or("allow_intish_shape_keys", default.allow_intish_shape_keys)?,
             disallow_late_bound_defaults: hhconfig.get_bool_or(
                 "disallow_late_bound_defaults",
                 default.disallow_late_bound_defaults,

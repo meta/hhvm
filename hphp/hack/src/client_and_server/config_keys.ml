@@ -26,8 +26,6 @@ module Hhconfig = struct
 
   let abstract_static_props = key "abstract_static_props"
 
-  let allow_intish_shape_keys = key "allow_intish_shape_keys"
-
   let allowed_decl_fixme_codes = key "allowed_decl_fixme_codes"
 
   let auto_namespace_map = key "auto_namespace_map"
