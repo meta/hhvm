@@ -6,24 +6,23 @@
  *
  *)
 
-(** [move_into ~options ~parent ~output_json ~isolation_query ~status] moves
-    the directory [options.seed_dir], repo-relative, into [parent] under its own
+(** [move_into args ~connect ~options ~error_filter ~parent] moves the
+    directory [options.seed_dir], repo-relative, into [parent] under its own
     name, if nothing outside references into it and the move introduces no
-    errors, and otherwise leaves it where it was. It prints what came of it, as
-    JSON when [output_json] is set, and gives the exit status: zero only when
-    the directory moved.
+    errors, and otherwise leaves it where it was. It asks the running server,
+    with the isolation query for each directory and the status for the errors,
+    each answered after the server has picked up every change on disk. It prints
+    what came of it, as JSON when [args.output_json] is set, and gives the exit
+    status: zero only when the directory moved.
 
-    [isolation_query options] is the server's answer to the isolation query for
-    [options.seed_dir]: how many Hack files it holds, and whether any file
-    outside references into it. [status ()] is the server's current errors. The
-    server answers each after picking up every change on disk.
+    [connect] opens a new connection to the server. Each request needs its own,
+    because the server closes the connection after it answers.
 
     Source control is not told. Raises if an undo cannot be completed. *)
 val move_into :
+  Client_env.client_check_env ->
+  connect:(use_priority_pipe:bool -> Client_connect.conn Lwt.t) ->
   options:Server_isolation_types.options ->
+  error_filter:Filter_diagnostics.Filter.t ->
   parent:string ->
-  output_json:bool ->
-  isolation_query:
-    (Server_isolation_types.options -> Server_isolation_types.result Lwt.t) ->
-  status:(unit -> Server_command_types.Server_status.t Lwt.t) ->
   Exit_status.t Lwt.t

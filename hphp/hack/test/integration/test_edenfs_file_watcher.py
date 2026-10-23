@@ -1855,7 +1855,7 @@ class ClientConnectionDeferralTest(TestCase[EdenfsWatcherTestDriver]):
 class IsolationMoveToTests(TestCase[EdenfsWatcherTestDriver]):
     """Runs `--isolation-move-to` against an Eden-backed repo.
 
-    Only the EdenFS file watcher reports a renamed directory to the server as
+    The EdenFS file watcher reports a renamed directory to the server as
     changes to the files under it.
     """
 
@@ -1885,6 +1885,11 @@ class IsolationMoveToTests(TestCase[EdenfsWatcherTestDriver]):
 
     def exists(self, path: str) -> bool:
         return os.path.exists(os.path.join(self.test_driver.repo_dir, path))
+
+    def enable_packages(self) -> None:
+        hhconfig_path = os.path.join(self.test_driver.repo_dir, ".hhconfig")
+        with open(hhconfig_path, "a") as f:
+            f.write("\npackages_config_path = PACKAGES.toml\n")
 
     def test_a_directory_is_moved_into_the_parent(self) -> None:
         self.write_files(
@@ -1929,3 +1934,39 @@ class IsolationMoveToTests(TestCase[EdenfsWatcherTestDriver]):
         self.assertEqual(["blocked_user.php"], result["blockers"])
         self.assertTrue(self.exists("blocked_src/helper.php"))
         self.assertFalse(self.exists("blocked_dest"))
+
+    def test_a_move_that_adds_an_error_is_undone(self) -> None:
+        self.write_files(
+            {
+                "PACKAGES.toml": (
+                    "[packages]\n"
+                    "[packages.pkg_a]\n"
+                    'include_paths=["//undo_a/"]\n'
+                    "[packages.pkg_b]\n"
+                    'include_paths=["//undo_b/"]\n'
+                    "[deployments]\n"
+                ),
+                "undo_a/other.php": "<?hh\nfunction undo_other(): void {}\n",
+                "undo_a/mover/user.php": (
+                    "<?hh\nfunction undo_user(): void {\n  undo_other();\n}\n"
+                ),
+            }
+        )
+        self.enable_packages()
+        self.test_driver.start_hh_server()
+
+        retcode, result = self.move_to("undo_a/mover", "undo_b")
+
+        type_error_exit_code = 2
+        self.assertEqual(type_error_exit_code, retcode, result)
+        self.assertFalse(result["moved"])
+        cross_package_access = 4472
+        new_errors = result["new_errors"]
+        assert isinstance(new_errors, list)
+        self.assertEqual(
+            [cross_package_access],
+            [error["code"] for error in new_errors],
+        )
+        self.assertTrue(result["baseline_restored"])
+        self.assertTrue(self.exists("undo_a/mover/user.php"))
+        self.assertFalse(self.exists("undo_b"))

@@ -1130,27 +1130,13 @@ let main_internal
              (Server_config.warnings_generated_files config))
         args.warning_switches
     in
-    let isolation_query options =
-      let%lwt (result, _telemetry) =
-        rpc args (Server_command_types.FIND_ISOLATABLE_CLUSTERS options)
-      in
-      Lwt.return result
-    in
-    let status () =
-      let%lwt (status, _telemetry) =
-        rpc
-          args
-          (Server_command_types.STATUS { max_errors = None; error_filter })
-      in
-      Lwt.return status
-    in
     let%lwt exit_status =
       Client_isolation_move.move_into
+        args
+        ~connect:(fun ~use_priority_pipe -> connect args ~use_priority_pipe)
         ~options
+        ~error_filter
         ~parent
-        ~output_json:args.output_json
-        ~isolation_query
-        ~status
     in
     Lwt.return (exit_status, Telemetry.create ())
   | Client_env.MODE_ISOLATION (options : Server_isolation_types.options) ->

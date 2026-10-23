@@ -475,15 +475,29 @@ let try_move ~source ~target ~ask_movable ~status =
     all, and moves it only if so. The server is asked about one directory at a
     time, so each question is [options] with that directory as the seed and no
     file for the clusters. *)
-let move_into ~options ~parent ~output_json ~isolation_query ~status =
+let move_into args ~connect ~options ~error_filter ~parent =
   let seed_dir = Option.value_exn options.Server_isolation_types.seed_dir in
+  let rpc command =
+    let%lwt conn =
+      connect
+        ~use_priority_pipe:(Server_command_types.use_priority_pipe command)
+    in
+    let%lwt (result, _telemetry) =
+      Client_connect.rpc conn ~desc:args.Client_env.desc command
+    in
+    Lwt.return result
+  in
   let ask_movable ~dir =
-    isolation_query
-      {
-        options with
-        Server_isolation_types.seed_dir = Some (Relative_path.suffix dir);
-        clusters_destination = Server_isolation_types.Dropped;
-      }
+    rpc
+      (Server_command_types.FIND_ISOLATABLE_CLUSTERS
+         {
+           options with
+           Server_isolation_types.seed_dir = Some (Relative_path.suffix dir);
+           clusters_destination = Server_isolation_types.Dropped;
+         })
+  in
+  let status () =
+    rpc (Server_command_types.STATUS { max_errors = None; error_filter })
   in
   let%lwt (source, target, outcome) =
     match
@@ -503,5 +517,5 @@ let move_into ~options ~parent ~output_json ~isolation_query ~status =
             "the source and the target must be directories relative to the root"
         )
   in
-  print_outcome ~source ~target ~output_json outcome;
+  print_outcome ~source ~target ~output_json:args.Client_env.output_json outcome;
   Lwt.return (exit_status outcome)
