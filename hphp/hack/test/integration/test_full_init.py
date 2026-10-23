@@ -112,6 +112,31 @@ class TestFreshInit(common_tests.CommonTests):
                 self.assertTrue(stderr.startswith("Invalid JSON input:"), stderr)
                 self.assertEqual(input_error_exit_code, retcode)
 
+    def test_is_subtype_unknown_fields_free_generic(self) -> None:
+        self.test_driver.start_hh_server()
+        shape_type = {
+            "kind": "shape",
+            "is_array": False,
+            "fields_known": False,
+            "fields": [],
+            "unknown_fields_type": {"kind": "generic", "name": "TRowValue"},
+        }
+        query = [
+            [
+                {"kind": "type", "type": shape_type},
+                {"kind": "type", "type": {"kind": "mixed"}},
+            ]
+        ]
+        stdout, stderr, retcode = self.test_driver.run_check(
+            stdin=json.dumps(query),
+            options=["--is-subtype"],
+        )
+        self.assertEqual(0, retcode, stderr)
+        self.assertEqual(
+            [{"errors": ["Unsupported free type TRowValue"]}],
+            json.loads(stdout),
+        )
+
     def test_isolation(self) -> None:
         files = {
             "isolation_seed.php": (

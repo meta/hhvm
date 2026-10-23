@@ -9,7 +9,7 @@
 
 (* Convert a type to a structured JSON value, as follows:
  * <prim> ::= "int" | "bool" | "float" | "string" | "num" | "arraykey"
- *         | "mixed" | "resource" | "void" | "noreturn"
+ *         | "mixed" | "resource" | "void" | "noreturn" | "null"
  * <array-args> ::= [ <type> ] | [ <type>, <type> ]
  * <type> ::=
  *   mixed
@@ -37,8 +37,12 @@
  *     { "kind":"generic", "name":<identifier> }
  *   Tuples (and tuple-like arrays)
  *     { "kind":"tuple", "args":<type-arguments> }
- *   Shapes (and shape-like arrays) with fields
- *     { "kind":"shape", "fields":<fields> }
+ *   Shapes with fields
+ *     { "kind":"shape", "is_array":false, "fields_known":<bool>,
+ *       "fields":<fields> [,"unknown_fields_type":<type>] }
+ *     When unknown_fields_type is absent, fields_known selects nothing (true)
+ *     or mixed (false) as the type of unknown fields. An explicit
+ *     unknown_fields_type takes precedence over fields_known.
  *   Function types, with 0 or more arguments and possibly-void result type
  *     { "kind":"function", "args":<type-arguments>, "result":<type> }
  *   Unions of types, with 2 or more arguments

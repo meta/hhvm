@@ -249,10 +249,19 @@ let rec from_type : env -> show_like_ty:bool -> locl_ty -> Yojson.Safe.t =
         (Shape_simple
           { s_origin = _; s_unknown_value = shape_kind; s_fields = fl }) ) ->
     let fields_known = is_nothing shape_kind in
+    let unknown_fields_type =
+      if
+        fields_known || ty_equal shape_kind (Typing_make_type.mixed Reason.none)
+      then
+        []
+      else
+        [("unknown_fields_type", from_type env ~show_like_ty shape_kind)]
+    in
     obj
     @@ kind p "shape"
     @ is_array false
     @ [("fields_known", `Bool fields_known)]
+    @ unknown_fields_type
     @ fields (TShapeMap.bindings fl)
   | (p, Tshape (Shape_splat { ss_elems })) ->
     obj
@@ -546,6 +555,7 @@ let to_locl_ty
         begin
           match name with
           | "void" -> Ok (Tprim Nast.Tvoid)
+          | "null" -> Ok (Tprim Nast.Tnull)
           | "int" -> Ok (Tprim Nast.Tint)
           | "bool" -> Ok (Tprim Nast.Tbool)
           | "float" -> Ok (Tprim Nast.Tfloat)
@@ -650,11 +660,20 @@ let to_locl_ty
         else
           get_bool "fields_known" (json, keytrace)
           >>= fun (fields_known, _fields_known_keytrace) ->
-          let shape_kind =
-            if fields_known then
-              Typing_make_type.nothing Reason.none
-            else
-              Typing_make_type.mixed Reason.none
+          let open Result.Let_syntax in
+          let* unknown_fields_type =
+            get_obj_opt "unknown_fields_type" (json, keytrace)
+          in
+          let* shape_kind =
+            match unknown_fields_type with
+            | Some (unknown_fields_type, keytrace) ->
+              aux unknown_fields_type ~keytrace
+            | None ->
+              Ok
+                (if fields_known then
+                  Typing_make_type.nothing Reason.none
+                else
+                  Typing_make_type.mixed Reason.none)
           in
           let fields =
             List.fold fields ~init:TShapeMap.empty ~f:(fun shape_map (k, v) ->
