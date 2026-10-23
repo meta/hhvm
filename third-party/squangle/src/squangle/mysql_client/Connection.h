@@ -329,6 +329,13 @@ class Connection {
     return mysql_connection_->threadId();
   }
 
+  // Whether the session is in autocommit mode, from the server status the
+  // server last reported.
+  [[nodiscard]] bool getAutocommit() const {
+    CHECK_THROW(mysql_connection_ != nullptr, db::InvalidConnectionException);
+    return mysql_connection_->getAutocommit();
+  }
+
   [[nodiscard]] ConnectionHolder* mysql_for_testing_only() const {
     return mysql_connection_.get();
   }
