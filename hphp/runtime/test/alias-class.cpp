@@ -519,6 +519,84 @@ TEST(AliasClass, FrameUnion) {
   EXPECT_EQ(u5.local()->ids, local1.local()->ids);
 }
 
+TEST(AliasClass, RematerializationWriteUnion) {
+  AliasClass const callerLocal = ALocal { 0u, 5 };
+  auto writes = AliasClass { ALocal { 0u, AliasIdSet { 1u, 2u, 3u, 4u, 5u } } };
+  writes |= ALocal { 2u, 0 };
+  writes |= AFContext { 2u };
+  writes |= AVMRegAny;
+
+  auto const inlineExit = AliasClass { ALocal { 2u, AliasIdSet { 0u, 1u } } }
+    | AActRec { 2u } | AMIStateAny;
+  auto const expected = ALocalAny | AActRec { 2u } | AVMRegAny | AMIStateAny;
+
+  EXPECT_TRUE(writes.maybe(callerLocal));
+  // FIXME: The union must retain writes to caller locals.
+  EXPECT_FALSE((writes | inlineExit).maybe(callerLocal));
+  EXPECT_FALSE(callerLocal <= (writes | inlineExit));
+  EXPECT_NE(expected, writes | inlineExit);
+  EXPECT_NE(expected, inlineExit | writes);
+  auto const precise = writes.precise_union(inlineExit);
+  ASSERT_TRUE(precise.has_value());
+  EXPECT_NE(expected, *precise);
+}
+
+TEST(AliasClass, FrameUnionGenericIterators) {
+  auto const a = AIterAny | AFContext { 2u };
+  auto const b = AliasClass { AIter { 2u, 0 } } | AActRec { 2u };
+  auto const expected = AIterAny | AActRec { 2u };
+  // FIXME: The union must retain generic iterator effects.
+  EXPECT_FALSE(AIterAny <= (a | b));
+  EXPECT_NE(expected, a | b);
+  EXPECT_NE(expected, b | a);
+  auto const precise = a.precise_union(b);
+  ASSERT_TRUE(precise.has_value());
+  EXPECT_NE(expected, *precise);
+}
+
+TEST(AliasClass, FrameUnionGenericActRec) {
+  struct Case { AliasClass a; AliasClass b; };
+  std::vector<Case> const cases {
+    {AliasClass { ALocal { 2u, 0 } } | AFContextAny,
+     AliasClass { ALocal { 2u, 1 } } | AFContext { 2u }},
+    {AliasClass { AIter { 2u, 0 } } | AFContextAny,
+     AliasClass { AIter { 2u, 1 } } | AFContext { 2u }},
+    {AliasClass { ALocal { 2u, 0 } } | AFContextAny,
+     AliasClass { AIter { 2u, 0 } } | AFContext { 2u }},
+    {AliasClass { AFFunc { 2u } } | AFContextAny,
+     AliasClass { AFContext { 2u } } | AFFuncAny},
+  };
+
+  for (auto const& [a, b] : cases) {
+    SCOPED_TRACE(show(a) + " | " + show(b));
+    auto const combined = a | b;
+    EXPECT_EQ(combined, b | a);
+    // FIXME: A frame specialization must not narrow generic context effects.
+    EXPECT_FALSE(AFContextAny <= combined);
+    EXPECT_FALSE(combined.maybe(AFContext { 0u }));
+    EXPECT_FALSE(a <= combined);
+  }
+}
+
+TEST(AliasClass, FrameSubsetUnrelatedSpecialization) {
+  AliasClass const a = AFMeta { 0u };
+  auto const b = AFMetaAny | AFFunc { 1u };
+  // FIXME: The function specialization cannot restrict metadata membership.
+  EXPECT_FALSE(a <= b);
+  EXPECT_FALSE(a < b);
+  EXPECT_FALSE(b <= a);
+  EXPECT_TRUE(a.maybe(b));
+  EXPECT_TRUE(b.maybe(a));
+
+  auto const genericLocal = ALocalAny | AFContext { 1u };
+  auto const specificLocal = AliasClass { ALocal { 1u, 0 } } | AFContext { 1u };
+  EXPECT_FALSE(genericLocal <= specificLocal);
+  EXPECT_TRUE(specificLocal <= genericLocal);
+  EXPECT_TRUE(AliasClass(ALocal { 0u, 0 }) <= genericLocal);
+  EXPECT_TRUE(genericLocal.maybe(ALocal { 0u, 0 }));
+  EXPECT_FALSE(specificLocal.maybe(ALocal { 0u, 0 }));
+}
+
 TEST(AliasClass, Pointees) {
   IRUnit unit{test_context};
   auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
