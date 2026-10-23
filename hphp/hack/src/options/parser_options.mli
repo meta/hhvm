@@ -84,24 +84,24 @@ type t = {
 
 val default : t
 
-(* Changes here need to be synchronized with rust_parser_errors_ffi.rs *)
-type ffi_t =
-  bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * Experimental_features.feature_status S_map.t
-  * bool
-  * bool
-  * bool
+(** Options passed to the Rust parser-error checker. Oxidised into FfiT. *)
+type ffi_t = {
+  hhvm_compat_mode: bool;
+  hhi_mode: bool;
+  codegen: bool;
+  const_static_props: bool;
+  abstract_static_props: bool;
+  enable_xhp_class_modifier: bool;
+  disable_xhp_element_mangling: bool;
+  disable_xhp_children_declarations: bool;
+  allow_unstable_features: bool;
+  interpret_soft_types_as_like_types: bool;
+  is_systemlib: bool;
+  use_legacy_experimental_feature_config: bool;
+  experimental_features: Experimental_features.feature_status S_map.t;
+  consider_unspecified_experimental_features_released: bool;
+  ignore_string_methods: bool;
+  enable_intrinsics_extension: bool;
+}
 
 val to_rust_ffi_t : t -> ffi_t

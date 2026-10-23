@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<59c9b3f89299c3f8f1898435833b8cdb>>
+// @generated SignedSource<<1446f2a8483c104e984a753fde528a74>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -116,6 +116,7 @@ pub struct ParserOptions {
     pub disallow_late_bound_defaults: bool,
 }
 
+/// Options passed to the Rust parser-error checker. Oxidised into FfiT.
 #[derive(
     Clone,
     Debug,
@@ -132,22 +133,21 @@ pub struct ParserOptions {
     ToOcamlRep
 )]
 #[repr(C)]
-pub struct FfiT(
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub bool,
-    pub s_map::SMap<experimental_features::FeatureStatus>,
-    pub bool,
-    pub bool,
-    pub bool,
-);
+pub struct FfiT {
+    pub hhvm_compat_mode: bool,
+    pub hhi_mode: bool,
+    pub codegen: bool,
+    pub const_static_props: bool,
+    pub abstract_static_props: bool,
+    pub enable_xhp_class_modifier: bool,
+    pub disable_xhp_element_mangling: bool,
+    pub disable_xhp_children_declarations: bool,
+    pub allow_unstable_features: bool,
+    pub interpret_soft_types_as_like_types: bool,
+    pub is_systemlib: bool,
+    pub use_legacy_experimental_feature_config: bool,
+    pub experimental_features: s_map::SMap<experimental_features::FeatureStatus>,
+    pub consider_unspecified_experimental_features_released: bool,
+    pub ignore_string_methods: bool,
+    pub enable_intrinsics_extension: bool,
+}

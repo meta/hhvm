@@ -4121,7 +4121,6 @@ name = "rust_parser_errors_ffi"
 version = "0.0.0"
 dependencies = [
  "bumpalo",
- "ocamlrep",
  "ocamlrep_ocamlpool",
  "oxidized",
  "parser_core_types",

@@ -82,41 +82,44 @@ let default =
     disallow_late_bound_defaults = false;
   }
 
-(* Changes here need to be synchronized with rust_parser_errors_ffi.rs *)
-type ffi_t =
-  bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * bool
-  * Experimental_features.feature_status S_map.t
-  * bool
-  * bool
-  * bool
+(* Options passed to the Rust parser-error checker. Oxidised into FfiT. *)
+type ffi_t = {
+  hhvm_compat_mode: bool;
+  hhi_mode: bool;
+  codegen: bool;
+  const_static_props: bool;
+  abstract_static_props: bool;
+  enable_xhp_class_modifier: bool;
+  disable_xhp_element_mangling: bool;
+  disable_xhp_children_declarations: bool;
+  allow_unstable_features: bool;
+  interpret_soft_types_as_like_types: bool;
+  is_systemlib: bool;
+  use_legacy_experimental_feature_config: bool;
+  experimental_features: Experimental_features.feature_status S_map.t;
+  consider_unspecified_experimental_features_released: bool;
+  ignore_string_methods: bool;
+  enable_intrinsics_extension: bool;
+}
 
-let to_rust_ffi_t po =
-  ( po.hhvm_compat_mode,
-    po.hhi_mode,
-    po.codegen,
-    po.const_static_props,
-    po.abstract_static_props,
-    po.enable_xhp_class_modifier,
-    po.disable_xhp_element_mangling,
-    po.disable_xhp_children_declarations,
-    po.allow_unstable_features,
-    po.interpret_soft_types_as_like_types,
-    po.is_systemlib,
-    false (* unused slot *),
-    po.use_legacy_experimental_feature_config,
-    po.experimental_features,
-    po.consider_unspecified_experimental_features_released,
-    po.ignore_string_methods,
-    po.enable_intrinsics_extension )
+let to_rust_ffi_t (po : t) : ffi_t =
+  {
+    hhvm_compat_mode = po.hhvm_compat_mode;
+    hhi_mode = po.hhi_mode;
+    codegen = po.codegen;
+    const_static_props = po.const_static_props;
+    abstract_static_props = po.abstract_static_props;
+    enable_xhp_class_modifier = po.enable_xhp_class_modifier;
+    disable_xhp_element_mangling = po.disable_xhp_element_mangling;
+    disable_xhp_children_declarations = po.disable_xhp_children_declarations;
+    allow_unstable_features = po.allow_unstable_features;
+    interpret_soft_types_as_like_types = po.interpret_soft_types_as_like_types;
+    is_systemlib = po.is_systemlib;
+    use_legacy_experimental_feature_config =
+      po.use_legacy_experimental_feature_config;
+    experimental_features = po.experimental_features;
+    consider_unspecified_experimental_features_released =
+      po.consider_unspecified_experimental_features_released;
+    ignore_string_methods = po.ignore_string_methods;
+    enable_intrinsics_extension = po.enable_intrinsics_extension;
+  }
