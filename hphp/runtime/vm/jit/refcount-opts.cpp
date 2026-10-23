@@ -2312,7 +2312,12 @@ void propagate_phi(Env& env, const IRInstruction& inst, RCState& state) {
     auto const src = lookup_aset(env, inst.src(i));
     inputs.push_back({src.value_or(-1), *dst,
                       src ? state.asets[*src] : ASetInfo{}});
-    if (!src) continue;
+    if (!src) {
+      if (inst.src(i)->isA(TUncounted)) {
+        inputs.back().info.lower_bound = kInfReferences;
+      }
+      continue;
+    }
 
     // Choose one destination to own each source's supported references. Prefer
     // an identity assignment so a source which remains a phi result keeps its

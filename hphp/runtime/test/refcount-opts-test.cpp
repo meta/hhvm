@@ -644,9 +644,8 @@ TEST(RefcountOpts, CancelAcrossUncountedPhiInputs) {
       // Expected: remove IncRef s and DecRef p for every type and branch order.
       // The counted path has a balanced pair; the uncounted path needs neither
       // operation and must not restrict the counted path's lower bound.
-      // TODO: Uncounted inputs impose no finite lower-bound restriction.
-      EXPECT_EQ(IncRef, inc->op());
-      EXPECT_EQ(DecRef, dec->op());
+      EXPECT_EQ(Nop, inc->op());
+      EXPECT_EQ(Nop, dec->op());
     }
   }
 }
@@ -768,8 +767,7 @@ TEST(RefcountOpts, CarryUncountedPhiOverBackedge) {
   // TODO: Cancel the replacement IncRef against the exit decrement or the
   // first decrement on the next replacement. Keep the second replacement
   // decrement releasing; carry iterations consume no references.
-  // TODO: Preserve the uncounted lower bound through the backedge.
-  EXPECT_EQ(DecRef, dec->op());
+  EXPECT_EQ(DecRefNZ, dec->op());
 }
 
 /*
