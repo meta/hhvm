@@ -33,7 +33,8 @@ class InoutBase {
 
 final class InoutImplementation extends InoutBase {
   public function increment(
-    named bool $unused = false,
+    // TODO(T294006289): restore when inout and named are allowed in the same definition
+    // named bool $unused = false,
     inout int $value,
   ): void {
     $value++;

@@ -648,6 +648,27 @@ fn parameter_modifier<'a>(param: S<'a>, kind: TokenKind) -> Option<S<'a>> {
         .find(|node| token_kind(node) == Some(kind))
 }
 
+// TODO(T294006289): remove this check once hackc and HHVM support mixed inout/named calls.
+fn find_named_modifier_in_param_list_containing_inout<'a>(params: S<'a>) -> Option<S<'a>> {
+    let mut first_named = None;
+    let mut has_inout = false;
+
+    for param in syntax_to_list_no_separators(params) {
+        let named = parameter_modifier(param, TokenKind::Named);
+        let inout = parameter_modifier(param, TokenKind::Inout);
+
+        if named.is_some() && inout.is_some() {
+            // We separately already report a diagnostic for named inout parameters
+            return None;
+        }
+
+        first_named = first_named.or(named);
+        has_inout |= inout.is_some();
+    }
+
+    if has_inout { first_named } else { None }
+}
+
 fn parameter_modifier_rank(kind: TokenKind) -> usize {
     match kind {
         TokenKind::Optional => 0,
@@ -2567,6 +2588,12 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
         if let Some(name) = self.duplicate_named_param(params) {
             self.errors
                 .push(make_error_from_node(name, errors::duplicate_named_param));
+        }
+        if let Some(named) = find_named_modifier_in_param_list_containing_inout(params) {
+            self.errors.push(make_error_from_node(
+                named,
+                errors::mixed_inout_and_named_parameters,
+            ));
         }
 
         self.produce_error_from_check(variadic_param_with_default_value, params, || {

@@ -1,7 +1,7 @@
 error: Typing[4527] `meth_caller` does not support methods with named parameters [1]
 -> This parameter is named [2]
 
-meth_caller_named.php:19:3
+meth_caller_named.php:20:3
  3 | 
  4 | class MethCallerNamed {
  5 |   public function required(named int $x): void {}
@@ -9,17 +9,17 @@ meth_caller_named.php:19:3
  6 | 
  7 |   public function mixed(int $x, named int $y): void {}
    :
-17 | 
-18 | function test_meth_caller_named(): void {
-19 |   HH\meth_caller(MethCallerNamed::class, 'required');
+18 | 
+19 | function test_meth_caller_named(): void {
+20 |   HH\meth_caller(MethCallerNamed::class, 'required');
    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-20 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
-21 |   HH\meth_caller(MethCallerNamed::class, 'optional');
+21 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
+22 |   HH\meth_caller(MethCallerNamed::class, 'optional');
 
 error: Typing[4527] `meth_caller` does not support methods with named parameters [1]
 -> This parameter is named [2]
 
-meth_caller_named.php:20:3
+meth_caller_named.php:21:3
  5 |   public function required(named int $x): void {}
  6 | 
  7 |   public function mixed(int $x, named int $y): void {}
@@ -27,17 +27,17 @@ meth_caller_named.php:20:3
  8 | 
  9 |   public function optional(named int $x = 0): void {}
    :
-18 | function test_meth_caller_named(): void {
-19 |   HH\meth_caller(MethCallerNamed::class, 'required');
-20 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
+19 | function test_meth_caller_named(): void {
+20 |   HH\meth_caller(MethCallerNamed::class, 'required');
+21 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-21 |   HH\meth_caller(MethCallerNamed::class, 'optional');
-22 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
+22 |   HH\meth_caller(MethCallerNamed::class, 'optional');
+23 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
 
 error: Typing[4527] `meth_caller` does not support methods with named parameters [1]
 -> This parameter is named [2]
 
-meth_caller_named.php:21:3
+meth_caller_named.php:22:3
  7 |   public function mixed(int $x, named int $y): void {}
  8 | 
  9 |   public function optional(named int $x = 0): void {}
@@ -45,65 +45,29 @@ meth_caller_named.php:21:3
 10 | 
 11 |   public function multiple(named int $x, named int $y): void {}
    :
-19 |   HH\meth_caller(MethCallerNamed::class, 'required');
-20 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
-21 |   HH\meth_caller(MethCallerNamed::class, 'optional');
+20 |   HH\meth_caller(MethCallerNamed::class, 'required');
+21 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
+22 |   HH\meth_caller(MethCallerNamed::class, 'optional');
    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-22 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
-23 |   HH\meth_caller(MethCallerNamed::class, 'inout_and_named');
+23 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
+24 |   // TODO(T294006289): restore when inout and named are allowed in the same definition
 
 error: Typing[4527] `meth_caller` does not support methods with named parameters [1]
 -> This parameter is named [2]
 
-meth_caller_named.php:22:3
+meth_caller_named.php:23:3
  9 |   public function optional(named int $x = 0): void {}
 10 | 
 11 |   public function multiple(named int $x, named int $y): void {}
    |                                      ^^ [2]
 12 | 
-13 |   public function inout_and_named(inout int $x, named int $y): void {}
+13 |   // TODO(T294006289): restore when inout and named are allowed in the same definition
    :
-20 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
-21 |   HH\meth_caller(MethCallerNamed::class, 'optional');
-22 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
+21 |   HH\meth_caller(MethCallerNamed::class, 'mixed');
+22 |   HH\meth_caller(MethCallerNamed::class, 'optional');
+23 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-23 |   HH\meth_caller(MethCallerNamed::class, 'inout_and_named');
-24 |   $f = HH\meth_caller(MethCallerNamed::class, 'positional');
+24 |   // TODO(T294006289): restore when inout and named are allowed in the same definition
+25 |   // HH\meth_caller(MethCallerNamed::class, 'inout_and_named');
 
-error: Typing[4527] `meth_caller` does not support methods with named parameters [1]
--> This parameter is named [2]
-
-meth_caller_named.php:23:3
-11 |   public function multiple(named int $x, named int $y): void {}
-12 | 
-13 |   public function inout_and_named(inout int $x, named int $y): void {}
-   |                                                           ^^ [2]
-14 | 
-15 |   public function positional(int $x, int ...$rest): void {}
-   :
-21 |   HH\meth_caller(MethCallerNamed::class, 'optional');
-22 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
-23 |   HH\meth_caller(MethCallerNamed::class, 'inout_and_named');
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-24 |   $f = HH\meth_caller(MethCallerNamed::class, 'positional');
-25 |   $f(new MethCallerNamed(), 1, 2, 3);
-
-error: Typing[4416] `meth_caller` does not support methods with the `inout` calling convention [1]
--> This is why I think this method uses the `inout` calling convention [2]
-
-meth_caller_named.php:23:3
-11 |   public function multiple(named int $x, named int $y): void {}
-12 | 
-13 |   public function inout_and_named(inout int $x, named int $y): void {}
-   |                                             ^^ [2]
-14 | 
-15 |   public function positional(int $x, int ...$rest): void {}
-   :
-21 |   HH\meth_caller(MethCallerNamed::class, 'optional');
-22 |   HH\meth_caller(MethCallerNamed::class, 'multiple');
-23 |   HH\meth_caller(MethCallerNamed::class, 'inout_and_named');
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-24 |   $f = HH\meth_caller(MethCallerNamed::class, 'positional');
-25 |   $f(new MethCallerNamed(), 1, 2, 3);
-
-6 errors found
+4 errors found

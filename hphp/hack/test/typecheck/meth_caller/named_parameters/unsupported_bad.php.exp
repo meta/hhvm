@@ -1,8 +1,4 @@
-ERROR: File "unsupported_bad.php", line 13, characters 3-66:
-`meth_caller` does not support methods with the `inout` calling convention (Typing[4416])
-  File "unsupported_bad.php", line 5, characters 45-46:
-  This is why I think this method uses the `inout` calling convention
-ERROR: File "unsupported_bad.php", line 14, characters 3-66:
+ERROR: File "unsupported_bad.php", line 16, characters 3-66:
 `meth_caller` does not support methods that return `readonly` objects (Typing[4464])
-  File "unsupported_bad.php", line 7, characters 19-33:
+  File "unsupported_bad.php", line 8, characters 19-33:
   This is why I think this method returns a `readonly` object

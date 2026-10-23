@@ -665,6 +665,10 @@ pub const duplicate_variadic_named_param: Error = Cow::Borrowed(
 pub const duplicate_named_param: Error =
     Cow::Borrowed("A function type cannot contain duplicate named parameter names.");
 
+pub const mixed_inout_and_named_parameters: Error = Cow::Borrowed(
+    "It is currently unsupported for a parameter list to contain both `inout` and `named` parameters.",
+);
+
 pub fn duplicate_parameter_modifier(modifier: &str) -> Error {
     Cow::Owned(format!("Duplicate parameter modifier `{}`.", modifier))
 }
