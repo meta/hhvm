@@ -43,6 +43,8 @@
  *     When unknown_fields_type is absent, fields_known selects nothing (true)
  *     or mixed (false) as the type of unknown fields. An explicit
  *     unknown_fields_type takes precedence over fields_known.
+ *   Shape splats, with operands in merge order
+ *     { "kind":"shape_splat", "elems":<type-arguments> }
  *   Function types, with 0 or more arguments and possibly-void result type
  *     { "kind":"function", "args":<type-arguments>, "result":<type> }
  *   Unions of types, with 2 or more arguments

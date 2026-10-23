@@ -52,6 +52,9 @@ let shape ~unknown_fields_type fields =
              s_unknown_value = unknown_fields_type;
            }) )
 
+let splat ss_elems =
+  Typing_defs.(mk (reason, Tshape (Shape_splat { ss_elems })))
+
 let serialize ty = Typing_json.from_locl_ty env ~show_like_ty:true ty
 
 let deserialize json =
@@ -129,6 +132,20 @@ let null_unknown_fields_round_trip _ =
   shape ~unknown_fields_type:(Typing_make_type.null reason) []
   |> assert_round_trip
 
+let shape_splat_round_trip _ =
+  let generic name = Typing_defs.(mk (reason, Tgeneric name)) in
+  let closed = shape ~unknown_fields_type:tnothing [("x", false, tint)] in
+  let bounded = shape ~unknown_fields_type:tbool [("x", true, tint)] in
+  let open_shape = shape ~unknown_fields_type:tmixed [] in
+  List.iter
+    [
+      [];
+      [generic "TBase"];
+      [closed; generic "TBase"; bounded];
+      [generic "TBase"; splat [bounded; generic "TOther"]; open_shape];
+    ]
+    ~f:(fun elems -> assert_round_trip (splat elems))
+
 let assert_invalid ~path json =
   match Typing_json.to_locl_ty ctx json with
   | Error (Typing_defs.Deserialization_error message) ->
@@ -136,6 +153,19 @@ let assert_invalid ~path json =
   | Error (Typing_defs.Not_supported message) -> OUnit2.assert_failure message
   | Error (Typing_defs.Wrong_phase message) -> OUnit2.assert_failure message
   | Ok _ -> OUnit2.assert_failure "Expected a deserialization error"
+
+let invalid_splat_inputs _ =
+  let splat_json elems =
+    `Assoc [("kind", `String "shape_splat"); ("elems", elems)]
+  in
+  List.iter
+    [
+      `Assoc [("kind", `String "shape_splat")];
+      splat_json (`String "invalid");
+      splat_json (`List [`String "invalid"]);
+      splat_json (`List [splat_json (`List [`Assoc []])]);
+    ]
+    ~f:(assert_invalid ~path:"elems")
 
 let invalid_unknown_fields_inputs _ =
   List.iter
@@ -156,6 +186,8 @@ let () =
            "legacy_shapes" >:: legacy_shapes;
            "unknown_fields_round_trip" >:: unknown_fields_round_trip;
            "null_unknown_fields_round_trip" >:: null_unknown_fields_round_trip;
+           "shape_splat_round_trip" >:: shape_splat_round_trip;
+           "invalid_splat_inputs" >:: invalid_splat_inputs;
            "invalid_unknown_fields_inputs" >:: invalid_unknown_fields_inputs;
          ]
     |> run_test_tt_main)

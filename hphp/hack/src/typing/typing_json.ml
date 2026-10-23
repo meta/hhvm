@@ -687,6 +687,10 @@ let to_locl_ty
                     s_fields = fields;
                     s_unknown_value = shape_kind;
                   }))
+      | "shape_splat" ->
+        get_array "elems" (json, keytrace) >>= fun (elems, elems_keytrace) ->
+        aux_args elems ~keytrace:elems_keytrace >>= fun ss_elems ->
+        ty (Tshape (Shape_splat { ss_elems }))
       | "union" ->
         get_array "args" (json, keytrace) >>= fun (args, keytrace) ->
         aux_args args ~keytrace >>= fun tyl -> ty (Tunion tyl)
