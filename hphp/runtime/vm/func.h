@@ -811,8 +811,6 @@ public:
 
   MemoizeICType memoizeICType() const;
 
-  bool isNoICMemoize() const;
-
   bool isKeyedByImplicitContextMemoize() const;
 
   /*

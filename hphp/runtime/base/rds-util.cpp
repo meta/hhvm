@@ -58,11 +58,9 @@ void clearConstMemoCache(const Func* func, const Class* cls) {
   for (auto p = range.first; p != range.second; ++p) {
     auto const link = p->second;
     assertx(link.bound());
-    // Leave the link initialized: the JIT assumes RDS initialization is never
-    // undone within a request. Callers treat an Uninit value as a miss.
     if (link.isInit()) {
       auto old = *link;
-      *link = make_tv<KindOfUninit>();
+      link.markUninit();
       tvDecRefGen(old);
     }
   }

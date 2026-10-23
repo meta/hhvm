@@ -729,9 +729,6 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
     if (env.irb->inUnreachableState()) return;
 
     auto const inputTypes = funcEntryTypes(env, callee, posArgc);
-    auto const numInputs = callee->numParams()
-      + (callee->hasReifiedGenerics() ? 1 : 0)
-      + (callee->hasCoeffectsLocal() ? 1 : 0);
 
     auto const hasRdsCache =
       hasConstParamMemoCache(env, callee, objOrClass, inputTypes);
@@ -765,15 +762,13 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
         env,
         [&] (Block* taken) {
           gen(env, CheckRDSInitialized, taken, RDSHandleData { data });
-          auto const cached = gen(env, LdTVFromRDS, data, TCell);
-          return gen(env, CheckType, TInitCell, taken, cached);
         },
-        [&] (SSATmp* cached) {
-          for (auto i = 0; i < numInputs; ++i) {
+        [&] {
+          for (auto i = 0; i < callee->numFuncEntryInputs(); ++i) {
             popDecRef(env, static_cast<DecRefProfileId>(i));
           }
           for (auto i = 0; i < kNumActRecCells; ++i) popU(env);
-          auto const retVal = gen(env, AssertType, retType, cached);
+          auto const retVal = gen(env, LdTVFromRDS, data, retType);
           gen(env, IncRef, retVal);
           return retVal;
         },

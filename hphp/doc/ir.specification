@@ -884,11 +884,10 @@ To string conversions:
 
   Loads from S0 and puts the value in D.
 
-| LdTVFromRDS<T,RDSHandle,includeAux>, DParam(Cell), NA, NF
+| LdTVFromRDS<T,RDSHandle,includeAux>, DParam(InitCell), NA, NF
 
   Load the TypedValue from the specified RDS handle. Must load the aux bits if
-  `includeAux` is true. The value can change within a request, so two loads
-  from the same handle are not interchangeable.
+  `includeAux` is true.
 
 | LdContField<T>, DParam(Cell), S(Obj) C(Int), NF
 

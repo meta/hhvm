@@ -592,10 +592,6 @@ inline Func::MemoizeICType Func::memoizeICType() const {
   return shared()->m_allFlags.m_memoizeICType;
 }
 
-inline bool Func::isNoICMemoize() const {
-  return memoizeICType() == MemoizeICType::NoIC;
-}
-
 inline bool Func::isKeyedByImplicitContextMemoize() const {
   return memoizeICType() == MemoizeICType::KeyedByIC;
 }

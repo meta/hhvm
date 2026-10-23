@@ -66,6 +66,11 @@ BlockList reverse(const BlockList& list) {
   return BlockList(list.rbegin(), list.rend());
 }
 
+bool rdsHandleMayBecomeUninitialized(rds::Handle handle) {
+  auto const symbol = rds::reverseLinkExact(handle);
+  return symbol && std::holds_alternative<rds::ConstMemoCache>(*symbol);
+}
+
 /*
  * Information about a value in memory.
  *
@@ -532,6 +537,7 @@ Flags handle_general_effects(Local& env,
 
       case CheckRDSInitialized: {
         auto const handle = inst.extra<CheckRDSInitialized>()->handle;
+        if (rdsHandleMayBecomeUninitialized(handle)) return std::nullopt;
         if (env.state.initRDS.contains(handle)) return FJmpNext{};
         // set this unconditionally; we record taken state before every
         // instruction, and next state after each instruction
@@ -541,6 +547,7 @@ Flags handle_general_effects(Local& env,
 
       case MarkRDSInitialized: {
         auto const handle = inst.extra<MarkRDSInitialized>()->handle;
+        if (rdsHandleMayBecomeUninitialized(handle)) return std::nullopt;
         if (env.state.initRDS.contains(handle)) return FRemovable{};
         env.state.initRDS.insert(handle);
         return std::nullopt;
