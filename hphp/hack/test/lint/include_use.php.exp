@@ -1,12 +1,22 @@
-warning: Lint[5549] Prefer `require` and `require_once` to `include` and `include_once`.
-   --> include_use.php
-  4 | include 'test.php';
-    | ^^^^^^^^^^^^^^^^^^
+warning: Lint[5549] Prefer `require` and `require_once` to `include` and `include_once`. [1]
+
+include_use.php:4:1
+2 | 
+3 | // bad
+4 | include 'test.php';
+  | ^^^^^^^^^^^^^^^^^^ [1]
+5 | include_once 'test.php';
+6 | 
 
 
-warning: Lint[5549] Prefer `require` and `require_once` to `include` and `include_once`.
-   --> include_use.php
-  5 | include_once 'test.php';
-    | ^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5549] Prefer `require` and `require_once` to `include` and `include_once`. [1]
+
+include_use.php:5:1
+3 | // bad
+4 | include 'test.php';
+5 | include_once 'test.php';
+  | ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+6 | 
+7 | // ok
 
 

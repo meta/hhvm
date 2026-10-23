@@ -1,6 +1,11 @@
-warning: Lint[5610] This `is` check is always `false`. The expression on the left has type `int` which shares no values with `null`.
-   --> null_is_check_always_false.php
-  7 |   if ($x is null) {
-    |       ^^^^^^^^^^
+warning: Lint[5610] This `is` check is always `false`. The expression on the left has type `int` which shares no values with `null`. [1]
+
+null_is_check_always_false.php:7:7
+5 | 
+6 | function test(int $x): void {
+7 |   if ($x is null) {
+  |       ^^^^^^^^^^ [1]
+8 |     f();
+9 |   }
 
 

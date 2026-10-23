@@ -1,96 +1,175 @@
-warning: Lint[5542] array_merge() is deprecated. If you want to concatenate arrays, use Arrays::concat(). If you want to combine dictionaries, use Arrays::mergeByKey(). For more information, see: https://fburl.com/combining_arrays_pit (Email mathewsb@fb.com with any questions/concerns.)
-   --> array_sgrep.php
-  4 |   array_merge(FOO);
-    |   ^^^^^^^^^^^
+warning: Lint[5542] array_merge() is deprecated. If you want to concatenate arrays, use Arrays::concat(). If you want to combine dictionaries, use Arrays::mergeByKey(). For more information, see: https://fburl.com/combining_arrays_pit (Email mathewsb@fb.com with any questions/concerns.) [1]
+
+array_sgrep.php:4:3
+2 | 
+3 | function test() {
+4 |   array_merge(FOO);
+  |   ^^^^^^^^^^^ [1]
+5 |   array_replace($X, FOO);
+6 |   array_push(Xxx, Yyy);
 
 
-warning: Lint[5542] Do not use array_replace, use Arrays::mergeByKey() instead. For more information, see: https://fburl.com/combining_arrays_pit (Email subodh@fb.com with any questions/concerns.)
-   --> array_sgrep.php
-  5 |   array_replace($X, FOO);
-    |   ^^^^^^^^^^^^^
+warning: Lint[5542] Do not use array_replace, use Arrays::mergeByKey() instead. For more information, see: https://fburl.com/combining_arrays_pit (Email subodh@fb.com with any questions/concerns.) [1]
+
+array_sgrep.php:5:3
+3 | function test() {
+4 |   array_merge(FOO);
+5 |   array_replace($X, FOO);
+  |   ^^^^^^^^^^^^^ [1]
+6 |   array_push(Xxx, Yyy);
+7 |   head_UNTYPED(array_values(Xxx));
 
 
-warning: Lint[5542] Do not use array_push to add single element to array, use $array[] = $item instead. For more information, see: http://php.net/manual/en/function.array-push.php
-   --> array_sgrep.php
-  6 |   array_push(Xxx, Yyy);
-    |   ^^^^^^^^^^
+warning: Lint[5542] Do not use array_push to add single element to array, use $array[] = $item instead. For more information, see: http://php.net/manual/en/function.array-push.php [1]
+
+array_sgrep.php:6:3
+4 |   array_merge(FOO);
+5 |   array_replace($X, FOO);
+6 |   array_push(Xxx, Yyy);
+  |   ^^^^^^^^^^ [1]
+7 |   head_UNTYPED(array_values(Xxx));
+8 |   head_UNTYPED(array_keys(Xxx));
 
 
-warning: Lint[5542] Calling head(array_values()) is redundant. Calling first() is enough. (Email mqian@fb.com with any questions/concerns)
-   --> array_sgrep.php
-  7 |   head_UNTYPED(array_values(Xxx));
-    |   ^^^^^^^^^^^^
+warning: Lint[5542] Calling head(array_values()) is redundant. Calling first() is enough. (Email mqian@fb.com with any questions/concerns) [1]
+
+array_sgrep.php:7:3
+5 |   array_replace($X, FOO);
+6 |   array_push(Xxx, Yyy);
+7 |   head_UNTYPED(array_values(Xxx));
+  |   ^^^^^^^^^^^^ [1]
+8 |   head_UNTYPED(array_keys(Xxx));
+9 |   array_create_set_from_values(array_keys(Xxx));
 
 
-warning: Lint[5542] Do not use head(array_keys()), use head_key() instead. (Email mqian@fb.com with any questions/concerns)
-   --> array_sgrep.php
-  8 |   head_UNTYPED(array_keys(Xxx));
-    |   ^^^^^^^^^^^^
+warning: Lint[5542] Do not use head(array_keys()), use head_key() instead. (Email mqian@fb.com with any questions/concerns) [1]
+
+array_sgrep.php:8:3
+ 6 |   array_push(Xxx, Yyy);
+ 7 |   head_UNTYPED(array_values(Xxx));
+ 8 |   head_UNTYPED(array_keys(Xxx));
+   |   ^^^^^^^^^^^^ [1]
+ 9 |   array_create_set_from_values(array_keys(Xxx));
+10 |   idx(Xxx, Yyy, null);
 
 
-warning: Lint[5542] use simply array_create_set_from_keys()
-   --> array_sgrep.php
-  9 |   array_create_set_from_values(array_keys(Xxx));
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5542] use simply array_create_set_from_keys() [1]
+
+array_sgrep.php:9:3
+ 7 |   head_UNTYPED(array_values(Xxx));
+ 8 |   head_UNTYPED(array_keys(Xxx));
+ 9 |   array_create_set_from_values(array_keys(Xxx));
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+10 |   idx(Xxx, Yyy, null);
+11 | }
 
 
-warning: Lint[5542] The 3rd parameter for idx defaults to null. Calling idx() with two parameters is enough.
-   --> array_sgrep.php
- 10 |   idx(Xxx, Yyy, null);
-    |   ^^^
+warning: Lint[5542] The 3rd parameter for idx defaults to null. Calling idx() with two parameters is enough. [1]
+
+array_sgrep.php:10:3
+ 8 |   head_UNTYPED(array_keys(Xxx));
+ 9 |   array_create_set_from_values(array_keys(Xxx));
+10 |   idx(Xxx, Yyy, null);
+   |   ^^^ [1]
+11 | }
+12 | 
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> array_sgrep.php
- 15 |   $y = $x + vec[Y];
-    |             ^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+array_sgrep.php:15:13
+13 | function test_syntax() {
+14 |   $x = X + Y;
+15 |   $y = $x + vec[Y];
+   |             ^^^^^^ [1]
+16 |   $x = array_concat($x, Y);
+17 |   $X = array_concat($x, Y);
 
 
-warning: Lint[5542] This is inefficient because PHP has to copy the entire array. Use array_extend() instead.
-   --> array_sgrep.php
- 16 |   $x = array_concat($x, Y);
-    |   ^^
+warning: Lint[5542] This is inefficient because PHP has to copy the entire array. Use array_extend() instead. [1]
+
+array_sgrep.php:16:3
+14 |   $x = X + Y;
+15 |   $y = $x + vec[Y];
+16 |   $x = array_concat($x, Y);
+   |   ^^ [1]
+17 |   $X = array_concat($x, Y);
+18 |   $X = array_merge_by_key($X, Y);
 
 
-warning: Lint[5520] `X` breaks naming conventions: Variables must be named using lower_case_with_underscores.
-   --> array_sgrep.php
- 17 |   $X = array_concat($x, Y);
-    |   ^^
+warning: Lint[5520] `X` breaks naming conventions: Variables must be named using lower_case_with_underscores. [1]
+
+array_sgrep.php:17:3
+15 |   $y = $x + vec[Y];
+16 |   $x = array_concat($x, Y);
+17 |   $X = array_concat($x, Y);
+   |   ^^ [1]
+18 |   $X = array_merge_by_key($X, Y);
+19 | }
 
 
-warning: Lint[5520] `X` breaks naming conventions: Variables must be named using lower_case_with_underscores.
-   --> array_sgrep.php
- 18 |   $X = array_merge_by_key($X, Y);
-    |   ^^
+warning: Lint[5520] `X` breaks naming conventions: Variables must be named using lower_case_with_underscores. [1]
+
+array_sgrep.php:18:3
+16 |   $x = array_concat($x, Y);
+17 |   $X = array_concat($x, Y);
+18 |   $X = array_merge_by_key($X, Y);
+   |   ^^ [1]
+19 | }
+20 | 
 
 
-warning: Lint[5542] This is inefficient because PHP has to copy the entire array. Use array_update_by_key() instead.
-   --> array_sgrep.php
- 18 |   $X = array_merge_by_key($X, Y);
-    |   ^^
+warning: Lint[5542] This is inefficient because PHP has to copy the entire array. Use array_update_by_key() instead. [1]
+
+array_sgrep.php:18:3
+16 |   $x = array_concat($x, Y);
+17 |   $X = array_concat($x, Y);
+18 |   $X = array_merge_by_key($X, Y);
+   |   ^^ [1]
+19 | }
+20 | 
 
 
-warning: Lint[5542] Calling first(array_values()) is redundant. Calling first() is enough. (Email mqian@fb.com with any questions/concerns)
-   --> array_sgrep.php
- 22 |   first(array_values(Xxx));
-    |   ^^^^^
+warning: Lint[5542] Calling first(array_values()) is redundant. Calling first() is enough. (Email mqian@fb.com with any questions/concerns) [1]
+
+array_sgrep.php:22:3
+20 | 
+21 | function test2() {
+22 |   first(array_values(Xxx));
+   |   ^^^^^ [1]
+23 |   firstx(array_values(Xxx));
+24 |   first(array_keys(Xxx));
 
 
-warning: Lint[5542] Calling firstx(array_values()) is redundant. Calling firstx() is enough. (Email mqian@fb.com with any questions/concerns)
-   --> array_sgrep.php
- 23 |   firstx(array_values(Xxx));
-    |   ^^^^^^
+warning: Lint[5542] Calling firstx(array_values()) is redundant. Calling firstx() is enough. (Email mqian@fb.com with any questions/concerns) [1]
+
+array_sgrep.php:23:3
+21 | function test2() {
+22 |   first(array_values(Xxx));
+23 |   firstx(array_values(Xxx));
+   |   ^^^^^^ [1]
+24 |   first(array_keys(Xxx));
+25 |   firstx(array_keys(Xxx));
 
 
-warning: Lint[5542] Do not use first(array_keys()), use C\first_key() instead. (Post in the Hacklang support group with any questions/concerns)
-   --> array_sgrep.php
- 24 |   first(array_keys(Xxx));
-    |   ^^^^^
+warning: Lint[5542] Do not use first(array_keys()), use C\first_key() instead. (Post in the Hacklang support group with any questions/concerns) [1]
+
+array_sgrep.php:24:3
+22 |   first(array_values(Xxx));
+23 |   firstx(array_values(Xxx));
+24 |   first(array_keys(Xxx));
+   |   ^^^^^ [1]
+25 |   firstx(array_keys(Xxx));
+26 | }
 
 
-warning: Lint[5542] Do not use firstx(array_keys()), use C\first_keyx() instead. (Post in the Hacklang support group with any questions/concerns)
-   --> array_sgrep.php
- 25 |   firstx(array_keys(Xxx));
-    |   ^^^^^^
+warning: Lint[5542] Do not use firstx(array_keys()), use C\first_keyx() instead. (Post in the Hacklang support group with any questions/concerns) [1]
+
+array_sgrep.php:25:3
+23 |   firstx(array_values(Xxx));
+24 |   first(array_keys(Xxx));
+25 |   firstx(array_keys(Xxx));
+   |   ^^^^^^ [1]
+26 | }
 
 

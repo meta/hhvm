@@ -64,19 +64,30 @@ let relative_path (path : string) : string =
 (* The lines of source covering [start_line - before, end_line + after] for a
    position, as (line_number, line_text option) pairs. Mirrors the window used
    by the highlighted formatter, including its past-end-of-file sentinel. *)
-let load_context_lines ~(before : int) ~(after : int) (pos : Pos.absolute) :
-    (int * string option) list =
+let load_context_lines
+    ~(source : (string * string) option)
+    ~(before : int)
+    ~(after : int)
+    (pos : Pos.absolute) : (int * string option) list =
   let path = Pos.filename pos in
   let (start_line, _) = Pos.line_column pos in
   let (end_line, end_col) = Pos.end_line_column pos in
   (* Internal errors can report the whole file; cap the window. *)
   let end_line = min (start_line + 1000) end_line in
-  match Diagnostics.read_lines_for_highlighted path with
-  | None -> []
-  | Some [] ->
+  let lines =
+    match source with
+    | Some (source_path, content) when String.equal path source_path ->
+      String.split_lines content
+    | Some _
+    | None ->
+      Diagnostics.read_lines path
+  in
+  match lines with
+  | [] ->
     List.range ~start:`inclusive ~stop:`inclusive start_line end_line
     |> List.map ~f:(fun line_num -> (line_num, None))
-  | Some lines ->
+  | lines when not (List.for_all lines ~f:Stdlib.String.is_valid_utf_8) -> []
+  | lines ->
     let numbered = List.mapi lines ~f:(fun i l -> (i + 1, Some l)) in
     let window =
       List.filter numbered ~f:(fun (i, _) ->
@@ -276,7 +287,9 @@ let format_header
     in
     String.concat ~sep:"\n" (claim_row :: reason_rows)
 
-let to_string (error : Diagnostics.finalized_diagnostic) : string =
+let format
+    ~(source : (string * string) option)
+    (error : Diagnostics.finalized_diagnostic) : string =
   let {
     User_diagnostic.severity;
     code;
@@ -301,6 +314,7 @@ let to_string (error : Diagnostics.finalized_diagnostic) : string =
            List.map groups ~f:(fun g ->
                ( g,
                  load_context_lines
+                   ~source
                    ~before:n_extra_lines
                    ~after:n_extra_lines
                    g.aggregate_position )))
@@ -331,3 +345,11 @@ let to_string (error : Diagnostics.finalized_diagnostic) : string =
   if not (List.is_empty custom_msgs) then
     Buffer.add_string buf (String.concat ~sep:"\n" custom_msgs ^ "\n");
   Buffer.contents buf
+
+let to_string error = format ~source:None error
+
+let to_string_with_source ?source error =
+  let path =
+    Pos.filename (Message.get_message_pos error.User_diagnostic.claim)
+  in
+  format ~source:(Option.map source ~f:(fun source -> (path, source))) error

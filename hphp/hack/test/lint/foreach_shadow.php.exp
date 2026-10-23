@@ -1,70 +1,120 @@
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 4, characters 3-4:
-   --> foreach_shadow.php
-  5 |   foreach ($xs as $x) {
-    |                   ^^
+File "foreach_shadow.php", line 4, characters 3-4: [1]
+
+foreach_shadow.php:5:19
+3 | function f1(vec<int> $xs): int {
+4 |   $x = 0;
+5 |   foreach ($xs as $x) {
+  |                   ^^ [1]
+6 |     $x++;
+7 |   }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 13, characters 3-4:
-   --> foreach_shadow.php
- 14 |   foreach ($xs as $x) {
-    |                   ^^
+File "foreach_shadow.php", line 13, characters 3-4: [1]
+
+foreach_shadow.php:14:19
+12 |   $x = 1;
+13 |   $x = $x - 1;
+14 |   foreach ($xs as $x) {
+   |                   ^^ [1]
+15 |     $x++;
+16 |   }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 21, characters 3-4:
-   --> foreach_shadow.php
- 22 |   foreach ($xs as $x => $_) {
-    |                   ^^
+File "foreach_shadow.php", line 21, characters 3-4: [1]
+
+foreach_shadow.php:22:19
+20 | function f3(dict<int, int> $xs): int {
+21 |   $x = 0;
+22 |   foreach ($xs as $x => $_) {
+   |                   ^^ [1]
+23 |     $x++;
+24 |   }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 29, characters 3-4:
-   --> foreach_shadow.php
- 30 |   foreach ($xs as $_ => $x) {
-    |                         ^^
+File "foreach_shadow.php", line 29, characters 3-4: [1]
+
+foreach_shadow.php:30:25
+28 | function f4(dict<int, int> $xs): int {
+29 |   $x = 0;
+30 |   foreach ($xs as $_ => $x) {
+   |                         ^^ [1]
+31 |     $x++;
+32 |   }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 37, characters 3-4:
-   --> foreach_shadow.php
- 38 |   foreach ($xs as $_ => list($x, $_)) {
-    |                              ^^
+File "foreach_shadow.php", line 37, characters 3-4: [1]
+
+foreach_shadow.php:38:30
+36 | function f5(dict<int, (int, int)> $xs): int {
+37 |   $x = 0;
+38 |   foreach ($xs as $_ => list($x, $_)) {
+   |                              ^^ [1]
+39 |     $x++;
+40 |   }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 45, characters 3-4:
-   --> foreach_shadow.php
- 47 |     foreach ($xs as $x) {
-    |                     ^^
+File "foreach_shadow.php", line 45, characters 3-4: [1]
+
+foreach_shadow.php:47:21
+45 |   $x = 0;
+46 |   if (true) {
+47 |     foreach ($xs as $x) {
+   |                     ^^ [1]
+48 |       $x++;
+49 |     }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 57, characters 5-6:
-   --> foreach_shadow.php
- 58 |     foreach ($xs as $x) {
-    |                     ^^
+File "foreach_shadow.php", line 57, characters 5-6: [1]
+
+foreach_shadow.php:58:21
+56 |   foreach ($xss as $xs) {
+57 |     $x = 0;
+58 |     foreach ($xs as $x) {
+   |                     ^^ [1]
+59 |       $x++;
+60 |     }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 68, characters 19-20:
-   --> foreach_shadow.php
- 70 |     foreach ($xs as $x) {
-    |                     ^^
+File "foreach_shadow.php", line 68, characters 19-20: [1]
+
+foreach_shadow.php:70:21
+68 |   foreach ($xs as $x) {
+69 |     $x1 = $x;
+70 |     foreach ($xs as $x) {
+   |                     ^^ [1]
+71 |       $x2 = $x;
+72 |       $result[] = tuple($x1, $x2);
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 79, characters 8-9:
-   --> foreach_shadow.php
- 80 |   foreach ($xs as $x) {
-    |                   ^^
+File "foreach_shadow.php", line 79, characters 8-9: [1]
+
+foreach_shadow.php:80:19
+78 | function f9(vec<int> $xs): int {
+79 |   list($x, $_) = vec[0, 0];
+80 |   foreach ($xs as $x) {
+   |                   ^^ [1]
+81 |     $x++;
+82 |   }
 
 
 warning: Lint[5568] Loop variable `$x` shadows a local variable defined or last assigned here:
-File "foreach_shadow.php", line 90, characters 22-23:
-   --> foreach_shadow.php
- 92 |     foreach ($xs as $x) {
-    |                     ^^
+File "foreach_shadow.php", line 90, characters 22-23: [1]
+
+foreach_shadow.php:92:21
+90 |   } catch (Exception $x) {
+91 |     echo $x->getMessage();
+92 |     foreach ($xs as $x) {
+   |                     ^^ [1]
+93 |       $s += $x;
+94 |     }
 
 

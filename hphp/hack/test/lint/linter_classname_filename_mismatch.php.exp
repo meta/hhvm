@@ -1,6 +1,11 @@
-warning: Lint[5564] Test is the only class declared in linter_classname_filename_mismatch.php, so that file should be named Test.php instead.
-   --> linter_classname_filename_mismatch.php
-  3 | class Test {
-    |       ^^^^
+warning: Lint[5564] Test is the only class declared in linter_classname_filename_mismatch.php, so that file should be named Test.php instead. [1]
+
+linter_classname_filename_mismatch.php:3:7
+1 | <?hh
+2 | 
+3 | class Test {
+  |       ^^^^ [1]
+4 | 
+5 | }
 
 

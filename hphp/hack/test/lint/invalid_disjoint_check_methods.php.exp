@@ -1,84 +1,153 @@
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 16 |     return !$this->contains($table_data, (int)$assoc['id1']);
-    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:16:13
+14 |     Map<string, mixed> $assoc,
+15 |   ): bool {
+16 |     return !$this->contains($table_data, (int)$assoc['id1']);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+17 |   }
+18 | }
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 26 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:26:10
+24 | 
+25 | function bad1(C $c, vec<Foo> $x, int $i): bool {
+26 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+27 | }
+28 | function bad2(C $c, dict<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 29 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:29:10
+27 | }
+28 | function bad2(C $c, dict<int, Foo> $x, int $i): bool {
+29 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+30 | }
+31 | function bad3(C $c, Traversable<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 32 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:32:10
+30 | }
+31 | function bad3(C $c, Traversable<Foo> $x, int $i): bool {
+32 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+33 | }
+34 | function bad4(C $c, KeyedTraversable<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 35 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:35:10
+33 | }
+34 | function bad4(C $c, KeyedTraversable<int, Foo> $x, int $i): bool {
+35 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+36 | }
+37 | function bad5(C $c, Container<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 38 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:38:10
+36 | }
+37 | function bad5(C $c, Container<Foo> $x, int $i): bool {
+38 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+39 | }
+40 | function bad6(C $c, KeyedContainer<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 41 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:41:10
+39 | }
+40 | function bad6(C $c, KeyedContainer<int, Foo> $x, int $i): bool {
+41 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+42 | }
+43 | function bad7(C $c, Iterator<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 44 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:44:10
+42 | }
+43 | function bad7(C $c, Iterator<Foo> $x, int $i): bool {
+44 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+45 | }
+46 | function bad8(C $c, IteratorAggregate<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods.php
- 47 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods.php:47:10
+45 | }
+46 | function bad8(C $c, IteratorAggregate<Foo> $x, int $i): bool {
+47 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+48 | }
+49 | function bad9(C $c, vec<Foo> $x, Baz $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz.
-   --> invalid_disjoint_check_methods.php
- 50 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz. [1]
+
+invalid_disjoint_check_methods.php:50:10
+48 | }
+49 | function bad9(C $c, vec<Foo> $x, Baz $i): bool {
+50 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+51 | }
+52 | function bad10(C $c, vec<Foo> $x, Bar $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#4> as Bar.
-   --> invalid_disjoint_check_methods.php
- 53 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#4> as Bar. [1]
+
+invalid_disjoint_check_methods.php:53:10
+51 | }
+52 | function bad10(C $c, vec<Foo> $x, Bar $i): bool {
+53 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+54 | }
+55 | function bad11(C $c, vec<Bar> $x, Foo $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo.
-   --> invalid_disjoint_check_methods.php
- 56 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo. [1]
+
+invalid_disjoint_check_methods.php:56:10
+54 | }
+55 | function bad11(C $c, vec<Bar> $x, Foo $i): bool {
+56 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+57 | }
+58 | 
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt.
-   --> invalid_disjoint_check_methods.php
+warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt. [1]
+
+invalid_disjoint_check_methods.php:104:10
+102 | 
+103 | function badenum(C $c, vec<string> $x, EnumInt $y): bool {
 104 |   return $c->contains($x, $y);
-    |          ^^^^^^^^^^^^^^^^^^^^
+    |          ^^^^^^^^^^^^^^^^^^^^ [1]
+105 | }
+106 | 
 
 
-warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type int is disjoint from type string.
-   --> invalid_disjoint_check_methods.php
+warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type int is disjoint from type string. [1]
+
+invalid_disjoint_check_methods.php:121:3
+119 |   expect(3)->isEqual(4);
+120 |   // Should be rejected
 121 |   expect(3)->isEqual("A");
-    |   ^^^^^^^^^^^^^^^^^^^^^^^
+    |   ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+122 | }
 
 

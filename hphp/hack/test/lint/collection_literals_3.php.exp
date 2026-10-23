@@ -1,6 +1,11 @@
-warning: Lint[5564] f is the only function declared in collection_literals_3.php, so that file should be named f.php instead.
-   --> collection_literals_3.php
-  3 | function f($a) {
-    |          ^
+warning: Lint[5564] f is the only function declared in collection_literals_3.php, so that file should be named f.php instead. [1]
+
+collection_literals_3.php:3:10
+1 | <?hh
+2 | 
+3 | function f($a) {
+  |          ^ [1]
+4 |   return new Vector($a);
+5 | }
 
 

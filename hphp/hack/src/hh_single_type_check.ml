@@ -1851,8 +1851,23 @@ let handle_mode
             end
           lint_errors
       in
-      let lint_errors = List.map ~f:Lints_core.to_absolute lint_errors in
-      Server_lint_types.output_text stdout lint_errors error_format;
+      (match error_format with
+      | Diagnostics.PlainHighlighted ->
+        List.iter lint_errors ~f:(fun lint ->
+            let source =
+              Relative_path.Map.find_opt
+                files_contents
+                (Pos.filename (Lints_core.get_pos lint))
+            in
+            Lints_core.to_plain_highlighted_string
+              ?source
+              (Lints_core.to_absolute lint)
+            |> Printf.fprintf stdout "%s\n%!")
+      | format ->
+        Server_lint_types.output_text
+          stdout
+          (List.map ~f:Lints_core.to_absolute lint_errors)
+          format);
       exit 2
     ) else
       Printf.printf "No lint errors\n"

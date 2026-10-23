@@ -1,6 +1,11 @@
-warning: Lint[5564] test is the only function declared in cleanup_sgrep.php, so that file should be named test.php instead.
-   --> cleanup_sgrep.php
-  3 | function test($x, $y) {
-    |          ^^^^
+warning: Lint[5564] test is the only function declared in cleanup_sgrep.php, so that file should be named test.php instead. [1]
+
+cleanup_sgrep.php:3:10
+1 | <?hh
+2 | 
+3 | function test($x, $y) {
+  |          ^^^^ [1]
+4 |   $_ = await $x ? Y : null;
+5 |   $_ = await $x ? null : $y;
 
 

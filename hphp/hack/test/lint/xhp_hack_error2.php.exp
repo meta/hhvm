@@ -1,6 +1,13 @@
-warning: Lint[5542] DO NOT USE XhpHackError::clownyCastStringish() IN NEW CODE. You should not be passing :fbt to XHP elements. Use fbt() and pass the FBTResult objects that come out of it.
-   --> xhp_hack_error2.php
-  8 |         label={XhpHackError
-    |                ^^^^^^^^^^^^
+warning: Lint[5542] DO NOT USE XhpHackError::clownyCastStringish() IN NEW CODE. You should not be passing :fbt to XHP elements. Use fbt() and pass the FBTResult objects that come out of it. [1]
+
+xhp_hack_error2.php:8:16
+ 6 |     return
+ 7 |       <ui:page-header
+ 8 |         label={XhpHackError
+   |                ^^^^^^^^^^^^ [1]
+ 9 |         ::clownyCastStringish(RecoveryExistingSessionText
+   |         ^^^^^^^^^^^^^^^^^^^^^ [1]
+10 |         ::checkYourNotifications())}
+11 |       />;
 
 

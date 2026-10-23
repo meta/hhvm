@@ -1,12 +1,21 @@
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> branches_returning_same_success.php
- 18 |     return MyExitCode::SUCCESS;
-    |            ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+branches_returning_same_success.php:18:12
+16 | function main_function_early_terminate_enum(): int {
+17 |   if (1 === 1) {
+18 |     return MyExitCode::SUCCESS;
+   |            ^^^^^^^^^^^^^^^^^^^ [1]
+19 |   }
+20 | 
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> branches_returning_same_success.php
- 21 |   return MyExitCode::SUCCESS;
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+branches_returning_same_success.php:21:10
+19 |   }
+20 | 
+21 |   return MyExitCode::SUCCESS;
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+22 | }
 
 

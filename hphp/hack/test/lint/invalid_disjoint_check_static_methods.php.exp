@@ -1,78 +1,142 @@
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 16 |     return !self::contains($table_data, (int)$assoc['id1']);
-    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:16:13
+14 |     Map<string, mixed> $assoc,
+15 |   ): bool {
+16 |     return !self::contains($table_data, (int)$assoc['id1']);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+17 |   }
+18 | }
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 26 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:26:10
+24 | 
+25 | function bad1(vec<Foo> $x, int $i): bool {
+26 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+27 | }
+28 | 
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 30 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:30:10
+28 | 
+29 | function bad2(dict<int, Foo> $x, int $i): bool {
+30 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+31 | }
+32 | function bad3(Traversable<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 33 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:33:10
+31 | }
+32 | function bad3(Traversable<Foo> $x, int $i): bool {
+33 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+34 | }
+35 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 36 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:36:10
+34 | }
+35 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
+36 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+37 | }
+38 | function bad5(Container<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 39 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:39:10
+37 | }
+38 | function bad5(Container<Foo> $x, int $i): bool {
+39 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+40 | }
+41 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 42 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:42:10
+40 | }
+41 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
+42 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+43 | }
+44 | function bad7(Iterator<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 45 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:45:10
+43 | }
+44 | function bad7(Iterator<Foo> $x, int $i): bool {
+45 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+46 | }
+47 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_static_methods.php
- 48 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_static_methods.php:48:10
+46 | }
+47 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
+48 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+49 | }
+50 | function bad9(vec<Foo> $x, Baz $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz.
-   --> invalid_disjoint_check_static_methods.php
- 51 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz. [1]
+
+invalid_disjoint_check_static_methods.php:51:10
+49 | }
+50 | function bad9(vec<Foo> $x, Baz $i): bool {
+51 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+52 | }
+53 | function bad10(vec<Foo> $x, Bar $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#3> as Bar.
-   --> invalid_disjoint_check_static_methods.php
- 54 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#3> as Bar. [1]
+
+invalid_disjoint_check_static_methods.php:54:10
+52 | }
+53 | function bad10(vec<Foo> $x, Bar $i): bool {
+54 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+55 | }
+56 | function bad11(vec<Bar> $x, Foo $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo.
-   --> invalid_disjoint_check_static_methods.php
- 57 |   return C::contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo. [1]
+
+invalid_disjoint_check_static_methods.php:57:10
+55 | }
+56 | function bad11(vec<Bar> $x, Foo $i): bool {
+57 |   return C::contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+58 | }
+59 | 
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt.
-   --> invalid_disjoint_check_static_methods.php
+warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt. [1]
+
+invalid_disjoint_check_static_methods.php:105:10
+103 | 
+104 | function badenum(vec<string> $x, EnumInt $y): bool {
 105 |   return C::contains($x, $y);
-    |          ^^^^^^^^^^^^^^^^^^^
+    |          ^^^^^^^^^^^^^^^^^^^ [1]
+106 | }
 
 

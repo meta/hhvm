@@ -1,12 +1,21 @@
-warning: Lint[5638] This call to 'containsKey' will always return the same value, because type string is disjoint from type int.
-   --> vec_contains.php
-  4 |   return $vs->containsKey(3);
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'containsKey' will always return the same value, because type string is disjoint from type int. [1]
+
+vec_contains.php:4:10
+2 | 
+3 | function test1(Vector<string> $vs):bool {
+4 |   return $vs->containsKey(3);
+  |          ^^^^^^^^^^^^^^^^^^^ [1]
+5 | }
+6 | 
 
 
-warning: Lint[5638] This call to 'linearSearch' will always return the same value, because type string is disjoint from type null.
-   --> vec_contains.php
-  9 |   return $vs->linearSearch(null);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'linearSearch' will always return the same value, because type string is disjoint from type null. [1]
+
+vec_contains.php:9:10
+ 7 | 
+ 8 | function test2(Vector<string> $vs):int {
+ 9 |   return $vs->linearSearch(null);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+10 | }
 
 

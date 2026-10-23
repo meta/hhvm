@@ -1,108 +1,197 @@
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 17 |     return !$this->contains($table_data, (int)$assoc['id1']);
-    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:17:13
+15 |     Map<string, mixed> $assoc,
+16 |   ): bool {
+17 |     return !$this->contains($table_data, (int)$assoc['id1']);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+18 |   }
+19 | }
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 27 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:27:10
+25 | 
+26 | function bad1(C $c, vec<Foo> $x, int $i): bool {
+27 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+28 | }
+29 | function bad2(C $c, dict<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 30 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:30:10
+28 | }
+29 | function bad2(C $c, dict<int, Foo> $x, int $i): bool {
+30 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+31 | }
+32 | function bad3(C $c, Traversable<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 33 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:33:10
+31 | }
+32 | function bad3(C $c, Traversable<Foo> $x, int $i): bool {
+33 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+34 | }
+35 | function bad4(C $c, KeyedTraversable<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 36 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:36:10
+34 | }
+35 | function bad4(C $c, KeyedTraversable<int, Foo> $x, int $i): bool {
+36 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+37 | }
+38 | function bad5(C $c, Container<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 39 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:39:10
+37 | }
+38 | function bad5(C $c, Container<Foo> $x, int $i): bool {
+39 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+40 | }
+41 | function bad6(C $c, KeyedContainer<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 42 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:42:10
+40 | }
+41 | function bad6(C $c, KeyedContainer<int, Foo> $x, int $i): bool {
+42 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+43 | }
+44 | function bad7(C $c, Iterator<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 45 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:45:10
+43 | }
+44 | function bad7(C $c, Iterator<Foo> $x, int $i): bool {
+45 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+46 | }
+47 | function bad8(C $c, IteratorAggregate<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 48 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:48:10
+46 | }
+47 | function bad8(C $c, IteratorAggregate<Foo> $x, int $i): bool {
+48 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+49 | }
+50 | function bad9(C $c, vec<Foo> $x, Baz $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 51 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:51:10
+49 | }
+50 | function bad9(C $c, vec<Foo> $x, Baz $i): bool {
+51 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+52 | }
+53 | function bad10(C $c, vec<Foo> $x, Bar $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#4> as Bar.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 54 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#4> as Bar. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:54:10
+52 | }
+53 | function bad10(C $c, vec<Foo> $x, Bar $i): bool {
+54 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+55 | }
+56 | function bad11(C $c, vec<Bar> $x, Foo $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
- 57 |   return $c->contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:57:10
+55 | }
+56 | function bad11(C $c, vec<Bar> $x, Foo $i): bool {
+57 |   return $c->contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+58 | }
+59 | 
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
+warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:105:10
+103 | 
+104 | function badenum(C $c, vec<string> $x, EnumInt $y): bool {
 105 |   return $c->contains($x, $y);
-    |          ^^^^^^^^^^^^^^^^^^^^
+    |          ^^^^^^^^^^^^^^^^^^^^ [1]
+106 | }
+107 | 
 
 
-warning: Lint[5809] Explicit `dynamic` type usage in APIs turn off most checks the Hack type checker performs. This frequently leads to reliability issues.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
+warning: Lint[5809] Explicit `dynamic` type usage in APIs turn off most checks the Hack type checker performs. This frequently leads to reliability issues. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:124:22
+122 |   return new ExpectObj($x);
+123 | }
 124 | function test_expect(dynamic $d):void {
-    |                      ^^^^^^^
+    |                      ^^^^^^^ [1]
+125 |   // Should be accepted
+126 |   expect(3)->isEqual(4);
 
 
-warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type int is disjoint from type string.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
+warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type int is disjoint from type string. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:128:3
+126 |   expect(3)->isEqual(4);
+127 |   // Should be rejected
 128 |   expect(3)->isEqual("A");
-    |   ^^^^^^^^^^^^^^^^^^^^^^^
+    |   ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+129 |   // Should be accepted; we don't want to warn on ~null
+130 |   $x = Shapes::idx($d[0], 'x');
 
 
-warning: Lint[5638] This call to 'isEqual' will always return the same value, because type string is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
+warning: Lint[5638] This call to 'isEqual' will always return the same value, because type string is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:134:3
+132 |   // These should behave the same, i.e. reject
+133 |   $x = new ExpectObj<string>();
 134 |   $x->isEqual(3);
-    |   ^^^^^^^^^^^^^^
-
-
-warning: Lint[5638] This call to 'isEqual' will always return the same value, because type string is disjoint from type int.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
+    |   ^^^^^^^^^^^^^^ [1]
+135 |   $y = new ExpectObjString();
 136 |   $y->isEqual(3);
-    |   ^^^^^^^^^^^^^^
 
 
-warning: Lint[5638] This call to 'isEqual' will always return the same value, because type vec<int> is disjoint from type bool.
-   --> invalid_disjoint_check_methods_overlapping_attribute.php
+warning: Lint[5638] This call to 'isEqual' will always return the same value, because type string is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:136:3
+134 |   $x->isEqual(3);
+135 |   $y = new ExpectObjString();
+136 |   $y->isEqual(3);
+    |   ^^^^^^^^^^^^^^ [1]
+137 |   $z = new ExpectObjVec<int>();
+138 |   // Should be accepted
+
+
+warning: Lint[5638] This call to 'isEqual' will always return the same value, because type vec<int> is disjoint from type bool. [1]
+
+invalid_disjoint_check_methods_overlapping_attribute.php:141:3
+139 |   $z->isEqual(vec[2]);
+140 |   // Should be rejected
 141 |   $z->isEqual(false);
-    |   ^^^^^^^^^^^^^^^^^^
+    |   ^^^^^^^^^^^^^^^^^^ [1]
+142 | }
 
 

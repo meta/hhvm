@@ -1,54 +1,99 @@
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
-  9 |   echo Shapes::idx($s, 'not_a_key');        // error, no lint
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:9:8
+ 7 | function test_closed(): void {
+ 8 |   $s = closed_shape();
+ 9 |   echo Shapes::idx($s, 'not_a_key');        // error, no lint
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+10 |   $x = $s['not_a_key'] ?? 'bli';            // error, no lint
+11 |   $s as nonnull;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 11 |   $s as nonnull;
-    |   ^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:11:3
+ 9 |   echo Shapes::idx($s, 'not_a_key');        // error, no lint
+10 |   $x = $s['not_a_key'] ?? 'bli';            // error, no lint
+11 |   $s as nonnull;
+   |   ^^^^^^^^^^^^^ [1]
+12 |   echo Shapes::idx($s, 'not_a_key');        // error, no lint
+13 |   echo Shapes::at($s, 'not_a_key');         // throw, error, no lint
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 12 |   echo Shapes::idx($s, 'not_a_key');        // error, no lint
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:12:8
+10 |   $x = $s['not_a_key'] ?? 'bli';            // error, no lint
+11 |   $s as nonnull;
+12 |   echo Shapes::idx($s, 'not_a_key');        // error, no lint
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+13 |   echo Shapes::at($s, 'not_a_key');         // throw, error, no lint
+14 |   echo Shapes::keyExists($s, 'not_a_key');  // error, no lint
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 14 |   echo Shapes::keyExists($s, 'not_a_key');  // error, no lint
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:14:8
+12 |   echo Shapes::idx($s, 'not_a_key');        // error, no lint
+13 |   echo Shapes::at($s, 'not_a_key');         // throw, error, no lint
+14 |   echo Shapes::keyExists($s, 'not_a_key');  // error, no lint
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+15 |   echo $s['not_a_key'];                     // error, no lint
+16 |   $x = $s['not_a_key'] ?? 'bli';            // error, no lint
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 25 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:25:8
+23 | function test_open(): void {
+24 |   $s = open_shape();
+25 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+26 |   $x = $s['not_a_key'] ?? 'bli';            // no error, no lint
+27 |   $s as nonnull;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 27 |   $s as nonnull;
-    |   ^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:27:3
+25 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
+26 |   $x = $s['not_a_key'] ?? 'bli';            // no error, no lint
+27 |   $s as nonnull;
+   |   ^^^^^^^^^^^^^ [1]
+28 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
+29 |   echo Shapes::at($s, 'not_a_key');         // throw, no error, no lint
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 28 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:28:8
+26 |   $x = $s['not_a_key'] ?? 'bli';            // no error, no lint
+27 |   $s as nonnull;
+28 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+29 |   echo Shapes::at($s, 'not_a_key');         // throw, no error, no lint
+30 |   echo Shapes::keyExists($s, 'not_a_key');  // no error, no lint
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 29 |   echo Shapes::at($s, 'not_a_key');         // throw, no error, no lint
-    |                   ^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:29:19
+27 |   $s as nonnull;
+28 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
+29 |   echo Shapes::at($s, 'not_a_key');         // throw, no error, no lint
+   |                   ^^ [1]
+30 |   echo Shapes::keyExists($s, 'not_a_key');  // no error, no lint
+31 |   echo $s['not_a_key'];                     // error, no lint
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> optional_closed_shape.php
- 30 |   echo Shapes::keyExists($s, 'not_a_key');  // no error, no lint
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+optional_closed_shape.php:30:8
+28 |   echo Shapes::idx($s, 'not_a_key');        // no error, no lint
+29 |   echo Shapes::at($s, 'not_a_key');         // throw, no error, no lint
+30 |   echo Shapes::keyExists($s, 'not_a_key');  // no error, no lint
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+31 |   echo $s['not_a_key'];                     // error, no lint
+32 |   $x = $s['not_a_key'] ?? 'bli';            // no error, no lint
 
 

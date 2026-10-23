@@ -1,6 +1,11 @@
-warning: Lint[5005] The field `y` is required to exist in the shape. Consider using a subscript-expression instead, such as `$myshape['y']`
-   --> shape_key_exists.php
-  7 |   Shapes::idx($s2, 'y');
-    |                    ^^^
+warning: Lint[5005] The field `y` is required to exist in the shape. Consider using a subscript-expression instead, such as `$myshape['y']` [1]
+
+shape_key_exists.php:7:20
+5 | function shape_key_exists(?shape('x' => int) $s1, shape('y' => int) $s2, ?st $s3): void {
+6 |   Shapes::idx($s1, 'x');
+7 |   Shapes::idx($s2, 'y');
+  |                    ^^^ [1]
+8 |   Shapes::idx($s3, 'z');
+9 | }
 
 

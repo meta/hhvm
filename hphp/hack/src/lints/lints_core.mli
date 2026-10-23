@@ -45,6 +45,8 @@ val to_string : Pos.absolute t -> string
 
 val to_contextual_string : Pos.absolute t -> string
 
+val to_plain_highlighted_string : ?source:string -> Pos.absolute t -> string
+
 val to_highlighted_string : Pos.absolute t -> string
 
 val to_json : Pos.absolute t -> Yojson.Safe.t

@@ -1,6 +1,11 @@
-warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics_trait.php
-  5 |   public function bar<T>(T $_t): void {}
-    |                       ^
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics_trait.php:5:23
+3 | trait FooTrait {
+4 |   // We should report the redundant type parameter here.
+5 |   public function bar<T>(T $_t): void {}
+  |                       ^ [1]
+6 | }
+7 | 
 
 

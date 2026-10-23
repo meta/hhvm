@@ -1,6 +1,11 @@
-warning: Lint[5622] Invalid condition: a value of type `(bool, bool)` will always be truthy
-   --> truthiness_test_tuple.php
-  4 |   if ($x) {
-    |       ^^
+warning: Lint[5622] Invalid condition: a value of type `(bool, bool)` will always be truthy [1]
+
+truthiness_test_tuple.php:4:7
+2 | 
+3 | function test((bool, bool) $x): void {
+4 |   if ($x) {
+  |       ^^ [1]
+5 |     do_something();
+6 |   }
 
 

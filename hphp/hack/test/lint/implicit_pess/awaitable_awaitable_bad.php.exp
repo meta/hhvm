@@ -1,12 +1,22 @@
-warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type.
-   --> awaitable_awaitable_bad.php
-  7 |       async $x ==> awaitable_awaitable_bad1($x), // should trigger rule
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type. [1]
+
+awaitable_awaitable_bad.php:7:7
+5 |       vec[],
+6 |       // should not trigger ASYNC_AWAIT_LAMBDA, but should trigger AWAITABLE_AWAITABLE
+7 |       async $x ==> awaitable_awaitable_bad1($x), // should trigger rule
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+8 |     );
+9 | }
 
 
-warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type.
-   --> awaitable_awaitable_bad.php
- 12 |   $f = async (int $x, int $y) ==> awaitable_awaitable_bad2($x + $y);
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type. [1]
+
+awaitable_awaitable_bad.php:12:8
+10 | 
+11 | async function awaitable_awaitable_bad2(int $x): Awaitable<void> {
+12 |   $f = async (int $x, int $y) ==> awaitable_awaitable_bad2($x + $y);
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+13 |   $_ = await $f(0, 0);
+14 | }
 
 

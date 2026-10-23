@@ -1,6 +1,11 @@
-warning: Lint[5609] This `is` check is always `true`. The expression on the left has type `A` which is a subtype of `I`.
-   --> is_always_true2.php
- 12 |   if ($a is I) {
-    |       ^^^^^^^
+warning: Lint[5609] This `is` check is always `true`. The expression on the left has type `A` which is a subtype of `I`. [1]
+
+is_always_true2.php:12:7
+10 | 
+11 | function test(A $a): void {
+12 |   if ($a is I) {
+   |       ^^^^^^^ [1]
+13 |     $a->f();
+14 |   }
 
 

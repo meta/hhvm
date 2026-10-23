@@ -41,9 +41,10 @@ let output_text oc el format =
     let f =
       match format with
       | Diagnostics.Extended
-      | Diagnostics.Context
-      | Diagnostics.PlainHighlighted ->
+      | Diagnostics.Context ->
         Lint.to_contextual_string
+      | Diagnostics.PlainHighlighted ->
+        (fun lint -> Lint.to_plain_highlighted_string lint)
       | Diagnostics.Raw
       | Diagnostics.Agent
       | Diagnostics.Plain ->

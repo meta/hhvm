@@ -1,6 +1,11 @@
-warning: Lint[5564] test is the only function declared in csprintf_argument_unpacking.php, so that file should be named test.php instead.
-   --> csprintf_argument_unpacking.php
-  3 | function test(string $_cmd){
-    |          ^^^^
+warning: Lint[5564] test is the only function declared in csprintf_argument_unpacking.php, so that file should be named test.php instead. [1]
+
+csprintf_argument_unpacking.php:3:10
+1 | <?hh
+2 | 
+3 | function test(string $_cmd){
+  |          ^^^^ [1]
+4 |   $_test = csprintf("test %S", "abc123");
+5 |   $_test = csprintf(
 
 

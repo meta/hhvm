@@ -1,6 +1,11 @@
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> expression_tree.php
-  4 |   $x = ExampleDsl`() ==> { $x = 1; if (true) { $x = 2; } }`;
-    |                                        ^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+expression_tree.php:4:40
+2 | 
+3 | function foo(): void {
+4 |   $x = ExampleDsl`() ==> { $x = 1; if (true) { $x = 2; } }`;
+  |                                        ^^^^ [1]
+5 | }
+6 | 
 
 

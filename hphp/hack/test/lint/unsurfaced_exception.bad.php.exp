@@ -6,9 +6,14 @@ For example, if the `try` block was attempting to send a birthday notification, 
 
 If the exception is not an actual error, but is intentionally thrown to control the flow of your code (sometimes called "GOTO programming"), you should catch a more specific exception type here.
 
-See https://fburl.com/hacklint5811 for guidance and caveats.
-   --> unsurfaced_exception.bad.php
-  9 |     } catch (ViolationException $_) {
-    |                                 ^^
+See https://fburl.com/hacklint5811 for guidance and caveats. [1]
+
+unsurfaced_exception.bad.php:9:33
+ 7 |     try {
+ 8 |       $this->stuff(null);
+ 9 |     } catch (ViolationException $_) {
+   |                                 ^^ [1]
+10 |       $this->stuff(null);
+11 |     }
 
 

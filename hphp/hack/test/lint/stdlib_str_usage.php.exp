@@ -1,18 +1,32 @@
-warning: Lint[5564] f is the only function declared in stdlib_str_usage.php, so that file should be named f.php instead.
-   --> stdlib_str_usage.php
-  3 | function f() {
-    |          ^
+warning: Lint[5564] f is the only function declared in stdlib_str_usage.php, so that file should be named f.php instead. [1]
+
+stdlib_str_usage.php:3:10
+1 | <?hh
+2 | 
+3 | function f() {
+  |          ^ [1]
+4 |   if (strstr("asdf", "s") === false) {}
+5 |   if (strpos("asdf", "a") === 0) {}
 
 
-warning: Lint[5556] There are no statements in the body of this `if` branch.
-   --> stdlib_str_usage.php
-  4 |   if (strstr("asdf", "s") === false) {}
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5556] There are no statements in the body of this `if` branch. [1]
+
+stdlib_str_usage.php:4:7
+2 | 
+3 | function f() {
+4 |   if (strstr("asdf", "s") === false) {}
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+5 |   if (strpos("asdf", "a") === 0) {}
+6 | }
 
 
-warning: Lint[5556] There are no statements in the body of this `if` branch.
-   --> stdlib_str_usage.php
-  5 |   if (strpos("asdf", "a") === 0) {}
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5556] There are no statements in the body of this `if` branch. [1]
+
+stdlib_str_usage.php:5:7
+3 | function f() {
+4 |   if (strstr("asdf", "s") === false) {}
+5 |   if (strpos("asdf", "a") === 0) {}
+  |       ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+6 | }
 
 

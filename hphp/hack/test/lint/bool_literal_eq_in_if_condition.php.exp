@@ -1,78 +1,142 @@
-warning: Lint[5643] Consider changing this statement to ($x) instead
-   --> bool_literal_eq_in_if_condition.php
-  3 |   if ($x == true) {
-    |       ^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($x) instead [1]
+
+bool_literal_eq_in_if_condition.php:3:7
+1 | <?hh
+2 | function check1(bool $x): int {
+3 |   if ($x == true) {
+  |       ^^^^^^^^^^ [1]
+4 |     return 1;
+5 |   }
 
 
-warning: Lint[5643] Consider changing this statement to (!$y) instead
-   --> bool_literal_eq_in_if_condition.php
-  8 |   if ($y == false) {
-    |       ^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to (!$y) instead [1]
+
+bool_literal_eq_in_if_condition.php:8:7
+ 6 | }
+ 7 | function check2(bool $y): int {
+ 8 |   if ($y == false) {
+   |       ^^^^^^^^^^^ [1]
+ 9 |     return 2;
+10 |   }
 
 
-warning: Lint[5643] Consider changing this statement to ($x) instead
-   --> bool_literal_eq_in_if_condition.php
- 14 |   if (true == $x) {
-    |       ^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($x) instead [1]
+
+bool_literal_eq_in_if_condition.php:14:7
+12 | 
+13 | function check3(bool $x): int {
+14 |   if (true == $x) {
+   |       ^^^^^^^^^^ [1]
+15 |     return 2;
+16 |   }
 
 
-warning: Lint[5643] Consider changing this statement to (!$x) instead
-   --> bool_literal_eq_in_if_condition.php
- 19 |   if (false == $x) {
-    |       ^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to (!$x) instead [1]
+
+bool_literal_eq_in_if_condition.php:19:7
+17 | }
+18 | function check4(bool $x): int {
+19 |   if (false == $x) {
+   |       ^^^^^^^^^^^ [1]
+20 |     return 2;
+21 |   }
 
 
-warning: Lint[5643] Consider changing this statement to ($y) instead
-   --> bool_literal_eq_in_if_condition.php
- 25 |   if ($y === true) {
-    |       ^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($y) instead [1]
+
+bool_literal_eq_in_if_condition.php:25:7
+23 | 
+24 | function check5(bool $y): int {
+25 |   if ($y === true) {
+   |       ^^^^^^^^^^^ [1]
+26 |     return 1;
+27 |   }
 
 
-warning: Lint[5643] Consider changing this statement to (!$x) instead
-   --> bool_literal_eq_in_if_condition.php
- 30 |   if ($x === false) {
-    |       ^^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to (!$x) instead [1]
+
+bool_literal_eq_in_if_condition.php:30:7
+28 | }
+29 | function check6(bool $x): int {
+30 |   if ($x === false) {
+   |       ^^^^^^^^^^^^ [1]
+31 |     return 2;
+32 |   }
 
 
-warning: Lint[5643] Consider changing this statement to ($x) instead
-   --> bool_literal_eq_in_if_condition.php
- 36 |   if (true === $x) {
-    |       ^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($x) instead [1]
+
+bool_literal_eq_in_if_condition.php:36:7
+34 | 
+35 | function check7(bool $x): int {
+36 |   if (true === $x) {
+   |       ^^^^^^^^^^^ [1]
+37 |     return 2;
+38 |   }
 
 
-warning: Lint[5643] Consider changing this statement to (!$x) instead
-   --> bool_literal_eq_in_if_condition.php
- 41 |   if (false === $x) {
-    |       ^^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to (!$x) instead [1]
+
+bool_literal_eq_in_if_condition.php:41:7
+39 | }
+40 | function check8(bool $x): int {
+41 |   if (false === $x) {
+   |       ^^^^^^^^^^^^ [1]
+42 |     return 2;
+43 |   }
 
 
-warning: Lint[5643] Consider changing this statement to ($x) instead
-   --> bool_literal_eq_in_if_condition.php
- 59 |   while ($x == true) {
-    |          ^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($x) instead [1]
+
+bool_literal_eq_in_if_condition.php:59:10
+57 | 
+58 | function check11(bool $x, int $i): int {
+59 |   while ($x == true) {
+   |          ^^^^^^^^^^ [1]
+60 |     $i++;
+61 |   }
 
 
-warning: Lint[5643] Consider changing this statement to (!$x) instead
-   --> bool_literal_eq_in_if_condition.php
- 66 |   } while ($x == false);
-    |            ^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to (!$x) instead [1]
+
+bool_literal_eq_in_if_condition.php:66:12
+64 |   do {
+65 |     $i++;
+66 |   } while ($x == false);
+   |            ^^^^^^^^^^^ [1]
+67 | }
+68 | function check13(bool $x, int $i): int {
 
 
-warning: Lint[5643] Consider changing this statement to ($x) instead
-   --> bool_literal_eq_in_if_condition.php
- 69 |   for ($j = 0; $x == true; ++$j) {
-    |                ^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($x) instead [1]
+
+bool_literal_eq_in_if_condition.php:69:16
+67 | }
+68 | function check13(bool $x, int $i): int {
+69 |   for ($j = 0; $x == true; ++$j) {
+   |                ^^^^^^^^^^ [1]
+70 |     $i++;
+71 |   }
 
 
-warning: Lint[5643] Consider changing this statement to ($x) instead
-   --> bool_literal_eq_in_if_condition.php
- 74 |   $y = $x === true;
-    |        ^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($x) instead [1]
+
+bool_literal_eq_in_if_condition.php:74:8
+72 | }
+73 | function check14(bool $x, bool $y, int $i): int {
+74 |   $y = $x === true;
+   |        ^^^^^^^^^^^ [1]
+75 | }
+76 | function check15(bool $x, bool $y, int $i): int {
 
 
-warning: Lint[5643] Consider changing this statement to ($x) instead
-   --> bool_literal_eq_in_if_condition.php
- 77 |   foo($x === true);
-    |       ^^^^^^^^^^^
+warning: Lint[5643] Consider changing this statement to ($x) instead [1]
+
+bool_literal_eq_in_if_condition.php:77:7
+75 | }
+76 | function check15(bool $x, bool $y, int $i): int {
+77 |   foo($x === true);
+   |       ^^^^^^^^^^^ [1]
+78 | }
 
 

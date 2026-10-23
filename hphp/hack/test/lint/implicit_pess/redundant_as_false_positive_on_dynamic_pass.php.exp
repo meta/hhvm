@@ -1,12 +1,22 @@
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_as_false_positive_on_dynamic_pass.php
-  6 |   $traversable = idx($map, 'traversable') as Traversable<_>;
-    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_as_false_positive_on_dynamic_pass.php:6:18
+4 |   Map<string, mixed> $map
+5 | ): void {
+6 |   $traversable = idx($map, 'traversable') as Traversable<_>;
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+7 | 
+8 |   $vector = new Vector($traversable);
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_as_false_positive_on_dynamic_pass.php
- 11 |     $element as KeyedContainer<_, _>;
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_as_false_positive_on_dynamic_pass.php:11:5
+ 9 | 
+10 |   foreach ($vector as $element) {
+11 |     $element as KeyedContainer<_, _>;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+12 |   }
+13 | }
 
 

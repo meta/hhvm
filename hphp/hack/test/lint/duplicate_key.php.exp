@@ -1,30 +1,67 @@
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> duplicate_key.php
-  5 |   return dict[
-    |          ^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+duplicate_key.php:5:10
+ 3 | 
+ 4 | function f1(): array<string, int> {
+ 5 |   return dict[
+   |          ^^^^^ [1]
+ 6 |     'a' => 1,
+   |     ^^^^^^^^^ [1]
+ 7 |     'b' => 2,
+   |     ^^^^^^^^^ [1]
+ 8 |   ];
+   |   ^ [1]
+ 9 | }
+10 | 
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> duplicate_key.php
- 12 |   return dict[
-    |          ^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+duplicate_key.php:12:10
+10 | 
+11 | function f2(): array<string, int> {
+12 |   return dict[
+   |          ^^^^^ [1]
+13 |     'a' => 1,
+   |     ^^^^^^^^^ [1]
+14 |     'a' => 2,
+   |     ^^^^^^^^^ [1]
+15 |   ];
+   |   ^ [1]
+16 | }
+17 | 
 
 
-warning: Lint[5575] This assignment to key `'a'` overwrites previous assignment on line 13.
-   --> duplicate_key.php
- 14 |     'a' => 2,
-    |     ^^^
+warning: Lint[5575] This assignment to key `'a'` overwrites previous assignment on line 13. [1]
+
+duplicate_key.php:14:5
+12 |   return dict[
+13 |     'a' => 1,
+14 |     'a' => 2,
+   |     ^^^ [1]
+15 |   ];
+16 | }
 
 
-warning: Lint[5575] This assignment to key `'p'` overwrites previous assignments on lines 28, 29.
-   --> duplicate_key.php
- 30 |     'p' => 3,
-    |     ^^^
+warning: Lint[5575] This assignment to key `'p'` overwrites previous assignments on lines 28, 29. [1]
+
+duplicate_key.php:30:5
+28 |     'p' => 1,
+29 |     'p' => 2,
+30 |     'p' => 3,
+   |     ^^^ [1]
+31 |   };
+32 | }
 
 
-warning: Lint[5575] This assignment to key `'x'` overwrites previous assignments on lines 44, 45.
-   --> duplicate_key.php
- 46 |     'x' => 3,
-    |     ^^^
+warning: Lint[5575] This assignment to key `'x'` overwrites previous assignments on lines 44, 45. [1]
+
+duplicate_key.php:46:5
+44 |     'x' => 1,
+45 |     'x' => 2,
+46 |     'x' => 3,
+   |     ^^^ [1]
+47 |   };
+48 | }
 
 

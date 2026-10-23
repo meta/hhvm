@@ -1,12 +1,21 @@
-warning: Lint[5564] test is the only function declared in call_user_func_array_sgrep.php, so that file should be named test.php instead.
-   --> call_user_func_array_sgrep.php
-  3 | function test() {
-    |          ^^^^
+warning: Lint[5564] test is the only function declared in call_user_func_array_sgrep.php, so that file should be named test.php instead. [1]
+
+call_user_func_array_sgrep.php:3:10
+1 | <?hh
+2 | 
+3 | function test() {
+  |          ^^^^ [1]
+4 |   call_user_func_array();
+5 | }
 
 
-warning: Lint[5542] Use argument unpacking instead. See https://www.facebook.com/groups/hackforhiphop/permalink/762166013832016/
-   --> call_user_func_array_sgrep.php
-  4 |   call_user_func_array();
-    |   ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5542] Use argument unpacking instead. See https://www.facebook.com/groups/hackforhiphop/permalink/762166013832016/ [1]
+
+call_user_func_array_sgrep.php:4:3
+2 | 
+3 | function test() {
+4 |   call_user_func_array();
+  |   ^^^^^^^^^^^^^^^^^^^^ [1]
+5 | }
 
 

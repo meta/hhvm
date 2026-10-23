@@ -1,120 +1,362 @@
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
-  4 | function foo1(): void {
-    | ^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:4:1
+2 | // @format
+3 | 
+4 | function foo1(): void {
+  | ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+5 |   foo1(); //should produce lint
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+6 | }
+  | ^ [1]
+7 | function foo2(): void {
+8 |   foo2(); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
-  7 | function foo2(): void {
-    | ^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:7:1
+ 5 |   foo1(); //should produce lint
+ 6 | }
+ 7 | function foo2(): void {
+   | ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+ 8 |   foo2(); //should produce lint
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+ 9 |   $x = 1;
+   |   ^^^^^^^ [1]
+10 | }
+   | ^ [1]
+11 | function foo3(): void {
+12 |   $x = 1; //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
- 11 | function foo3(): void {
-    | ^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:11:1
+ 9 |   $x = 1;
+10 | }
+11 | function foo3(): void {
+   | ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+12 |   $x = 1; //should produce lint
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+13 |   foo3();
+   |   ^^^^^^^ [1]
+14 | }
+   | ^ [1]
+15 | function foo4(int $x): void {
+16 |   foo4($x); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
- 15 | function foo4(int $x): void {
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:15:1
+13 |   foo3();
+14 | }
+15 | function foo4(int $x): void {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+16 |   foo4($x); //should produce lint
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+17 | }
+   | ^ [1]
+18 | function foo5(): void {
+19 |   foo3(); //should not produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
- 21 | async function foo6(): Awaitable<void> {
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:21:1
+19 |   foo3(); //should not produce lint
+20 | }
+21 | async function foo6(): Awaitable<void> {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+22 |   await foo6(); //should produce lint
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+23 | }
+   | ^ [1]
+24 | 
+25 | function test_throw_lint(): Error {
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
- 25 | function test_throw_lint(): Error {
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:25:1
+23 | }
+24 | 
+25 | function test_throw_lint(): Error {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+26 |   throw test_throw_lint(); // should produce lint
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+27 | }
+   | ^ [1]
+28 | 
+29 | //Testing for conditionals
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
- 46 | function test_multiple_base_cases_lint(int $x): int {
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:46:1
+44 | }
+45 | 
+46 | function test_multiple_base_cases_lint(int $x): int {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+47 |   if ($x == 1) {
+   |   ^^^^^^^^^^^^^^ [1]
+48 |     return test_multiple_base_cases_lint($x);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+49 |   } else if ($x == 2) {
+   |   ^^^^^^^^^^^^^^^^^^^^^ [1]
+50 |     return test_multiple_base_cases_lint(1);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+51 |   }
+   |   ^ [1]
+52 |   return test_multiple_base_cases_lint($x); //should produce lint
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+53 | }
+   | ^ [1]
+54 | 
+55 | function test_multiple_base_cases_no_lint(int $x): int {
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
- 73 | function test_multiple_base_cases_lint_throw(int $x): Error {
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:73:1
+71 | }
+72 | 
+73 | function test_multiple_base_cases_lint_throw(int $x): Error {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+74 |   if ($x == 1) {
+   |   ^^^^^^^^^^^^^^ [1]
+75 |     throw test_multiple_base_cases_lint_throw($x);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+76 |   } else if ($x == 2) {
+   |   ^^^^^^^^^^^^^^^^^^^^^ [1]
+77 |     return test_multiple_base_cases_lint_throw(1);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+78 |   }
+   |   ^ [1]
+79 |   return test_multiple_base_cases_lint_throw($x); //should produce lint
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+80 | }
+   | ^ [1]
+81 | 
+82 | function test_return_in_else_no_lint(int $x): int {
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:92:1
+ 90 | }
+ 91 | 
  92 | function test_nested_ifs_lint(int $x): int {
-    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+ 93 |   if ($x == 1) {
+    |   ^^^^^^^^^^^^^^ [1]
+ 94 |     if ($x == 2) {
+    |     ^^^^^^^^^^^^^^ [1]
+ 95 |       return test_nested_ifs_lint($x);
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+ 96 |     }
+    |     ^ [1]
+ 97 |   } else if ($x == 2) {
+    |   ^^^^^^^^^^^^^^^^^^^^^ [1]
+ 98 |     return test_nested_ifs_lint(1);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+ 99 |   }
+    |   ^ [1]
+100 |   return test_nested_ifs_lint($x); //should produce lint
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+101 | }
+    | ^ [1]
+102 | 
+103 | function test_nested_ifs_no_lint(int $x): int {
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:122:3
+120 | 
+121 | class Foo {
 122 |   public static function bar(): void {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+123 |     Foo::bar(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+124 |   }
+    |   ^ [1]
 125 |   public static function bar2(): void {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+126 |     static::bar2(); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:125:3
+123 |     Foo::bar(); //should produce lint
+124 |   }
+125 |   public static function bar2(): void {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+126 |     static::bar2(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+127 |   }
+    |   ^ [1]
 128 |   public function bar4(): void {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+129 |     $this->bar4(); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:128:3
+126 |     static::bar2(); //should produce lint
+127 |   }
+128 |   public function bar4(): void {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+129 |     $this->bar4(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+130 |   }
+    |   ^ [1]
 131 |   public static function bar5(int $x): void {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+132 |     Foo::bar5($x); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:131:3
+129 |     $this->bar4(); //should produce lint
+130 |   }
+131 |   public static function bar5(int $x): void {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+132 |     Foo::bar5($x); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+133 |   }
+    |   ^ [1]
 134 |   public static function returnBar(): int {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+135 |     return Foo::returnBar(); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:134:3
+132 |     Foo::bar5($x); //should produce lint
+133 |   }
+134 |   public static function returnBar(): int {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+135 |     return Foo::returnBar(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+136 |   }
+    |   ^ [1]
 137 |   public static function returnBar2(): int {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+138 |     return static::returnBar2(); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:137:3
+135 |     return Foo::returnBar(); //should produce lint
+136 |   }
+137 |   public static function returnBar2(): int {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+138 |     return static::returnBar2(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+139 |   }
+    |   ^ [1]
+140 | 
 141 |   public static function returnBar3(): int {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:141:3
+139 |   }
+140 | 
+141 |   public static function returnBar3(): int {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+142 |     return self::returnBar3(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+143 |   }
+    |   ^ [1]
 144 |   public function returnBar4(): int {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+145 |     return $this->returnBar4(); //should produce lint
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:144:3
+142 |     return self::returnBar3(); //should produce lint
+143 |   }
+144 |   public function returnBar4(): int {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+145 |     return $this->returnBar4(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+146 |   }
+    |   ^ [1]
+147 | 
 148 |   public async function returnAwaitExpr(): Awaitable<void> {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:148:3
+146 |   }
+147 | 
+148 |   public async function returnAwaitExpr(): Awaitable<void> {
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+149 |     return await $this->returnAwaitExpr(); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+150 |   }
+    |   ^ [1]
+151 |   public function returnBar5(): int {
+152 |     $x1 = 2;
+
+
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:158:3
+156 |     return $this->returnBar5(); //should not produce lint
+157 |   }
 158 |   public function testMultipleBaseCasesLint(int $x): int {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+159 |     if ($x == 1) {
+    |     ^^^^^^^^^^^^^^ [1]
+160 |       return $this->testMultipleBaseCasesLint($x);
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+161 |     } else if ($x == 2) {
+    |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+162 |       return $this->testMultipleBaseCasesLint(1);
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+163 |     }
+    |     ^ [1]
+164 |     return $this->testMultipleBaseCasesLint($x); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+165 |   }
+    |   ^ [1]
+166 | 
+167 |   public function testMultipleBaseCasesNoLint(int $x): int {
 
 
-warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case.
-   --> recursion_no_base_case.php
+warning: Lint[5645] This is a recursive function with no base case to terminate. This will result in a Stack Overflow error. Consider adding a base case. [1]
+
+recursion_no_base_case.php:186:3
+184 |   }
+185 | 
 186 |   public function testNestedIfsLint(int $x): int {
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+187 |     if ($x == 1) {
+    |     ^^^^^^^^^^^^^^ [1]
+188 |       if ($x == 2) {
+    |       ^^^^^^^^^^^^^^ [1]
+189 |         return $this->testNestedIfsLint($x);
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+190 |       }
+    |       ^ [1]
+191 |     } else if ($x == 2) {
+    |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+192 |       return $this->testNestedIfsLint(1);
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+193 |     }
+    |     ^ [1]
+194 |     return $this->testNestedIfsLint($x); //should produce lint
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+195 |   }
+    |   ^ [1]
+196 | 
+197 |   public function testNestedIfsNoLint(int $x): int {
 
 

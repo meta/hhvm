@@ -1,24 +1,43 @@
-warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module.
-   --> lint_internal_class.php--use.php
-  7 |   $y = Foo::class;
-    |        ^^^
+warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module. [1]
+
+lint_internal_class.php--use.php:7:8
+5 | internal class Foo {
+6 |   public function foo(): void {
+7 |   $y = Foo::class;
+  |        ^^^ [1]
+8 |   $y = static::class;
+9 |   }
 
 
-warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module.
-   --> lint_internal_class.php--use.php
-  8 |   $y = static::class;
-    |        ^^^^^^
+warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module. [1]
+
+lint_internal_class.php--use.php:8:8
+ 6 |   public function foo(): void {
+ 7 |   $y = Foo::class;
+ 8 |   $y = static::class;
+   |        ^^^^^^ [1]
+ 9 |   }
+10 | }
 
 
-warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module.
-   --> lint_internal_class.php--use.php
- 14 |     $y = parent::class;
-    |          ^^^^^^
+warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module. [1]
+
+lint_internal_class.php--use.php:14:10
+12 | public class Bar extends Foo {
+13 |   public function test(): void {
+14 |     $y = parent::class;
+   |          ^^^^^^ [1]
+15 |   }
+16 | 
 
 
-warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module.
-   --> lint_internal_class.php--use.php
- 33 |   $x = InternalForSealed::class;
-    |        ^^^^^^^^^^^^^^^^^
+warning: Lint[5649] This is a classname of an `internal` class. Internal classnames are dangerous because they are effectively raw strings. Please avoid them, or make sure that they are never used outside of the module. [1]
+
+lint_internal_class.php--use.php:33:8
+31 | 
+32 | function uses_internal_outside_sealed(): void {
+33 |   $x = InternalForSealed::class;
+   |        ^^^^^^^^^^^^^^^^^ [1]
+34 | }
 
 

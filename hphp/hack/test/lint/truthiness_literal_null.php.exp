@@ -1,6 +1,11 @@
-warning: Lint[5622] Invalid condition: a value of type `null` will always be falsy
-   --> truthiness_literal_null.php
-  5 |   if ($x) {
-    |       ^^
+warning: Lint[5622] Invalid condition: a value of type `null` will always be falsy [1]
+
+truthiness_literal_null.php:5:7
+3 | function test(): void {
+4 |   $x = null;
+5 |   if ($x) {
+  |       ^^ [1]
+6 |     do_something();
+7 |   }
 
 

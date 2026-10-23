@@ -1,21 +1,36 @@
 warning: Lint[5607] Invalid comparison: This expression will always return `false`.
-A value of type `Foo` can never be equal to a value of type `string`
-   --> invalid_opaque_enum_equality_check_against_incompatible_type.php
-  9 |   if ($f === $s) {
-    |       ^^^^^^^^^
+A value of type `Foo` can never be equal to a value of type `string` [1]
+
+invalid_opaque_enum_equality_check_against_incompatible_type.php:9:7
+ 7 | function test1(Foo $f, string $s): void {
+ 8 |   // This is invalid and will always evaluate to false at runtime.
+ 9 |   if ($f === $s) {
+   |       ^^^^^^^^^ [1]
+10 |     var_dump($f);
+11 |   }
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<string>` cannot contain a value of type `Foo`
-   --> invalid_opaque_enum_equality_check_against_incompatible_type.php
- 24 |   if (HH\Lib\C\contains($strs, $f)) {
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<string>` cannot contain a value of type `Foo` [1]
+
+invalid_opaque_enum_equality_check_against_incompatible_type.php:24:7
+22 | function test3(vec<string> $strs, Foo $f): void {
+23 |   // This is invalid and will always evaluate to false at runtime.
+24 |   if (HH\Lib\C\contains($strs, $f)) {
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+25 |     var_dump($f);
+26 |   }
 
 
 warning: Lint[5608] Invalid `C\contains_key` check: This call will always return `false`.
-A `KeyedTraversable<string, ...>` cannot contain a key of type `Foo`
-   --> invalid_opaque_enum_equality_check_against_incompatible_type.php
- 31 |   if (HH\Lib\C\contains_key($strs, $f)) {
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A `KeyedTraversable<string, ...>` cannot contain a key of type `Foo` [1]
+
+invalid_opaque_enum_equality_check_against_incompatible_type.php:31:7
+29 | function test4(keyset<string> $strs, Foo $f): void {
+30 |   // This is invalid and will always evaluate to false at runtime.
+31 |   if (HH\Lib\C\contains_key($strs, $f)) {
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+32 |     var_dump($f);
+33 |   }
 
 

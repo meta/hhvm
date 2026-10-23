@@ -1,6 +1,11 @@
-warning: Lint[5622] Invalid condition: a value of type `C` will always be truthy
-   --> truthiness_test_20.php
-  8 |   if ($x) {
-    |       ^^
+warning: Lint[5622] Invalid condition: a value of type `C` will always be truthy [1]
+
+truthiness_test_20.php:8:7
+ 6 | 
+ 7 | function test(C $x): void {
+ 8 |   if ($x) {
+   |       ^^ [1]
+ 9 |     do_something();
+10 |   }
 
 

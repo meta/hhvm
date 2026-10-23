@@ -1,21 +1,36 @@
 warning: Lint[5607] Invalid comparison: This expression will always return `false`.
-A value of type `Foo` can never be equal to a value of type `Bar`
-   --> invalid_opaque_enum_equality_check_against_opaque_enum_with_different_backing_type.php
- 13 |   if ($f === $b) {
-    |       ^^^^^^^^^
+A value of type `Foo` can never be equal to a value of type `Bar` [1]
+
+invalid_opaque_enum_equality_check_against_opaque_enum_with_different_backing_type.php:13:7
+11 | function test1(Foo $f, Bar $b): void {
+12 |   // This is invalid and will always evaluate to false at runtime.
+13 |   if ($f === $b) {
+   |       ^^^^^^^^^ [1]
+14 |     var_dump($f);
+15 |   }
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Bar>` cannot contain a value of type `Foo`
-   --> invalid_opaque_enum_equality_check_against_opaque_enum_with_different_backing_type.php
- 28 |   if (HH\Lib\C\contains($bs, $f)) {
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Bar>` cannot contain a value of type `Foo` [1]
+
+invalid_opaque_enum_equality_check_against_opaque_enum_with_different_backing_type.php:28:7
+26 | function test3(vec<Bar> $bs, Foo $f): void {
+27 |   // This is invalid and will always evaluate to false at runtime.
+28 |   if (HH\Lib\C\contains($bs, $f)) {
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+29 |     var_dump($f);
+30 |   }
 
 
 warning: Lint[5608] Invalid `C\contains_key` check: This call will always return `false`.
-A `KeyedTraversable<Bar, ...>` cannot contain a key of type `Foo`
-   --> invalid_opaque_enum_equality_check_against_opaque_enum_with_different_backing_type.php
- 35 |   if (HH\Lib\C\contains_key($bs, $f)) {
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A `KeyedTraversable<Bar, ...>` cannot contain a key of type `Foo` [1]
+
+invalid_opaque_enum_equality_check_against_opaque_enum_with_different_backing_type.php:35:7
+33 | function test4(keyset<Bar> $bs, Foo $f): void {
+34 |   // This is invalid and will always evaluate to false at runtime.
+35 |   if (HH\Lib\C\contains_key($bs, $f)) {
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+36 |     var_dump($f);
+37 |   }
 
 

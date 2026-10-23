@@ -1,6 +1,11 @@
-warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type.
-   --> awaitable_like_awaitable.php
-  6 |   async () ==> gen($i);
-    |   ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type. [1]
+
+awaitable_like_awaitable.php:6:3
+4 | 
+5 | function foo(I $i): void {
+6 |   async () ==> gen($i);
+  |   ^^^^^^^^^^^^^^^^^^^^ [1]
+7 | }
+8 | 
 
 

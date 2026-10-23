@@ -1,54 +1,97 @@
-warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position with useless `super` bound. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
-  9 |   public function onlycontravariantsuper<T super TCov>(T $_x):void { }
-    |                                          ^
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position with useless `super` bound. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:9:42
+ 7 | final class Contra<-T> { }
+ 8 | final class Cov<+TCov> {
+ 9 |   public function onlycontravariantsuper<T super TCov>(T $_x):void { }
+   |                                          ^ [1]
+10 | }
+11 | interface I { }
 
 
-warning: Lint[5624] The generic parameter `T` is unused.
-   --> redundant_generics.php
- 13 |   public function nowhere<T>(int $_x):void { }
-    |                           ^
+warning: Lint[5624] The generic parameter `T` is unused. [1]
+
+redundant_generics.php:13:27
+11 | interface I { }
+12 | final class C<+Tc> {
+13 |   public function nowhere<T>(int $_x):void { }
+   |                           ^ [1]
+14 |   public function onlycovariant1<T>(): T {
+15 |     throw new Exception("a");
 
 
-warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
- 14 |   public function onlycovariant1<T>(): T {
-    |                                  ^
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:14:34
+12 | final class C<+Tc> {
+13 |   public function nowhere<T>(int $_x):void { }
+14 |   public function onlycovariant1<T>(): T {
+   |                                  ^ [1]
+15 |     throw new Exception("a");
+16 |   }
 
 
-warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `I` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
- 17 |   public function onlycontravariant1<T as I>(T $_x): void { }
-    |                                      ^
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `I` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:17:38
+15 |     throw new Exception("a");
+16 |   }
+17 |   public function onlycontravariant1<T as I>(T $_x): void { }
+   |                                      ^ [1]
+18 |   public function onlycontravariant2<T>(): Contra<T> {
+19 |     return new Contra();
 
 
-warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
- 18 |   public function onlycontravariant2<T>(): Contra<T> {
-    |                                      ^
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:18:38
+16 |   }
+17 |   public function onlycontravariant1<T as I>(T $_x): void { }
+18 |   public function onlycontravariant2<T>(): Contra<T> {
+   |                                      ^ [1]
+19 |     return new Contra();
+20 |   }
 
 
-warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
- 21 |   public function onlycontravariant3<T>(T $_x): Contra<T> {
-    |                                      ^
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:21:38
+19 |     return new Contra();
+20 |   }
+21 |   public function onlycontravariant3<T>(T $_x): Contra<T> {
+   |                                      ^ [1]
+22 |     return new Contra();
+23 |   }
 
 
-warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
- 24 |   public function onlycovariant2<T>((function(T):void) $_f) : void { }
-    |                                  ^
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:24:34
+22 |     return new Contra();
+23 |   }
+24 |   public function onlycovariant2<T>((function(T):void) $_f) : void { }
+   |                                  ^ [1]
+25 | }
+26 | 
 
 
-warning: Lint[5624] The generic parameter `TEMV` is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
- 32 |     TEMV as IEMVB<TVC>
-    |     ^^^^
+warning: Lint[5624] The generic parameter `TEMV` is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:32:5
+30 |   function blah<
+31 |     TVC as IVCB,
+32 |     TEMV as IEMVB<TVC>
+   |     ^^^^ [1]
+33 |   >(
+34 |     vec<IPRB<TVC, TEMV>> $_rules,
 
 
-warning: Lint[5624] The generic parameter `Tv` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter
-   --> redundant_generics.php
- 43 | function mysort_where<Tv,T>(inout T $_arg): bool where T as Container<Tv> { return false; }
-    |                       ^^
+warning: Lint[5624] The generic parameter `Tv` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics.php:43:23
+41 | }
+42 | 
+43 | function mysort_where<Tv,T>(inout T $_arg): bool where T as Container<Tv> { return false; }
+   |                       ^^ [1]
 
 

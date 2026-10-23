@@ -1,7 +1,12 @@
 warning: Lint[5623] `$x` is a sketchy condition: testing the truthiness of an array key (int | string) may not behave as expected.
-The values `0`, `""`, and `"0"` are all considered falsy. Test for them explicitly.
-   --> truthiness_test_13.php
-  4 |   if ($x) {
-    |       ^^
+The values `0`, `""`, and `"0"` are all considered falsy. Test for them explicitly. [1]
+
+truthiness_test_13.php:4:7
+2 | 
+3 | function test(arraykey $x): void {
+4 |   if ($x) {
+  |       ^^ [1]
+5 |     do_something();
+6 |   }
 
 

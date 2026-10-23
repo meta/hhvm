@@ -1,48 +1,87 @@
-warning: Lint[5648] This use of `(int)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
-  4 |   (int) $i;
-    |   ^^^^^^^^
+warning: Lint[5648] This use of `(int)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:4:3
+2 | 
+3 | function redundant_int_casts(int $i): void {
+4 |   (int) $i;
+  |   ^^^^^^^^ [1]
+5 |   (int) 42;
+6 |   (int) 10 + 100;
 
 
-warning: Lint[5648] This use of `(int)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
-  5 |   (int) 42;
-    |   ^^^^^^^^
+warning: Lint[5648] This use of `(int)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:5:3
+3 | function redundant_int_casts(int $i): void {
+4 |   (int) $i;
+5 |   (int) 42;
+  |   ^^^^^^^^ [1]
+6 |   (int) 10 + 100;
+7 | }
 
 
-warning: Lint[5648] This use of `(int)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
-  6 |   (int) 10 + 100;
-    |   ^^^^^^^^
+warning: Lint[5648] This use of `(int)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:6:3
+4 |   (int) $i;
+5 |   (int) 42;
+6 |   (int) 10 + 100;
+  |   ^^^^^^^^ [1]
+7 | }
+8 | 
 
 
-warning: Lint[5648] This use of `(string)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
- 10 |   (string) $s;
-    |   ^^^^^^^^^^^
+warning: Lint[5648] This use of `(string)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:10:3
+ 8 | 
+ 9 | function redundant_string_casts(string $s): void {
+10 |   (string) $s;
+   |   ^^^^^^^^^^^ [1]
+11 |   (string) 'hello';
+12 |   (string) 'hello'.'bye';
 
 
-warning: Lint[5648] This use of `(string)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
- 11 |   (string) 'hello';
-    |   ^^^^^^^^^^^^^^^^
+warning: Lint[5648] This use of `(string)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:11:3
+ 9 | function redundant_string_casts(string $s): void {
+10 |   (string) $s;
+11 |   (string) 'hello';
+   |   ^^^^^^^^^^^^^^^^ [1]
+12 |   (string) 'hello'.'bye';
+13 | }
 
 
-warning: Lint[5648] This use of `(string)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
- 12 |   (string) 'hello'.'bye';
-    |   ^^^^^^^^^^^^^^^^
+warning: Lint[5648] This use of `(string)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:12:3
+10 |   (string) $s;
+11 |   (string) 'hello';
+12 |   (string) 'hello'.'bye';
+   |   ^^^^^^^^^^^^^^^^ [1]
+13 | }
+14 | 
 
 
-warning: Lint[5648] This use of `(float)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
- 16 |   (float) $f + 42;   // Redundant due to $f
-    |   ^^^^^^^^^^
+warning: Lint[5648] This use of `(float)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:16:3
+14 | 
+15 | function redundant_float_casts(float $f): void {
+16 |   (float) $f + 42;   // Redundant due to $f
+   |   ^^^^^^^^^^ [1]
+17 |   (float) ($f + 42); // Redundant due to implicit coercion
+18 | }
 
 
-warning: Lint[5648] This use of `(float)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint.
-   --> reundant_cast1.php
- 17 |   (float) ($f + 42); // Redundant due to implicit coercion
-    |   ^^^^^^^^^^^^^^^^^
+warning: Lint[5648] This use of `(float)` is redundant since the type of the expression is a subtype of the type being cast to. Please consider removing this cast. This cast is runtime significant and types might occasionally lie. Please be prudent when acting on this lint. [1]
+
+reundant_cast1.php:17:3
+15 | function redundant_float_casts(float $f): void {
+16 |   (float) $f + 42;   // Redundant due to $f
+17 |   (float) ($f + 42); // Redundant due to implicit coercion
+   |   ^^^^^^^^^^^^^^^^^ [1]
+18 | }
 
 

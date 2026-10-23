@@ -1,156 +1,276 @@
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Map<string, mixed>>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
-  7 |   return !HH\Lib\C\contains($table_data, (int)$assoc['id1']);
-    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Map<string, mixed>>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:7:11
+5 |   Map<string, mixed> $assoc,
+6 | ): bool {
+7 |   return !HH\Lib\C\contains($table_data, (int)$assoc['id1']);
+  |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+8 | }
+9 | 
 
 
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Map<string, mixed> is disjoint from type int.
-   --> invalid_contains_check.php
-  7 |   return !HH\Lib\C\contains($table_data, (int)$assoc['id1']);
-    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Map<string, mixed> is disjoint from type int. [1]
 
-
-warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 16 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 16 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+invalid_contains_check.php:7:11
+5 |   Map<string, mixed> $assoc,
+6 | ): bool {
+7 |   return !HH\Lib\C\contains($table_data, (int)$assoc['id1']);
+  |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+8 | }
+9 | 
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 19 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:16:10
+14 | 
+15 | function bad1(vec<Foo> $x, int $i): bool {
+16 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+17 | }
+18 | function bad2(dict<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 19 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
 
-
-warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 22 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 22 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+invalid_contains_check.php:16:10
+14 | 
+15 | function bad1(vec<Foo> $x, int $i): bool {
+16 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+17 | }
+18 | function bad2(dict<int, Foo> $x, int $i): bool {
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 25 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:19:10
+17 | }
+18 | function bad2(dict<int, Foo> $x, int $i): bool {
+19 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+20 | }
+21 | function bad3(Traversable<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 25 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
 
-
-warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 28 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 28 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+invalid_contains_check.php:19:10
+17 | }
+18 | function bad2(dict<int, Foo> $x, int $i): bool {
+19 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+20 | }
+21 | function bad3(Traversable<Foo> $x, int $i): bool {
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 31 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:22:10
+20 | }
+21 | function bad3(Traversable<Foo> $x, int $i): bool {
+22 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+23 | }
+24 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 31 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
 
-
-warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 34 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 34 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+invalid_contains_check.php:22:10
+20 | }
+21 | function bad3(Traversable<Foo> $x, int $i): bool {
+22 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+23 | }
+24 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `int`
-   --> invalid_contains_check.php
- 37 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:25:10
+23 | }
+24 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
+25 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+26 | }
+27 | function bad5(Container<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_contains_check.php
- 37 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
 
-
-warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `Baz`
-   --> invalid_contains_check.php
- 40 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type Baz.
-   --> invalid_contains_check.php
- 40 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+invalid_contains_check.php:25:10
+23 | }
+24 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
+25 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+26 | }
+27 | function bad5(Container<Foo> $x, int $i): bool {
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Foo>` cannot contain a value of type `<expr#3> as Bar`
-   --> invalid_contains_check.php
- 43 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:28:10
+26 | }
+27 | function bad5(Container<Foo> $x, int $i): bool {
+28 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+29 | }
+30 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type <expr#3> as Bar.
-   --> invalid_contains_check.php
- 43 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_contains_check.php:28:10
+26 | }
+27 | function bad5(Container<Foo> $x, int $i): bool {
+28 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+29 | }
+30 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
 
 
 warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
-A `Traversable<Bar>` cannot contain a value of type `Foo`
-   --> invalid_contains_check.php
- 46 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:31:10
+29 | }
+30 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
+31 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+32 | }
+33 | function bad7(Iterator<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Bar is disjoint from type Foo.
-   --> invalid_contains_check.php
- 46 |   return HH\Lib\C\contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_contains_check.php:31:10
+29 | }
+30 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
+31 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+32 | }
+33 | function bad7(Iterator<Foo> $x, int $i): bool {
+
+
+warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:34:10
+32 | }
+33 | function bad7(Iterator<Foo> $x, int $i): bool {
+34 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+35 | }
+36 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
+
+
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_contains_check.php:34:10
+32 | }
+33 | function bad7(Iterator<Foo> $x, int $i): bool {
+34 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+35 | }
+36 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
+
+
+warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
+A `Traversable<Foo>` cannot contain a value of type `int` [1]
+
+invalid_contains_check.php:37:10
+35 | }
+36 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
+37 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+38 | }
+39 | function bad9(vec<Foo> $x, Baz $i): bool {
+
+
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_contains_check.php:37:10
+35 | }
+36 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
+37 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+38 | }
+39 | function bad9(vec<Foo> $x, Baz $i): bool {
+
+
+warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
+A `Traversable<Foo>` cannot contain a value of type `Baz` [1]
+
+invalid_contains_check.php:40:10
+38 | }
+39 | function bad9(vec<Foo> $x, Baz $i): bool {
+40 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+41 | }
+42 | function bad10(vec<Foo> $x, Bar $i): bool {
+
+
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type Baz. [1]
+
+invalid_contains_check.php:40:10
+38 | }
+39 | function bad9(vec<Foo> $x, Baz $i): bool {
+40 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+41 | }
+42 | function bad10(vec<Foo> $x, Bar $i): bool {
+
+
+warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
+A `Traversable<Foo>` cannot contain a value of type `<expr#3> as Bar` [1]
+
+invalid_contains_check.php:43:10
+41 | }
+42 | function bad10(vec<Foo> $x, Bar $i): bool {
+43 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+44 | }
+45 | function bad11(vec<Bar> $x, Foo $i): bool {
+
+
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Foo is disjoint from type <expr#3> as Bar. [1]
+
+invalid_contains_check.php:43:10
+41 | }
+42 | function bad10(vec<Foo> $x, Bar $i): bool {
+43 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+44 | }
+45 | function bad11(vec<Bar> $x, Foo $i): bool {
+
+
+warning: Lint[5608] Invalid `C\contains` check: This call will always return `false`.
+A `Traversable<Bar>` cannot contain a value of type `Foo` [1]
+
+invalid_contains_check.php:46:10
+44 | }
+45 | function bad11(vec<Bar> $x, Foo $i): bool {
+46 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+47 | }
+48 | 
+
+
+warning: Lint[5638] This call to 'HH\Lib\C\contains' will always return the same value, because type Bar is disjoint from type Foo. [1]
+
+invalid_contains_check.php:46:10
+44 | }
+45 | function bad11(vec<Bar> $x, Foo $i): bool {
+46 |   return HH\Lib\C\contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+47 | }
+48 | 
 
 

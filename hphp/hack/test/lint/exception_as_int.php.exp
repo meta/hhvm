@@ -1,12 +1,20 @@
-warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `Exception` which shares no values with `int`.
-   --> exception_as_int.php
-  4 |   (new Exception('not an int')) as int;
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `Exception` which shares no values with `int`. [1]
+
+exception_as_int.php:4:3
+2 | 
+3 | function exception_as_int(): void {
+4 |   (new Exception('not an int')) as int;
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+5 | }
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> exception_as_int.php
-  4 |   (new Exception('not an int')) as int;
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+exception_as_int.php:4:3
+2 | 
+3 | function exception_as_int(): void {
+4 |   (new Exception('not an int')) as int;
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+5 | }
 
 

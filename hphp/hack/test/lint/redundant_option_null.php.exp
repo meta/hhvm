@@ -1,6 +1,11 @@
-warning: Lint[5009] `?null` is a redundant typehint - just use `null`
-   --> redundant_option_null.php
-  4 | function redundant_option_null(): ?null {
-    |                                   ^^^^^
+warning: Lint[5009] `?null` is a redundant typehint - just use `null` [1]
+
+redundant_option_null.php:4:35
+2 | // Copyright 2004-present Facebook. All Rights Reserved.
+3 | 
+4 | function redundant_option_null(): ?null {
+  |                                   ^^^^^ [1]
+5 |   return null;
+6 | }
 
 

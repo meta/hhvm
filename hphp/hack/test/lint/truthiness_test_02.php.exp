@@ -1,6 +1,11 @@
-warning: Lint[5622] Invalid condition: a value of type `Foo` will always be truthy
-   --> truthiness_test_02.php
-  6 |   if ($x) {
-    |       ^^
+warning: Lint[5622] Invalid condition: a value of type `Foo` will always be truthy [1]
+
+truthiness_test_02.php:6:7
+4 | 
+5 | function test(Foo $x): void {
+6 |   if ($x) {
+  |       ^^ [1]
+7 |     do_something();
+8 |   }
 
 

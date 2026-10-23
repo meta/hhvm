@@ -1,210 +1,385 @@
-warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `int` which shares no values with `bool`.
-   --> as_invalid_type.php
- 51 |     $_ = self::int() as bool; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `int` which shares no values with `bool`. [1]
 
+as_invalid_type.php:51:10
+49 | 
+50 |   public static function foo(): void {
+51 |     $_ = self::int() as bool; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+52 |     $_ = self::bool() as bool; // error, always succeeds
+53 |     $_ = self::float() as num; // error, always succeeds
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 51 |     $_ = self::int() as bool; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `bool` which is a subtype of `bool`.
-   --> as_invalid_type.php
- 52 |     $_ = self::bool() as bool; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:51:10
+49 | 
+50 |   public static function foo(): void {
+51 |     $_ = self::int() as bool; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+52 |     $_ = self::bool() as bool; // error, always succeeds
+53 |     $_ = self::float() as num; // error, always succeeds
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 52 |     $_ = self::bool() as bool; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `bool` which is a subtype of `bool`. [1]
 
+as_invalid_type.php:52:10
+50 |   public static function foo(): void {
+51 |     $_ = self::int() as bool; // error, never succeeds
+52 |     $_ = self::bool() as bool; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+53 |     $_ = self::float() as num; // error, always succeeds
+54 |     $_ = self::num() as float;
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `float` which is a subtype of `num`.
-   --> as_invalid_type.php
- 53 |     $_ = self::float() as num; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 53 |     $_ = self::float() as num; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:52:10
+50 |   public static function foo(): void {
+51 |     $_ = self::int() as bool; // error, never succeeds
+52 |     $_ = self::bool() as bool; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+53 |     $_ = self::float() as num; // error, always succeeds
+54 |     $_ = self::num() as float;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 54 |     $_ = self::num() as float;
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `float` which is a subtype of `num`. [1]
 
+as_invalid_type.php:53:10
+51 |     $_ = self::int() as bool; // error, never succeeds
+52 |     $_ = self::bool() as bool; // error, always succeeds
+53 |     $_ = self::float() as num; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+54 |     $_ = self::num() as float;
+55 |     $_ = self::float() as int; // error, never succeeds
 
-warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `float` which shares no values with `int`.
-   --> as_invalid_type.php
- 55 |     $_ = self::float() as int; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 55 |     $_ = self::float() as int; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:53:10
+51 |     $_ = self::int() as bool; // error, never succeeds
+52 |     $_ = self::bool() as bool; // error, always succeeds
+53 |     $_ = self::float() as num; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+54 |     $_ = self::num() as float;
+55 |     $_ = self::float() as int; // error, never succeeds
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 56 |     $_ = self::arraykey() as num;
-    |          ^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
+as_invalid_type.php:54:10
+52 |     $_ = self::bool() as bool; // error, always succeeds
+53 |     $_ = self::float() as num; // error, always succeeds
+54 |     $_ = self::num() as float;
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+55 |     $_ = self::float() as int; // error, never succeeds
+56 |     $_ = self::arraykey() as num;
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `string` which is a subtype of `arraykey`.
-   --> as_invalid_type.php
- 57 |     $_ = self::string() as arraykey; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `float` which shares no values with `int`. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 57 |     $_ = self::string() as arraykey; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:55:10
+53 |     $_ = self::float() as num; // error, always succeeds
+54 |     $_ = self::num() as float;
+55 |     $_ = self::float() as int; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+56 |     $_ = self::arraykey() as num;
+57 |     $_ = self::string() as arraykey; // error, always succeeds
 
 
-warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `string` which shares no values with `int`.
-   --> as_invalid_type.php
- 58 |     $_ = self::string() as int; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
+as_invalid_type.php:55:10
+53 |     $_ = self::float() as num; // error, always succeeds
+54 |     $_ = self::num() as float;
+55 |     $_ = self::float() as int; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+56 |     $_ = self::arraykey() as num;
+57 |     $_ = self::string() as arraykey; // error, always succeeds
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 58 |     $_ = self::string() as int; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 59 |     $_ = self::mixed() as int;
-    |          ^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:56:10
+54 |     $_ = self::num() as float;
+55 |     $_ = self::float() as int; // error, never succeeds
+56 |     $_ = self::arraykey() as num;
+   |          ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+57 |     $_ = self::string() as arraykey; // error, always succeeds
+58 |     $_ = self::string() as int; // error, never succeeds
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `int` which is a subtype of `mixed`.
-   --> as_invalid_type.php
- 60 |     $_ = self::int() as mixed; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `string` which is a subtype of `arraykey`. [1]
 
+as_invalid_type.php:57:10
+55 |     $_ = self::float() as int; // error, never succeeds
+56 |     $_ = self::arraykey() as num;
+57 |     $_ = self::string() as arraykey; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+58 |     $_ = self::string() as int; // error, never succeeds
+59 |     $_ = self::mixed() as int;
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 60 |     $_ = self::int() as mixed; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 61 |     $_ = self::nullable(self::string()) as arraykey;
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:57:10
+55 |     $_ = self::float() as int; // error, never succeeds
+56 |     $_ = self::arraykey() as num;
+57 |     $_ = self::string() as arraykey; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+58 |     $_ = self::string() as int; // error, never succeeds
+59 |     $_ = self::mixed() as int;
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `?string` which is a subtype of `?string`.
-   --> as_invalid_type.php
- 62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `string` which shares no values with `int`. [1]
 
+as_invalid_type.php:58:10
+56 |     $_ = self::arraykey() as num;
+57 |     $_ = self::string() as arraykey; // error, always succeeds
+58 |     $_ = self::string() as int; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^ [1]
+59 |     $_ = self::mixed() as int;
+60 |     $_ = self::int() as mixed; // error, always succeeds
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 63 |     $_ = self::nullable(self::string()) as ?int;
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:58:10
+56 |     $_ = self::arraykey() as num;
+57 |     $_ = self::string() as arraykey; // error, always succeeds
+58 |     $_ = self::string() as int; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^ [1]
+59 |     $_ = self::mixed() as int;
+60 |     $_ = self::int() as mixed; // error, always succeeds
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 64 |     $_ = self::stringEnum() as string;
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
+as_invalid_type.php:59:10
+57 |     $_ = self::string() as arraykey; // error, always succeeds
+58 |     $_ = self::string() as int; // error, never succeeds
+59 |     $_ = self::mixed() as int;
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+60 |     $_ = self::int() as mixed; // error, always succeeds
+61 |     $_ = self::nullable(self::string()) as arraykey;
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 65 |     $_ = self::stringEnum() as ?string;
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `int` which is a subtype of `mixed`. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 66 |     $_ = self::stringEnum() as int;
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:60:10
+58 |     $_ = self::string() as int; // error, never succeeds
+59 |     $_ = self::mixed() as int;
+60 |     $_ = self::int() as mixed; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+61 |     $_ = self::nullable(self::string()) as arraykey;
+62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `null` which is a subtype of `mixed`.
-   --> as_invalid_type.php
- 67 |     $_ = self::null() as mixed; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
+as_invalid_type.php:60:10
+58 |     $_ = self::string() as int; // error, never succeeds
+59 |     $_ = self::mixed() as int;
+60 |     $_ = self::int() as mixed; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+61 |     $_ = self::nullable(self::string()) as arraykey;
+62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 67 |     $_ = self::null() as mixed; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `null` which is a subtype of `null`.
-   --> as_invalid_type.php
- 68 |     $_ = self::null() as null; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:61:10
+59 |     $_ = self::mixed() as int;
+60 |     $_ = self::int() as mixed; // error, always succeeds
+61 |     $_ = self::nullable(self::string()) as arraykey;
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
+63 |     $_ = self::nullable(self::string()) as ?int;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 68 |     $_ = self::null() as null; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `?string` which is a subtype of `?string`. [1]
 
+as_invalid_type.php:62:10
+60 |     $_ = self::int() as mixed; // error, always succeeds
+61 |     $_ = self::nullable(self::string()) as arraykey;
+62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+63 |     $_ = self::nullable(self::string()) as ?int;
+64 |     $_ = self::stringEnum() as string;
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `null` which is a subtype of `?int`.
-   --> as_invalid_type.php
- 69 |     $_ = self::null() as ?int; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 69 |     $_ = self::null() as ?int; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:62:10
+60 |     $_ = self::int() as mixed; // error, always succeeds
+61 |     $_ = self::nullable(self::string()) as arraykey;
+62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+63 |     $_ = self::nullable(self::string()) as ?int;
+64 |     $_ = self::stringEnum() as string;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 70 |     $_ = self::nullable(self::int()) as null;
-    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
+as_invalid_type.php:63:10
+61 |     $_ = self::nullable(self::string()) as arraykey;
+62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
+63 |     $_ = self::nullable(self::string()) as ?int;
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+64 |     $_ = self::stringEnum() as string;
+65 |     $_ = self::stringEnum() as ?string;
 
-warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `null` which shares no values with `int`.
-   --> as_invalid_type.php
- 71 |     $_ = self::null() as int; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^
 
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 71 |     $_ = self::null() as int; // error, always succeeds
-    |          ^^^^^^^^^^^^^^^^^^^
+as_invalid_type.php:64:10
+62 |     $_ = self::nullable(self::string()) as ?string; // error, always succeeds
+63 |     $_ = self::nullable(self::string()) as ?int;
+64 |     $_ = self::stringEnum() as string;
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+65 |     $_ = self::stringEnum() as ?string;
+66 |     $_ = self::stringEnum() as int;
 
 
-warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `int` which shares no values with `null`.
-   --> as_invalid_type.php
- 72 |     $_ = self::int() as null; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
 
+as_invalid_type.php:65:10
+63 |     $_ = self::nullable(self::string()) as ?int;
+64 |     $_ = self::stringEnum() as string;
+65 |     $_ = self::stringEnum() as ?string;
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+66 |     $_ = self::stringEnum() as int;
+67 |     $_ = self::null() as mixed; // error, always succeeds
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_invalid_type.php
- 72 |     $_ = self::int() as null; // error, never succeeds
-    |          ^^^^^^^^^^^^^^^^^^^
+
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_invalid_type.php:66:10
+64 |     $_ = self::stringEnum() as string;
+65 |     $_ = self::stringEnum() as ?string;
+66 |     $_ = self::stringEnum() as int;
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+67 |     $_ = self::null() as mixed; // error, always succeeds
+68 |     $_ = self::null() as null; // error, always succeeds
+
+
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `null` which is a subtype of `mixed`. [1]
+
+as_invalid_type.php:67:10
+65 |     $_ = self::stringEnum() as ?string;
+66 |     $_ = self::stringEnum() as int;
+67 |     $_ = self::null() as mixed; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^ [1]
+68 |     $_ = self::null() as null; // error, always succeeds
+69 |     $_ = self::null() as ?int; // error, always succeeds
+
+
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_invalid_type.php:67:10
+65 |     $_ = self::stringEnum() as ?string;
+66 |     $_ = self::stringEnum() as int;
+67 |     $_ = self::null() as mixed; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^^ [1]
+68 |     $_ = self::null() as null; // error, always succeeds
+69 |     $_ = self::null() as ?int; // error, always succeeds
+
+
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `null` which is a subtype of `null`. [1]
+
+as_invalid_type.php:68:10
+66 |     $_ = self::stringEnum() as int;
+67 |     $_ = self::null() as mixed; // error, always succeeds
+68 |     $_ = self::null() as null; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+69 |     $_ = self::null() as ?int; // error, always succeeds
+70 |     $_ = self::nullable(self::int()) as null;
+
+
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_invalid_type.php:68:10
+66 |     $_ = self::stringEnum() as int;
+67 |     $_ = self::null() as mixed; // error, always succeeds
+68 |     $_ = self::null() as null; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+69 |     $_ = self::null() as ?int; // error, always succeeds
+70 |     $_ = self::nullable(self::int()) as null;
+
+
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `null` which is a subtype of `?int`. [1]
+
+as_invalid_type.php:69:10
+67 |     $_ = self::null() as mixed; // error, always succeeds
+68 |     $_ = self::null() as null; // error, always succeeds
+69 |     $_ = self::null() as ?int; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+70 |     $_ = self::nullable(self::int()) as null;
+71 |     $_ = self::null() as int; // error, always succeeds
+
+
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_invalid_type.php:69:10
+67 |     $_ = self::null() as mixed; // error, always succeeds
+68 |     $_ = self::null() as null; // error, always succeeds
+69 |     $_ = self::null() as ?int; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^^ [1]
+70 |     $_ = self::nullable(self::int()) as null;
+71 |     $_ = self::null() as int; // error, always succeeds
+
+
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_invalid_type.php:70:10
+68 |     $_ = self::null() as null; // error, always succeeds
+69 |     $_ = self::null() as ?int; // error, always succeeds
+70 |     $_ = self::nullable(self::int()) as null;
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+71 |     $_ = self::null() as int; // error, always succeeds
+72 |     $_ = self::int() as null; // error, never succeeds
+
+
+warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `null` which shares no values with `int`. [1]
+
+as_invalid_type.php:71:10
+69 |     $_ = self::null() as ?int; // error, always succeeds
+70 |     $_ = self::nullable(self::int()) as null;
+71 |     $_ = self::null() as int; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+72 |     $_ = self::int() as null; // error, never succeeds
+73 |   }
+
+
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_invalid_type.php:71:10
+69 |     $_ = self::null() as ?int; // error, always succeeds
+70 |     $_ = self::nullable(self::int()) as null;
+71 |     $_ = self::null() as int; // error, always succeeds
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+72 |     $_ = self::int() as null; // error, never succeeds
+73 |   }
+
+
+warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `int` which shares no values with `null`. [1]
+
+as_invalid_type.php:72:10
+70 |     $_ = self::nullable(self::int()) as null;
+71 |     $_ = self::null() as int; // error, always succeeds
+72 |     $_ = self::int() as null; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+73 |   }
+74 | }
+
+
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_invalid_type.php:72:10
+70 |     $_ = self::nullable(self::int()) as null;
+71 |     $_ = self::null() as int; // error, always succeeds
+72 |     $_ = self::int() as null; // error, never succeeds
+   |          ^^^^^^^^^^^^^^^^^^^ [1]
+73 |   }
+74 | }
 
 

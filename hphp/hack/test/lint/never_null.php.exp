@@ -1,6 +1,10 @@
-warning: Lint[5610] This `is` check is always `false`. The expression on the left has type `C` which shares no values with `null`.
-   --> never_null.php
-  6 |   new C() is null;
-    |   ^^^^^^^^^^^^^^^
+warning: Lint[5610] This `is` check is always `false`. The expression on the left has type `C` which shares no values with `null`. [1]
+
+never_null.php:6:3
+4 | 
+5 | function main(): void {
+6 |   new C() is null;
+  |   ^^^^^^^^^^^^^^^ [1]
+7 | }
 
 

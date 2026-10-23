@@ -1,24 +1,44 @@
-warning: Lint[5642] Method `overridden` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used.
-   --> override_trait_method_require_class.php
- 12 |   public function overridden(): void {}
-    |                   ^^^^^^^^^^
+warning: Lint[5642] Method `overridden` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used. [1]
+
+override_trait_method_require_class.php:12:19
+10 |   require class C;
+11 | 
+12 |   public function overridden(): void {}
+   |                   ^^^^^^^^^^ [1]
+13 |   public function notOverridden(): void {}
+14 |   <<A>>
 
 
-warning: Lint[5642] Method `hasAttribute1` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used.
-   --> override_trait_method_require_class.php
- 15 |   public function hasAttribute1(): void {}
-    |                   ^^^^^^^^^^^^^
+warning: Lint[5642] Method `hasAttribute1` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used. [1]
+
+override_trait_method_require_class.php:15:19
+13 |   public function notOverridden(): void {}
+14 |   <<A>>
+15 |   public function hasAttribute1(): void {}
+   |                   ^^^^^^^^^^^^^ [1]
+16 |   <<AnotherAttribute>>
+17 |   public function hasAttribute2(): void {}
 
 
-warning: Lint[5642] Method `hasAttribute2` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used.
-   --> override_trait_method_require_class.php
- 17 |   public function hasAttribute2(): void {}
-    |                   ^^^^^^^^^^^^^
+warning: Lint[5642] Method `hasAttribute2` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used. [1]
+
+override_trait_method_require_class.php:17:19
+15 |   public function hasAttribute1(): void {}
+16 |   <<AnotherAttribute>>
+17 |   public function hasAttribute2(): void {}
+   |                   ^^^^^^^^^^^^^ [1]
+18 |   <<A>>
+19 |   abstract public function hasAttributeAbstract1(): void;
 
 
-warning: Lint[5642] Method `hasBuiltInAttribute` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used.
-   --> override_trait_method_require_class.php
- 23 |   public function hasBuiltInAttribute(): void {}
-    |                   ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5642] Method `hasBuiltInAttribute` in trait `T` is overridden in class `C` and trait `T` has `require class C`. This method is never used. [1]
+
+override_trait_method_require_class.php:23:19
+21 |   abstract public function hasAttributeAbstract2(): void;
+22 |   <<__Memoize>>
+23 |   public function hasBuiltInAttribute(): void {}
+   |                   ^^^^^^^^^^^^^^^^^^^ [1]
+24 | }
+25 | 
 
 

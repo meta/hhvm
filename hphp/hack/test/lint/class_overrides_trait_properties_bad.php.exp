@@ -1,18 +1,33 @@
-warning: Lint[5627] Unused trait: `MyClass` is overriding all the methods in `MyTrait`
-   --> class_overrides_trait_properties_bad.php
- 13 | class MyClass {
-    |       ^^^^^^^
+warning: Lint[5627] Unused trait: `MyClass` is overriding all the methods in `MyTrait` [1]
+
+class_overrides_trait_properties_bad.php:13:7
+11 | }
+12 | 
+13 | class MyClass {
+   |       ^^^^^^^ [1]
+14 |   use MyTrait;
+15 | 
 
 
-warning: Lint[5635] Duplicated property `bar` in `MyClass` (defined in `MyClass` and `MyTrait2`): all instances will be aliased at runtime
-   --> class_overrides_trait_properties_bad.php
- 13 | class MyClass {
-    |       ^^^^^^^
+warning: Lint[5635] Duplicated property `bar` in `MyClass` (defined in `MyClass` and `MyTrait2`): all instances will be aliased at runtime [1]
+
+class_overrides_trait_properties_bad.php:13:7
+11 | }
+12 | 
+13 | class MyClass {
+   |       ^^^^^^^ [1]
+14 |   use MyTrait;
+15 | 
 
 
-warning: Lint[5635] Duplicated property `foo` in `MyClass` (defined in `MyClass` and `MyTrait`): all instances will be aliased at runtime
-   --> class_overrides_trait_properties_bad.php
- 13 | class MyClass {
-    |       ^^^^^^^
+warning: Lint[5635] Duplicated property `foo` in `MyClass` (defined in `MyClass` and `MyTrait`): all instances will be aliased at runtime [1]
+
+class_overrides_trait_properties_bad.php:13:7
+11 | }
+12 | 
+13 | class MyClass {
+   |       ^^^^^^^ [1]
+14 |   use MyTrait;
+15 | 
 
 

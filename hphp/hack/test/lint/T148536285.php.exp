@@ -1,6 +1,9 @@
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> T148536285.php
- 15 |   <xhp target={$s as nonnull} />;
-    |                ^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+T148536285.php:15:16
+13 | 
+14 | function main(?string $s): void {
+15 |   <xhp target={$s as nonnull} />;
+   |                ^^^^^^^^^^^^^ [1]
 
 

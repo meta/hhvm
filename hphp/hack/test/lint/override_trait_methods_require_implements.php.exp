@@ -1,12 +1,22 @@
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> override_trait_methods_require_implements.php
- 10 |   public function bar(): int { return $this->foo(); }
-    |                                       ^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+override_trait_methods_require_implements.php:10:39
+ 8 |   require implements MyOtherInterface;
+ 9 | 
+10 |   public function bar(): int { return $this->foo(); }
+   |                                       ^^^^^ [1]
+11 | }
+12 | 
 
 
-warning: Lint[5627] Unused trait: `MyClass` is overriding all the methods in `MyTrait`
-   --> override_trait_methods_require_implements.php
- 13 | class MyClass implements MyInterface {
-    |       ^^^^^^^
+warning: Lint[5627] Unused trait: `MyClass` is overriding all the methods in `MyTrait` [1]
+
+override_trait_methods_require_implements.php:13:7
+11 | }
+12 | 
+13 | class MyClass implements MyInterface {
+   |       ^^^^^^^ [1]
+14 |   // This trait is useless, we've overridden all its methods.
+15 |   use MyTrait;
 
 

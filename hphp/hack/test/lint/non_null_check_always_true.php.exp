@@ -1,7 +1,12 @@
 warning: Lint[5607] Invalid comparison: This expression will always return `true`.
-A value of type `int` can never be equal to a value of type `null`
-   --> non_null_check_always_true.php
-  7 |   if ($x !== null) {
-    |       ^^^^^^^^^^^
+A value of type `int` can never be equal to a value of type `null` [1]
+
+non_null_check_always_true.php:7:7
+5 | 
+6 | function test(int $x): void {
+7 |   if ($x !== null) {
+  |       ^^^^^^^^^^^ [1]
+8 |     expect_int($x);
+9 |   }
 
 

@@ -1,6 +1,11 @@
-warning: Lint[5638] Non-dynamic calls to 'toEqual' will always return the same value, because type Awaitable<int> is disjoint from type int.
-   --> disjoint_awaitable.php
- 19 |     expect($x)->toEqual(3);
-    |     ^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] Non-dynamic calls to 'toEqual' will always return the same value, because type Awaitable<int> is disjoint from type int. [1]
+
+disjoint_awaitable.php:19:5
+17 |   public function testIt(): void {
+18 |     $x = $this->genInt();
+19 |     expect($x)->toEqual(3);
+   |     ^^^^^^^^^^^^^^^^^^^^^^ [1]
+20 |   }
+21 | }
 
 

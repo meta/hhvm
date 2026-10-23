@@ -1,24 +1,43 @@
-warning: Lint[5807] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH\FIXME\UNSAFE_CAST` call. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> invalid_disjoint_check_methods_like.php
- 26 |   return vec[\HH\FIXME\UNSAFE_CAST<string, int>("A")];
-    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5807] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH\FIXME\UNSAFE_CAST` call. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+invalid_disjoint_check_methods_like.php:26:14
+24 | 
+25 | function get_vec_like_int():vec<~int> {
+26 |   return vec[\HH\FIXME\UNSAFE_CAST<string, int>("A")];
+   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+27 | }
+28 | 
 
 
-warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type int is disjoint from type string.
-   --> invalid_disjoint_check_methods_like.php
- 32 |   $a = expect($like_int)->isEqual("A");
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type int is disjoint from type string. [1]
+
+invalid_disjoint_check_methods_like.php:32:8
+30 |   $like_int = get_vec_like_int()[0];
+31 |   // Call through a like-type receiver
+32 |   $a = expect($like_int)->isEqual("A");
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+33 |   // Call with a like-type argument
+34 |   $b = expect("A")->isEqual($like_int);
 
 
-warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type string is disjoint from type int.
-   --> invalid_disjoint_check_methods_like.php
- 34 |   $b = expect("A")->isEqual($like_int);
-    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] Non-dynamic calls to 'isEqual' will always return the same value, because type string is disjoint from type int. [1]
+
+invalid_disjoint_check_methods_like.php:34:8
+32 |   $a = expect($like_int)->isEqual("A");
+33 |   // Call with a like-type argument
+34 |   $b = expect("A")->isEqual($like_int);
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+35 | }
+36 | 
 
 
-warning: Lint[5638] Non-dynamic calls to 'contains' will always return the same value, because type int is disjoint from type string.
-   --> invalid_disjoint_check_methods_like.php
- 39 |   $b = $s->contains("A");
-    |        ^^^^^^^^^^^^^^^^^
+warning: Lint[5638] Non-dynamic calls to 'contains' will always return the same value, because type int is disjoint from type string. [1]
+
+invalid_disjoint_check_methods_like.php:39:8
+37 | function test_expect3():void {
+38 |   $s = singleton(3);
+39 |   $b = $s->contains("A");
+   |        ^^^^^^^^^^^^^^^^^ [1]
+40 | }
 
 

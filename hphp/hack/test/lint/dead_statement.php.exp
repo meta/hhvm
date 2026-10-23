@@ -1,72 +1,132 @@
-warning: Other[6001] In method \TestUnreachableCode::testContinue: This expression may be unreachable. It appears after a continue.
-   --> dead_statement.php
-  8 |       echo 'O Romeo, Romeo! wherefore art thou Romeo?';
-    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In method \TestUnreachableCode::testContinue: This expression may be unreachable. It appears after a continue. [1]
+
+dead_statement.php:8:7
+ 6 |     for($i = 0; $i < 100; $i++) {
+ 7 |       continue;
+ 8 |       echo 'O Romeo, Romeo! wherefore art thou Romeo?';
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+ 9 |     }
+10 |   }
 
 
-warning: Other[6001] In method \TestUnreachableCode::testReturn: This expression may be unreachable. It appears after a return.
-   --> dead_statement.php
- 17 |     echo 'This is never reached, the farthest distance in the world.';
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In method \TestUnreachableCode::testReturn: This expression may be unreachable. It appears after a return. [1]
+
+dead_statement.php:17:5
+15 |       'The appetite may sicken, and so die.';
+16 |     return 'He said, in a low tremulous voice...';
+17 |     echo 'This is never reached, the farthest distance in the world.';
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+18 |   }
+19 | 
 
 
-warning: Other[6001] In method \TestUnreachableCode::testYield: This expression may be unreachable. It appears after a break.
-   --> dead_statement.php
- 22 |     yield 'is when I have laptop, but no Wifi connection'; // unreached
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In method \TestUnreachableCode::testYield: This expression may be unreachable. It appears after a break. [1]
+
+dead_statement.php:22:5
+20 |   public function testYield(string $input): Generator<int, string, void> {
+21 |     yield break;
+22 |     yield 'is when I have laptop, but no Wifi connection'; // unreached
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+23 |   }
+24 | 
 
 
-warning: Other[6001] In method \TestUnreachableCode::testSwitch: The next FALLTHROUGH may be unreachable. It appears after a return.
-   --> dead_statement.php
- 29 |         return 'WoRlD iN LaTeX';
-    |         ^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In method \TestUnreachableCode::testSwitch: The next FALLTHROUGH may be unreachable. It appears after a return. [1]
+
+dead_statement.php:29:9
+27 |     case 1:
+28 |         $t = 'hello';
+29 |         return 'WoRlD iN LaTeX';
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+30 |         // FALLTHROUGH -- this is a Hack annotation
+31 |      default:
 
 
-warning: Other[6001] In function \test_unreachable_function: This expression may be unreachable. It appears after a return.
-   --> dead_statement.php
- 45 |   echo unreachable_function();
-    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In function \test_unreachable_function: This expression may be unreachable. It appears after a return. [1]
+
+dead_statement.php:45:3
+43 | function test_unreachable_function(): string {
+44 |   return "Remember: all I'm offering is the truth. Nothing more.";
+45 |   echo unreachable_function();
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+46 | }
+47 | 
 
 
-warning: Other[6001] In function \test_unreachable_if: This 'return' statement may be unreachable. It appears after a condition which is always false.
-   --> dead_statement.php
- 50 |     return "Unreachable";
-    |     ^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In function \test_unreachable_if: This 'return' statement may be unreachable. It appears after a condition which is always false. [1]
+
+dead_statement.php:50:5
+48 | function test_unreachable_if(): string {
+49 |   if (false) {
+50 |     return "Unreachable";
+   |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+51 |   }
+52 |   else {
 
 
-warning: Other[6001] In function \test_unreachable_else: This 'return' statement may be unreachable. It appears after a condition which is always false.
-   --> dead_statement.php
- 62 |     return "Unreachable";
-    |     ^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In function \test_unreachable_else: This 'return' statement may be unreachable. It appears after a condition which is always false. [1]
+
+dead_statement.php:62:5
+60 |   }
+61 |   else {
+62 |     return "Unreachable";
+   |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+63 |   }
+64 | }
 
 
-warning: Lint[5556] There are no statements in the body of this `if` branch.
-   --> dead_statement.php
- 67 |   if (false) { // Lint warning
-    |       ^^^^^
+warning: Lint[5556] There are no statements in the body of this `if` branch. [1]
+
+dead_statement.php:67:7
+65 | 
+66 | function test_unreachable_if_with_nop(): string {
+67 |   if (false) { // Lint warning
+   |       ^^^^^ [1]
+68 |   }
+69 |   else {
 
 
-warning: Lint[5556] There are no statements in the body of this `else` branch.
-   --> dead_statement.php
- 75 |   if (true) {
-    |       ^^^^
+warning: Lint[5556] There are no statements in the body of this `else` branch. [1]
+
+dead_statement.php:75:7
+73 | 
+74 | function test_unreachable_else_with_nop(): string {
+75 |   if (true) {
+   |       ^^^^ [1]
+76 |     return "OK";
+77 |   }
 
 
-warning: Other[6001] In function \test_unreachable_after_if_true: This 'return' statement may be unreachable. 
-   --> dead_statement.php
- 86 |   return "Unreachable";
-    |   ^^^^^^^^^^^^^^^^^^^^^
+warning: Other[6001] In function \test_unreachable_after_if_true: This 'return' statement may be unreachable.  [1]
+
+dead_statement.php:86:3
+84 |     return "OK";
+85 |   }
+86 |   return "Unreachable";
+   |   ^^^^^^^^^^^^^^^^^^^^^ [1]
+87 | }
+88 | 
 
 
-warning: Other[6001] In function \test_unreachable_after_join_3: This 'return' statement may be unreachable. It appears after a return.
-   --> dead_statement.php
+warning: Other[6001] In function \test_unreachable_after_join_3: This 'return' statement may be unreachable. It appears after a return. [1]
+
+dead_statement.php:113:3
+111 |     return "Option 2";
+112 |   }
 113 |   return "Unreachable";
-    |   ^^^^^^^^^^^^^^^^^^^^^
+    |   ^^^^^^^^^^^^^^^^^^^^^ [1]
+114 | }
+115 | 
 
 
-warning: Other[6001] In function \test_unreachable_echo_1: This expression may be unreachable. It appears after a condition which is always false.
-   --> dead_statement.php
+warning: Other[6001] In function \test_unreachable_echo_1: This expression may be unreachable. It appears after a condition which is always false. [1]
+
+dead_statement.php:118:5
+116 | function test_unreachable_echo_1(): string {
+117 |   if (false) {
 118 |     echo "Unreachable";
-    |     ^^^^^^^^^^^^^^^^^^^
+    |     ^^^^^^^^^^^^^^^^^^^ [1]
+119 |   }
+120 |   return "OK";
 
 

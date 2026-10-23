@@ -1,60 +1,109 @@
-warning: Lint[5616] Method `a` is also defined on `A`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 28 |   public function a(): int { return 1; }
-    |                   ^
+warning: Lint[5616] Method `a` is also defined on `A`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:28:19
+26 | 
+27 |   // BAD: An "override" of an abstract method requires the annotation
+28 |   public function a(): int { return 1; }
+   |                   ^ [1]
+29 |   public static function sa(): int { return 1; }
+30 | 
 
 
-warning: Lint[5616] Method `sa` is also defined on `A`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 29 |   public static function sa(): int { return 1; }
-    |                          ^^
+warning: Lint[5616] Method `sa` is also defined on `A`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:29:26
+27 |   // BAD: An "override" of an abstract method requires the annotation
+28 |   public function a(): int { return 1; }
+29 |   public static function sa(): int { return 1; }
+   |                          ^^ [1]
+30 | 
+31 |   // BAD: An override of a concrete method requires the annotation
 
 
-warning: Lint[5616] Method `b` is also defined on `B`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 32 |   public function b(): int { return 1; }
-    |                   ^
+warning: Lint[5616] Method `b` is also defined on `B`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:32:19
+30 | 
+31 |   // BAD: An override of a concrete method requires the annotation
+32 |   public function b(): int { return 1; }
+   |                   ^ [1]
+33 |   public static function sb(): int { return 1; }
+34 | 
 
 
-warning: Lint[5616] Method `sb` is also defined on `B`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 33 |   public static function sb(): int { return 1; }
-    |                          ^^
+warning: Lint[5616] Method `sb` is also defined on `B`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:33:26
+31 |   // BAD: An override of a concrete method requires the annotation
+32 |   public function b(): int { return 1; }
+33 |   public static function sb(): int { return 1; }
+   |                          ^^ [1]
+34 | 
+35 |   // BAD: An override of a trait method requires the annotation
 
 
-warning: Lint[5616] Method `t` is also defined on `T`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 36 |   public function t(): int { return 1; }
-    |                   ^
+warning: Lint[5616] Method `t` is also defined on `T`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:36:19
+34 | 
+35 |   // BAD: An override of a trait method requires the annotation
+36 |   public function t(): int { return 1; }
+   |                   ^ [1]
+37 |   public static function st(): int { return 1; }
+38 | }
 
 
-warning: Lint[5616] Method `st` is also defined on `T`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 37 |   public static function st(): int { return 1; }
-    |                          ^^
+warning: Lint[5616] Method `st` is also defined on `T`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:37:26
+35 |   // BAD: An override of a trait method requires the annotation
+36 |   public function t(): int { return 1; }
+37 |   public static function st(): int { return 1; }
+   |                          ^^ [1]
+38 | }
+39 | 
 
 
-warning: Lint[5616] Method `i` is also defined on `I`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 43 |   public function i(): int;
-    |                   ^
+warning: Lint[5616] Method `i` is also defined on `I`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:43:19
+41 |   // BAD: In an interface, overriding a method inherited from another interface
+42 |   // requires the annotation
+43 |   public function i(): int;
+   |                   ^ [1]
+44 |   public static function si(): int;
+45 | 
 
 
-warning: Lint[5616] Method `si` is also defined on `I`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 44 |   public static function si(): int;
-    |                          ^^
+warning: Lint[5616] Method `si` is also defined on `I`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:44:26
+42 |   // requires the annotation
+43 |   public function i(): int;
+44 |   public static function si(): int;
+   |                          ^^ [1]
+45 | 
+46 | }
 
 
-warning: Lint[5616] Method `t` is also defined on `T`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 51 |   private function t(): int { return 1; }
-    |                    ^
+warning: Lint[5616] Method `t` is also defined on `T`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:51:20
+49 |   use T;
+50 |   // BAD: An override of a trait method requires the annotation
+51 |   private function t(): int { return 1; }
+   |                    ^ [1]
+52 |   private static function st(): int { return 1; }
+53 | }
 
 
-warning: Lint[5616] Method `st` is also defined on `T`, but this method is missing `<<__Override>>`.
-   --> missing_override_attribute.php
- 52 |   private static function st(): int { return 1; }
-    |                           ^^
+warning: Lint[5616] Method `st` is also defined on `T`, but this method is missing `<<__Override>>`. [1]
+
+missing_override_attribute.php:52:27
+50 |   // BAD: An override of a trait method requires the annotation
+51 |   private function t(): int { return 1; }
+52 |   private static function st(): int { return 1; }
+   |                           ^^ [1]
+53 | }
 
 

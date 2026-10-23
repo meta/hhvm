@@ -1,12 +1,21 @@
-warning: Lint[5564] f is the only function declared in lowercase_constants.php, so that file should be named f.php instead.
-   --> lowercase_constants.php
-  3 | function f() {
-    |          ^
+warning: Lint[5564] f is the only function declared in lowercase_constants.php, so that file should be named f.php instead. [1]
+
+lowercase_constants.php:3:10
+1 | <?hh
+2 | 
+3 | function f() {
+  |          ^ [1]
+4 |   return NULL;
+5 | }
 
 
-warning: Lint[5001] Please use `null` instead of `NULL`
-   --> lowercase_constants.php
-  4 |   return NULL;
-    |          ^^^^
+warning: Lint[5001] Please use `null` instead of `NULL` [1]
+
+lowercase_constants.php:4:10
+2 | 
+3 | function f() {
+4 |   return NULL;
+  |          ^^^^ [1]
+5 | }
 
 

@@ -1,78 +1,142 @@
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int.
-   --> invalid_disjoint_check.php
- 11 |   return !contains($table_data, (int)$assoc['id1']);
-    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Map<string, mixed> is disjoint from type int. [1]
+
+invalid_disjoint_check.php:11:11
+ 9 |   Map<string, mixed> $assoc,
+10 | ): bool {
+11 |   return !contains($table_data, (int)$assoc['id1']);
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+12 | }
+13 | 
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 20 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:20:10
+18 | 
+19 | function bad1(vec<Foo> $x, int $i): bool {
+20 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+21 | }
+22 | function bad2(dict<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 23 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:23:10
+21 | }
+22 | function bad2(dict<int, Foo> $x, int $i): bool {
+23 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+24 | }
+25 | function bad3(Traversable<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 26 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:26:10
+24 | }
+25 | function bad3(Traversable<Foo> $x, int $i): bool {
+26 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+27 | }
+28 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 29 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:29:10
+27 | }
+28 | function bad4(KeyedTraversable<int, Foo> $x, int $i): bool {
+29 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+30 | }
+31 | function bad5(Container<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 32 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:32:10
+30 | }
+31 | function bad5(Container<Foo> $x, int $i): bool {
+32 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+33 | }
+34 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 35 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:35:10
+33 | }
+34 | function bad6(KeyedContainer<int, Foo> $x, int $i): bool {
+35 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+36 | }
+37 | function bad7(Iterator<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 38 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:38:10
+36 | }
+37 | function bad7(Iterator<Foo> $x, int $i): bool {
+38 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+39 | }
+40 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int.
-   --> invalid_disjoint_check.php
- 41 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type int. [1]
+
+invalid_disjoint_check.php:41:10
+39 | }
+40 | function bad8(IteratorAggregate<Foo> $x, int $i): bool {
+41 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+42 | }
+43 | function bad9(vec<Foo> $x, Baz $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz.
-   --> invalid_disjoint_check.php
- 44 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type Baz. [1]
+
+invalid_disjoint_check.php:44:10
+42 | }
+43 | function bad9(vec<Foo> $x, Baz $i): bool {
+44 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+45 | }
+46 | function bad10(vec<Foo> $x, Bar $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#3> as Bar.
-   --> invalid_disjoint_check.php
- 47 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Foo is disjoint from type <expr#3> as Bar. [1]
+
+invalid_disjoint_check.php:47:10
+45 | }
+46 | function bad10(vec<Foo> $x, Bar $i): bool {
+47 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+48 | }
+49 | function bad11(vec<Bar> $x, Foo $i): bool {
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo.
-   --> invalid_disjoint_check.php
- 50 |   return contains($x, $i);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type Bar is disjoint from type Foo. [1]
+
+invalid_disjoint_check.php:50:10
+48 | }
+49 | function bad11(vec<Bar> $x, Foo $i): bool {
+50 |   return contains($x, $i);
+   |          ^^^^^^^^^^^^^^^^ [1]
+51 | }
+52 | 
 
 
-warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt.
-   --> invalid_disjoint_check.php
- 98 |   return contains($x, $y);
-    |          ^^^^^^^^^^^^^^^^
+warning: Lint[5638] This call to 'contains' will always return the same value, because type string is disjoint from type EnumInt. [1]
+
+invalid_disjoint_check.php:98:10
+96 | 
+97 | function badenum(vec<string> $x, EnumInt $y): bool {
+98 |   return contains($x, $y);
+   |          ^^^^^^^^^^^^^^^^ [1]
+99 | }
 
 

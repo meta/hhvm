@@ -7,3 +7,7 @@
  *)
 
 val to_string : Diagnostics.finalized_diagnostic -> string
+
+(** Use the supplied source text for the diagnostic's claim file. *)
+val to_string_with_source :
+  ?source:string -> Diagnostics.finalized_diagnostic -> string

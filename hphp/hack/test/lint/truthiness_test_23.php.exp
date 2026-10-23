@@ -1,7 +1,12 @@
 warning: Lint[5623] `$x` is a sketchy condition: testing the truthiness of XHPChild may not behave as expected.
-The values `""` and `"0"` are both considered falsy, but objects (including XHP elements) will be truthy even if their `__toString` returns `""` or `"0"`.
-   --> truthiness_test_23.php
-  4 |   if ($x) {
-    |       ^^
+The values `""` and `"0"` are both considered falsy, but objects (including XHP elements) will be truthy even if their `__toString` returns `""` or `"0"`. [1]
+
+truthiness_test_23.php:4:7
+2 | 
+3 | function foo(XHPChild $x): void {
+4 |   if ($x) {
+  |       ^^ [1]
+5 |     do_something();
+6 |   }
 
 

@@ -1,6 +1,10 @@
-warning: Lint[5556] There are no statements in the body of this `if` branch.
-   --> empty_if.php
-  6 |   if ($foo) {}
-    |       ^^^^
+warning: Lint[5556] There are no statements in the body of this `if` branch. [1]
+
+empty_if.php:6:7
+4 | function empty_if(): void {
+5 |   $foo = true;
+6 |   if ($foo) {}
+  |       ^^^^ [1]
+7 | }
 
 

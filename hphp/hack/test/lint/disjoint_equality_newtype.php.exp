@@ -1,7 +1,11 @@
 warning: Lint[5607] Invalid comparison: This expression will always return `false`.
-A value of type `NTIntA` can never be equal to a value of type `NTStringB`
-   --> disjoint_equality_newtype.php--main.php
-  8 |   if ($a === $b) { echo 'cannot happen'; }
-    |       ^^^^^^^^^
+A value of type `NTIntA` can never be equal to a value of type `NTStringB` [1]
+
+disjoint_equality_newtype.php--main.php:8:7
+6 | 
+7 | function bad(NTIntA $a, NTStringB $b): void {
+8 |   if ($a === $b) { echo 'cannot happen'; }
+  |       ^^^^^^^^^ [1]
+9 | }
 
 

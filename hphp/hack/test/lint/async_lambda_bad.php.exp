@@ -1,18 +1,33 @@
-warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position.
-   --> async_lambda_bad.php
-  6 |     $x ==> async_lambda_bad1($x),
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position. [1]
+
+async_lambda_bad.php:6:5
+4 |   $_ = await HH\Lib\Vec\map_async(
+5 |     vec[],
+6 |     $x ==> async_lambda_bad1($x),
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+7 |   );
+8 | }
 
 
-warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position.
-   --> async_lambda_bad.php
- 13 |     $x ==> { return async_lambda_bad2($x); },
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position. [1]
+
+async_lambda_bad.php:13:5
+11 |   $_ = await HH\Lib\Vec\map_async(
+12 |     vec[],
+13 |     $x ==> { return async_lambda_bad2($x); },
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+14 |   );
+15 | }
 
 
-warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position.
-   --> async_lambda_bad.php
- 20 |     function($x) { return async_lambda_bad3($x); }
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position. [1]
+
+async_lambda_bad.php:20:5
+18 |   $_ = await HH\Lib\Vec\map_async(
+19 |     vec[],
+20 |     function($x) { return async_lambda_bad3($x); }
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+21 |   );
+22 | }
 
 

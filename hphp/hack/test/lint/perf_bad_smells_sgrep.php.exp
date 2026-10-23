@@ -1,54 +1,99 @@
-warning: Lint[5564] test is the only function declared in perf_bad_smells_sgrep.php, so that file should be named test.php instead.
-   --> perf_bad_smells_sgrep.php
-  3 | function test($x) {
-    |          ^^^^
+warning: Lint[5564] test is the only function declared in perf_bad_smells_sgrep.php, so that file should be named test.php instead. [1]
+
+perf_bad_smells_sgrep.php:3:10
+1 | <?hh
+2 | 
+3 | function test($x) {
+  |          ^^^^ [1]
+4 |   array_keys(array_filter(X));
+5 |   str_replace('_', '-', X);
 
 
-warning: Lint[5542] consider keys_with_truthy_values from core/utils. array_keys(array_filter(X)) === keys_with_truthy_values(X), but keys_with_truthy_values is faster.
-   --> perf_bad_smells_sgrep.php
-  4 |   array_keys(array_filter(X));
-    |   ^^^^^^^^^^
+warning: Lint[5542] consider keys_with_truthy_values from core/utils. array_keys(array_filter(X)) === keys_with_truthy_values(X), but keys_with_truthy_values is faster. [1]
+
+perf_bad_smells_sgrep.php:4:3
+2 | 
+3 | function test($x) {
+4 |   array_keys(array_filter(X));
+  |   ^^^^^^^^^^ [1]
+5 |   str_replace('_', '-', X);
+6 |   new URI($X);
 
 
-warning: Lint[5542] Use the `dashes(X)` function instead of `str_replace('_', '-', X)`
-   --> perf_bad_smells_sgrep.php
-  5 |   str_replace('_', '-', X);
-    |   ^^^^^^^^^^^
+warning: Lint[5542] Use the `dashes(X)` function instead of `str_replace('_', '-', X)` [1]
+
+perf_bad_smells_sgrep.php:5:3
+3 | function test($x) {
+4 |   array_keys(array_filter(X));
+5 |   str_replace('_', '-', X);
+  |   ^^^^^^^^^^^ [1]
+6 |   new URI($X);
+7 |   URI((string)$X);
 
 
-warning: Lint[5542] Do not invoke the URI constructor directly such as: `new URI()`. Rather, use the helper function: `URI()`.
-   --> perf_bad_smells_sgrep.php
-  6 |   new URI($X);
-    |       ^^^
+warning: Lint[5542] Do not invoke the URI constructor directly such as: `new URI()`. Rather, use the helper function: `URI()`. [1]
+
+perf_bad_smells_sgrep.php:6:7
+4 |   array_keys(array_filter(X));
+5 |   str_replace('_', '-', X);
+6 |   new URI($X);
+  |       ^^^ [1]
+7 |   URI((string)$X);
+8 |   URI($X->__toString());
 
 
-warning: Lint[5542] do not cast the argument to the URI helper function to a string. this is handled for you.
-   --> perf_bad_smells_sgrep.php
-  7 |   URI((string)$X);
-    |   ^^^
+warning: Lint[5542] do not cast the argument to the URI helper function to a string. this is handled for you. [1]
+
+perf_bad_smells_sgrep.php:7:3
+5 |   str_replace('_', '-', X);
+6 |   new URI($X);
+7 |   URI((string)$X);
+  |   ^^^ [1]
+8 |   URI($X->__toString());
+9 |   array_keys(array_pull(X, Y));
 
 
-warning: Lint[5542] do not cast the argument to the URI helper function to a string. this is handled for you.
-   --> perf_bad_smells_sgrep.php
-  8 |   URI($X->__toString());
-    |   ^^^
+warning: Lint[5542] do not cast the argument to the URI helper function to a string. this is handled for you. [1]
+
+perf_bad_smells_sgrep.php:8:3
+ 6 |   new URI($X);
+ 7 |   URI((string)$X);
+ 8 |   URI($X->__toString());
+   |   ^^^ [1]
+ 9 |   array_keys(array_pull(X, Y));
+10 |   in_array(A, array_keys(B));
 
 
-warning: Lint[5542] Two-argument array_pull() gives you new values, but the subsequent array_keys() just discards them. These are not the droids you're looking for.
-   --> perf_bad_smells_sgrep.php
-  9 |   array_keys(array_pull(X, Y));
-    |   ^^^^^^^^^^
+warning: Lint[5542] Two-argument array_pull() gives you new values, but the subsequent array_keys() just discards them. These are not the droids you're looking for. [1]
+
+perf_bad_smells_sgrep.php:9:3
+ 7 |   URI((string)$X);
+ 8 |   URI($X->__toString());
+ 9 |   array_keys(array_pull(X, Y));
+   |   ^^^^^^^^^^ [1]
+10 |   in_array(A, array_keys(B));
+11 |   array_unique(array_keys(X));
 
 
-warning: Lint[5542] fetching the keys with array_keys(B) and walking through them with in_array(A, B) is an O(N) operation. isset(B[A]) is O(1). use isset().
-   --> perf_bad_smells_sgrep.php
- 10 |   in_array(A, array_keys(B));
-    |   ^^^^^^^^
+warning: Lint[5542] fetching the keys with array_keys(B) and walking through them with in_array(A, B) is an O(N) operation. isset(B[A]) is O(1). use isset(). [1]
+
+perf_bad_smells_sgrep.php:10:3
+ 8 |   URI($X->__toString());
+ 9 |   array_keys(array_pull(X, Y));
+10 |   in_array(A, array_keys(B));
+   |   ^^^^^^^^ [1]
+11 |   array_unique(array_keys(X));
+12 |   array_unique(array_filter(X, Y, Z));
 
 
-warning: Lint[5542] array_keys is already unique by definition, array_unique is unnecessary.
-   --> perf_bad_smells_sgrep.php
- 11 |   array_unique(array_keys(X));
-    |   ^^^^^^^^^^^^
+warning: Lint[5542] array_keys is already unique by definition, array_unique is unnecessary. [1]
+
+perf_bad_smells_sgrep.php:11:3
+ 9 |   array_keys(array_pull(X, Y));
+10 |   in_array(A, array_keys(B));
+11 |   array_unique(array_keys(X));
+   |   ^^^^^^^^^^^^ [1]
+12 |   array_unique(array_filter(X, Y, Z));
+13 | }
 
 

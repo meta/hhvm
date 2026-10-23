@@ -1,12 +1,22 @@
-warning: Lint[5564] CloneUsageTest is the only class declared in clone_usage.php, so that file should be named CloneUsageTest.php instead.
-   --> clone_usage.php
-  3 | class CloneUsageTest {
-    |       ^^^^^^^^^^^^^^
+warning: Lint[5564] CloneUsageTest is the only class declared in clone_usage.php, so that file should be named CloneUsageTest.php instead. [1]
+
+clone_usage.php:3:7
+1 | <?hh
+2 | 
+3 | class CloneUsageTest {
+  |       ^^^^^^^^^^^^^^ [1]
+4 | 
+5 |   public function test(): void {
 
 
-warning: Lint[5562] Objects created with `clone` will have references to shared deep objects. Prefer to implement your own explicit copy method to ensure the semantics you want. See http://php.net/manual/en/language.oop5.cloning.php
-   --> clone_usage.php
-  7 |     $y = clone $x;
-    |                ^^
+warning: Lint[5562] Objects created with `clone` will have references to shared deep objects. Prefer to implement your own explicit copy method to ensure the semantics you want. See http://php.net/manual/en/language.oop5.cloning.php [1]
+
+clone_usage.php:7:16
+5 |   public function test(): void {
+6 |     $x = Vector {};
+7 |     $y = clone $x;
+  |                ^^ [1]
+8 |     $y->add(3);
+9 |   }
 
 

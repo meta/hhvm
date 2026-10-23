@@ -1,12 +1,21 @@
-warning: Lint[5564] foo is the only function declared in as_valid_type_with_opaque_alias.php--use_it.php, so that file should be named foo.php instead.
-   --> as_valid_type_with_opaque_alias.php--use_it.php
-  3 | function foo(?MyIntID_of $x): void {
-    |          ^^^
+warning: Lint[5564] foo is the only function declared in as_valid_type_with_opaque_alias.php--use_it.php, so that file should be named foo.php instead. [1]
+
+as_valid_type_with_opaque_alias.php--use_it.php:3:10
+1 | <?hh
+2 | 
+3 | function foo(?MyIntID_of $x): void {
+  |          ^^^ [1]
+4 |   // Might throw, might not. The lint shouldn't fire here, because we
+5 |   // only report unconditional throw situations.
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> as_valid_type_with_opaque_alias.php--use_it.php
-  6 |   $x as int;
-    |   ^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+as_valid_type_with_opaque_alias.php--use_it.php:6:3
+4 |   // Might throw, might not. The lint shouldn't fire here, because we
+5 |   // only report unconditional throw situations.
+6 |   $x as int;
+  |   ^^^^^^^^^ [1]
+7 | }
 
 

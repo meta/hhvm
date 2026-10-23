@@ -1,12 +1,21 @@
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> T148500367.php
-  5 |   $v[$key as nonnull][] = 42;
-    |      ^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+T148500367.php:5:6
+3 | function essential_nonnull1(?int $key, vec<vec<int>> $v): void {
+4 |   // redundant nonnull shouldn't fire
+5 |   $v[$key as nonnull][] = 42;
+  |      ^^^^^^^^^^^^^^^ [1]
+6 | }
+7 | 
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> T148500367.php
- 10 |   $v[$key as nonnull][42] = 42;
-    |      ^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+T148500367.php:10:6
+ 8 | function essential_nonnull2(?int $key, vec<vec<int>> $v): void {
+ 9 |   // redundant nonnull shouldn't fire
+10 |   $v[$key as nonnull][42] = 42;
+   |      ^^^^^^^^^^^^^^^ [1]
+11 | }
 
 

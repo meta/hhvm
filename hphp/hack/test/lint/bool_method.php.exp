@@ -1,6 +1,11 @@
-warning: Lint[5631] `__bool` methods should return `bool`. They show that an expression tree type can be used in a boolean expression.
-   --> bool_method.php
-  4 |   public function __bool(): void {}
-    |                             ^^^^
+warning: Lint[5631] `__bool` methods should return `bool`. They show that an expression tree type can be used in a boolean expression. [1]
+
+bool_method.php:4:29
+2 | 
+3 | class Foo {
+4 |   public function __bool(): void {}
+  |                             ^^^^ [1]
+5 | }
+6 | 
 
 

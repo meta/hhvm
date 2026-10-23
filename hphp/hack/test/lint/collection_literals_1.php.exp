@@ -1,12 +1,21 @@
-warning: Lint[5564] f is the only function declared in collection_literals_1.php, so that file should be named f.php instead.
-   --> collection_literals_1.php
-  3 | function f() {
-    |          ^
+warning: Lint[5564] f is the only function declared in collection_literals_1.php, so that file should be named f.php instead. [1]
+
+collection_literals_1.php:3:10
+1 | <?hh
+2 | 
+3 | function f() {
+  |          ^ [1]
+4 |   return new Vector();
+5 | }
 
 
-warning: Lint[5002] Use `Vector {...}` instead of `new Vector(...)`
-   --> collection_literals_1.php
-  4 |   return new Vector();
-    |              ^^^^^^
+warning: Lint[5002] Use `Vector {...}` instead of `new Vector(...)` [1]
+
+collection_literals_1.php:4:14
+2 | 
+3 | function f() {
+4 |   return new Vector();
+  |              ^^^^^^ [1]
+5 | }
 
 

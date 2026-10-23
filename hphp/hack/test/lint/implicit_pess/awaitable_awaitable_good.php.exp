@@ -1,6 +1,15 @@
-warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position.
-   --> awaitable_awaitable_good.php
- 22 |     $x ==> {
-    |     ^^^^^^^^
+warning: Lint[5650] Use `async ... ==> await ...` for lambdas that directly return `Awaitable`s, so stack traces include the lambda position. [1]
+
+awaitable_awaitable_good.php:22:5
+20 |     vec[],
+21 |     // no nested Awaitable here
+22 |     $x ==> {
+   |     ^^^^^^^^ [1]
+23 |       return awaitable_awaitable_good3($x);
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+24 |     },
+   |     ^ [1]
+25 |   );
+26 | }
 
 

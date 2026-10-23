@@ -1,6 +1,11 @@
-warning: Lint[5809] Explicit `dynamic` type usage in APIs turn off most checks the Hack type checker performs. This frequently leads to reliability issues.
-   --> cast_non_primitive_ugly.php
- 12 | function cast_non_primitive_ugly2(dynamic $dyn): void {
-    |                                   ^^^^^^^
+warning: Lint[5809] Explicit `dynamic` type usage in APIs turn off most checks the Hack type checker performs. This frequently leads to reliability issues. [1]
+
+cast_non_primitive_ugly.php:12:35
+10 | }
+11 | 
+12 | function cast_non_primitive_ugly2(dynamic $dyn): void {
+   |                                   ^^^^^^^ [1]
+13 |   (int) $dyn;
+14 | }
 
 

@@ -1,19 +1,33 @@
-warning: Lint[5564] f is the only function declared in null_check_strict3.php, so that file should be named f.php instead.
-   --> null_check_strict3.php
-  3 | function f(?string $x, int $y): void {
-    |          ^
+warning: Lint[5564] f is the only function declared in null_check_strict3.php, so that file should be named f.php instead. [1]
+
+null_check_strict3.php:3:10
+1 | <?hh
+2 | 
+3 | function f(?string $x, int $y): void {
+  |          ^ [1]
+4 |   if ($y) {
+5 |   }
 
 
-warning: Lint[5556] There are no statements in the body of this `if` branch.
-   --> null_check_strict3.php
-  4 |   if ($y) {
-    |       ^^
+warning: Lint[5556] There are no statements in the body of this `if` branch. [1]
+
+null_check_strict3.php:4:7
+2 | 
+3 | function f(?string $x, int $y): void {
+4 |   if ($y) {
+  |       ^^ [1]
+5 |   }
+6 |   $z = $x ?: 'bar';
 
 
 warning: Lint[5623] `$x` is a sketchy condition: testing the truthiness of a string may not behave as expected.
-The values `""` and `"0"` are both considered falsy. To check for non-emptiness, use `!Str\is_empty($x)`.
-   --> null_check_strict3.php
-  6 |   $z = $x ?: 'bar';
-    |        ^^
+The values `""` and `"0"` are both considered falsy. To check for non-emptiness, use `!Str\is_empty($x)`. [1]
+
+null_check_strict3.php:6:8
+4 |   if ($y) {
+5 |   }
+6 |   $z = $x ?: 'bar';
+  |        ^^ [1]
+7 | }
 
 

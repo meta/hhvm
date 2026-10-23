@@ -1,6 +1,11 @@
-warning: Lint[5634] Property `x`, defined in T0 and T1, is inherited multiple times by class `C` and one of its instances is initialised with a class or enum constant
-   --> duplicated_properties_enum_bad.php
- 16 | class C {
-    |       ^
+warning: Lint[5634] Property `x`, defined in T0 and T1, is inherited multiple times by class `C` and one of its instances is initialised with a class or enum constant [1]
+
+duplicated_properties_enum_bad.php:16:7
+14 | }
+15 | 
+16 | class C {
+   |       ^ [1]
+17 |   use T0;
+18 |   use T1;
 
 

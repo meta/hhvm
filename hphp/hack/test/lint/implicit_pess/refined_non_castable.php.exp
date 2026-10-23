@@ -1,6 +1,10 @@
-warning: Lint[5609] This `is` check is always `true`. The expression on the left has type `int` which is a subtype of `nonnull`.
-   --> refined_non_castable.php
-  7 |   $id is nonnull ? (string) $id : 'null',
-    |   ^^^^^^^^^^^^^^
+warning: Lint[5609] This `is` check is always `true`. The expression on the left has type `int` which is a subtype of `nonnull`. [1]
+
+refined_non_castable.php:7:3
+5 | function foo(): void {
+6 |   $id = bar()[0];
+7 |   $id is nonnull ? (string) $id : 'null',
+  |   ^^^^^^^^^^^^^^ [1]
+8 | }
 
 

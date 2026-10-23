@@ -1,84 +1,153 @@
-warning: Lint[5652] Casting Vector<nothing> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
-  9 |   (int) (Vector {});
-    |   ^^^^^^^^^^^^^^^^^
+warning: Lint[5652] Casting Vector<nothing> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:9:3
+ 7 | 
+ 8 | function cast_non_primitive_bad1(): void {
+ 9 |   (int) (Vector {});
+   |   ^^^^^^^^^^^^^^^^^ [1]
+10 | }
+11 | 
 
 
-warning: Lint[5652] Casting vec<nothing> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 13 |   (int) (vec[]);
-    |   ^^^^^^^^^^^^^
+warning: Lint[5652] Casting vec<nothing> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:13:3
+11 | 
+12 | function cast_non_primitive_bad2(): void {
+13 |   (int) (vec[]);
+   |   ^^^^^^^^^^^^^ [1]
+14 | }
+15 | 
 
 
-warning: Lint[5652] Casting C to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 17 |   (int) (new C());
-    |   ^^^^^^^^^^^^^^^
+warning: Lint[5652] Casting C to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:17:3
+15 | 
+16 | function cast_non_primitive_bad3(): void {
+17 |   (int) (new C());
+   |   ^^^^^^^^^^^^^^^ [1]
+18 | }
+19 | 
 
 
-warning: Lint[5652] Casting (string | vec<nothing>) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 26 |   (int) $x;
-    |   ^^^^^^^^
+warning: Lint[5652] Casting (string | vec<nothing>) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:26:3
+24 |     $x = vec[];
+25 |   }
+26 |   (int) $x;
+   |   ^^^^^^^^ [1]
+27 | }
+28 | 
 
 
-warning: Lint[5652] Casting (C | string) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 35 |   (int) $x;
-    |   ^^^^^^^^
+warning: Lint[5652] Casting (C | string) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:35:3
+33 |     $x = new C();
+34 |   }
+35 |   (int) $x;
+   |   ^^^^^^^^ [1]
+36 | }
+37 | 
 
 
-warning: Lint[5652] Casting (C | vec<nothing>) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 44 |   (int) $x;
-    |   ^^^^^^^^
+warning: Lint[5652] Casting (C | vec<nothing>) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:44:3
+42 |     $x = new C();
+43 |   }
+44 |   (int) $x;
+   |   ^^^^^^^^ [1]
+45 | }
+46 | 
 
 
-warning: Lint[5652] Casting Stringish to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 48 |   (int) $test;
-    |   ^^^^^^^^^^^
+warning: Lint[5652] Casting Stringish to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:48:3
+46 | 
+47 | function cast_non_primitive_bad7(Stringish $test): void {
+48 |   (int) $test;
+   |   ^^^^^^^^^^^ [1]
+49 | }
+50 | 
 
 
-warning: Lint[5652] Casting (C | D | E | F) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 73 |   (int) $c;
-    |   ^^^^^^^^
+warning: Lint[5652] Casting (C | D | E | F) to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:73:3
+71 |     $c = $b;
+72 |   }
+73 |   (int) $c;
+   |   ^^^^^^^^ [1]
+74 | }
+75 | 
 
 
-warning: Lint[5652] Casting vec<string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 84 |   (int)$vec;
-    |   ^^^^^^^^^
+warning: Lint[5652] Casting vec<string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:84:3
+82 |   vec_or_dict<string> $varray_or_darray,
+83 | ): void {
+84 |   (int)$vec;
+   |   ^^^^^^^^^ [1]
+85 |   (int)$dict;
+86 |   (int)$keyset;
 
 
-warning: Lint[5652] Casting dict<string, string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 85 |   (int)$dict;
-    |   ^^^^^^^^^^
+warning: Lint[5652] Casting dict<string, string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:85:3
+83 | ): void {
+84 |   (int)$vec;
+85 |   (int)$dict;
+   |   ^^^^^^^^^^ [1]
+86 |   (int)$keyset;
+87 |   (int)$varray;
 
 
-warning: Lint[5652] Casting keyset<string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 86 |   (int)$keyset;
-    |   ^^^^^^^^^^^^
+warning: Lint[5652] Casting keyset<string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:86:3
+84 |   (int)$vec;
+85 |   (int)$dict;
+86 |   (int)$keyset;
+   |   ^^^^^^^^^^^^ [1]
+87 |   (int)$varray;
+88 |   (int)$darray;
 
 
-warning: Lint[5652] Casting vec<string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 87 |   (int)$varray;
-    |   ^^^^^^^^^^^^
+warning: Lint[5652] Casting vec<string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:87:3
+85 |   (int)$dict;
+86 |   (int)$keyset;
+87 |   (int)$varray;
+   |   ^^^^^^^^^^^^ [1]
+88 |   (int)$darray;
+89 |   (int)$varray_or_darray;
 
 
-warning: Lint[5652] Casting dict<string, string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 88 |   (int)$darray;
-    |   ^^^^^^^^^^^^
+warning: Lint[5652] Casting dict<string, string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:88:3
+86 |   (int)$keyset;
+87 |   (int)$varray;
+88 |   (int)$darray;
+   |   ^^^^^^^^^^^^ [1]
+89 |   (int)$varray_or_darray;
+90 | }
 
 
-warning: Lint[5652] Casting vec_or_dict<arraykey, string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check?
-   --> cast_non_primitive_bad.php
- 89 |   (int)$varray_or_darray;
-    |   ^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5652] Casting vec_or_dict<arraykey, string> to int: casting a non-primitive type to a primitive rarely yields a useful value. Did you mean to extract a value from this object before casting it, or to do a null-check? [1]
+
+cast_non_primitive_bad.php:89:3
+87 |   (int)$varray;
+88 |   (int)$darray;
+89 |   (int)$varray_or_darray;
+   |   ^^^^^^^^^^^^^^^^^^^^^^ [1]
+90 | }
 
 

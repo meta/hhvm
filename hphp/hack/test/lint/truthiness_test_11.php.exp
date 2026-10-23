@@ -1,9 +1,14 @@
 warning: Lint[5623] `$x` is a sketchy condition: testing the truthiness of Traversable<int> may not behave as expected.
 A value of this type may be truthy even when empty.
 Hack collections and arrays are falsy when empty, but user-defined Traversables will always be truthy, even when empty.
-If you would like to only allow containers which are falsy when empty, use the `Container` or `KeyedContainer` interfaces.
-   --> truthiness_test_11.php
-  6 |   if ($x) {
-    |       ^^
+If you would like to only allow containers which are falsy when empty, use the `Container` or `KeyedContainer` interfaces. [1]
+
+truthiness_test_11.php:6:7
+4 |   $x = $b ? $t : $v;
+5 |   // Error--$t may be an always-truthy value like a user-defined Iterator.
+6 |   if ($x) {
+  |       ^^ [1]
+7 |     do_something();
+8 |   }
 
 

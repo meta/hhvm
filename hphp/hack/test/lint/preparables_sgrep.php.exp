@@ -1,24 +1,44 @@
-warning: Lint[5564] test is the only function declared in preparables_sgrep.php, so that file should be named test.php instead.
-   --> preparables_sgrep.php
-  3 | function test($x, $y, $z) {
-    |          ^^^^
+warning: Lint[5564] test is the only function declared in preparables_sgrep.php, so that file should be named test.php instead. [1]
+
+preparables_sgrep.php:3:10
+1 | <?hh
+2 | 
+3 | function test($x, $y, $z) {
+  |          ^^^^ [1]
+4 |   gena(vec[A]);
+5 |   genak(A, new ImmSet($x));
 
 
-warning: Lint[5542] genak accepts Traversable, you could pass the 2nd parameter directly without ImmSet wrapper.
-   --> preparables_sgrep.php
-  5 |   genak(A, new ImmSet($x));
-    |   ^^^^^
+warning: Lint[5542] genak accepts Traversable, you could pass the 2nd parameter directly without ImmSet wrapper. [1]
+
+preparables_sgrep.php:5:3
+3 | function test($x, $y, $z) {
+4 |   gena(vec[A]);
+5 |   genak(A, new ImmSet($x));
+  |   ^^^^^ [1]
+6 |   genak(A, B->toArray());
+7 |   list($a, $b) = await gena(vec[$x, $y]);
 
 
-warning: Lint[5542] genak accepts Traversable, you could pass your collection directly without cast to array.
-   --> preparables_sgrep.php
-  6 |   genak(A, B->toArray());
-    |   ^^^^^
+warning: Lint[5542] genak accepts Traversable, you could pass your collection directly without cast to array. [1]
+
+preparables_sgrep.php:6:3
+4 |   gena(vec[A]);
+5 |   genak(A, new ImmSet($x));
+6 |   genak(A, B->toArray());
+  |   ^^^^^ [1]
+7 |   list($a, $b) = await gena(vec[$x, $y]);
+8 |   list($a, $b, $c) = await gena(vec[$x, $y, $z]);
 
 
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> preparables_sgrep.php
-  6 |   genak(A, B->toArray());
-    |            ^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+preparables_sgrep.php:6:12
+4 |   gena(vec[A]);
+5 |   genak(A, new ImmSet($x));
+6 |   genak(A, B->toArray());
+  |            ^ [1]
+7 |   list($a, $b) = await gena(vec[$x, $y]);
+8 |   list($a, $b, $c) = await gena(vec[$x, $y, $z]);
 
 

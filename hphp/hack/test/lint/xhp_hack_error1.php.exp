@@ -1,12 +1,22 @@
-warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> xhp_hack_error1.php
-  7 |     $select = <select name={$this->:name} />;
-    |                             ^^^^^
+warning: Lint[5806] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using an `HH_FIXME` comment. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+xhp_hack_error1.php:7:29
+5 | 
+6 |   protected function renderMeDerpy() {
+7 |     $select = <select name={$this->:name} />;
+  |                             ^^^^^ [1]
+8 |     $select->appendChild(
+9 |       <option value={$default}
 
 
-warning: Lint[5542] DO NOT USE XhpHackError::attributeExpectsBool() IN NEW CODE. XHP has some "unique" rules for how it cast the values of attributes. The first step towards making XHP behave more like typical Hack code is to mark places currently in the code that can possibly rely on XHP's internal casting. If you see this call in your code, remove it and cast the value to the proper type.
-   --> xhp_hack_error1.php
- 10 |               selected={XhpHackError::attributeExpectsBool("selected")}>
-    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5542] DO NOT USE XhpHackError::attributeExpectsBool() IN NEW CODE. XHP has some "unique" rules for how it cast the values of attributes. The first step towards making XHP behave more like typical Hack code is to mark places currently in the code that can possibly rely on XHP's internal casting. If you see this call in your code, remove it and cast the value to the proper type. [1]
+
+xhp_hack_error1.php:10:25
+ 8 |     $select->appendChild(
+ 9 |       <option value={$default}
+10 |               selected={XhpHackError::attributeExpectsBool("selected")}>
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+11 |       Custom ({$default})
+12 |       </option>);
 
 

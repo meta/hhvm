@@ -1,6 +1,11 @@
-warning: Lint[5616] Method `f` is also defined on `C`, but this method is missing `<<__Override>>`.
-   --> override_trait.php
- 18 |   public function f(): void {
-    |                   ^
+warning: Lint[5616] Method `f` is also defined on `C`, but this method is missing `<<__Override>>`. [1]
+
+override_trait.php:18:19
+16 |   require extends C;
+17 | 
+18 |   public function f(): void {
+   |                   ^ [1]
+19 |     echo "In TCBad\n";
+20 |   }
 
 

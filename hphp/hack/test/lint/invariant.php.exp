@@ -1,18 +1,33 @@
-warning: Lint[5581] Your expression always evaluates to true. Because of this, invariant() will never throw an exception here. If this is the behavior you want simply remove or comment out the line.
-   --> invariant.php
-  5 |   invariant(true, 'This should cause lint error');
-    |             ^^^^
+warning: Lint[5581] Your expression always evaluates to true. Because of this, invariant() will never throw an exception here. If this is the behavior you want simply remove or comment out the line. [1]
+
+invariant.php:5:13
+3 | 
+4 | function test_invariant_fail1(): void {
+5 |   invariant(true, 'This should cause lint error');
+  |             ^^^^ [1]
+6 | }
+7 | 
 
 
-warning: Lint[5581] Your expression always evaluates to true. Because of this, invariant() will never throw an exception here. If this is the behavior you want simply remove or comment out the line.
-   --> invariant.php
-  9 |   invariant(!!true, 'This should cause lint error');
-    |             ^^^^^^
+warning: Lint[5581] Your expression always evaluates to true. Because of this, invariant() will never throw an exception here. If this is the behavior you want simply remove or comment out the line. [1]
+
+invariant.php:9:13
+ 7 | 
+ 8 | function test_invariant_fail2(): void {
+ 9 |   invariant(!!true, 'This should cause lint error');
+   |             ^^^^^^ [1]
+10 | }
+11 | 
 
 
-warning: Lint[5581] Your expression always evaluates to false. Because of this, invariant() will always throw an exception here. If this is the behavior you want, please use invariant_violation() explicitly instead.
-   --> invariant.php
- 13 |   invariant(!true, 'This should cause lint error');
-    |             ^^^^^
+warning: Lint[5581] Your expression always evaluates to false. Because of this, invariant() will always throw an exception here. If this is the behavior you want, please use invariant_violation() explicitly instead. [1]
+
+invariant.php:13:13
+11 | 
+12 | function test_invariant_fail3(): void {
+13 |   invariant(!true, 'This should cause lint error');
+   |             ^^^^^ [1]
+14 | }
+15 | 
 
 

@@ -1,30 +1,54 @@
-warning: Lint[5556] There are no statements in the body of this `if` branch.
-   --> basic_sgrep.php
-  4 |   if (foo() && bar()) {
-    |       ^^^^^^^^^^^^^^
+warning: Lint[5556] There are no statements in the body of this `if` branch. [1]
+
+basic_sgrep.php:4:7
+2 | 
+3 | function test() {
+4 |   if (foo() && bar()) {
+  |       ^^^^^^^^^^^^^^ [1]
+5 |     // Empty if should be flagged.
+6 |   }
 
 
-warning: Lint[5556] There are no statements in the body of this `else` branch.
-   --> basic_sgrep.php
-  7 |   if (foo() && bar()) {
-    |       ^^^^^^^^^^^^^^
+warning: Lint[5556] There are no statements in the body of this `else` branch. [1]
+
+basic_sgrep.php:7:7
+5 |     // Empty if should be flagged.
+6 |   }
+7 |   if (foo() && bar()) {
+  |       ^^^^^^^^^^^^^^ [1]
+8 |     print("foo")
+9 |   } else {
 
 
-warning: Lint[5542] X == null is never the right thing to do - you should either do !X or X === null depending on what specific check is desired.
-   --> basic_sgrep.php
- 13 |   if ($x == null) {
-    |       ^^
+warning: Lint[5542] X == null is never the right thing to do - you should either do !X or X === null depending on what specific check is desired. [1]
+
+basic_sgrep.php:13:7
+11 |   }
+12 | 
+13 |   if ($x == null) {
+   |       ^^ [1]
+14 |     print("This should be flagged");
+15 |   }
 
 
-warning: Lint[5542] X != null is never the right thing to do - you should either do if (X), (bool)X or X !== null depending on what specific check is desired.
-   --> basic_sgrep.php
- 16 |   if ($x != null) {
-    |       ^^
+warning: Lint[5542] X != null is never the right thing to do - you should either do if (X), (bool)X or X !== null depending on what specific check is desired. [1]
+
+basic_sgrep.php:16:7
+14 |     print("This should be flagged");
+15 |   }
+16 |   if ($x != null) {
+   |       ^^ [1]
+17 |     print("This should be flagged");
+18 |   }
 
 
-warning: Lint[5542] Please do not use isset($x), use '$x !== null' instead. isset() hides errors by silently returning false for typos and other undefined variables. See https://our.intern.facebook.com/intern/dex/php-language-pitfalls/ for more information (send an email to ahupp@fb.com if it's a false positive).
-   --> basic_sgrep.php
- 28 |   $y = isset($x);
-    |        ^^^^^
+warning: Lint[5542] Please do not use isset($x), use '$x !== null' instead. isset() hides errors by silently returning false for typos and other undefined variables. See https://our.intern.facebook.com/intern/dex/php-language-pitfalls/ for more information (send an email to ahupp@fb.com if it's a false positive). [1]
+
+basic_sgrep.php:28:8
+26 | 
+27 | function empty_isset_test($y) {
+28 |   $y = isset($x);
+   |        ^^^^^ [1]
+29 | }
 
 

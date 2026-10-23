@@ -1,6 +1,11 @@
-warning: Lint[5609] This `is` check is always `true`. The expression on the left has type `int` which is a subtype of `nonnull`.
-   --> non_null_is_check_always_true.php
-  7 |   if ($x is nonnull) {
-    |       ^^^^^^^^^^^^^
+warning: Lint[5609] This `is` check is always `true`. The expression on the left has type `int` which is a subtype of `nonnull`. [1]
+
+non_null_is_check_always_true.php:7:7
+5 | 
+6 | function test(int $x): void {
+7 |   if ($x is nonnull) {
+  |       ^^^^^^^^^^^^^ [1]
+8 |     expect_int($x);
+9 |   }
 
 

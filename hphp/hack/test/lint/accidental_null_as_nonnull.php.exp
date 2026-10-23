@@ -1,12 +1,20 @@
-warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `null` which shares no values with `nonnull`.
-   --> accidental_null_as_nonnull.php
-  4 |   $s['name'] ?? null as nonnull
-    |                 ^^^^^^^^^^^^^^^
+warning: Lint[5629] This `as` assertion will always fail and lead to an exception at runtime. The expression on the left has type `null` which shares no values with `nonnull`. [1]
+
+accidental_null_as_nonnull.php:4:17
+2 | 
+3 | function accidental_null_as_nonnull(shape(?'name' => string) $s): void {
+4 |   $s['name'] ?? null as nonnull
+  |                 ^^^^^^^^^^^^^^^ [1]
+5 | }
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> accidental_null_as_nonnull.php
-  4 |   $s['name'] ?? null as nonnull
-    |                 ^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+accidental_null_as_nonnull.php:4:17
+2 | 
+3 | function accidental_null_as_nonnull(shape(?'name' => string) $s): void {
+4 |   $s['name'] ?? null as nonnull
+  |                 ^^^^^^^^^^^^^^^ [1]
+5 | }
 
 

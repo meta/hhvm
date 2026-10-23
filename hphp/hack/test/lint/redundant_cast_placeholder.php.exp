@@ -1,102 +1,186 @@
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 18 |   $c1 as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:18:3
+16 |   F<int, string> $f,
+17 | ): void {
+18 |   $c1 as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^ [1]
+19 |   $c2 as C<_,_,_>;
+20 |   new C() as C<_,_,_>;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 19 |   $c2 as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:19:3
+17 | ): void {
+18 |   $c1 as C<_,_,_>;
+19 |   $c2 as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^ [1]
+20 |   new C() as C<_,_,_>;
+21 |   new D() as C<_,_,_>;
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `C<nothing, nothing, mixed>` which is a subtype of `C<nothing, nothing, nothing>`.
-   --> redundant_cast_placeholder.php
- 20 |   new C() as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `C<nothing, nothing, mixed>` which is a subtype of `C<nothing, nothing, nothing>`. [1]
+
+redundant_cast_placeholder.php:20:3
+18 |   $c1 as C<_,_,_>;
+19 |   $c2 as C<_,_,_>;
+20 |   new C() as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^^^^^ [1]
+21 |   new D() as C<_,_,_>;
+22 |   new E() as C<_,_,_>;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 20 |   new C() as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:20:3
+18 |   $c1 as C<_,_,_>;
+19 |   $c2 as C<_,_,_>;
+20 |   new C() as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^^^^^ [1]
+21 |   new D() as C<_,_,_>;
+22 |   new E() as C<_,_,_>;
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `D<nothing, mixed>` which is a subtype of `C<nothing, int, nothing>`.
-   --> redundant_cast_placeholder.php
- 21 |   new D() as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `D<nothing, mixed>` which is a subtype of `C<nothing, int, nothing>`. [1]
+
+redundant_cast_placeholder.php:21:3
+19 |   $c2 as C<_,_,_>;
+20 |   new C() as C<_,_,_>;
+21 |   new D() as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^^^^^ [1]
+22 |   new E() as C<_,_,_>;
+23 |   $e as C<_,_,_>;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 21 |   new D() as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:21:3
+19 |   $c2 as C<_,_,_>;
+20 |   new C() as C<_,_,_>;
+21 |   new D() as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^^^^^ [1]
+22 |   new E() as C<_,_,_>;
+23 |   $e as C<_,_,_>;
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `E` which is a subtype of `C<bool, int, nothing>`.
-   --> redundant_cast_placeholder.php
- 22 |   new E() as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `E` which is a subtype of `C<bool, int, nothing>`. [1]
+
+redundant_cast_placeholder.php:22:3
+20 |   new C() as C<_,_,_>;
+21 |   new D() as C<_,_,_>;
+22 |   new E() as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^^^^^ [1]
+23 |   $e as C<_,_,_>;
+24 |   $f as F<_, _>;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 22 |   new E() as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:22:3
+20 |   new C() as C<_,_,_>;
+21 |   new D() as C<_,_,_>;
+22 |   new E() as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^^^^^^ [1]
+23 |   $e as C<_,_,_>;
+24 |   $f as F<_, _>;
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `E` which is a subtype of `C<bool, int, nothing>`.
-   --> redundant_cast_placeholder.php
- 23 |   $e as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `E` which is a subtype of `C<bool, int, nothing>`. [1]
+
+redundant_cast_placeholder.php:23:3
+21 |   new D() as C<_,_,_>;
+22 |   new E() as C<_,_,_>;
+23 |   $e as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^ [1]
+24 |   $f as F<_, _>;
+25 | }
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 23 |   $e as C<_,_,_>;
-    |   ^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:23:3
+21 |   new D() as C<_,_,_>;
+22 |   new E() as C<_,_,_>;
+23 |   $e as C<_,_,_>;
+   |   ^^^^^^^^^^^^^^ [1]
+24 |   $f as F<_, _>;
+25 | }
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 24 |   $f as F<_, _>;
-    |   ^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:24:3
+22 |   new E() as C<_,_,_>;
+23 |   $e as C<_,_,_>;
+24 |   $f as F<_, _>;
+   |   ^^^^^^^^^^^^^ [1]
+25 | }
+26 | 
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 33 |   $f1 as F<_, bool>;
-    |   ^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:33:3
+31 |   C<int, string, mixed> $c2
+32 | ): void {
+33 |   $f1 as F<_, bool>;
+   |   ^^^^^^^^^^^^^^^^^ [1]
+34 |   $f2 as F<float, bool>;
+35 |   new C() as E;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 34 |   $f2 as F<float, bool>;
-    |   ^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:34:3
+32 | ): void {
+33 |   $f1 as F<_, bool>;
+34 |   $f2 as F<float, bool>;
+   |   ^^^^^^^^^^^^^^^^^^^^^ [1]
+35 |   new C() as E;
+36 |   new C() as D<_,_>;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 35 |   new C() as E;
-    |   ^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:35:3
+33 |   $f1 as F<_, bool>;
+34 |   $f2 as F<float, bool>;
+35 |   new C() as E;
+   |   ^^^^^^^^^^^^ [1]
+36 |   new C() as D<_,_>;
+37 |   new $c1 as E;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 36 |   new C() as D<_,_>;
-    |   ^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:36:3
+34 |   $f2 as F<float, bool>;
+35 |   new C() as E;
+36 |   new C() as D<_,_>;
+   |   ^^^^^^^^^^^^^^^^^ [1]
+37 |   new $c1 as E;
+38 |   new $c2 as D<_,_>;
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 37 |   new $c1 as E;
-    |   ^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:37:3
+35 |   new C() as E;
+36 |   new C() as D<_,_>;
+37 |   new $c1 as E;
+   |   ^^^^^^^^^^^^ [1]
+38 |   new $c2 as D<_,_>;
+39 | }
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_cast_placeholder.php
- 38 |   new $c2 as D<_,_>;
-    |   ^^^^^^^^^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_cast_placeholder.php:38:3
+36 |   new C() as D<_,_>;
+37 |   new $c1 as E;
+38 |   new $c2 as D<_,_>;
+   |   ^^^^^^^^^^^^^^^^^ [1]
+39 | }
 
 

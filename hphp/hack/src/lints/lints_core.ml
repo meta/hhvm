@@ -111,6 +111,13 @@ let to_contextual_string lint =
     [(lint.pos, lint.message)]
   |> Contextual_diagnostic_formatter.to_string ~claim_color
 
+let to_plain_highlighted_string ?source lint =
+  User_diagnostic.make_absolute
+    (User_diagnostic.Warning { is_trusted = true })
+    lint.code
+    [(lint.pos, lint.message)]
+  |> Plain_highlighted_diagnostic_formatter.to_string_with_source ?source
+
 let to_highlighted_string (lint : string Pos.pos t) =
   User_diagnostic.make_absolute
     (User_diagnostic.Warning { is_trusted = true })

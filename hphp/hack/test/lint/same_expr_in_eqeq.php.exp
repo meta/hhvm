@@ -1,6 +1,10 @@
-warning: Lint[5552] You're comparing the same `EXP == EXP` which is odd. Did you make a typo?
-   --> same_expr_in_eqeq.php
-  7 |   return g(1 + $y) == g(1 + $y);
-    |          ^^^^^^^^^
+warning: Lint[5552] You're comparing the same `EXP == EXP` which is odd. Did you make a typo? [1]
+
+same_expr_in_eqeq.php:7:10
+5 | 
+6 | function f($y) {
+7 |   return g(1 + $y) == g(1 + $y);
+  |          ^^^^^^^^^ [1]
+8 | }
 
 

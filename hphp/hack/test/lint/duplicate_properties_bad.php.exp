@@ -1,18 +1,33 @@
-warning: Lint[5635] Duplicated property `y` in `T1` (defined in `T0` and `T1`): all instances will be aliased at runtime
-   --> duplicate_properties_bad.php
-  9 | trait T1 {
-    |       ^^
+warning: Lint[5635] Duplicated property `y` in `T1` (defined in `T0` and `T1`): all instances will be aliased at runtime [1]
+
+duplicate_properties_bad.php:9:7
+ 7 | }
+ 8 | 
+ 9 | trait T1 {
+   |       ^^ [1]
+10 |   use T0;
+11 |   public int $x = 3;
 
 
-warning: Lint[5635] Duplicated property `x` in `C` (defined in `T1` and `T2`): all instances will be aliased at runtime
-   --> duplicate_properties_bad.php
- 19 | class C {
-    |       ^
+warning: Lint[5635] Duplicated property `x` in `C` (defined in `T1` and `T2`): all instances will be aliased at runtime [1]
+
+duplicate_properties_bad.php:19:7
+17 | }
+18 | 
+19 | class C {
+   |       ^ [1]
+20 |    use T1;
+21 |    use T2;
 
 
-warning: Lint[5635] Duplicated property `z` in `C` (defined in `C` and `T0`): all instances will be aliased at runtime
-   --> duplicate_properties_bad.php
- 19 | class C {
-    |       ^
+warning: Lint[5635] Duplicated property `z` in `C` (defined in `C` and `T0`): all instances will be aliased at runtime [1]
+
+duplicate_properties_bad.php:19:7
+17 | }
+18 | 
+19 | class C {
+   |       ^ [1]
+20 |    use T1;
+21 |    use T2;
 
 

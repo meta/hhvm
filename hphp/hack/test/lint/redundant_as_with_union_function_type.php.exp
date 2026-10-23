@@ -1,18 +1,31 @@
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_as_with_union_function_type.php
-  7 |   $f($x as int); // should be no warning
-    |      ^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_as_with_union_function_type.php:7:6
+5 |   // create a union of function types that does not get simplified
+6 |   $f = $b ? (int $_): int ==> 0 : (arraykey $_): arraykey ==> 0;
+7 |   $f($x as int); // should be no warning
+  |      ^^^^^^^^^ [1]
+8 |   $x as int; // ensure we still get an warning here
+9 | }
 
 
-warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `int` which is a subtype of `int`.
-   --> redundant_as_with_union_function_type.php
-  8 |   $x as int; // ensure we still get an warning here
-    |   ^^^^^^^^^
+warning: Lint[5628] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `int` which is a subtype of `int`. [1]
+
+redundant_as_with_union_function_type.php:8:3
+6 |   $f = $b ? (int $_): int ==> 0 : (arraykey $_): arraykey ==> 0;
+7 |   $f($x as int); // should be no warning
+8 |   $x as int; // ensure we still get an warning here
+  |   ^^^^^^^^^ [1]
+9 | }
 
 
-warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change.
-   --> redundant_as_with_union_function_type.php
-  8 |   $x as int; // ensure we still get an warning here
-    |   ^^^^^^^^^
+warning: Lint[5808] This expression has a type lie that makes Hack type checker think it is a different type than what it inferred. It is achieved using a type assertion through `as`. This can lead to fatals or subtle and latent behaviour changes. Even if the code is correct at the moment, the type checker won't produce any signal when the prerequisites for correctness change. [1]
+
+redundant_as_with_union_function_type.php:8:3
+6 |   $f = $b ? (int $_): int ==> 0 : (arraykey $_): arraykey ==> 0;
+7 |   $f($x as int); // should be no warning
+8 |   $x as int; // ensure we still get an warning here
+  |   ^^^^^^^^^ [1]
+9 | }
 
 

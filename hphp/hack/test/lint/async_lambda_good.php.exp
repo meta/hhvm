@@ -1,6 +1,11 @@
-warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type.
-   --> async_lambda_good.php
- 13 |     async $x ==> async_lambda_good2($x),
-    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+warning: Lint[5651] This lambda returns an Awaitable of Awaitable. You probably want to use await inside this async lambda, so stack traces include the lambda position. If this is intentional, please annotate the return type. [1]
+
+async_lambda_good.php:13:5
+11 |   $_ = await HH\Lib\Vec\map_async(
+12 |     vec[],
+13 |     async $x ==> async_lambda_good2($x),
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+14 |   );
+15 | }
 
 

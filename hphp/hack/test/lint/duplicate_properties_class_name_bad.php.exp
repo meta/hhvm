@@ -1,6 +1,11 @@
-warning: Lint[5635] Duplicated property `x` in `C` (defined in `T0` and `T1`): all instances will be aliased at runtime
-   --> duplicate_properties_class_name_bad.php
- 15 | class C {
-    |       ^
+warning: Lint[5635] Duplicated property `x` in `C` (defined in `T0` and `T1`): all instances will be aliased at runtime [1]
+
+duplicate_properties_class_name_bad.php:15:7
+13 | }
+14 | 
+15 | class C {
+   |       ^ [1]
+16 |   use T0;
+17 |   use T1;
 
 

@@ -1,12 +1,21 @@
-warning: Lint[5564] f is the only function declared in self_ternary.php, so that file should be named f.php instead.
-   --> self_ternary.php
-  3 | function f($y) {
-    |          ^
+warning: Lint[5564] f is the only function declared in self_ternary.php, so that file should be named f.php instead. [1]
+
+self_ternary.php:3:10
+1 | <?hh
+2 | 
+3 | function f($y) {
+  |          ^ [1]
+4 |   $_ = $y ? $y : 0;
+5 | }
 
 
-warning: Lint[5553] Prefer writing `X ?: Y` (with an empty left slot) which is more readable.
-   --> self_ternary.php
-  4 |   $_ = $y ? $y : 0;
-    |        ^^
+warning: Lint[5553] Prefer writing `X ?: Y` (with an empty left slot) which is more readable. [1]
+
+self_ternary.php:4:8
+2 | 
+3 | function f($y) {
+4 |   $_ = $y ? $y : 0;
+  |        ^^ [1]
+5 | }
 
 

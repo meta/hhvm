@@ -1,6 +1,11 @@
-warning: Lint[5610] This `is` check is always `false`. The expression on the left has type `A` which shares no values with `C`.
-   --> is_always_false.php
- 10 |   if ($a is C) {
-    |       ^^^^^^^
+warning: Lint[5610] This `is` check is always `false`. The expression on the left has type `A` which shares no values with `C`. [1]
+
+is_always_false.php:10:7
+ 8 | 
+ 9 | function test(A $a): void {
+10 |   if ($a is C) {
+   |       ^^^^^^^ [1]
+11 |     $a->f();
+12 |   }
 
 

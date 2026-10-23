@@ -1,138 +1,252 @@
-warning: Lint[5564] test is the only function declared in collections_sgrep.php, so that file should be named test.php instead.
-   --> collections_sgrep.php
-  3 | function test() {
-    |          ^^^^
+warning: Lint[5564] test is the only function declared in collections_sgrep.php, so that file should be named test.php instead. [1]
+
+collections_sgrep.php:3:10
+1 | <?hh
+2 | 
+3 | function test() {
+  |          ^^^^ [1]
+4 |   new Vector(null);
+5 |   new Map(null);
 
 
-warning: Lint[5542] Use 'Vector {}' instead of 'new Vector(null)'.
-   --> collections_sgrep.php
-  4 |   new Vector(null);
-    |       ^^^^^^
+warning: Lint[5542] Use 'Vector {}' instead of 'new Vector(null)'. [1]
+
+collections_sgrep.php:4:7
+2 | 
+3 | function test() {
+4 |   new Vector(null);
+  |       ^^^^^^ [1]
+5 |   new Map(null);
+6 |   new Set(null);
 
 
-warning: Lint[5542] Use 'Map {}' instead of 'new Map(null)'.
-   --> collections_sgrep.php
-  5 |   new Map(null);
-    |       ^^^
+warning: Lint[5542] Use 'Map {}' instead of 'new Map(null)'. [1]
+
+collections_sgrep.php:5:7
+3 | function test() {
+4 |   new Vector(null);
+5 |   new Map(null);
+  |       ^^^ [1]
+6 |   new Set(null);
+7 |   new ImmVector(null);
 
 
-warning: Lint[5542] Use 'Set {}' instead of 'new Set(null)'.
-   --> collections_sgrep.php
-  6 |   new Set(null);
-    |       ^^^
+warning: Lint[5542] Use 'Set {}' instead of 'new Set(null)'. [1]
+
+collections_sgrep.php:6:7
+4 |   new Vector(null);
+5 |   new Map(null);
+6 |   new Set(null);
+  |       ^^^ [1]
+7 |   new ImmVector(null);
+8 |   new ImmMap(null);
 
 
-warning: Lint[5542] Use 'ImmVector {}' instead of 'new ImmVector(null)'.
-   --> collections_sgrep.php
-  7 |   new ImmVector(null);
-    |       ^^^^^^^^^
+warning: Lint[5542] Use 'ImmVector {}' instead of 'new ImmVector(null)'. [1]
+
+collections_sgrep.php:7:7
+5 |   new Map(null);
+6 |   new Set(null);
+7 |   new ImmVector(null);
+  |       ^^^^^^^^^ [1]
+8 |   new ImmMap(null);
+9 |   new ImmSet(null);
 
 
-warning: Lint[5542] Use 'ImmMap {}' instead of 'new ImmMap(null)'.
-   --> collections_sgrep.php
-  8 |   new ImmMap(null);
-    |       ^^^^^^
+warning: Lint[5542] Use 'ImmMap {}' instead of 'new ImmMap(null)'. [1]
+
+collections_sgrep.php:8:7
+ 6 |   new Set(null);
+ 7 |   new ImmVector(null);
+ 8 |   new ImmMap(null);
+   |       ^^^^^^ [1]
+ 9 |   new ImmSet(null);
+10 |   new Vector(vec[]);
 
 
-warning: Lint[5542] Use 'ImmSet {}' instead of 'new ImmSet(null)'.
-   --> collections_sgrep.php
-  9 |   new ImmSet(null);
-    |       ^^^^^^
+warning: Lint[5542] Use 'ImmSet {}' instead of 'new ImmSet(null)'. [1]
+
+collections_sgrep.php:9:7
+ 7 |   new ImmVector(null);
+ 8 |   new ImmMap(null);
+ 9 |   new ImmSet(null);
+   |       ^^^^^^ [1]
+10 |   new Vector(vec[]);
+11 |   new Map(vec[]);
 
 
-warning: Lint[5002] Use `Vector {...}` instead of `new Vector(...)`
-   --> collections_sgrep.php
- 10 |   new Vector(vec[]);
-    |       ^^^^^^
+warning: Lint[5002] Use `Vector {...}` instead of `new Vector(...)` [1]
+
+collections_sgrep.php:10:7
+ 8 |   new ImmMap(null);
+ 9 |   new ImmSet(null);
+10 |   new Vector(vec[]);
+   |       ^^^^^^ [1]
+11 |   new Map(vec[]);
+12 |   new Set(vec[]);
 
 
-warning: Lint[5002] Use `Map {...}` instead of `new Map(...)`
-   --> collections_sgrep.php
- 11 |   new Map(vec[]);
-    |       ^^^
+warning: Lint[5002] Use `Map {...}` instead of `new Map(...)` [1]
+
+collections_sgrep.php:11:7
+ 9 |   new ImmSet(null);
+10 |   new Vector(vec[]);
+11 |   new Map(vec[]);
+   |       ^^^ [1]
+12 |   new Set(vec[]);
+13 |   new ImmVector(vec[]);
 
 
-warning: Lint[5002] Use `Set {...}` instead of `new Set(...)`
-   --> collections_sgrep.php
- 12 |   new Set(vec[]);
-    |       ^^^
+warning: Lint[5002] Use `Set {...}` instead of `new Set(...)` [1]
+
+collections_sgrep.php:12:7
+10 |   new Vector(vec[]);
+11 |   new Map(vec[]);
+12 |   new Set(vec[]);
+   |       ^^^ [1]
+13 |   new ImmVector(vec[]);
+14 |   new ImmMap(vec[]);
 
 
-warning: Lint[5002] Use `ImmVector {...}` instead of `new ImmVector(...)`
-   --> collections_sgrep.php
- 13 |   new ImmVector(vec[]);
-    |       ^^^^^^^^^
+warning: Lint[5002] Use `ImmVector {...}` instead of `new ImmVector(...)` [1]
+
+collections_sgrep.php:13:7
+11 |   new Map(vec[]);
+12 |   new Set(vec[]);
+13 |   new ImmVector(vec[]);
+   |       ^^^^^^^^^ [1]
+14 |   new ImmMap(vec[]);
+15 |   new ImmSet(vec[]);
 
 
-warning: Lint[5002] Use `ImmMap {...}` instead of `new ImmMap(...)`
-   --> collections_sgrep.php
- 14 |   new ImmMap(vec[]);
-    |       ^^^^^^
+warning: Lint[5002] Use `ImmMap {...}` instead of `new ImmMap(...)` [1]
+
+collections_sgrep.php:14:7
+12 |   new Set(vec[]);
+13 |   new ImmVector(vec[]);
+14 |   new ImmMap(vec[]);
+   |       ^^^^^^ [1]
+15 |   new ImmSet(vec[]);
+16 |   new Set(array_keys(X));
 
 
-warning: Lint[5002] Use `ImmSet {...}` instead of `new ImmSet(...)`
-   --> collections_sgrep.php
- 15 |   new ImmSet(vec[]);
-    |       ^^^^^^
+warning: Lint[5002] Use `ImmSet {...}` instead of `new ImmSet(...)` [1]
+
+collections_sgrep.php:15:7
+13 |   new ImmVector(vec[]);
+14 |   new ImmMap(vec[]);
+15 |   new ImmSet(vec[]);
+   |       ^^^^^^ [1]
+16 |   new Set(array_keys(X));
+17 |   new Vector(array_keys(X));
 
 
-warning: Lint[5542] Consider `Set::fromKeysOf(X)`, which is faster and does the same thing.
-   --> collections_sgrep.php
- 16 |   new Set(array_keys(X));
-    |       ^^^
+warning: Lint[5542] Consider `Set::fromKeysOf(X)`, which is faster and does the same thing. [1]
+
+collections_sgrep.php:16:7
+14 |   new ImmMap(vec[]);
+15 |   new ImmSet(vec[]);
+16 |   new Set(array_keys(X));
+   |       ^^^ [1]
+17 |   new Vector(array_keys(X));
+18 |   new Set(array_values(X));
 
 
-warning: Lint[5542] Consider `Vector::fromKeysOf(X)`, which is faster and does the same thing.
-   --> collections_sgrep.php
- 17 |   new Vector(array_keys(X));
-    |       ^^^^^^
+warning: Lint[5542] Consider `Vector::fromKeysOf(X)`, which is faster and does the same thing. [1]
+
+collections_sgrep.php:17:7
+15 |   new ImmSet(vec[]);
+16 |   new Set(array_keys(X));
+17 |   new Vector(array_keys(X));
+   |       ^^^^^^ [1]
+18 |   new Set(array_values(X));
+19 |   new Vector(array_values(X));
 
 
-warning: Lint[5542] Calling array_values() is redundant because the Set constructor only looks at values. Writing `new Set(...)` is enough.
-   --> collections_sgrep.php
- 18 |   new Set(array_values(X));
-    |       ^^^
+warning: Lint[5542] Calling array_values() is redundant because the Set constructor only looks at values. Writing `new Set(...)` is enough. [1]
+
+collections_sgrep.php:18:7
+16 |   new Set(array_keys(X));
+17 |   new Vector(array_keys(X));
+18 |   new Set(array_values(X));
+   |       ^^^ [1]
+19 |   new Vector(array_values(X));
+20 |   new Map();
 
 
-warning: Lint[5542] Calling array_values() is redundant because the Vector constructor only looks at values. Writing `new Vector(...)` is enough.
-   --> collections_sgrep.php
- 19 |   new Vector(array_values(X));
-    |       ^^^^^^
+warning: Lint[5542] Calling array_values() is redundant because the Vector constructor only looks at values. Writing `new Vector(...)` is enough. [1]
+
+collections_sgrep.php:19:7
+17 |   new Vector(array_keys(X));
+18 |   new Set(array_values(X));
+19 |   new Vector(array_values(X));
+   |       ^^^^^^ [1]
+20 |   new Map();
+21 |   new Set();
 
 
-warning: Lint[5002] Use `Map {...}` instead of `new Map(...)`
-   --> collections_sgrep.php
- 20 |   new Map();
-    |       ^^^
+warning: Lint[5002] Use `Map {...}` instead of `new Map(...)` [1]
+
+collections_sgrep.php:20:7
+18 |   new Set(array_values(X));
+19 |   new Vector(array_values(X));
+20 |   new Map();
+   |       ^^^ [1]
+21 |   new Set();
+22 |   new Vector();
 
 
-warning: Lint[5002] Use `Set {...}` instead of `new Set(...)`
-   --> collections_sgrep.php
- 21 |   new Set();
-    |       ^^^
+warning: Lint[5002] Use `Set {...}` instead of `new Set(...)` [1]
+
+collections_sgrep.php:21:7
+19 |   new Vector(array_values(X));
+20 |   new Map();
+21 |   new Set();
+   |       ^^^ [1]
+22 |   new Vector();
+23 |   new ImmMap();
 
 
-warning: Lint[5002] Use `Vector {...}` instead of `new Vector(...)`
-   --> collections_sgrep.php
- 22 |   new Vector();
-    |       ^^^^^^
+warning: Lint[5002] Use `Vector {...}` instead of `new Vector(...)` [1]
+
+collections_sgrep.php:22:7
+20 |   new Map();
+21 |   new Set();
+22 |   new Vector();
+   |       ^^^^^^ [1]
+23 |   new ImmMap();
+24 |   new ImmSet();
 
 
-warning: Lint[5002] Use `ImmMap {...}` instead of `new ImmMap(...)`
-   --> collections_sgrep.php
- 23 |   new ImmMap();
-    |       ^^^^^^
+warning: Lint[5002] Use `ImmMap {...}` instead of `new ImmMap(...)` [1]
+
+collections_sgrep.php:23:7
+21 |   new Set();
+22 |   new Vector();
+23 |   new ImmMap();
+   |       ^^^^^^ [1]
+24 |   new ImmSet();
+25 |   new ImmVector();
 
 
-warning: Lint[5002] Use `ImmSet {...}` instead of `new ImmSet(...)`
-   --> collections_sgrep.php
- 24 |   new ImmSet();
-    |       ^^^^^^
+warning: Lint[5002] Use `ImmSet {...}` instead of `new ImmSet(...)` [1]
+
+collections_sgrep.php:24:7
+22 |   new Vector();
+23 |   new ImmMap();
+24 |   new ImmSet();
+   |       ^^^^^^ [1]
+25 |   new ImmVector();
+26 | }
 
 
-warning: Lint[5002] Use `ImmVector {...}` instead of `new ImmVector(...)`
-   --> collections_sgrep.php
- 25 |   new ImmVector();
-    |       ^^^^^^^^^
+warning: Lint[5002] Use `ImmVector {...}` instead of `new ImmVector(...)` [1]
+
+collections_sgrep.php:25:7
+23 |   new ImmMap();
+24 |   new ImmSet();
+25 |   new ImmVector();
+   |       ^^^^^^^^^ [1]
+26 | }
 
 
