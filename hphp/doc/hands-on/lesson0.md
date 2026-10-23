@@ -238,7 +238,7 @@ sections for this function - one for integers, and one for floats!
 Can you tell which compilations of "add" correspond to integers, and which to
 floats? Hints:
 
-* Look at the "CheckLoc" - that is, "check a local's type" - operations that appear early in each compilation of "add".
+* Look at the "LdLoc" - that is, "load a local" - and "CheckType" - that is, "check a value's type" - operations that appear early in each compilation of "add".
 * Remember that "Dbl", or "double", is a 64-bit float.
 
 ---

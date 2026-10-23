@@ -189,17 +189,12 @@ Instruction set
 
   Assert that the type of S0 is T, copying it to D.
 
-| CheckLoc<T,localId>, ND, S(FramePtr), B
-
-  Check that type of the given localId on the frame S0 is T; if not, branch to
-  block B.
-
 | AssertLoc<T,localId>, ND, S(FramePtr), NF
 
   Asserts that type of the supplied local on the frame S0 is T. This is used
-  for local type information, and is similar to CheckLoc except it doesn't
-  imply a runtime check (the assertion must've already been proven to be true)
-  and cannot cause control flow.
+  for local type information, and is similar to a CheckType on the local except
+  it doesn't imply a runtime check (the assertion must've already been proven
+  to be true) and cannot cause control flow.
 
 | AssertStk<T,offset>, ND, S(StkPtr), NF
 

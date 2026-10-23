@@ -307,8 +307,7 @@ SSATmp* mergeBranchDests(State& env, const IRInstruction* inst) {
   // Replace a conditional branch with a Jmp if both branches go to the same
   // block. Only work if the instruction does not have side effect.
   // JmpZero/JmpNZero is handled separately.
-  assertx(inst->is(CheckLoc,
-                   CheckRDSInitialized,
+  assertx(inst->is(CheckRDSInitialized,
                    CheckVecBounds,
                    CheckDictKeys,
                    CheckPtrIterTombstone,
@@ -2640,10 +2639,6 @@ SSATmp* simplifyAssertType(State& env, const IRInstruction* inst) {
   return src->isA(newType) ? src : nullptr;
 }
 
-SSATmp* simplifyCheckLoc(State& env, const IRInstruction* inst) {
-  return mergeBranchDests(env, inst);
-}
-
 SSATmp* simplifyCheckNonNull(State& env, const IRInstruction* inst) {
   auto const type = inst->src(0)->type();
   assertx(inst->taken() != nullptr);
@@ -4189,7 +4184,6 @@ SSATmp* simplifyWork(State& env, const IRInstruction* inst) {
       X(CheckRDSInitialized)
       X(MarkRDSInitialized)
       X(MarkRDSAccess)
-      X(CheckLoc)
       X(CheckType)
       X(AssertType)
       X(CheckNonNull)

@@ -46,9 +46,9 @@ struct GuardConstraints {
   jit::hash_map<const IRInstruction*, TypeSourceSet> typeSrcs;
 
   /*
-   * Maps AssertLoc/CheckLoc instructions to the type of the local coming into
-   * the instruction. It is needed to compute the type of the local after the
-   * guard.
+   * Maps AssertLoc/AssertStk/AssertMBase instructions to the type of the
+   * location coming into the instruction. It is needed to compute the type of
+   * the location after the assertion.
    */
   jit::hash_map<const IRInstruction*, Type> prevTypes;
 };

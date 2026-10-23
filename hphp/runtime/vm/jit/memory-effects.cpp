@@ -924,12 +924,6 @@ MemEffects memory_effects_impl(const IRInstruction& inst) {
   case LdLocForeign:
     return may_load_store(ALocalAny, AEmpty);
 
-  case CheckLoc:
-    return may_load_store(
-      ALocal { inst.src(0), inst.extra<LocalId>()->locId },
-      AEmpty
-    );
-
   //////////////////////////////////////////////////////////////////////
   // Pointer-based loads and stores
 

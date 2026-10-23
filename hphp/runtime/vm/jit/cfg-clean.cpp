@@ -38,7 +38,6 @@ bool convertCondBranchToJmp(IRUnit& unit, Block* block) {
   // Only look at some conditional branches with no side effects.
   if (!term.is(JmpZero,
                JmpNZero,
-               CheckLoc,
                CheckRDSInitialized)) {
     return false;
   }

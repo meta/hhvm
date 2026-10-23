@@ -515,9 +515,6 @@ Flags handle_general_effects(Local& env,
 
   auto const flags = [&] () -> Optional<Flags> {
     switch (inst.op()) {
-      case CheckLoc:
-        return handleCheck(inst.typeParam());
-
       case CheckMROProp:
         return handleCheck(Type::cns(true));
 
@@ -1116,10 +1113,6 @@ bool reduce_inst(Global& env, IRInstruction& inst, const FReducible& flags,
   };
 
   switch (inst.op()) {
-  case CheckLoc:
-    reduce_to(CheckType, inst.typeParam());
-    break;
-
   case AssertLoc:
   case AssertStk:
     reduce_to(AssertType, flags.knownType);
@@ -1333,9 +1326,6 @@ void optimize_edges(Global& env, Block* blk) {
     };
 
     switch (inst.op()) {
-      case CheckLoc:
-        return handleCheck(inst.typeParam());
-
       case CheckMROProp:
         return handleCheck(Type::cns(true));
 
@@ -1502,11 +1492,6 @@ void save_taken_state(Global& genv, const IRInstruction& inst,
   };
 
   switch (inst.op()) {
-    case CheckLoc:
-      // Subtract inst.typeParam() on the taken branch.
-      handleCheck(TCell, inst.typeParam());
-      break;
-
     case CheckMROProp:
       // The bit is set to false on taken branch.
       handleCheck(Type::cns(false), TBottom);
@@ -1594,8 +1579,8 @@ void analyze(Global& genv) {
 
 /*
  * This pass does some analysis to try to avoid PureLoad instructions, and
- * avoid "hidden" loads that are part of some instructions like CheckLoc.  It
- * also runs the simplify() subroutine on every instruction in the unit, and
+ * avoid "hidden" loads that are part of some instructions like CheckMROProp.
+ * It also runs the simplify() subroutine on every instruction in the unit, and
  * can eliminate some conditional branches that test types of memory locations.
  *
  *

@@ -468,8 +468,7 @@ void FrameStateMgr::update(const IRInstruction* inst) {
   }
 
 
-  case AssertLoc:
-  case CheckLoc: {
+  case AssertLoc: {
     auto const id = inst->extra<LocalId>()->locId;
     refineTypeAndSyncMBase(
       loc(id),

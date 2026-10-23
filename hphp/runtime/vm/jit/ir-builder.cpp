@@ -54,7 +54,7 @@ const typename M::mapped_type& get_required(const M& m,
 SSATmp* fwdGuardSource(IRInstruction* inst) {
   if (inst->is(AssertType, CheckType)) return inst->src(0);
 
-  assertx(inst->is(AssertLoc, CheckLoc, AssertStk, AssertMBase));
+  assertx(inst->is(AssertLoc, AssertStk, AssertMBase));
   inst->convertToNop();
   return nullptr;
 }
@@ -115,7 +115,6 @@ void IRBuilder::appendInstruction(IRInstruction* inst) {
     auto const l = [&]() -> Optional<Location> {
       switch (inst->op()) {
         case AssertLoc:
-        case CheckLoc:
         case LdLoc:
           return loc(inst->extra<LocalId>()->locId);
 
@@ -171,41 +170,6 @@ void IRBuilder::appendInstruction(IRInstruction* inst) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-SSATmp* IRBuilder::preOptimizeCheckLocation(IRInstruction* inst, Location l) {
-  auto const oldType = typeOf(l, DataTypeGeneric);
-  if (auto const prevValue = valueOf(l, DataTypeGeneric)) {
-    auto const v = [&] {
-      assertx(oldType <= prevValue->type());
-      if (oldType < prevValue->type()) {
-        return gen(AssertType, oldType, prevValue);
-      }
-      return prevValue;
-    }();
-    gen(CheckType, inst->typeParam(), inst->taken(), v);
-    return fwdGuardSource(inst);
-  }
-
-  if (!oldType.maybe(inst->typeParam()) ||
-      inst->next() == inst->taken() ||
-      (inst->next() && inst->next()->isUnreachable())) {
-    gen(Jmp, inst->taken());
-    return fwdGuardSource(inst);
-  }
-
-  auto const newType = oldType.refine(inst->typeParam());
-  if (oldType <= newType) {
-    // The type of the src is the same or more refined than type, so the guard
-    // is unnecessary.
-    return fwdGuardSource(inst);
-  }
-
-  return nullptr;
-}
-
-SSATmp* IRBuilder::preOptimizeCheckLoc(IRInstruction* inst) {
-  return preOptimizeCheckLocation(inst, loc(inst->extra<CheckLoc>()->locId));
-}
 
 SSATmp* IRBuilder::preOptimizeAssertTypeOp(IRInstruction* inst,
                                            const Type oldType,
@@ -583,7 +547,6 @@ SSATmp* IRBuilder::preOptimize(IRInstruction* inst) {
   X(AssertLoc)
   X(AssertStk)
   X(AssertMBase)
-  X(CheckLoc)
   X(LdLoc)
   X(LdStk)
   X(LdMBase)
@@ -867,9 +830,9 @@ bool IRBuilder::constrainTypeSrc(TypeSource typeSrc, GuardConstraint gc) {
   assertx(typeSrc.isGuard());
   auto const guard = typeSrc.guard;
 
-  always_assert(guard->is(AssertLoc, CheckLoc, AssertStk, AssertMBase));
+  always_assert(guard->is(AssertLoc, AssertStk, AssertMBase));
 
-  // If the dest of the Assert/Check doesn't fit `gc', there's no point in
+  // If the dest of the Assert doesn't fit `gc', there's no point in
   // continuing.
   auto prevType = get_required(m_constraints.prevTypes, guard);
   if (!typeFitsConstraint(prevType.refine(guard->typeParam()), gc)) {

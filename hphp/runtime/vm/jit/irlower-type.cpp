@@ -150,14 +150,6 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
   );
 }
 
-void cgCheckLoc(IRLS& env, const IRInstruction* inst) {
-  auto const baseOff = localOffset(inst->extra<CheckLoc>()->locId);
-  auto const base = srcLoc(env, inst, 0).reg()[baseOff];
-
-  emitTypeCheck(vmain(env), env, inst->typeParam(),
-                base + TVOFF(m_type), base + TVOFF(m_data), inst->taken());
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void cgAssertType(IRLS& env, const IRInstruction* inst) {

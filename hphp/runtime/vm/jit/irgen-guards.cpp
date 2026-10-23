@@ -25,17 +25,6 @@ namespace {
 
 //////////////////////////////////////////////////////////////////////
 
-template<typename Check, typename Ld>
-void checkTypeImpl(IRGS& env, Type type, Block* exit, Check check, Ld ld) {
-  if (env.formingRegion || !type.isSpecialized()) {
-    check(type, exit);
-  } else {
-    auto const test = type.unspecialize();
-    check(test, exit);
-    gen(env, CheckType, type, exit, ld(test));
-  }
-}
-
 void checkTypeImpl(IRGS& env, Type type, Block* exit, SSATmp* val) {
   if (type.isSpecialized()) {
     val = gen(env, CheckType, type.unspecialize(), exit, val);
@@ -44,15 +33,8 @@ void checkTypeImpl(IRGS& env, Type type, Block* exit, SSATmp* val) {
 }
 
 void checkTypeLocal(IRGS& env, uint32_t locId, Type type, Block* exit) {
-  checkTypeImpl(env, type, exit,
-    [&](Type test, Block* exit) {
-      gen(env, CheckLoc, test, LocalId(locId), exit, fp(env));
-    },
-    [&](Type test) {
-      test &= env.irb->fs().local(locId).type;
-      return gen(env, LdLoc, test, LocalId(locId), fp(env));
-    }
-  );
+  auto const val = gen(env, LdLoc, TCell, LocalId(locId), fp(env));
+  checkTypeImpl(env, type, exit, val);
 }
 
 void checkTypeStack(IRGS& env, BCSPRelOffset idx, Type type, Block* exit) {

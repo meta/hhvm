@@ -3179,7 +3179,6 @@ X(LdBindAddr,                   LdBindAddrData);
 X(ProfileSwitchDest,            ProfileSwitchData);
 X(LdSwitchDest,                 LdSwitchData);
 X(LdSSwitchDest,                LdSSwitchData);
-X(CheckLoc,                     LocalId);
 X(AssertLoc,                    LocalId);
 X(LdLocAddr,                    LocalId);
 X(LdLoc,                        LocalId);

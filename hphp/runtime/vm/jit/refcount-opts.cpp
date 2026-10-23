@@ -2743,7 +2743,7 @@ bool sink_incs(Env& env) {
     }
 
     auto const& succ = *iter;
-    if (succ.is(CheckType, CheckLoc)) {
+    if (succ.is(CheckType)) {
       // We've split critical edges, so `next' and 'taken' blocks can't have
       // other predecessors.  Therefore, `block' dominates both the 'next' and
       // the 'taken' block, and so does the block defining `tmp'.

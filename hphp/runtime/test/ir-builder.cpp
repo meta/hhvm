@@ -146,10 +146,11 @@ TEST(IRBuilder, OrdinaryAssertionsCanRetainGuardDependencies) {
 TEST(IRBuilder, OrdinaryChecksAreNotRegionGuards) {
   GuardEnv env;
   auto const l = Location{Location::Local{0}};
+  auto const l1 = Location{Location::Local{1}};
   env.irb.guardType(l, TStr);
   auto const guard = env.irb.guards()->guards.begin()->first;
 
-  env.gen(CheckLoc, TInt, LocalId{1}, env.unit.defBlock(), env.irb.fs().fp());
+  env.gen(CheckType, TInt, env.unit.defBlock(), env.load(l1));
   EXPECT_FALSE(env.irb.constrainLocation(Location::Local{1}, DataTypeSpecific));
 
   auto const value = env.gen(Conjure, TCell);
@@ -163,31 +164,25 @@ TEST(IRBuilder, OrdinaryChecksAreNotRegionGuards) {
 }
 
 TEST(IRBuilder, OrdinaryChecksCanRetainGuardDependencies) {
-  for (auto const loadFirst : {false, true}) {
-    SCOPED_TRACE(loadFirst);
-    GuardEnv env;
-    auto const l = Location{Location::Local{0}};
-    env.irb.guardType(l, TStr);
-    auto const guard = env.irb.guards()->guards.begin()->first;
+  GuardEnv env;
+  auto const l = Location{Location::Local{0}};
+  env.irb.guardType(l, TStr);
+  auto const guard = env.irb.guards()->guards.begin()->first;
 
-    // Loading first makes CheckLoc become CheckType. The check alone cannot
-    // establish a specific datatype; it also needs the original string guard.
-    if (loadFirst) env.load(l);
-    env.gen(
-      CheckLoc, TStaticStr | TInt, LocalId{0},
-      env.unit.defBlock(), env.irb.fs().fp()
-    );
-    auto const value = env.load(l);
-    EXPECT_EQ(TStaticStr, value->type());
+  env.gen(
+    CheckType, TStaticStr | TInt,
+    env.unit.defBlock(), env.load(l)
+  );
+  auto const value = env.load(l);
+  EXPECT_EQ(TStaticStr, value->type());
 
-    EXPECT_TRUE(env.irb.constrainValue(
-      value, GuardConstraint{DataTypeSpecific}.setWeak()
-    ));
-    EXPECT_EQ(DataTypeGeneric, env.constraint(guard).category);
-    EXPECT_TRUE(env.irb.constrainValue(value, DataTypeSpecific));
-    EXPECT_EQ(TStr, relaxToConstraint(TStr, env.constraint(guard)));
-    EXPECT_EQ(1, env.irb.guards()->guards.size());
-  }
+  EXPECT_TRUE(env.irb.constrainValue(
+    value, GuardConstraint{DataTypeSpecific}.setWeak()
+  ));
+  EXPECT_EQ(DataTypeGeneric, env.constraint(guard).category);
+  EXPECT_TRUE(env.irb.constrainValue(value, DataTypeSpecific));
+  EXPECT_EQ(TStr, relaxToConstraint(TStr, env.constraint(guard)));
+  EXPECT_EQ(1, env.irb.guards()->guards.size());
 }
 
 TEST(IRBuilder, GuardConstraintsAreMinimized) {
