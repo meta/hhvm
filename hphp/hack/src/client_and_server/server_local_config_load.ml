@@ -1425,6 +1425,7 @@ let to_rollout_flags (options : t) : Hack_event_logger.rollout_flags =
       hh_distc_fanout_threshold = options.hh_distc_fanout_threshold;
       hh_distc_fanout_full_init_threshold =
         options.hh_distc_fanout_full_init_threshold;
+      ide_file_watcher_enabled = options.ide_file_watcher_enabled;
       ide_load_naming_table_on_disk = options.ide_load_naming_table_on_disk;
       ide_naming_table_update_threshold =
         options.ide_naming_table_update_threshold;

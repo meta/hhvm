@@ -109,6 +109,8 @@ type rollout_flags = {
       (** POC: @bobren - fanout threshold where we trigger hh_distc *)
   hh_distc_fanout_full_init_threshold: int;
       (** POC: @fzn - fanout threshold where we trigger fanout-aware hh_distc *)
+  ide_file_watcher_enabled: bool;
+      (** POC: @frankemrich - If true, watch commit transitions with Edenfs_watcher in the IDE daemon *)
   ide_load_naming_table_on_disk: bool;
       (** POC: @nzthomas - allow ClientIdeDaemon to grab any naming table from disk before trying Watchman / Manifold *)
   ide_naming_table_update_threshold: int;
