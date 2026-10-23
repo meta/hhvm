@@ -14,5 +14,5 @@ path = "config_file.rs"
 bstr = { version = "1.13.1", features = ["serde", "std", "unicode"] }
 oxidized = { path = "../../../oxidized" }
 regex = "1.13.1"
-serde_json = { version = "1.0.151", features = ["alloc", "float_roundtrip", "raw_value", "unbounded_depth"] }
+serde_json = { version = "1.0.154", features = ["alloc", "float_roundtrip", "raw_value", "unbounded_depth"] }
 sha1 = "0.10.7"

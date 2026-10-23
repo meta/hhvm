@@ -16,4 +16,4 @@ bstr = { version = "1.13.1", features = ["serde", "std", "unicode"] }
 bumpalo = { version = "3.20.3", features = ["allocator_api", "collections"] }
 relative_path = { path = "../../rust/relative_path" }
 serde = { version = "1.0.229", features = ["derive", "rc"] }
-serde_json = { version = "1.0.151", features = ["alloc", "float_roundtrip", "raw_value", "unbounded_depth"] }
+serde_json = { version = "1.0.154", features = ["alloc", "float_roundtrip", "raw_value", "unbounded_depth"] }
