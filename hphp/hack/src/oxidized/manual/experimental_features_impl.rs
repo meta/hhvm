@@ -64,9 +64,9 @@ impl FeatureName {
             ClassAliasesEverywhere => Unstable,
             TestFeature => Unstable,
             WithRefinementAlias => Preview,
-            ShapeSplatConcrete => Unstable,
-            ShapeSplatTypeParameters => Unstable,
-            ShapeSplatExpression => Unstable,
+            ShapeSplatConcrete => OngoingRelease,
+            ShapeSplatTypeParameters => OngoingRelease,
+            ShapeSplatExpression => OngoingRelease,
             NamedParametersMethCaller => Unstable,
         }
     }
