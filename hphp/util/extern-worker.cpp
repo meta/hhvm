@@ -18,6 +18,7 @@
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/current-executable.h"
+#include "hphp/util/debug-format.h"
 #include "hphp/util/hash-map.h"
 #include "hphp/util/logger.h"
 #include "hphp/util/match.h"
@@ -1984,7 +1985,7 @@ void Client::Impl::throttleSleep(size_t retry,
     std::lock_guard<std::mutex> _{lock};
     return std::chrono::microseconds{distrib(engine)};
   }();
-  FTRACE(2, "Sleeping for {:,} milliseconds...\n", wait.count());
+  FTRACE(2, "Sleeping for {} milliseconds...\n", groupDigits(wait.count()));
 
   // Use normal sleep here, not coro friendly sleep. The whole purpose
   // is to slow down execution and using a coro sleep will just allow

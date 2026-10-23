@@ -19,6 +19,7 @@
 #include "hphp/util/blob.h"
 #include "hphp/util/blob-encoder.h"
 #include "hphp/util/build-info.h"
+#include "hphp/util/debug-format.h"
 #include "hphp/util/htonll.h"
 
 #include <fmt/format.h>
@@ -43,13 +44,11 @@ enum class ErrorMode { Assert, Throw };
 template <typename... Args>
 [[noreturn]] inline void fail(
   ErrorMode mode,
-  const char* format,
+  DebugFormatString<Args...> format,
   Args&&... args
 ) {
   if (mode == ErrorMode::Throw) {
-    throw std::runtime_error(
-      fmt::format(fmt::runtime(format), std::forward<Args>(args)...)
-    );
+    throw std::runtime_error(debugFormat(format, std::forward<Args>(args)...));
   }
   always_assert_flog(false, format, std::forward<Args>(args)...);
 }

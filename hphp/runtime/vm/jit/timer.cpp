@@ -24,6 +24,7 @@
 
 #include "hphp/runtime/base/execution-context.h"
 #include "hphp/util/configs/jit.h"
+#include "hphp/util/debug-format.h"
 #include "hphp/util/rds-local.h"
 #include "hphp/util/struct-log.h"
 #include "hphp/util/timer.h"
@@ -125,7 +126,7 @@ void Timer::Dump() {
 std::string Timer::Show() {
   static constexpr auto header = "{:<30} | {:>15} {:>15} {:>15} {:>15}\n";
   auto const grouped = [](int64_t value) {
-    return fmt::format("{}", fmt::group_digits(value));
+    return groupDigits(value);
   };
 
   std::array<TimerName,kNumTimers> names_copy;

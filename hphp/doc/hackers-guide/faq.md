@@ -89,7 +89,7 @@ stderr even when `TRACE` is set, use `HPHP_TRACE_FILE=/dev/stderr`.
 To find out which trace module applies to a specific file, look for a use of the
 `TRACE_SET_MOD` macro, usually near the top of the file. To add your own tracing
 lines, use either `TRACE(level, "printf-style format", args...);` or
-`FTRACE(level, "folly::format-style format", args...);`. The `level` argument is
+`FTRACE(level, "fmt::format-style format", args...);`. The `level` argument is
 the lowest level at which the trace will be active.
 
 ### `printir`

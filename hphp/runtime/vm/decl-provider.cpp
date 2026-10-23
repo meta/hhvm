@@ -131,7 +131,7 @@ hackc::ExternalDeclProviderResult HhvmDeclProvider::getDecls(
       return hackc::ExternalDeclProviderResult::from_decls(*it->second);
     } catch ([[maybe_unused]] const std::exception& ex) {
       // Decl parser error - don't cache anything, and don't fall through.
-      ITRACE(4, "DP {}: decl parse error: {}", ex.what());
+      ITRACE(4, "DP {}: decl parse error: {}", sym, ex.what());
       return hackc::ExternalDeclProviderResult::missing();
     }
   }

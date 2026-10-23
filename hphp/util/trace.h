@@ -27,6 +27,7 @@
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/compact-vector.h"
+#include "hphp/util/debug-format.h"
 #include "hphp/util/portability.h"
 #include "hphp/util/text-color.h"
 
@@ -302,8 +303,9 @@ void traceRelease(ATTRIBUTE_PRINTF_STRING const char*, ...)
 void traceRelease(const std::string& s);
 
 template<typename... Args>
-void ftraceRelease(Args&&... args) {
-  traceRelease("%s", folly::format(std::forward<Args>(args)...).str().c_str());
+void ftraceRelease(DebugFormatString<Args...> fmtStr, Args&&... args) {
+  traceRelease("%s",
+               debugFormat(fmtStr, std::forward<Args>(args)...).c_str());
 }
 
 // Trace to the global ring buffer and the normal TRACE destination.
@@ -389,12 +391,12 @@ const bool enabled = true;
 #define TRACE(n, ...) ONTRACE(n, HPHP::Trace::trace(__VA_ARGS__))
 #define FTRACE(n, ...)                                        \
   ONTRACE(n, HPHP::Trace::trace("%s",                         \
-             folly::format(__VA_ARGS__).str().c_str()))
+             HPHP::debugFormat(__VA_ARGS__).c_str()))
 #define TRACE_MOD(mod, level, ...) \
   ONTRACE_MOD(mod, level, HPHP::Trace::trace(__VA_ARGS__))
 #define FTRACE_MOD(mod, level, ...)                     \
   ONTRACE_MOD(mod, level, HPHP::Trace::trace("%s",      \
-             folly::format(__VA_ARGS__).str().c_str()))
+             HPHP::debugFormat(__VA_ARGS__).c_str()))
 #define TRACE_SET_MOD(name)  \
   UNUSED static const HPHP::Trace::Module TRACEMOD = HPHP::Trace::name;
 
@@ -419,9 +421,9 @@ inline std::string indent() {
 }
 
 template<typename... Args>
-inline void itraceImpl(const char* fmtRaw, Args&&... args) {
-  auto const fmt = indent() + fmtRaw;
-  Trace::ftraceRelease(fmt, std::forward<Args>(args)...);
+inline void itraceImpl(DebugFormatString<Args...> fmtStr, Args&&... args) {
+  auto const msg = indent() + debugFormat(fmtStr, std::forward<Args>(args)...);
+  traceRelease("%s", msg.c_str());
 }
 #define ITRACE(level, ...) ONTRACE((level), Trace::itraceImpl(__VA_ARGS__));
 #define ITRACE_MOD(mod, level, ...)                             \

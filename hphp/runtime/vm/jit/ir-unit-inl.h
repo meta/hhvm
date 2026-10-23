@@ -129,10 +129,8 @@ private:
    */
   void setter(IRInstruction* inst, Block* target) {
     assert_flog(!target || inst->hasEdges(),
-      fmt::format(
-        "{}: Mismatch between declared edges and specified target",
-        opcodeName(inst->op())
-      )
+      "{}: Mismatch between declared edges and specified target",
+      opcodeName(inst->op())
     );
     inst->setTaken(target);
   }

@@ -584,7 +584,7 @@ void RegionDesc::chainRetransBlocks() {
     blockWgt[bid] = profData->transCounter(bid);
     if (bid == entryBid) entryCid = cid;
   }
-  always_assert_flog(chainsAreValid(chains, blockIds), show(chains));
+  always_assert_flog(chainsAreValid(chains, blockIds), "{}", show(chains));
 
   // 2. Merge all blocks with the same SrcKey as the entry into the entry's
   //    chain.
@@ -613,7 +613,7 @@ void RegionDesc::chainRetransBlocks() {
       }
     }
   }
-  always_assert_flog(chainsAreValid(chains, blockIds), show(chains));
+  always_assert_flog(chainsAreValid(chains, blockIds), "{}", show(chains));
 
   // 4. Sort each chain.  In general, we want to sort each chain in
   //    decreasing order of profile weights.  However, note that this
@@ -656,7 +656,7 @@ void RegionDesc::chainRetransBlocks() {
       FTRACE(1, "\n");
     }
   }
-  always_assert_flog(chainsAreValid(chains, blockIds), show(chains));
+  always_assert_flog(chainsAreValid(chains, blockIds), "{}", show(chains));
 
   // 5. Set the nextRetrans blocks according to the computed chains.
   for (auto& c : chains) {

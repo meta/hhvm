@@ -1656,7 +1656,8 @@ size_t relocateImpl(Env& env) {
                      "relocate: ADRP/LDR at {} has internal reference "
                      "0x{:08x} which can't be adjusted. Will try again and "
                      "far.\n",
-                     reinterpret_cast<TCA>(src), new_target);
+                     reinterpret_cast<TCA>(src),
+                     reinterpret_cast<uintptr_t>(new_target));
               env.far.insert(src);
               ok = false;
             }

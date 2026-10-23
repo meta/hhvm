@@ -28,6 +28,7 @@
 #include <folly/Format.h>
 #include <folly/Preprocessor.h>
 
+#include "hphp/util/debug-format.h"
 #include "hphp/util/portability.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -174,7 +175,7 @@ private:
 #define always_assert(e)            assert_impl(e, assert_fail_impl(e, ""))
 #define always_assert_log(e, l)     assert_impl(e, assert_fail_impl(e, l()))
 #define always_assert_flog(e, ...)  assert_impl(e, assert_fail_impl(e,        \
-                                        ::folly::format(__VA_ARGS__).str()))
+                                        ::HPHP::debugFormat(__VA_ARGS__)))
 
 #undef assert
 

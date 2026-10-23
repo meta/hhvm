@@ -410,7 +410,7 @@ void emitCastVec(IRGS& env) {
   auto const src = popC(env);
   auto const raise = [&](const char* type) {
     auto const message =
-      makeStaticString(folly::sformat("{} to vec conversion", type));
+      makeStaticString(fmt::format("{} to vec conversion", type));
     gen(env, ThrowInvalidOperation, cns(env, message));
     return cns(env, TBottom);
   };

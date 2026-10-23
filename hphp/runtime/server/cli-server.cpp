@@ -353,7 +353,7 @@ ucred cli_read_ucred(int fd) {
         cmhp->cmsg_len != CMSG_LEN(sizeof(ucred)) ||
         cmhp->cmsg_level != SOL_SOCKET ||
         cmhp->cmsg_type != SCM_CREDENTIALS) {
-      FTRACE(4, "cli_read_ucred({}): bad payload\n");
+      FTRACE(4, "cli_read_ucred({}): bad payload\n", fd);
       throw Exception("cli_read_ucred: malformed response");
     }
 

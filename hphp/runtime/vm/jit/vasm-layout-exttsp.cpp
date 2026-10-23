@@ -17,6 +17,7 @@
 #include "hphp/runtime/vm/jit/vasm-layout.h"
 
 #include "hphp/util/configs/jit.h"
+#include "hphp/util/debug-format.h"
 #include "hphp/util/trace.h"
 
 #include <algorithm>
@@ -1029,8 +1030,8 @@ void Clusterizer::clusterizeExtTSP() {
   DEBUG_ONLY auto const orgScore = (debug || Trace::enabled)
                                    ? tspScore(m_unit, m_scale, blocks)
                                    : std::make_pair(uint64_t(0), uint64_t(0));
-  FTRACE(1, "[vasm-layout] Orig TSP score = {:,} ({:.2f}% of all counts)\n",
-            orgScore.first,
+  FTRACE(1, "[vasm-layout] Orig TSP score = {} ({:.2f}% of all counts)\n",
+            groupDigits(orgScore.first),
             100.0 * orgScore.first / std::max(orgScore.second, uint64_t(1)));
 
   // Apply the algorithm
@@ -1050,8 +1051,8 @@ void Clusterizer::clusterizeExtTSP() {
                                    ? tspScore(m_unit, m_scale, newOrder)
                                    : std::make_pair(uint64_t(0), uint64_t(0));
   assert(orgScore.second == newScore.second && "incorrect tsp score");
-  FTRACE(1, "[vasm-layout] New  TSP score = {:,} ({:.2f}% of all counts)\n",
-            newScore.first,
+  FTRACE(1, "[vasm-layout] New  TSP score = {} ({:.2f}% of all counts)\n",
+            groupDigits(newScore.first),
             100.0 * newScore.first / std::max(newScore.second, uint64_t(1)));
 }
 

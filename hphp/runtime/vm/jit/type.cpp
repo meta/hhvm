@@ -517,7 +517,7 @@ bool Type::checkValid() const {
   if (m_extra) {
     assert_flog(((m_bits & kClsSpecBits) == kBottom ||
                  (m_bits & kArrSpecBits) == kBottom) &&
-                "Conflicting specialization: {}", m_bits.hexStr());
+                "Conflicting specialization: {}", "{}", m_bits.hexStr());
   }
 
   // We should have one canonical representation of Bottom.
