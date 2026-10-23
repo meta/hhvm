@@ -84,10 +84,10 @@ std::string ArrayAccessProfile::toString() const {
   auto pct = [&] (uint32_t value) { return 100.0 * value / total; };
   std::ostringstream out;
   for (auto const& line : m_hits) {
-    out << folly::format("{}:{}({:.1f}%),",
+    out << fmt::format("{}:{}({:.1f}%),",
                          line.pos, line.count, pct(line.count));
   }
-  out << folly::format(
+  out << fmt::format(
     "untracked:{}({:.1f}%),small:{}({:.1f}%),"
     "empty:{}({:.1f}%),missing:{}({:.1f}%),"
     "nocow:{}({:.1f}%)",

@@ -551,7 +551,7 @@ bool chainsAreValid(const jit::vector<Chain>& chains,
 std::string show(const jit::vector<Chain>& chains) {
   std::string ret;
   for (auto& chain : chains) {
-    folly::format(&ret, "[{}]: {}\n", chain.id, folly::join(",", chain.blocks));
+    fmt::format_to(std::back_inserter(ret), "[{}]: {}\n", chain.id, folly::join(",", chain.blocks));
   }
   return ret;
 }
@@ -703,7 +703,7 @@ std::string RegionDesc::toString() const {
   auto ret = show(*this);
   ret += "data:\n";
   for (auto d : m_data) {
-    ret += folly::format("  block id: {}\n", d.first).str();
+    ret += fmt::format("  block id: {}\n", d.first);
   }
   return ret;
 }
@@ -1200,26 +1200,26 @@ bool check(const RegionDesc& region, std::string& error) {
 //////////////////////////////////////////////////////////////////////
 
 std::string show(RegionDesc::TypedLocation ta) {
-  return folly::format(
+  return fmt::format(
     "{} :: {}",
     show(ta.location),
     ta.type.toString()
-  ).str();
+  );
 }
 
 std::string show(const RegionDesc::GuardedLocation& guardedLoc) {
-  return folly::format(
+  return fmt::format(
     "{} :: {} ({})",
     show(guardedLoc.location),
     guardedLoc.type.toString(),
     typeCategoryName(guardedLoc.category)
-  ).str();
+  );
 }
 
 std::string show(const GuardedLocations& guardedLocVec) {
   std::string ret;
   for (auto& guardedLoc : guardedLocVec) {
-    folly::format(&ret, "{} ; ", show(guardedLoc));
+    fmt::format_to(std::back_inserter(ret), "{} ; ", show(guardedLoc));
   }
   return ret;
 }
@@ -1309,7 +1309,7 @@ std::string show(const RegionDesc& region) {
     std::string mergedStr = mergedSet.empty() ? "" :
                             (" (" + folly::join(",", mergedSet) + ")");
     uint32_t coldness = 255 - (255 * weight(b) / maxBlockWgt);
-    folly::format(&ret, " \"B{}\" [label=\"B {}{}\\np: {}\","
+    fmt::format_to(std::back_inserter(ret), " \"B{}\" [label=\"B {}{}\\np: {}\","
                   "fillcolor=\"#ff{:02x}{:02x}\"]\n",
                   id, id, mergedStr, weight(b), coldness, coldness);
   }
@@ -1317,11 +1317,11 @@ std::string show(const RegionDesc& region) {
   // Print arcs in dot format.
   for (auto& b : region.blocks()) {
     if (auto r = region.nextRetrans(b->id())) {
-      folly::toAppend(folly::format(" \"B{}\" -> \"B{}\" [label=R,color=red]\n",
+      folly::toAppend(fmt::format(" \"B{}\" -> \"B{}\" [label=R,color=red]\n",
                                     b->id(), r.value()), &ret);
     }
     for (auto s : region.succs(b->id())) {
-      folly::toAppend(folly::format(" \"B{}\" -> \"B{}\"\n", b->id(), s),
+      folly::toAppend(fmt::format(" \"B{}\" -> \"B{}\"\n", b->id(), s),
                       &ret);
     }
   }

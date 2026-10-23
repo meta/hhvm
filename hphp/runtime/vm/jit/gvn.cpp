@@ -634,7 +634,7 @@ void insertIncRefs(PrcEnv& env) {
            [&] {
              std::string ret;
              blk->forEachPred([&] (Block* pred) {
-                 folly::format(&ret, " B{}", pred->id());
+                 fmt::format_to(std::back_inserter(ret), " B{}", pred->id());
                });
              return ret;
            }(),
@@ -642,7 +642,7 @@ void insertIncRefs(PrcEnv& env) {
            [&] {
              std::string ret;
              blk->forEachSucc([&] (Block* succ) {
-                 folly::format(&ret, " B{}", succ->id());
+                 fmt::format_to(std::back_inserter(ret), " B{}", succ->id());
                });
              return ret;
            }());

@@ -51,8 +51,8 @@ namespace {
 
 // Helper for pretty-printing punctuation.
 std::string punc(const char* str) {
-  return folly::format("{}{}{}",
-    color(ANSI_COLOR_DARK_GRAY), str, color(ANSI_COLOR_END)).str();
+  return fmt::format("{}{}{}",
+    color(ANSI_COLOR_DARK_GRAY), str, color(ANSI_COLOR_END));
 }
 
 std::string constToString(Type t) {
@@ -589,7 +589,7 @@ void print(std::ostream& ostream, const IRInstruction* inst,
            const GuardConstraints* guards) {
   if (!inst->isTransient()) {
     ostream << color(ANSI_COLOR_YELLOW);
-    ostream << folly::format("({:02d}) ", inst->id());
+    ostream << fmt::format("({:02d}) ", inst->id());
     ostream << color(ANSI_COLOR_END);
   }
   printInstr(ostream, inst, guards);
@@ -661,7 +661,7 @@ void disasmRange(std::ostream& os,
         dec.Decode(vixl::Instruction::Cast(begin));
         for (int i = 0; i < indent; ++i) os << ' ';
         os << colorStr
-           << folly::format("{:#16x}", (uint64_t)begin - adjust)
+           << fmt::format("{:#16x}", (uint64_t)begin - adjust)
            << "  \t\t"
            << disasm.GetOutput()
            << endClr << "\n";
@@ -723,7 +723,7 @@ void printIRInstruction(std::ostream& os,
     // print phi pseudo-instructions
     for (unsigned i = 0, n = inst.numDsts(); i < n; ++i) {
       os << std::string(kIndent +
-                        folly::format("({}) ", inst.id()).str().size(),
+                        fmt::format("({}) ", inst.id()).size(),
                         ' ');
       auto dst = inst.dst(i);
       jit::print(os, dst);
@@ -925,7 +925,7 @@ void printOpcodeStats(std::ostream& os, const BlockList& blocks) {
   for (unsigned i = 0; i < kNumOpcodes; ++i) {
     if (counts[i] == 0) continue;
     auto op = safe_cast<Opcode>(i);
-    os << folly::format("{:>5} {}\n", counts[i], opcodeName(op));
+    os << fmt::format("{:>5} {}\n", counts[i], opcodeName(op));
   }
   os << '\n';
 }
@@ -982,7 +982,7 @@ void print(std::ostream& os, const IRUnit& unit, const AsmInfo* asmInfo,
           else if (c == '\\') body += "\\\\";
           else                body += c;
         }
-        os << folly::format("B{} [shape=box,label=\"{}\"]\n",
+        os << fmt::format("B{} [shape=box,label=\"{}\"]\n",
                             block->id(), body);
       }
     } else {
@@ -995,7 +995,7 @@ void print(std::ostream& os, const IRUnit& unit, const AsmInfo* asmInfo,
         }
         not_reached();
       }();
-      os << folly::format(
+      os << fmt::format(
         "B{} [shape=box,color={},label=\"B{}\\ncount={}\"]\n",
         block->id(), color, block->id(), block->profCount()
       );
@@ -1012,7 +1012,7 @@ void print(std::ostream& os, const IRUnit& unit, const AsmInfo* asmInfo,
         retreating_edges.contains(edge) ? " [color=red]" : "";
     };
     auto show_edge = [&] (Edge* edge) {
-      os << folly::format(
+      os << fmt::format(
         "B{} -> B{}{}",
         block->id(),
         edge->to()->id(),
@@ -1031,10 +1031,10 @@ void print(std::ostream& os, const IRUnit& unit, const AsmInfo* asmInfo,
   curMarker = BCMarker();
   for (auto it = blocks.begin(); it != blocks.end(); ++it) {
     if (it == cold) {
-      os << folly::format("\n{:-^60}", "cold blocks");
+      os << fmt::format("\n{:-^60}", "cold blocks");
     }
     if (it == frozen) {
-      os << folly::format("\n{:-^60}", "frozen blocks");
+      os << fmt::format("\n{:-^60}", "frozen blocks");
     }
     print(os, *it, kind, asmInfo, guards, &curMarker);
   }
@@ -1052,7 +1052,7 @@ std::string show(const IRUnit& unit) {
 }
 
 std::string banner(const char* caption) {
-  return folly::sformat(
+  return fmt::format(
     "{}{:-^80}{}\n",
     color(ANSI_COLOR_BLACK, ANSI_BGCOLOR_GREEN),
     caption,

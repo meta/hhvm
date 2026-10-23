@@ -30,7 +30,7 @@ std::string show_types(const std::vector<Type>& ts) {
   std::string ret = "{";
   auto sep = "";
   for (auto& t : ts) {
-    folly::format(&ret, "{}{}", sep, t);
+    fmt::format_to(std::back_inserter(ret), "{}{}", sep, t);
     sep = ", ";
   }
   return ret + "}";
@@ -80,14 +80,14 @@ bool CallSpec::verifySignature(const CallDest& dest,
   if (!type) return true;
   if (kind() != Kind::Direct && kind() != Kind::Smashable) return true;
 
-  auto fail = [&](auto&&... fmt) {
-    auto const why = folly::sformat(std::forward<decltype(fmt)>(fmt)...);
+  auto fail = [&]<typename... Args>(
+                  fmt::format_string<Args...> fmtStr, Args&&... fmtArgs) {
+    auto const why = fmt::format(fmtStr, std::forward<Args>(fmtArgs)...);
     auto const func = getNativeFunctionName(this->address());
     auto msg = fmt::format(
       "Failed to verify signature for call to {}: {}\n\n", func, why
     );
-    folly::format(
-      &msg, "Arguments:  {} -> {}\nSignature: {} -> {}",
+    fmt::format_to(std::back_inserter(msg), "Arguments:  {} -> {}\nSignature: {} -> {}",
       show_types(args), dest.valueType, show_types(type->params), type->ret
     );
     always_assert_flog(false, "{}", msg);

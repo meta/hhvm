@@ -21,6 +21,8 @@
 #include "hphp/util/configs/hhir.h"
 #include "hphp/util/text-util.h"
 
+#include <fmt/format.h>
+
 namespace HPHP::jit::irgen {
 
 //////////////////////////////////////////////////////////////////////
@@ -161,9 +163,9 @@ void handleConvThrowMode(
   const char* const to) {
   if (LIKELY(data.mode == ConvThrowMode::None)) return;
 
-  const auto str = makeStaticString(folly::sformat(
+  const auto str = makeStaticString(fmt::format(
     "Attempted {} to {} conversion for {}", from, to,
-    s_ConvThrowReasonConcat.get()));
+    s_ConvThrowReasonConcat.get()->slice()));
   gen(env, ThrowInvalidOperation, cns(env, str));
 }
 

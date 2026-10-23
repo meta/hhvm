@@ -16,6 +16,7 @@
 #include "hphp/runtime/vm/jit/irgen-state.h"
 
 #include <sstream>
+#include <fmt/format.h>
 
 #include "hphp/runtime/vm/jit/irgen-internal.h"
 
@@ -41,22 +42,22 @@ IRGS::IRGS(IRUnit& unit, const RegionDesc* region, int32_t budgetBCInstrs,
 std::string show(const IRGS& irgs) {
   std::ostringstream out;
   auto header = [&](const std::string& str) {
-    out << folly::format("+{:-^102}+\n", str);
+    out << fmt::format("+{:-^102}+\n", str);
   };
 
   auto const stackDepth = irgs.irb->fs().bcSPOff().offset;
   assertx(stackDepth >= 0);
   auto spOffset = stackDepth;
   auto elem = [&](const std::string& str) {
-    out << folly::format("| {:<100} |\n",
-                         folly::format("{:>2}: {}",
+    out << fmt::format("| {:<100} |\n",
+                         fmt::format("{:>2}: {}",
                                        stackDepth - spOffset, str));
     assertx(spOffset > 0);
     --spOffset;
   };
 
-  header(folly::format(" {} stack element(s): ",
-                       stackDepth).str());
+  header(fmt::format(" {} stack element(s): ",
+                       stackDepth));
 
   for (auto i = 0; i < stackDepth; ) {
     auto const spRel = offsetFromIRSP(irgs, BCSPRelOffset{i});
@@ -77,8 +78,8 @@ std::string show(const IRGS& irgs) {
   header("");
   out << "\n";
 
-  header(folly::format(" {} local(s) ",
-                       curFunc(irgs)->numLocals()).str());
+  header(fmt::format(" {} local(s) ",
+                       curFunc(irgs)->numLocals()));
   for (unsigned i = 0; i < curFunc(irgs)->numLocals(); ++i) {
     auto const localValue = irgs.irb->local(i, DataTypeGeneric).value;
     auto const localTy = localValue ? localValue->type()
@@ -86,8 +87,8 @@ std::string show(const IRGS& irgs) {
     auto str = localValue ? localValue->inst()->toString()
                           : localTy.toString();
 
-    out << folly::format("| {:<100} |\n",
-                         folly::format("{:>2}: {}", i, str));
+    out << fmt::format("| {:<100} |\n",
+                         fmt::format("{:>2}: {}", i, str));
   }
   header("");
   return out.str();

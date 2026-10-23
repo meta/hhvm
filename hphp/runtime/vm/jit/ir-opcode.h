@@ -19,6 +19,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <fmt/format.h>
 #include <folly/Range.h>
 
 #include "hphp/runtime/vm/jit/types.h"
@@ -207,5 +208,13 @@ template<> class FormatValue<HPHP::jit::Opcode> {
   HPHP::jit::Opcode m_op;
 };
 }
+
+template <>
+struct fmt::formatter<HPHP::jit::Opcode> : fmt::formatter<std::string_view> {
+  auto format(HPHP::jit::Opcode op, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(
+        HPHP::jit::opcodeName(op), ctx);
+  }
+};
 
 #include "hphp/runtime/vm/jit/ir-opcode-inl.h"

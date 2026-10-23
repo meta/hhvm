@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <fmt/format.h>
 #include "hphp/runtime/base/array-data.h"
 #include "hphp/runtime/base/datatype.h"
 #include "hphp/runtime/base/rds.h"
@@ -873,6 +874,15 @@ namespace std {
     size_t operator()(HPHP::jit::Type t) const { return t.hash(); }
   };
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+template <>
+struct fmt::formatter<HPHP::jit::Type> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::jit::Type& v, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(v.toString(), ctx);
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 

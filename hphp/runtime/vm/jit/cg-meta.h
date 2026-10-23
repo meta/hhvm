@@ -281,3 +281,16 @@ private:
   HPHP::IFrame m_ifr;
 };
 }
+
+template <>
+struct fmt::formatter<HPHP::IFrame> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::IFrame& ifr, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(
+        fmt::format(
+            "IFrame{{func = {}, callOff = {}, parent = {}}}",
+            ifr.func->fullName()->data(),
+            ifr.callOff,
+            ifr.parent),
+        ctx);
+  }
+};

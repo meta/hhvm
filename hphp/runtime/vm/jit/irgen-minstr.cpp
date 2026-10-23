@@ -46,6 +46,8 @@
 #include "hphp/util/safe-cast.h"
 #include "hphp/util/struct-log.h"
 
+#include <fmt/format.h>
+
 namespace HPHP::jit::irgen {
 
 namespace {
@@ -2239,7 +2241,7 @@ void annotArrayAccessProfile(IRGS& env,
 
   env.unit.annotationData->add(
     "ArrAccProf",
-    folly::sformat("BC={} FN={}: {}: {}: {}: {}\n",
+    fmt::format("BC={} FN={}: {}: {}: {}: {}\n",
                    bcOff(env), fnName, *arr, *key, profile, result)
   );
 }

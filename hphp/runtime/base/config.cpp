@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <fmt/format.h>
 
 #include "hphp/runtime/base/ini-setting.h"
 #include "hphp/runtime/base/array-iterator.h"
@@ -426,7 +427,7 @@ bool valueMatchesPattern(const std::string &value,
   );
   auto const error = preg_get_error_message_if_invalid(patternString);
   if (!error.isNull()) {
-    throw std::runtime_error(folly::sformat(
+    throw std::runtime_error(fmt::format(
       "Invalid configuration regex '{}': {}",
       pattern,
       error.toCppString()

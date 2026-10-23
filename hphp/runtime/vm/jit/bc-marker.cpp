@@ -17,7 +17,6 @@
 #include "hphp/runtime/vm/jit/bc-marker.h"
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 #include <folly/Conv.h>
 
 #include "hphp/runtime/vm/jit/extra-data.h"
@@ -31,7 +30,7 @@ namespace HPHP::jit {
 std::string BCMarker::show() const {
   if (!valid()) return "invalid BCMarker";
 
-  return folly::format(
+  return fmt::format(
     "--- bc {}, fp {}, fixupFP {}, spOff {}, {}",
     showShort(m_sk),
     m_fp ? folly::to<std::string>(m_fp->id()) : "_",
@@ -40,7 +39,7 @@ std::string BCMarker::show() const {
     m_profTransIDs.empty()
       ? ""
       : fmt::format(" [profTrans={}]", folly::join(',', m_profTransIDs))
-  ).str();
+  );
 }
 
 bool BCMarker::valid() const {

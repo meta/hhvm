@@ -2062,7 +2062,7 @@ MemEffects memory_effects_impl(const IRInstruction& inst) {
 
 DEBUG_ONLY bool check_effects(const IRInstruction& inst, const MemEffects& me) {
   SCOPE_ASSERT_DETAIL("Memory Effects") {
-    return folly::sformat("  inst: {}\n  effects: {}\n", inst, show(me));
+    return fmt::format("  inst: {}\n  effects: {}\n", inst, show(me));
   };
 
   auto const check_obj = [&] (SSATmp* obj) {
@@ -2388,7 +2388,6 @@ MemEffects canonicalize(const MemEffects& me) {
 //////////////////////////////////////////////////////////////////////
 
 std::string show(const MemEffects& effects) {
-  using folly::sformat;
   return match<std::string>(
     effects,
     [&] (const GeneralEffects& x) {

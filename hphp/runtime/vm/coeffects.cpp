@@ -136,11 +136,11 @@ Optional<std::string> CoeffectRule::toString(const Func* f) const {
                                     "::",
                                     m_name->toCppString());
     case Type::CCThis:
-      return folly::sformat("this{}::{}", typesToString(), m_name);
+      return fmt::format("this{}::{}", typesToString(), m_name);
     case Type::CCReified: {
       // TODO: type parameter names are not currently available in HHVM
       auto const reified_name = "<unknown>";
-      return folly::sformat("{}{}::{}", reified_name, typesToString(), m_name);
+      return fmt::format("{}{}::{}", reified_name, typesToString(), m_name);
     }
     case Type::ClosureParentScope:
     case Type::GeneratorThis:

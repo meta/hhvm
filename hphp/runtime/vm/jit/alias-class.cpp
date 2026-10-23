@@ -19,7 +19,6 @@
 #include <algorithm>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include "hphp/runtime/base/string-data.h"
 #include "hphp/runtime/vm/jit/ir-instruction.h"
@@ -850,30 +849,30 @@ std::string show(AliasClass acls) {
   case A::STag::None:
     break;
   case A::STag::Local:
-    folly::format(&ret, "Lv {}:{}", acls.m_local.frameIdx,
+    fmt::format_to(std::back_inserter(ret), "Lv {}:{}", acls.m_local.frameIdx,
                   show(acls.m_local.ids));
     break;
   case A::STag::Iter:
-    folly::format(&ret, "It {}:{}", acls.m_iter.frameIdx,
+    fmt::format_to(std::back_inserter(ret), "It {}:{}", acls.m_iter.frameIdx,
                   show(acls.m_iter.ids));
     break;
   case A::STag::FrameAll:
     break;
   case A::STag::ClosureArg:
-    folly::format(&ret, "ClArg t{}:{}", acls.m_closureArg.closure->id(), acls.m_closureArg.offset);
+    fmt::format_to(std::back_inserter(ret), "ClArg t{}:{}", acls.m_closureArg.closure->id(), acls.m_closureArg.offset);
     break;
   case A::STag::Prop:
-    folly::format(&ret, "Pr t{}:{}", acls.m_prop.obj->id(), acls.m_prop.offset);
+    fmt::format_to(std::back_inserter(ret), "Pr t{}:{}", acls.m_prop.obj->id(), acls.m_prop.offset);
     break;
   case A::STag::ElemI:
-    folly::format(&ret, "Ei t{}:{}", acls.m_elemI.arr->id(), acls.m_elemI.idx);
+    fmt::format_to(std::back_inserter(ret), "Ei t{}:{}", acls.m_elemI.arr->id(), acls.m_elemI.idx);
     break;
   case A::STag::ElemS:
-    folly::format(&ret, "Es t{}:{.10}", acls.m_elemS.arr->id(),
-      acls.m_elemS.key);
+    fmt::format_to(std::back_inserter(ret), "Es t{}:{}", acls.m_elemS.arr->id(),
+      acls.m_elemS.key->slice());
     break;
   case A::STag::Stack:
-    folly::format(&ret, "St {}{}",
+    fmt::format_to(std::back_inserter(ret), "St {}{}",
       acls.m_stack.low.offset == std::numeric_limits<int32_t>::min()
         ? "<"
         : fmt::format("{}:", acls.m_stack.low.offset),
@@ -881,7 +880,7 @@ std::string show(AliasClass acls) {
     );
     break;
   case A::STag::Rds:
-    folly::format(&ret, "Rds {}", acls.m_rds.handle);
+    fmt::format_to(std::back_inserter(ret), "Rds {}", acls.m_rds.handle);
     break;
   }
 
@@ -891,7 +890,7 @@ std::string show(AliasClass acls) {
     if (acls.m_stagBits & A::BFContext) ret += "Fc";
     if (acls.m_stagBits & A::BFFunc)    ret += "Ff";
     if (A::stagFor(acls.m_stagBits) == A::STag::FrameAll) {
-      folly::format(&ret, "@{}", acls.asUFrameBase()->frameIdx);
+      fmt::format_to(std::back_inserter(ret), "@{}", acls.asUFrameBase()->frameIdx);
     }
   }
 

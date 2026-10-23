@@ -16,7 +16,7 @@
 
 #include "hphp/runtime/vm/jit/punt.h"
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include "hphp/runtime/vm/func.h"
 
@@ -24,16 +24,16 @@ namespace HPHP::jit {
 //////////////////////////////////////////////////////////////////////
 
 FailedIRGen::FailedIRGen(const char* _file, int _line, const char* _func)
-  : std::runtime_error(folly::format("FailedIRGen @ {}:{} in {}",
-                                     _file, _line, _func).str())
+  : std::runtime_error(fmt::format("FailedIRGen @ {}:{} in {}",
+                                     _file, _line, _func))
   , file(_file)
   , line(_line)
   , func(_func)
 {}
 
 FailedTraceGen::FailedTraceGen(const char* file, int line, const char* why)
-  : std::runtime_error(folly::format("FailedTraceGen @ {}:{} - {}",
-                                     file, line, why).str())
+  : std::runtime_error(fmt::format("FailedTraceGen @ {}:{} - {}",
+                                     file, line, why))
 {}
 
 RetryIRGen::RetryIRGen(const char* why)

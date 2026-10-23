@@ -209,7 +209,7 @@ void annotCoeffectFunParamProfile(
 
   env.unit.annotationData->add(
     "CoeffectFunParamProf",
-    folly::sformat("BC={} FN={}: {}: {}: {}\n",
+    fmt::format("BC={} FN={}: {}: {}: {}\n",
       bcOff(env), fnName, *tv, profile, orderStr)
     );
 }

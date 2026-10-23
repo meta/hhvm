@@ -1125,9 +1125,9 @@ void handleConvThrowMode(
   const char* const from,
   const char* const to) {
   if (mode == ConvThrowMode::None) return;
-  const auto str = folly::sformat(
+  const auto str = fmt::format(
     "Attempted {} to {} conversion for {}", from, to,
-    s_ConvThrowReasonConcat.get());
+    s_ConvThrowReasonConcat.get()->slice());
   SystemLib::throwInvalidOperationExceptionObject(str);
 }
 

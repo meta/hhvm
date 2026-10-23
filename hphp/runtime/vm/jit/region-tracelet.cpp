@@ -29,6 +29,7 @@
 #include "hphp/util/trace.h"
 
 #include <algorithm>
+#include <fmt/format.h>
 
 #include "hphp/runtime/vm/jit/irgen.h"
 
@@ -435,7 +436,7 @@ void truncateLiterals(Env& env) {
 
 RegionDescPtr form_region(Env& env) {
   SCOPE_ASSERT_DETAIL("Tracelet Selector") {
-    return folly::sformat("Region:\n{}\n\nUnit:\n{}\n",
+    return fmt::format("Region:\n{}\n\nUnit:\n{}\n",
                           *env.region, show(env.irgs.irb->unit()));
   };
 

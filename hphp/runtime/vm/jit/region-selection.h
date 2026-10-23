@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <fmt/format.h>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -572,3 +573,10 @@ std::string show(const RegionDesc&);
 //////////////////////////////////////////////////////////////////////
 
 }
+
+template <>
+struct fmt::formatter<HPHP::jit::RegionDesc> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::jit::RegionDesc& v, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(v.toString(), ctx);
+  }
+};

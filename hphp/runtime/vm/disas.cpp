@@ -60,15 +60,14 @@ struct Output {
   {}
 
   template<class... Args>
-  void fmtln(Args&&... args) {
+  void fmtln(fmt::format_string<Args...> fmtStr, Args&&... args) {
     indent();
-    m_out << folly::format(std::forward<Args>(args)...).str()
-          << '\n';
+    m_out << fmt::format(fmtStr, std::forward<Args>(args)...) << '\n';
   }
 
   template<class... Args>
-  void fmt(Args&&... args) {
-    m_out << folly::format(std::forward<Args>(args)...).str();
+  void fmt(fmt::format_string<Args...> fmtStr, Args&&... args) {
+    m_out << fmt::format(fmtStr, std::forward<Args>(args)...);
   }
 
   void indent() {
@@ -100,7 +99,7 @@ std::string format_line_pair(T* ptr) {
 //////////////////////////////////////////////////////////////////////
 
 std::string escaped(const folly::StringPiece str) {
-  return folly::format("\"{}\"", folly::cEscape<std::string>(str)).str();
+  return fmt::format("\"{}\"", folly::cEscape<std::string>(str));
 }
 
 std::string escaped(const StringData* sd) {
@@ -116,7 +115,7 @@ std::string escaped(const StringData* sd) {
  * needs to be.
  */
 std::string escaped_long(const StringData* sd) {
-  return folly::format("\"\"{}\"\"", escaped(sd)).str();
+  return fmt::format("\"\"{}\"\"", escaped(sd));
 }
 
 std::string escaped_long(const ArrayData* ad) {
@@ -164,7 +163,7 @@ FuncInfo find_func_info(const Func* func) {
 
   auto label_num = uint32_t{0};
   auto gen_label = [&] (const char* kind) {
-    return folly::format("{}{}", kind, label_num++).str();
+    return fmt::format("{}{}", kind, label_num++);
   };
 
   auto add_target = [&] (const char* kind, Offset off) -> std::string {
@@ -225,9 +224,9 @@ template<class T> T decode(PC& pc) {
 std::string loc_name(const FuncInfo& finfo, uint32_t id) {
   auto const sd = finfo.func->localVarName(id);
   if (!sd || sd->empty()) {
-    return folly::format("_{}", id).str();
+    return fmt::format("_{}", id);
   }
-  return folly::format("${}", sd->data()).str();
+  return fmt::format("${}", sd->data());
 }
 
 std::string jmp_label(const FuncInfo& finfo, Offset tgt) {
@@ -427,7 +426,7 @@ void print_func_directives(Output& out, const FuncInfo& finfo) {
   }
   if (func->hasCoeffectRules()) {
     for (auto const& rule : func->getCoeffectRules()) {
-      out.fmtln(rule.getDirectiveString());
+      out.fmtln("{}", rule.getDirectiveString());
     }
   }
 }
@@ -523,14 +522,14 @@ void print_func_body(Output& out, const FuncInfo& finfo) {
 
 std::string type_constraint(const TypeConstraint& tc) {
   std::string typeName = tc.typeName() ? escaped(tc.typeName()) : "N";
-  return folly::format("{} {} ",
+  return fmt::format("{} {} ",
                        typeName,
-                       type_flags_to_string(tc.flags())).str();
+                       type_flags_to_string(tc.flags()));
 }
 
 std::string opt_type_constraint(const TypeConstraint& tc) {
   if (!tc.typeName() && !tc.flags()) return "";
-  return folly::format("<{}> ", type_constraint(tc)).str();
+  return fmt::format("<{}> ", type_constraint(tc));
 }
 
 std::string type_info(const StringData* userType,
@@ -541,7 +540,7 @@ std::string type_info(const StringData* userType,
     if (constraints != "") constraints += ", ";
     constraints += opt_type_constraint(tc);
   }
-  return folly::format("{} {}", utype, constraints).str();
+  return fmt::format("{} {}", utype, constraints);
 }
 
 std::string opt_attrs(AttrContext ctx, Attr attrs,
@@ -584,12 +583,12 @@ std::string func_param_list(const FuncInfo& finfo) {
       func->params()[i].userType.get(func->unit()),
       func->params()[i].typeConstraints
     );
-    ret += folly::format("{}", loc_name(finfo, i)).str();
+    ret += fmt::format("{}", loc_name(finfo, i));
     if (func->params()[i].hasDefaultValue()) {
       auto const off = func->params()[i].funcletOff;
-      ret += folly::format(" = {}", jmp_label(finfo, off)).str();
+      ret += fmt::format(" = {}", jmp_label(finfo, off));
       if (auto const code = func->params()[i].phpCode.get(func->unit())) {
-        ret += folly::format("({})", escaped_long(code)).str();
+        ret += fmt::format("({})", escaped_long(code));
       }
     }
   }
@@ -637,7 +636,7 @@ void print_func(Output& out, const Func* func) {
       func->returnUserType(),
       func->returnTypeConstraints()
     ),
-    func->name(),
+    func->name()->slice(),
     func_param_list(finfo),
     func_flag_list(finfo));
   indented(out, [&] {
@@ -658,7 +657,7 @@ void print_class_constant(Output& out, const PreClass::Const* cns) {
   switch (cns->kind()) {
     case ConstModifierFlags::Kind::Context:
       out.indent();
-      out.fmt(".ctx {}", cns->name());
+      out.fmt(".ctx {}", cns->name()->slice());
       if (cns->isAbstract()) {
         out.fmt(" isAbstract");
       }
@@ -670,15 +669,15 @@ void print_class_constant(Output& out, const PreClass::Const* cns) {
       break;
     case ConstModifierFlags::Kind::Value:
       if (cns->isAbstract()) {
-        out.fmtln(".const {} isAbstract;", cns->name());
+        out.fmtln(".const {} isAbstract;", cns->name()->slice());
       } else {
         // Class constants use uninit to indicate initialization with 86cinit
-        out.fmtln(".const {} = {};", cns->name(), member_tv_initializer(cns->val()));
+        out.fmtln(".const {} = {};", cns->name()->slice(), member_tv_initializer(cns->val()));
       }
       break;
     case ConstModifierFlags::Kind::Type:
       out.indent();
-      out.fmt(".const {} isType", cns->name());
+      out.fmt(".const {} isType", cns->name()->slice());
       if (cns->isAbstract()) {
         out.fmt(" isAbstract");
       }
@@ -731,7 +730,7 @@ void print_method(Output& out, const Func* func) {
       func->returnUserType(),
       func->returnTypeConstraints()
     ),
-    func->name(),
+    func->name()->slice(),
     func_param_list(finfo),
     func_flag_list(finfo)
   );
@@ -744,12 +743,12 @@ void print_method(Output& out, const Func* func) {
 
 void print_cls_inheritance_list(Output& out, const PreClass* cls) {
   if (!cls->parent()->empty()) {
-    out.fmt(" extends {}", cls->parent());
+    out.fmt(" extends {}", cls->parent()->slice());
   }
   if (!cls->interfaces().empty()) {
     out.fmt(" implements (");
     for (auto i = uint32_t{}; i < cls->interfaces().size(); ++i) {
-      out.fmt("{}{}", i != 0 ? " " : "", cls->interfaces()[i].get());
+      out.fmt("{}{}", i != 0 ? " " : "", cls->interfaces()[i].get()->slice());
     }
     out.fmt(")");
   }
@@ -759,7 +758,7 @@ void print_enum_includes(Output& out, const PreClass* cls) {
   if (!cls->includedEnums().empty()) {
     out.fmt(" enum_includes (");
     for (auto i = uint32_t{}; i < cls->includedEnums().size(); ++i) {
-      out.fmt("{}{}", i != 0 ? " " : "", cls->includedEnums()[i].get());
+      out.fmt("{}{}", i != 0 ? " " : "", cls->includedEnums()[i].get()->slice());
     }
     out.fmt(")");
   }
@@ -779,7 +778,7 @@ void print_cls_used_traits(Output& out, const PreClass* cls) {
   out.fmt(".use");
 
   for (auto i = uint32_t{0}; i < traits.size(); ++i) {
-    out.fmt(" {}", traits[i].get());
+    out.fmt(" {}", traits[i].get()->slice());
   }
 
   out.fmt(";");
@@ -865,7 +864,7 @@ void print_alias(Output& out, const PreTypeAlias& alias) {
   out.fmtln(".{}{} {} = {} ({}, {}) {}{};",
             kind,
             opt_attrs(AttrContext::Alias, alias.attrs, &alias.userAttrs),
-            (const StringData*)alias.name,
+            ((const StringData*)alias.name)->slice(),
             type_constraints,
             alias.line0,
             alias.line1,
@@ -908,7 +907,7 @@ void print_fatal(Output& out, const Unit* unit) {
 void print_module_use(Output& out, const Unit* unit) {
   if (auto const name = unit->moduleName()) {
     out.nl();
-    out.fmtln(".module_use \"{}\";", name);
+    out.fmtln(".module_use \"{}\";", name->slice());
   }
 }
 
@@ -946,7 +945,7 @@ void print_unit_metadata(Output& out, const Unit* unit) {
 }
 
 void print_unit(Output& out, const Unit* unit) {
-  out.fmtln("# {} starts here", unit->origFilepath());
+  out.fmtln("# {} starts here", unit->origFilepath()->slice());
   out.nl();
   print_unit_metadata(out, unit);
   for (auto* func : unit->funcs())        print_func(out, func);
@@ -954,7 +953,7 @@ void print_unit(Output& out, const Unit* unit) {
   for (auto& alias : unit->typeAliases()) print_alias(out, alias);
   for (auto& c : unit->constants())       print_constant(out, c);
   for (auto& m : unit->modules())         print_module(out, m);
-  out.fmtln("# {} ends here", unit->origFilepath());
+  out.fmtln("# {} ends here", unit->origFilepath()->slice());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -982,8 +981,8 @@ std::string user_attrs(const UserAttributeMap* attrsMap) {
 
   for (auto& entry : *attrsMap) {
     attrs.push_back(
-      folly::format("{}({})", escaped(entry.first),
-                    escaped_long(entry.second)).str());
+      fmt::format("{}({})", escaped(entry.first),
+                    escaped_long(entry.second)));
   }
   return folly::join(" ", attrs);
 }

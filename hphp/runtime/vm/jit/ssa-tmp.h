@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <fmt/format.h>
 #include "hphp/runtime/vm/jit/type.h"
 #include "hphp/runtime/vm/jit/types.h"
 
@@ -99,3 +100,10 @@ private:
 };
 
 }
+
+template <>
+struct fmt::formatter<HPHP::jit::SSATmp> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::jit::SSATmp& v, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(v.toString(), ctx);
+  }
+};

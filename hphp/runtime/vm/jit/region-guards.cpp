@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 #include <folly/Hash.h>
 
 #include "hphp/util/assertions.h"
@@ -468,11 +468,10 @@ void updateRegion(RegionDesc&         region,
 DEBUG_ONLY std::string show(const BlockDataVec& blockData) {
   std::string ret;
   for (auto& bd : blockData) {
-    folly::format(&ret,
-                  "   - Block {} (w: {}): relaxed:{} merged:{} deleted:{}\n",
+    fmt::format_to(std::back_inserter(ret), "   - Block {} (w: {}): relaxed:{} merged:{} deleted:{}\n",
                   bd.blockId, bd.weight, bd.relaxed, bd.merged, bd.deleted);
     for (auto& guard : bd.guards) {
-      folly::format(&ret, "      - {}: {} ({})\n", show(guard.location),
+      fmt::format_to(std::back_inserter(ret), "      - {}: {} ({})\n", show(guard.location),
                     guard.type, typeCategoryName(guard.category));
     }
   }

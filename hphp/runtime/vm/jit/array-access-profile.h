@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <fmt/format.h>
 #include "hphp/runtime/vm/jit/extra-data.h"
 
 #include <folly/json/dynamic.h>
@@ -124,3 +125,17 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 }}
+
+template <>
+struct fmt::formatter<HPHP::jit::ArrayAccessProfile> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::jit::ArrayAccessProfile& v, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(v.toString(), ctx);
+  }
+};
+
+template <>
+struct fmt::formatter<HPHP::jit::ArrayAccessProfile::Result> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::jit::ArrayAccessProfile::Result& v, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(v.toString(), ctx);
+  }
+};

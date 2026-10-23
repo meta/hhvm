@@ -1029,7 +1029,7 @@ void AdminRequestHandler::handleRequest(Transport *transport) {
       out << "{" << endl;
       auto appendStat =
         [&](folly::StringPiece name, folly::StringPiece kind, int64_t value) {
-          out << folly::format(
+          out << fmt::format(
             "{} \"{}_{}\":{}\n", first ? "" : ",", name, kind, value);
           first = false;
         };
@@ -1111,7 +1111,7 @@ bool AdminRequestHandler::handleCheckRequest(const std::string &cmd,
     bool first = true;
     out << "{" << endl;
     auto const appendStat = [&](folly::StringPiece name, int64_t value) {
-       out << folly::format("{} \"{}\":{}\n", first ? "" : ",", name, value);
+       out << fmt::format("{} \"{}\":{}\n", first ? "" : ",", name, value);
        first = false;
     };
 
@@ -1149,11 +1149,11 @@ bool AdminRequestHandler::handleCheckRequest(const std::string &cmd,
     if (Cfg::Eval::EnableReusableTC) {
       auto const memInfos = jit::tc::getTCMemoryUsage();
       for (auto const& info : memInfos) {
-        appendStat(folly::format("tc-{}-allocs", info.name).str(), info.allocs);
-        appendStat(folly::format("tc-{}-frees", info.name).str(), info.frees);
-        appendStat(folly::format("tc-{}-free-size", info.name).str(),
+        appendStat(fmt::format("tc-{}-allocs", info.name), info.allocs);
+        appendStat(fmt::format("tc-{}-frees", info.name), info.frees);
+        appendStat(fmt::format("tc-{}-free-size", info.name),
                    info.free_size);
-        appendStat(folly::format("tc-{}-free-blocks", info.name).str(),
+        appendStat(fmt::format("tc-{}-free-blocks", info.name),
                    info.free_blocks);
       }
       appendStat("tc-smashed-calls", jit::tc::smashedCalls());

@@ -18,6 +18,7 @@
 
 #include <array>
 #include <folly/MapUtil.h>
+#include <fmt/format.h>
 
 #include "hphp/util/configs/hhir.h"
 #include "hphp/util/match.h"
@@ -782,10 +783,10 @@ struct DceFlags {
       "DEAD",
       "LIVE",
     }};
-    return folly::format(
+    return fmt::format(
       "{}",
       m_state < names.size() ? names[m_state] : "<invalid>"
-    ).str();
+    );
   }
 
 private:

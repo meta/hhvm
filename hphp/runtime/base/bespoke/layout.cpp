@@ -372,23 +372,23 @@ std::string Layout::dumpInformation() const {
   };
 
   std::ostringstream ss;
-  ss << folly::format("{:04x}: {} [{}]\n", m_index.raw, describe(),
+  ss << fmt::format("{:04x}: {} [{}]\n", m_index.raw, describe(),
                        concreteDesc(this));
 
   auto const top = index() == kBespokeTopIndex;
   auto const type_test = top ? "kind() & 1" : show(m_layout_test);
-  ss << folly::format("  Type test: {}\n", type_test);
+  ss << fmt::format("  Type test: {}\n", type_test);
 
-  ss << folly::format("  Ancestors:\n");
+  ss << fmt::format("  Ancestors:\n");
   for (auto const ancestor : m_ancestors) {
-    ss << folly::format("  - {:04x}: {} [{}]\n",
+    ss << fmt::format("  - {:04x}: {} [{}]\n",
                         ancestor->m_index.raw, ancestor->describe(),
                         concreteDesc(ancestor));
   }
 
-  ss << folly::format("  Descendants:\n");
+  ss << fmt::format("  Descendants:\n");
   for (auto const descendant : m_descendants) {
-    ss << folly::format("  - {:04x}: {} [{}]\n",
+    ss << fmt::format("  - {:04x}: {} [{}]\n",
                         descendant->m_index.raw, descendant->describe(),
                         concreteDesc(descendant));
   }

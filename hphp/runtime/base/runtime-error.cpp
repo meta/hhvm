@@ -153,10 +153,10 @@ void raise_property_typehint_unset_error(const Class* declCls,
                                          const StringData* propName,
                                          bool isSoft, bool isUB) {
   raise_property_typehint_error(
-    folly::sformat(
+    fmt::format(
       "Unsetting property '{}::{}' with type annotation",
-      declCls->name(),
-      propName
+      declCls->name()->slice(),
+      propName->slice()
     ),
     isSoft,
     isUB

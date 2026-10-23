@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/dataflow-worklist.h"
@@ -60,10 +60,10 @@ std::string DEBUG_ONLY show(const State& state) {
 
   for (auto locID = uint32_t{0}; locID < state.locals.size(); ++locID) {
     auto const ty = state.locals[locID];
-    if (ty < TCell) folly::format(&ret, "  L{}: {}\n", locID, ty.toString());
+    if (ty < TCell) fmt::format_to(std::back_inserter(ret), "  L{}: {}\n", locID, ty.toString());
   }
   auto const ty = state.mbase;
-  if (ty < TCell) folly::format(&ret, "  M{{}}: {}\n", ty.toString());
+  if (ty < TCell) fmt::format_to(std::back_inserter(ret), "  M{{}}: {}\n", ty.toString());
   return ret;
 }
 
@@ -220,7 +220,7 @@ struct PruneArcs {
       [&] () -> std::string {
         auto ret = std::string{};
         for (auto& s : m_nodeInfos) {
-          folly::format(&ret, "{}{}:\n{}", m_nodeSpec, s.nodeId, show(s.in));
+          fmt::format_to(std::back_inserter(ret), "{}{}:\n{}", m_nodeSpec, s.nodeId, show(s.in));
         }
         return ret;
       }()

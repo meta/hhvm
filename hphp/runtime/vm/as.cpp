@@ -544,10 +544,14 @@ struct AsmState {
   AsmState(const AsmState&) = delete;
   AsmState& operator=(const AsmState&) = delete;
 
+  void error(const std::string& what) {
+    throw AssemblerError(in.getLineNumber(), what);
+  }
+
   template<typename... Args>
-  void error(const std::string& fmt, Args&&... args) {
+  void error(fmt::format_string<Args...> fmt, Args&&... args) {
     throw AssemblerError(in.getLineNumber(),
-      folly::sformat(fmt, std::forward<Args>(args)...));
+      fmt::format(fmt, std::forward<Args>(args)...));
   }
 
 

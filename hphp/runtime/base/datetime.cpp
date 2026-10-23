@@ -21,6 +21,8 @@
 #include "hphp/runtime/base/builtin-functions.h"
 #include "hphp/runtime/base/array-init.h"
 
+#include <fmt/format.h>
+
 namespace HPHP {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -965,14 +967,14 @@ bool DateTime::fromString(const OptString& input, req::ptr<TimeZone> tz,
     if (!throw_on_error) {
       return false;
     }
-    auto msg = folly::format(
+    auto msg = fmt::format(
       "DateTime::__construct(): Failed to parse time string "
       "({}) at position {} ({}): {}",
       input,
       error->error_messages[0].position,
       error->error_messages[0].character,
       error->error_messages[0].message
-    ).str();
+    );
     SystemLib::throwExceptionObject(msg);
   }
 

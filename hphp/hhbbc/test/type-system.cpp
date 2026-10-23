@@ -24,6 +24,7 @@
 #include <vector>
 
 #include <folly/Lazy.h>
+#include <fmt/format.h>
 
 #include "hphp/hhbbc/class-util.h"
 #include "hphp/hhbbc/context.h"
@@ -675,13 +676,11 @@ Index make_index() {
 
   // Add definitions for builtins to satisfy various assertions.
   for (auto const f : special_builtins()) {
-    folly::format(
-      &hhas,
-      "    .function N {}() {{\n"
+    fmt::format_to(std::back_inserter(hhas), "    .function N {}() {{\n"
       "      Null\n"
       "      RetC None\n"
       "    }}\n",
-      f
+      f->slice()
     );
   }
 

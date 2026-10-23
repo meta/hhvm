@@ -21,7 +21,7 @@
 #include "hphp/runtime/vm/func.h"
 
 #include <variant>
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include <string>
 #include <type_traits>
@@ -73,12 +73,12 @@ struct SymbolRep {
   }
 
   std::string operator()(Profile k) const {
-    return folly::format(
+    return fmt::format(
       "{}:t{}:{}",
       k.name,
       k.transId,
       k.bcOff
-    ).str();
+    );
   }
   std::string operator()(SPropCache k) const {
     return k.cls->name()->toCppString() + "::" +
@@ -118,10 +118,10 @@ struct SymbolRep {
     auto const func = Func::fromFuncId(k.funcId);
     auto const funcName = func->fullName()->toCppString();
     auto const clsPrefix =
-      k.cls ? folly::format("{}::", k.cls->name()).str() : "";
-    return folly::format(
+      k.cls ? fmt::format("{}::", k.cls->name()->slice()) : "";
+    return fmt::format(
       "{}{}::{}::{}",
-      clsPrefix, funcName, k.paramVals, k.asyncEager).str();
+      clsPrefix, funcName, fmt::ptr(k.paramVals), k.asyncEager);
   }
 };
 

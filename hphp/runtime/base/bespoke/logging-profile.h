@@ -174,18 +174,18 @@ struct LoggingProfileKey {
         return sk.getSymbol();
       case LocationType::InstanceProperty: {
         auto const& prop = cls->declProperties()[slot];
-        return folly::sformat("{}->{}", cls->name(), prop.name);
+        return fmt::format("{}->{}", cls->name()->slice(), prop.name);
       }
       case LocationType::StaticProperty: {
         auto const& prop = cls->staticProperties()[slot];
-        return folly::sformat("{}::{}", cls->name(), prop.name);
+        return fmt::format("{}::{}", cls->name()->slice(), prop.name);
       }
       case LocationType::TypeConstant: {
         auto const& cns = cls->constants()[slot];
-        return folly::sformat("{}::{}", cls->name(), cns.name);
+        return fmt::format("{}::{}", cls->name()->slice(), cns.name);
       }
       case LocationType::TypeAlias:
-        return folly::sformat("{}", ta->name());
+        return fmt::format("{}", ta->name()->slice());
       case LocationType::Runtime:
         return runtimeStruct->toString()->toCppString();
     }
@@ -197,7 +197,7 @@ struct LoggingProfileKey {
       case LocationType::SrcKey:
         return sk.showInst();
       case LocationType::InstanceProperty:
-        return folly::sformat("NewObjD \"{}\"", cls->name());
+        return fmt::format("NewObjD \"{}\"", cls->name()->slice());
       case LocationType::APCKey:
       case LocationType::Runtime:
       case LocationType::StaticProperty:

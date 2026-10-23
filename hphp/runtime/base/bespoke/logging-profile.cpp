@@ -821,8 +821,8 @@ ProfileMap s_profileMap;
 SinkMap s_sinkMap;
 
 template<typename... Ts>
-bool logToFile(FILE* file, Ts&&... args) {
-  auto const entry = folly::sformat(std::forward<Ts>(args)...);
+bool logToFile(FILE* file, fmt::format_string<Ts...> fmt, Ts&&... args) {
+  auto const entry = fmt::format(fmt, std::forward<Ts>(args)...);
   return fwrite(entry.data(), 1, entry.length(), file) == entry.length();
 }
 

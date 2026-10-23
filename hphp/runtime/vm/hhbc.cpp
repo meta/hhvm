@@ -628,15 +628,15 @@ void staticStreamer(const TypedValue* tv, std::string& out) {
       return;
     case KindOfPersistentString:
     case KindOfString:
-      folly::format(&out, "\"{}\"",
+      fmt::format_to(std::back_inserter(out), "\"{}\"",
                     escapeStringForCPP(tv->m_data.pstr->data(),
                                        tv->m_data.pstr->size()));
       return;
     case KindOfLazyClass:
-      folly::format(&out, "{}::class", tv->m_data.plazyclass.name());
+      fmt::format_to(std::back_inserter(out), "{}::class", tv->m_data.plazyclass.name()->slice());
       return;
     case KindOfEnumClassLabel:
-      folly::format(&out, "#{}", tv->m_data.pstr);
+      fmt::format_to(std::back_inserter(out), "#{}", tv->m_data.pstr->slice());
       return;
     case KindOfPersistentVec:
     case KindOfVec:
@@ -667,7 +667,7 @@ std::string instrToString(PC it, Either<const Func*, const FuncEmitter*> f, Eith
     if (auto func = f.left()) {
       auto const unit = func->unit();
       auto const rat = decodeRAT(unit, it);
-      folly::format(&out, " {}", show(rat));
+      fmt::format_to(std::back_inserter(out), " {}", show(rat));
       return;
     }
 
@@ -709,15 +709,15 @@ std::string instrToString(PC it, Either<const Func*, const FuncEmitter*> f, Eith
 
   switch (op) {
 
-#define READ(t) folly::format(&out, " {}", *((t*)&*it)); it += sizeof(t)
+#define READ(t) fmt::format_to(std::back_inserter(out), " {}", *((t*)&*it)); it += sizeof(t)
 
-#define READV() folly::format(&out, " {}", decode_iva(it));
+#define READV() fmt::format_to(std::back_inserter(out), " {}", decode_iva(it));
 
-#define READLA() folly::format(&out, " L:{}", decode_iva(it));
+#define READLA() fmt::format_to(std::back_inserter(out), " L:{}", decode_iva(it));
 
 #define READIVA() do {                                          \
   auto imm = decode_iva(it);                                    \
-  folly::format(&out, " {}", imm);                              \
+  fmt::format_to(std::back_inserter(out), " {}", imm);                              \
   immIdx++;                                                     \
 } while (false)
 
@@ -726,17 +726,17 @@ std::string instrToString(PC it, Either<const Func*, const FuncEmitter*> f, Eith
     *reinterpret_cast<const uint8_t*>(it)               \
   );                                                    \
   it += sizeof(unsigned char);                          \
-  folly::format(&out, " {}", subopToName(immVal));      \
+  fmt::format_to(std::back_inserter(out), " {}", subopToName(immVal));      \
 } while (false)
 
 #define READLITSTR(sep) do {                                    \
   Id id = decode_raw<Id>(it);                                   \
   if (id < 0) {                                                 \
     assertx(op == OpSSwitch);                                    \
-    folly::format(&out, "{}-", sep);                            \
+    fmt::format_to(std::back_inserter(out), "{}-", sep);                            \
   } else {                                                      \
     auto const sd = lookupLitstrId(id);                         \
-    folly::format(&out, "{}\"{}\"", sep,                        \
+    fmt::format_to(std::back_inserter(out), "{}\"{}\"", sep,                        \
                   escapeStringForCPP(sd->data(), sd->size()));  \
   }                                                             \
 } while (false)
@@ -752,7 +752,7 @@ std::string instrToString(PC it, Either<const Func*, const FuncEmitter*> f, Eith
       out += ":";                                       \
     }                                                   \
     Offset o = decode_raw<Offset>(it);                  \
-    folly::format(&out, "{}", offsetOf(iStart + o));    \
+    fmt::format_to(std::back_inserter(out), "{}", offsetOf(iStart + o));    \
     sep = " ";                                          \
   }                                                     \
   out += ">";                                           \
@@ -772,7 +772,7 @@ std::string instrToString(PC it, Either<const Func*, const FuncEmitter*> f, Eith
 #define H_LA READLA()
 #define H_NLA do {    \
   auto loc = decode_named_local(it);                 \
-  folly::format(&out, " L:{}:{}", loc.name, loc.id); \
+  fmt::format_to(std::back_inserter(out), " L:{}:{}", loc.name, loc.id); \
 } while (false)
 #define H_ILA READLA()
 #define H_IA READV()

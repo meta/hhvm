@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <fmt/format.h>
 #include <cstdint>
 #include <string>
 
@@ -56,3 +57,9 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 }
 
+template <>
+struct fmt::formatter<HPHP::jit::CoeffectFunParamProfile> : fmt::formatter<std::string_view> {
+  auto format(const HPHP::jit::CoeffectFunParamProfile& v, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(v.toString(), ctx);
+  }
+};

@@ -504,7 +504,7 @@ them when we shouldn't.
 #include <array>
 #include <tuple>
 
-#include <folly/Format.h>
+#include <fmt/format.h>
 #include <folly/ScopeGuard.h>
 #include <folly/Conv.h>
 #include <folly/portability/Stdlib.h>
@@ -1117,7 +1117,7 @@ void populate_mrinfo(Env& env) {
     [&] () -> std::string {
       auto ret = std::string{};
       for (auto& blk : env.rpoBlocks) {
-        folly::format(&ret, "  B{: <3}: {}\n",
+        fmt::format_to(std::back_inserter(ret), "  B{: <3}: {}\n",
           blk->id(),
           show(env.mrinfo.info[blk].kill)
         );
@@ -1170,7 +1170,7 @@ void populate_mrinfo(Env& env) {
     [&] () -> std::string {
       auto ret = std::string{};
       for (auto& blk : env.rpoBlocks) {
-        folly::format(&ret, "  B{: <3}: {}\n",
+        fmt::format_to(std::back_inserter(ret), "  B{: <3}: {}\n",
           blk->id(),
           show(env.mrinfo.info[blk].avail_in)
         );
@@ -1284,7 +1284,7 @@ void weaken_decrefs(Env& env) {
     [&] () -> std::string {
       auto ret = std::string{};
       for (auto& blk : poBlocks) {
-        folly::format(&ret, " B{: <3}: {}\n",
+        fmt::format_to(std::back_inserter(ret), " B{: <3}: {}\n",
           blk->id(),
           show(blockInfos[blk].gen)
         );
@@ -1329,7 +1329,7 @@ void weaken_decrefs(Env& env) {
     [&] () -> std::string {
       auto ret = std::string{};
       for (auto& blk : poBlocks) {
-        folly::format(&ret, "  B{: <3}: {}\n",
+        fmt::format_to(std::back_inserter(ret), "  B{: <3}: {}\n",
           blk->id(),
           show(blockInfos[blk].out_used)
         );
@@ -1493,9 +1493,9 @@ void find_alias_sets(Env& env) {
     [&] () -> std::string {
       auto ret = std::string{};
       for (auto asetID = uint32_t{0}; asetID < num_sets; ++asetID) {
-        folly::format(&ret, "  {: <2}:", asetID);
+        fmt::format_to(std::back_inserter(ret), "  {: <2}:", asetID);
         for (auto other : env.asets[asetID].may_alias) {
-          folly::format(&ret, " {: <2}", other);
+          fmt::format_to(std::back_inserter(ret), " {: <2}", other);
         }
         ret.push_back('\n');
       }
@@ -2651,15 +2651,13 @@ DEBUG_ONLY std::string show_analysis(Env& env, const RCAnalysis& analysis) {
   auto ret = std::string{};
 
   for (auto asetID = uint32_t{0}; asetID < env.asets.size(); ++asetID) {
-    folly::format(&ret, "{}: {}\n", asetID,
+    fmt::format_to(std::back_inserter(ret), "{}: {}\n", asetID,
       *env.asets[asetID].representative);
     for (auto& blk : env.rpoBlocks) {
       auto& state = analysis.info[blk].state_in;
       if (!state.initialized) continue;
       auto& sinfo = state.asets[asetID];
-      folly::format(
-        &ret,
-        "B{: <3}:  {: <2}\n",
+      fmt::format_to(std::back_inserter(ret), "B{: <3}:  {: <2}\n",
         blk->id(),
         sinfo.lower_bound
       );
@@ -2892,7 +2890,7 @@ void pre_local_transfer(PreEnv& penv, bool incDec, Block* blk) {
          [&] {
            std::string ret;
            blk->forEachPred([&] (Block* pred) {
-               folly::format(&ret, " B{}", pred->id());
+               fmt::format_to(std::back_inserter(ret), " B{}", pred->id());
              });
            return ret;
          }());
@@ -3466,7 +3464,7 @@ bool pre_apply(PreEnv& penv, bool incDec) {
            [&] {
              std::string ret;
              blk->forEachPred([&] (Block* pred) {
-                 folly::format(&ret, " B{}", pred->id());
+                 fmt::format_to(std::back_inserter(ret), " B{}", pred->id());
                });
              return ret;
            }(),
@@ -3484,7 +3482,7 @@ bool pre_apply(PreEnv& penv, bool incDec) {
            [&] {
              std::string ret;
              blk->forEachSucc([&] (Block* succ) {
-                 folly::format(&ret, " B{}", succ->id());
+                 fmt::format_to(std::back_inserter(ret), " B{}", succ->id());
                });
              return ret;
            }());

@@ -23,6 +23,8 @@
 #include "hphp/util/logger.h"
 #include "hphp/util/struct-log.h"
 
+#include <fmt/format.h>
+
 namespace HPHP {
 
 static std::atomic<int64_t> s_maxConcurrentFanoutCount = 0;
@@ -113,7 +115,7 @@ void RequestFanoutLimit::increment(const RequestId& id) {
         }
         StructuredLog::log("hhvm_request_fanout", entry);
       }
-      auto msg = folly::format("Request fanout limit exceeded.").str();
+      auto msg = fmt::format("Request fanout limit exceeded.");
       SystemLib::throwRequestFanoutLimitExceededExceptionObject(msg);
     }
   }

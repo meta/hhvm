@@ -38,6 +38,8 @@
 #include "hphp/util/configs/eval.h"
 #include "hphp/util/text-util.h"
 
+#include <fmt/format.h>
+
 namespace HPHP::jit::irgen {
 
 namespace {
@@ -1380,14 +1382,14 @@ void raiseClsmethCompatTypeHint(
   auto name = tc.displayName(func->cls());
   if (id == TypeConstraint::ReturnId) {
     gen(env, RaiseNotice, SampleRateData {}, cns(env, makeStaticString(
-      folly::sformat("class_meth Compat: Value returned from function {}() "
+      fmt::format("class_meth Compat: Value returned from function {}() "
       "must be of type {}, clsmeth given",
-        func->fullName(), name))));
+        func->fullName()->slice(), name))));
   } else {
     gen(env, RaiseNotice, SampleRateData {}, cns(env, makeStaticString(
-      folly::sformat("class_meth Compat: Argument {} passed to {}() "
+      fmt::format("class_meth Compat: Argument {} passed to {}() "
       "must be of type {}, clsmeth given",
-        id + 1, func->fullName(), name))));
+        id + 1, func->fullName()->slice(), name))));
   }
 }
 
@@ -1410,11 +1412,11 @@ void verifyRetType(
       inputVal,
       [&] {
         if (id == TypeConstraint::ReturnId) {
-          return folly::sformat("return of {}()", func->fullName());
+          return fmt::format("return of {}()", func->fullName()->slice());
         } else {
-          return folly::sformat(
+          return fmt::format(
             "argument {} returned from {}() as an inout parameter",
-            id+1, func->fullName());
+            id+1, func->fullName()->slice());
         }
       },
       [&] { // Get the class representing `this' type
@@ -1504,8 +1506,8 @@ void verifyParamType(IRGS& env, const Func* func, int32_t id,
       false,  // onlyCheckNullability
       inputVal,
       [&] {
-        return folly::sformat(
-          "argument {} passed to {}()", id + 1, func->fullName());
+        return fmt::format(
+          "argument {} passed to {}()", id + 1, func->fullName()->slice());
       },
       [&] { // Get the class representing `this' type
         if (prologueCtx == nullptr) return ldCtxCls(env);
@@ -1618,7 +1620,7 @@ SSATmp* verifyPropType(IRGS& env,
       inputVal,
       [&] {
         if (name->hasConstVal(TStaticStr)) {
-          return folly::sformat("property {}", name->strVal());
+          return fmt::format("property {}", name->strVal()->slice());
         } else {
           return std::string("property");
         }

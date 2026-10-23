@@ -306,8 +306,8 @@ struct ExtendsClassData : IRExtraData {
   }
 
   std::string show() const {
-    return folly::sformat("{}{}",
-                          cls->name(), strictLikely ? ":strictLikely" : "");
+    return fmt::format("{}{}",
+                          cls->name()->slice(), strictLikely ? ":strictLikely" : "");
   }
 
   bool equals(const ExtendsClassData& o) const {
@@ -357,8 +357,8 @@ struct InstanceOfIfaceVtableData : IRExtraData {
   }
 
   std::string show() const {
-    return folly::sformat("{}{}",
-                          cls->name(), canOptimize ? ":canOptimize" : "");
+    return fmt::format("{}{}",
+                          cls->name()->slice(), canOptimize ? ":canOptimize" : "");
   }
 
   bool equals(const InstanceOfIfaceVtableData& o) const {
@@ -392,10 +392,10 @@ struct ClsMethodData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::sformat(
+    return fmt::format(
       "{}::{} ({},{})",
-      clsName,
-      methodName,
+      clsName->slice(),
+      methodName->slice(),
       context ? context->name()->data() : "{no context}",
       callerFunc->fullName()->data());
   }
@@ -468,7 +468,7 @@ struct FuncData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::format("{} ({})", func->fullName(), func->getFuncId()).str();
+    return fmt::format("{} ({})", func->fullName()->slice(), func->getFuncId());
   }
 
   bool equals(const FuncData& f) const {
@@ -496,7 +496,7 @@ struct FuncArgData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::format("{},{}", func->name(), argNum).str();
+    return fmt::format("{},{}", func->name()->slice(), argNum);
   }
 
   bool equals(const FuncArgData& o) const {
@@ -535,7 +535,7 @@ struct LocalId : IRExtraData {
 struct IndexData : IRExtraData {
   explicit IndexData(uint32_t index) : index(index) {}
 
-  std::string show() const { return folly::format("{}", index).str(); }
+  std::string show() const { return fmt::format("{}", index); }
   size_t hash() const { return std::hash<uint32_t>()(index); }
   size_t stableHash() const { return std::hash<uint32_t>()(index); }
 
@@ -581,7 +581,7 @@ struct KeyedData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::sformat("\"{}\"", key);
+    return fmt::format("\"{}\"", key->slice());
   }
   size_t hash() const { return stableHash(); }
   size_t stableHash() const { return key->hashStatic(); }
@@ -724,7 +724,7 @@ struct RDSHandleAndType : RDSHandleData {
     : RDSHandleData{handle}, type{type} { assertx(type <= TCell); }
 
   std::string show() const {
-    return folly::sformat("{},{}", handle, type);
+    return fmt::format("{},{}", handle, type);
   }
   bool equals(const RDSHandleAndType& o) const {
     return handle == o.handle && type == o.type;
@@ -1507,7 +1507,7 @@ struct ClsCnsSlotData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::sformat("{},{}", cnsName, slot);
+    return fmt::format("{},{}", cnsName->slice(), slot);
   }
   size_t stableHash() const {
     return folly::hash::hash_combine(
@@ -1716,7 +1716,7 @@ struct InterpOneData : IRExtraData {
     if (smashesAllLocals) ret += ", smashes all locals";
     if (nChangedLocals) {
       for (auto i = 0; i < nChangedLocals; ++i) {
-        ret += folly::sformat(", Local {} -> {}",
+        ret += fmt::format(", Local {} -> {}",
                               changedLocals[i].id,
                               changedLocals[i].type);
       }
@@ -1934,7 +1934,7 @@ struct InitStructPositionsData : IRExtraData {
 
 struct VanillaVecData : IRExtraData {
   explicit VanillaVecData(uint32_t size) : size(size) {}
-  std::string show() const { return folly::format("{}", size).str(); }
+  std::string show() const { return fmt::format("{}", size); }
 
   size_t stableHash() const {
     return std::hash<uint32_t>()(size);
@@ -1954,7 +1954,7 @@ struct InitVanillaVecLoopData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::format("{},{}", offset.offset, size).str();
+    return fmt::format("{},{}", offset.offset, size);
   }
 
   size_t stableHash() const {
@@ -1983,7 +1983,7 @@ struct CreateCCWHData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::format("{},{}", first, count).str();
+    return fmt::format("{},{}", first, count);
   }
 
   size_t stableHash() const {
@@ -2008,7 +2008,7 @@ struct CountWHNotDoneData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::format("{},{}", first, count).str();
+    return fmt::format("{},{}", first, count);
   }
 
   size_t stableHash() const {
@@ -2033,7 +2033,7 @@ struct NewKeysetArrayData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::format("{},{}", offset.offset, size).str();
+    return fmt::format("{},{}", offset.offset, size);
   }
 
   size_t stableHash() const {
@@ -2098,10 +2098,10 @@ struct MemoValueInstanceData : IRExtraData {
     , asyncEager{asyncEager}
     , loadAux{loadAux} {}
   std::string show() const {
-    return folly::sformat(
+    return fmt::format(
       "{},{},{},{}",
       slot,
-      func->fullName(),
+      func->fullName()->slice(),
       asyncEager ? folly::to<std::string>(*asyncEager) : "-",
       loadAux
     );
@@ -2150,7 +2150,7 @@ struct MemoCacheStaticData : IRExtraData {
 
   std::string show() const {
     std::string ret;
-    ret += folly::sformat("{},{}", func->fullName(), HPHP::show(keys));
+    ret += fmt::format("{},{}", func->fullName()->slice(), HPHP::show(keys));
     if (keys.count > 0) {
       ret += ",<";
       for (auto i = 0; i < keys.count; ++i) {
@@ -2224,10 +2224,10 @@ struct MemoCacheInstanceData : IRExtraData {
   }
 
   std::string show() const {
-    return folly::sformat(
+    return fmt::format(
       "{},{},{}<{}>,{}",
       slot,
-      func->fullName(),
+      func->fullName()->slice(),
       HPHP::show(keys),
       [&]{
         using namespace folly::gen;
@@ -2478,7 +2478,7 @@ struct LocalIdRange : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::format("[{}, {})", start, end).str();
+    return fmt::format("[{}, {})", start, end);
   }
 
   size_t stableHash() const {
@@ -2818,8 +2818,8 @@ struct EndBlockData : IRExtraData {
    , reason{r.file, r.line} {}
 
   std::string show() const {
-    return folly::sformat("spOff={} func={} reason={}", spOff.offset,
-                          func->fullName(), jit::show(reason));
+    return fmt::format("spOff={} func={} reason={}", spOff.offset,
+                          func->fullName()->slice(), jit::show(reason));
   }
 
   size_t stableHash() const {
@@ -2868,7 +2868,7 @@ struct AttrData : IRExtraData {
 struct MethCallerData : IRExtraData {
   explicit MethCallerData(bool isCls) : isCls(isCls) {}
   std::string show() const {
-    return folly::format("{}", isCls).str();
+    return fmt::format("{}", isCls);
   }
 
   size_t stableHash() const {
@@ -3041,9 +3041,9 @@ struct CheckHandleSurpriseEnterData : IRExtraData {
   {}
 
   std::string show() const {
-    return folly::sformat(
+    return fmt::format(
       "{} checkStackOverflow={}",
-      func->fullName(), checkStackOverflow
+      func->fullName()->slice(), checkStackOverflow
     );
   }
 

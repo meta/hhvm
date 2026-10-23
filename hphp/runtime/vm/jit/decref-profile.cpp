@@ -17,6 +17,8 @@
 #include "hphp/runtime/vm/jit/decref-profile.h"
 #include "hphp/runtime/base/array-iterator.h"
 
+#include <fmt/format.h>
+
 namespace {
 bool isTypedValueRefcounted(const HPHP::TypedValue& tv) {
   return isRefcountedType(tv.type()) && tv.val().pcnt->isRefCounted();
@@ -104,7 +106,7 @@ folly::dynamic DecRefProfile::toDynamic() const {
 }
 
 std::string DecRefProfile::toString() const {
-  return folly::sformat(
+  return fmt::format(
     "total: {:4}\n uncounted: {:4} ({:.1f}%),\n persistent: {:4} ({:.1f}%),\n"
     " destroyed: {:4} ({:.1f}%),\n survived: {:4} ({:.1f}%),\n datatype: {:4}\n"
     "arrayOfUncountedReleasedCount: {:4} ({:.1f}%) \n",

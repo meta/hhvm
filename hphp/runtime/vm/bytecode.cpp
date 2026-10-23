@@ -366,14 +366,14 @@ const uint32_t Stack::sMinStackElms =
 
 void Stack::ValidateStackSize() {
   if (Cfg::Eval::VMStackElms < sMinStackElms) {
-    throw std::runtime_error(folly::sformat(
+    throw std::runtime_error(fmt::format(
       "VM stack size of {:#x} is below the minimum of {:#x}",
       Cfg::Eval::VMStackElms,
       sMinStackElms
     ));
   }
   if (!folly::isPowTwo(Cfg::Eval::VMStackElms)) {
-    throw std::runtime_error(folly::sformat(
+    throw std::runtime_error(fmt::format(
       "VM stack size of {:#x} is not a power of 2",
       Cfg::Eval::VMStackElms
     ));
@@ -993,7 +993,7 @@ static inline Class* classnameToClass(
   if (tvIsClass(input)) return input->m_data.pclass;
 
   SystemLib::throwInvalidArgumentExceptionObject(
-    folly::sformat(
+    fmt::format(
       "Invalid argument type {} passed to classname_to_class", input->m_type)
   );
 }
@@ -3342,7 +3342,7 @@ void implArrayMarkLegacy(bool legacy) {
   auto const recursive = *vmStack().topTV();
   if (!tvIsBool(recursive)) {
     SystemLib::throwInvalidArgumentExceptionObject(
-      folly::sformat("$recursive must be a bool; got {}",
+      fmt::format("$recursive must be a bool; got {}",
                      getDataTypeString(type(recursive))));
   }
 
@@ -3987,7 +3987,7 @@ static void raise_resolve_non_object(const char* methodName,
 static void throw_call_non_object(const char* methodName,
                                   const char* typeName = nullptr) {
   std::string msg;
-  folly::format(&msg, "Call to a member function {}() on a non-object ({})",
+  fmt::format_to(std::back_inserter(msg), "Call to a member function {}() on a non-object ({})",
     methodName, typeName);
 
   if (Cfg::ErrorHandling::ThrowExceptionOnBadMethodCall) {

@@ -34,6 +34,8 @@
 #include "hphp/runtime/vm/jit/state-vector.h"
 #include "hphp/runtime/vm/jit/timer.h"
 
+#include <fmt/format.h>
+
 /*
   Implement a pass which attempts to sink definitions as close to
   their first usage as possible.
@@ -310,7 +312,7 @@ DEBUG_ONLY std::string show(const SSATmpSet& s) {
   auto first = true;
   s.forEach(
     [&] (size_t bit) {
-      folly::format(&out, "{}t{}", first ? "" : ", ", bit);
+      fmt::format_to(std::back_inserter(out), "{}t{}", first ? "" : ", ", bit);
       first = false;
     }
   );
@@ -1235,7 +1237,7 @@ State make_state(IRUnit& unit,
     for (auto bit = state.no_conflict.find_first();
          bit != boost::dynamic_bitset<>::npos;
          bit = state.no_conflict.find_next(bit)) {
-      folly::format(&out, "{}{}", first ? "" : ", ", bit);
+      fmt::format_to(std::back_inserter(out), "{}{}", first ? "" : ", ", bit);
       first = false;
     }
     ITRACE(2, "no_conflict = {}\n", out);

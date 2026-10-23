@@ -411,4 +411,20 @@ template<> class FormatValue<HPHP::DataType> {
 };
 }
 
+template <>
+struct fmt::formatter<HPHP::DataTypeCategory>
+    : fmt::formatter<std::string_view> {
+  auto format(HPHP::DataTypeCategory val, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(
+        HPHP::typeCategoryName(val), ctx);
+  }
+};
+
+template <>
+struct fmt::formatter<HPHP::DataType> : fmt::formatter<std::string_view> {
+  auto format(HPHP::DataType dt, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(HPHP::tname(dt), ctx);
+  }
+};
+
 ///////////////////////////////////////////////////////////////////////////////

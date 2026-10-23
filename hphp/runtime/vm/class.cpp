@@ -1131,13 +1131,13 @@ void Class::checkPropTypeRedefinition(Slot slot) const {
     ) {
       auto const oldTCName =
         oldTC.hasConstraint() ? oldTC.displayName() : "mixed";
-      auto const msg = folly::sformat(
+      auto const msg = fmt::format(
         "{}::{} must have a type of {} as defined{} in {}",
-        prop.cls->name(),
+        prop.cls->name()->slice(),
         prop.name,
         oldTCName,
         oldTC.isUpperBound()? " by the upper-bound" : "",
-        oldProp.cls->name()
+        oldProp.cls->name()->slice()
       );
       raise_property_typehint_error(
         msg,
@@ -1153,13 +1153,13 @@ void Class::checkPropTypeRedefinition(Slot slot) const {
             return oldTC.equivalentForProp(newTC);
           })) {
       auto const tcName = newTC.hasConstraint() ? newTC.displayName() : "mixed";
-      auto const msg = folly::sformat(
+      auto const msg = fmt::format(
         "{}::{} includes a {} of {} but has no equivalent definition in {}",
-        prop.cls->name(),
+        prop.cls->name()->slice(),
         prop.name,
         newTC.isUpperBound() ? "type upper-bound" : "type",
         tcName,
-        oldProp.cls->name()
+        oldProp.cls->name()->slice()
       );
       raise_property_typehint_error(msg, newTC.isSoft(), true);
     }
@@ -1682,11 +1682,11 @@ TypedValue Class::clsCnsGet(const StringData* clsCnsName,
       // Otherwise, return the cached result.
       if (UNLIKELY(tvIsVec(cCns) && val(cCns).parr == s_sentinelVec)) {
         raise_error(
-          folly::sformat(
+          fmt::format(
             "Cannot declare self-referencing {} '{}::{}'",
             ConstModifierFlags::show(cns.kind()),
-            name(),
-            clsCnsName
+            name()->slice(),
+            clsCnsName->slice()
           )
         );
       }
@@ -4707,7 +4707,7 @@ void Class::setInstanceMemoCacheInfo() {
 namespace {
 ObjectData* throwingInstanceCtor(Class* cls) {
   SystemLib::throwExceptionObject(
-    folly::sformat("Class {} may not be directly instantiated", cls->name())
+    fmt::format("Class {} may not be directly instantiated", cls->name()->slice())
   );
 }
 } // namespace

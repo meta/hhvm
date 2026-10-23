@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include <sstream>
+#include <fmt/format.h>
 
 namespace HPHP::jit {
 
@@ -170,12 +171,12 @@ std::string CallTargetProfile::toString() const {
   }
   for (auto const& entry : m_entries) {
     if (!entry.funcId.isInvalid()) {
-      out << folly::format("FuncId {}: {} ({:.1f}%), ",
+      out << fmt::format("FuncId {}: {} ({:.1f}%), ",
                            entry.funcId, entry.count,
                            total == 0 ? 0 : 100.0 * entry.count / total);
     }
   }
-  out << folly::format("Untracked: {} ({:.1f}%)", m_untracked,
+  out << fmt::format("Untracked: {} ({:.1f}%)", m_untracked,
                        total == 0 ? 0 : 100.0 * m_untracked / total);
   return out.str();
 }

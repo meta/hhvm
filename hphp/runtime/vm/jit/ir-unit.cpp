@@ -22,6 +22,8 @@
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/timer.h"
 
+#include <fmt/format.h>
+
 namespace HPHP::jit {
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -182,7 +184,7 @@ jit::vector<Block*> findMainExitBlocks(const IRUnit& unit, SrcKey lastSk) {
          [&]{
            std::string ret;
            for (auto& me : mainExits) {
-             folly::format(&ret, "B{}, ", me->id());
+             fmt::format_to(std::back_inserter(ret), "B{}, ", me->id());
            }
            return ret;
          }());

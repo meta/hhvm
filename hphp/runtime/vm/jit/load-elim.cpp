@@ -238,16 +238,14 @@ DEBUG_ONLY std::string show(const State& state) {
     return ret;
   }
 
-  folly::format(&ret, "  av: {}\n", show(state.avail));
+  fmt::format_to(std::back_inserter(ret), "  av: {}\n", show(state.avail));
   for (auto idx = uint32_t{0}; idx < state.tracked.size(); ++idx) {
     if (state.avail.test(idx)) {
-      folly::format(&ret, "  {: >3} = {}\n", idx, show(state.tracked[idx]));
+      fmt::format_to(std::back_inserter(ret), "  {: >3} = {}\n", idx, show(state.tracked[idx]));
     }
   }
 
-  folly::format(
-    &ret,
-    "  initRDS : {}\n",
+  fmt::format_to(std::back_inserter(ret), "  initRDS : {}\n",
     [&] {
       using namespace folly::gen;
       return from(state.initRDS) | unsplit<std::string>(",");
@@ -1669,7 +1667,7 @@ void optimizeLoads(IRUnit& unit) {
            [&] () -> std::string {
              auto ret = std::string{};
              for (auto& blk : genv.rpoBlocks) {
-               folly::format(&ret, "B{}:\n{}", blk->id(),
+               fmt::format_to(std::back_inserter(ret), "B{}:\n{}", blk->id(),
                              show(genv.blockInfo[blk].stateIn));
              }
              return ret;

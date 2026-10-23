@@ -18,7 +18,7 @@
 #include <string>
 
 #include <folly/Conv.h>
-#include <folly/Format.h>
+#include <fmt/format.h>
 
 #include "hphp/runtime/base/timestamp.h"
 #include "hphp/runtime/server/access-log.h"
@@ -180,7 +180,7 @@ bool FieldGenerator::gen(char field, const std::string& arg, T& out) {
       const char *method = transport->getMethodName();
       if (!method || !method[0]) return false;
       const char *url = transport->getUrl();
-      out = folly::to<T>(folly::sformat(
+      out = folly::to<T>(fmt::format(
         "{} {} HTTP/{}", method,
         (vhost && vhost->hasLogFilter()) ?  vhost->filterUrl(url) : url,
         transport->getHTTPVersion()

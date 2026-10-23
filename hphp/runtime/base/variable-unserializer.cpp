@@ -110,13 +110,13 @@ void throwNotCollection(const OptString& clsName) {
 [[noreturn]] NEVER_INLINE
 void throwUnexpectedType(const OptString& key, const ObjectData* obj,
                          TypedValue type) {
-  auto msg = folly::format(
+  auto msg = fmt::format(
     "Property {} for class {} was deserialized with type ({}) that "
     "didn't match what we inferred in static analysis",
     key,
-    obj->getVMClass()->name(),
+    obj->getVMClass()->name()->slice(),
     tname(type.m_type)
-  ).str();
+  );
   throw Exception(msg);
 }
 

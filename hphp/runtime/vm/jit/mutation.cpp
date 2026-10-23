@@ -680,7 +680,7 @@ struct RefineTmps {
             std::string str;
             auto first = true;
             for (auto const u : kv.second.usedBy) {
-              folly::format(&str, "{}{}", first ? "" : ",", *u);
+              fmt::format_to(std::back_inserter(str), "{}{}", first ? "" : ",", *u);
               first = false;
             }
             return str;

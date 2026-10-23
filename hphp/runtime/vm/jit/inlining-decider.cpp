@@ -708,7 +708,7 @@ RegionDescPtr selectCalleeCFG(SrcKey callerSk, SrcKey entry,
 
   if (!profData->profiling(callee->getFuncId())) {
     traceRefusal(callerSk, callee,
-                 folly::sformat("no profiling data for callee FuncId: {}",
+                 fmt::format("no profiling data for callee FuncId: {}",
                                 callee->getFuncId()),
                  annotations);
     return nullptr;

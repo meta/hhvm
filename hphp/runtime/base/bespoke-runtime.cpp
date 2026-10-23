@@ -22,6 +22,7 @@
 #include "hphp/runtime/base/bespoke/struct-dict.h"
 
 #include <algorithm>
+#include <fmt/format.h>
 
 namespace HPHP {
 
@@ -128,17 +129,17 @@ RuntimeStruct* RuntimeStruct::registerRuntimeStruct(
 void RuntimeStruct::validateFieldsMatch(const FieldIndexVector& fields) const {
   SCOPE_ASSERT_DETAIL("RuntimeStruct::validateFieldsMatch") {
     std::string ret =
-      folly::sformat("Field mismatch for struct {}\n", m_stableIdentifier);
+      fmt::format("Field mismatch for struct {}\n", m_stableIdentifier->slice());
     ret += "Existing schema:\n";
     for (size_t i = 0; i < m_fields.size(); i++) {
       auto const key = getKey(i);
-      if (key) ret += folly::sformat("  {}: {}\n", i, key);
+      if (key) ret += fmt::format("  {}: {}\n", i, key);
     }
     ret += "New schema:\n";
     auto newSchema = FieldIndexVector(fields);
     std::sort(newSchema.begin(), newSchema.end());
     for (auto const& [idx, str] : newSchema) {
-      ret += folly::sformat("  {}: {}\n", idx, str);
+      ret += fmt::format("  {}: {}\n", idx, str);
     }
     return ret;
   };

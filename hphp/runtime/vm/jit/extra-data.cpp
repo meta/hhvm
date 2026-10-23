@@ -19,6 +19,7 @@
 #include <sstream>
 
 #include <folly/functional/Invoke.h>
+#include <fmt/format.h>
 
 #include "hphp/runtime/base/bespoke/logging-profile.h"
 #include "hphp/runtime/vm/jit/ssa-tmp.h"
@@ -28,7 +29,7 @@ namespace HPHP::jit {
 
 std::string KeyedIndexData::show() const {
   auto const escaped = escapeStringForCPP(key->data(), key->size());
-  return folly::format("{},\"{}\"", index, key->data()).str();
+  return fmt::format("{},\"{}\"", index, key->data());
 }
 
 std::string NewStructData::show() const {

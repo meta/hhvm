@@ -29,7 +29,6 @@
 #include "hphp/runtime/base/bespoke-array.h"
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include <string>
 
@@ -315,12 +314,12 @@ bool checkOperandTypes(const IRInstruction* inst, const IRUnit* /*unit*/) {
   };
 
   if (opHasExtraData(inst->op()) != (bool)inst->rawExtra()) {
-    bail(folly::format("opcode {} should{} have an ExtraData struct "
+    bail(fmt::format("opcode {} should{} have an ExtraData struct "
                        "but instruction {} does{}",
                        opcodeName(inst->op()),
                        opHasExtraData(inst->op()) ? "" : "n't",
                        *inst,
-                       inst->rawExtra() ? "" : "n't").str());
+                       inst->rawExtra() ? "" : "n't"));
   }
 
   auto src = [&]() -> SSATmp* {
@@ -328,11 +327,11 @@ bool checkOperandTypes(const IRInstruction* inst, const IRUnit* /*unit*/) {
       return inst->src(curSrc);
     }
 
-    bail(folly::format(
+    bail(fmt::format(
       "Error: instruction had too few operands\n"
       "   instruction: {}\n",
         inst->toString()
-      ).str()
+      )
     );
     not_reached();
   };
@@ -344,7 +343,7 @@ bool checkOperandTypes(const IRInstruction* inst, const IRUnit* /*unit*/) {
 
     std::string expectStr = expected ? expected : t.toString();
 
-    bail(folly::format(
+    bail(fmt::format(
       "Error: failed type check on operand {}\n"
       "   instruction: {}\n"
       "   was expecting: {}\n"
@@ -355,31 +354,31 @@ bool checkOperandTypes(const IRInstruction* inst, const IRUnit* /*unit*/) {
         expectStr,
         inst->src(curSrc)->type(),
         *inst->src(curSrc)->inst()
-      ).str()
+      )
     );
     return true;
   };
 
   auto checkNoArgs = [&]{
     if (inst->numSrcs() == 0) return true;
-    bail(folly::format(
+    bail(fmt::format(
       "Error: instruction expected no operands\n"
       "   instruction: {}\n",
         inst->toString()
-      ).str()
+      )
     );
     return true;
   };
 
   auto countCheck = [&]{
     if (inst->numSrcs() == curSrc) return true;
-    bail(folly::format(
+    bail(fmt::format(
       "Error: instruction had too many operands\n"
       "   instruction: {}\n"
       "   expected {} arguments\n",
         inst->toString(),
         curSrc
-      ).str()
+      )
     );
     return true;
   };
@@ -418,11 +417,11 @@ bool checkOperandTypes(const IRInstruction* inst, const IRUnit* /*unit*/) {
   auto checkDst = [&] (bool cond, const std::string& errorMessage) {
     if (cond) return true;
 
-    bail(folly::format("Error: failed type check on dest operand\n"
+    bail(fmt::format("Error: failed type check on dest operand\n"
                        "   instruction: {}\n"
                        "   message: {}\n",
                        inst->toString(),
-                       errorMessage).str());
+                       errorMessage));
     return true;
   };
 

@@ -42,7 +42,6 @@
 #include "hphp/util/text-util.h"
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include <algorithm>
 
@@ -959,11 +958,11 @@ void throw_late_init_prop(const Class* cls,
                           const StringData* propName,
                           bool isSProp) {
   SystemLib::throwInvalidOperationExceptionObject(
-    folly::sformat(
+    fmt::format(
       "Accessing <<__LateInit>> {} '{}::{}' before initialization",
       isSProp ? "static property" : "property",
-      cls->name(),
-      propName
+      cls->name()->slice(),
+      propName->slice()
     )
   );
 }

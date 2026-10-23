@@ -447,7 +447,7 @@ std::string show(RepoAuthType rat) {
     not_reached();
   }();
   if (auto const n = rat.name()) {
-    return folly::sformat("{}{}", base, n);
+    return fmt::format("{}{}", base, n->slice());
   } else if (auto const a = rat.array()) {
     return fmt::format("{}{}", base, show(*a));
   }
@@ -479,7 +479,7 @@ std::string show(const RepoAuthType::Array& ar) {
     }
     break;
   case T::Packed:
-    folly::format(&ret, "[{}]", show(ar.packedElems()));
+    fmt::format_to(std::back_inserter(ret), "[{}]", show(ar.packedElems()));
     break;
   }
 

@@ -32,6 +32,7 @@
 #include "hphp/util/assertions.h"
 #include "hphp/util/blob-encoder.h"
 #include "hphp/util/hash-map.h"
+#include "hphp/util/ptr-impl.h"
 
 namespace HPHP {
 

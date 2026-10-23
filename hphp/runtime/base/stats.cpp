@@ -19,6 +19,7 @@
 #include <atomic>
 #include <utility>
 #include <vector>
+#include <fmt/format.h>
 
 #include "hphp/runtime/base/execution-context.h"
 #include "hphp/runtime/base/string-data.h"
@@ -78,23 +79,26 @@ void dump() {
     };
     std::sort(rows.begin(), rows.end(), gt);
 
-    folly::format(&stats, "{:-^80}\n",
-                  folly::format(" group {} ",group.first, url));
-    folly::format(&stats,
-                  folly::format("{{:>{}}}   {{:>9}} {{:>8}} {{:>8}}\n",
-                                nameWidth + 2).str(),
-                  "name", "count", "% total", "accum %");
+    fmt::format_to(std::back_inserter(stats), "{:-^80}\n",
+                  fmt::format(" group {} ",group.first, url));
+    fmt::format_to(std::back_inserter(stats),
+                   "{:>{}}   {:>9} {:>8} {:>8}\n",
+                   "name", nameWidth + 2, "count", "% total", "accum %");
 
     static const auto maxGroupEnv = getenv("HHVM_STATS_GROUPMAX");
     static const auto maxGroup = maxGroupEnv ? atoi(maxGroupEnv) : INT_MAX;
 
     int counter = 0;
-    auto const fmt = folly::format("{{:>{}}} : {{:9}} {{:8.2%}} {{:8.2%}}\n",
-                                   nameWidth + 2).str();
+    auto const percent = [](double val) {
+      return fmt::format("{:.2f}%", val * 100);
+    };
     for (auto const& row : rows) {
       accum += row.second;
-      folly::format(&stats, fmt, row.first, row.second,
-                    (double)row.second / total, (double)accum / total);
+      fmt::format_to(std::back_inserter(stats),
+                     "{:>{}} : {:9} {:>8} {:>8}\n",
+                     row.first, nameWidth + 2, row.second,
+                     percent((double)row.second / total),
+                     percent((double)accum / total));
       if (++counter >= maxGroup) break;
     }
     FTRACE(0, "{}\n", stats);

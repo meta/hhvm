@@ -26,6 +26,8 @@
 #include "hphp/util/configs/eval.h"
 #include "hphp/util/configs/server.h"
 
+#include <fmt/format.h>
+
 namespace HPHP {
 
 //////////////////////////////////////////////////////////////////////
@@ -244,9 +246,9 @@ AutoloadHandler::loadFromMapImpl(const OptString& name,
     std::string msg =
       (fileAndLine.first.empty())
       ? ee.getMessage()
-      : folly::format("{} in {} on line {}",
+      : fmt::format("{} in {} on line {}",
                       ee.getMessage(), fileAndLine.first,
-                      fileAndLine.second).str();
+                      fileAndLine.second);
     if (Cfg::Autoload::RethrowExceptions) {
       throw;
     }

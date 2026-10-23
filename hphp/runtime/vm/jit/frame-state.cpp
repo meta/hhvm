@@ -31,6 +31,7 @@
 #include "hphp/util/trace.h"
 
 #include <boost/range/adaptor/reversed.hpp>
+#include <fmt/format.h>
 
 TRACE_SET_MOD(hhir_fsm)
 
@@ -2188,14 +2189,12 @@ std::string FrameState::show() const {
 
   std::string out;
 
-  folly::format(
-    &out,
-    "Func: {}\n"
+  fmt::format_to(std::back_inserter(out), "Func: {}\n"
     "  fp: {}, sp: {}, ctx: {}, fpFixup: {}\n"
     "  irSPOff: {}, bcSPOff: {}, stublogue: {}\n"
     "  stack modified: {}, locals cleared: {}\n"
     "  read-only prop: {}\n",
-    curFunc->fullName(),
+    curFunc->fullName()->slice(),
     optTmp(fpValue),
     optTmp(spValue),
     optTmp(ctx),
@@ -2208,10 +2207,9 @@ std::string FrameState::show() const {
     HPHP::show(mROProp)
   );
   if (!locals.empty()) {
-    folly::format(&out, "{:-^70}\n", "");
+    fmt::format_to(std::back_inserter(out), "{:-^70}\n", "");
     for (auto const& local : locals) {
-      folly::format(
-        &out, "  Local #{}: {} {}{}\n",
+      fmt::format_to(std::back_inserter(out), "  Local #{}: {} {}{}\n",
         local.first,
         optTmp(local.second.value),
         local.second.type,
@@ -2220,10 +2218,9 @@ std::string FrameState::show() const {
     }
   }
   if (!stack.empty()) {
-    folly::format(&out, "{:-^70}\n", "");
+    fmt::format_to(std::back_inserter(out), "{:-^70}\n", "");
     for (auto const& stk : stack) {
-      folly::format(
-        &out, "  Stack #{}: {} {}{}\n",
+      fmt::format_to(std::back_inserter(out), "  Stack #{}: {} {}{}\n",
         stk.first.offset,
         optTmp(stk.second.value),
         stk.second.type,
@@ -2232,8 +2229,7 @@ std::string FrameState::show() const {
     }
   }
   if (mTempBase.value || mTempBase.type < TCell) {
-    folly::format(
-      &out, "{:-^70}\n  MTempBase: {} {}\n",
+    fmt::format_to(std::back_inserter(out), "{:-^70}\n  MTempBase: {} {}\n",
       "",
       optTmp(mTempBase.value),
       mTempBase.type
@@ -2241,8 +2237,7 @@ std::string FrameState::show() const {
   }
   if (mbr.ptr || mbr.ptrType < TLval ||
       mbr.pointee < AUnknownTV) {
-    folly::format(
-      &out, "{:-^70}\n  MBR: {} {} {}\n",
+    fmt::format_to(std::back_inserter(out), "{:-^70}\n  MBR: {} {} {}\n",
       "",
       optTmp(mbr.ptr),
       mbr.ptrType,
@@ -2253,8 +2248,7 @@ std::string FrameState::show() const {
       mbaseStackType < TCell ||
       mbaseLocalType < TCell ||
       mbaseTempType < TCell) {
-    folly::format(
-      &out, "{:-^70}\n  MBase: {} {}{} [L:{}, S:{}, T:{}]\n",
+    fmt::format_to(std::back_inserter(out), "{:-^70}\n  MBase: {} {}{} [L:{}, S:{}, T:{}]\n",
       "",
       optTmp(mbase ? mbase->value : nullptr),
       mbase ? mbase->type : TCell,
@@ -2271,9 +2265,9 @@ std::string FrameState::show() const {
 std::string FrameStateMgr::show() const {
   std::string out;
   for (auto const& state : m_stack) {
-    folly::format(&out, "{:=^70}\n{}", "", state.show());
+    fmt::format_to(std::back_inserter(out), "{:=^70}\n{}", "", state.show());
   }
-  folly::format(&out, "{:=^70}\n", "");
+  fmt::format_to(std::back_inserter(out), "{:=^70}\n", "");
   return out;
 }
 

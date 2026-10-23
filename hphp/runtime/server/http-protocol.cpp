@@ -19,6 +19,7 @@
 
 #include <folly/Conv.h>
 #include <folly/portability/SysTime.h>
+#include <fmt/format.h>
 
 #include "hphp/util/arch.h"
 #include "hphp/util/configs/debug.h"
@@ -512,7 +513,7 @@ static void CopyPathInfo(Array& server,
 
   OptString port_suffix("");
   if (!transport->isSSL() && serverPort != "80") {
-    port_suffix = folly::format(":{}", serverPort).str();
+    port_suffix = fmt::format(":{}", serverPort);
   }
 
   std::string hostHeader;

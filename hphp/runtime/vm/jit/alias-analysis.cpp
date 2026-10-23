@@ -663,7 +663,7 @@ std::string show(const AliasAnalysis& ainfo) {
   for (auto const* kv : sorted) {
     auto conf = kv->second.conflicts;
     conf.set(kv->second.index);
-    folly::format(&ret, " {: <20} = {: >3} : {}\n",
+    fmt::format_to(std::back_inserter(ret), " {: <20} = {: >3} : {}\n",
       show(kv->first),
       kv->second.index,
       show(conf));
@@ -672,8 +672,8 @@ std::string show(const AliasAnalysis& ainfo) {
 #define FMT(...)  " {: <20}       : {}\n"
 #define SHOW(What, what, all) "all "#what, show(ainfo.all),
 
-  folly::format(
-      &ret,
+  fmt::format_to(
+      std::back_inserter(ret),
       ALIAS_CLASSES(FMT)
       " {: <20}       : {}\n",
 
@@ -689,7 +689,7 @@ std::string show(const AliasAnalysis& ainfo) {
   std::sort(tmp.begin(), tmp.end());
   for (auto& s : tmp) ret += s;
   tmp.clear();
-  folly::format(&ret, " {: <20}       : {}\n",
+  fmt::format_to(std::back_inserter(ret), " {: <20}       : {}\n",
      "all iter",  show(ainfo.all_iter));
   for (auto& kv : ainfo.iter_expand_map) {
     tmp.push_back(fmt::format(" ex {: <17}       : {}\n",
@@ -699,7 +699,7 @@ std::string show(const AliasAnalysis& ainfo) {
   std::sort(tmp.begin(), tmp.end());
   for (auto& s : tmp) ret += s;
   tmp.clear();
-  folly::format(&ret, " {: <20}       : {}\n",
+  fmt::format_to(std::back_inserter(ret), " {: <20}       : {}\n",
      "all stack",  show(ainfo.all_stack));
   for (auto& kv : ainfo.stk_expand_map) {
     tmp.push_back(fmt::format(" ex {: <17}       : {}\n",
