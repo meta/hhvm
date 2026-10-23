@@ -150,6 +150,7 @@ module Const_value = struct
     | CVLargeInt of string
     | CVString of string
     | CVNameof of string
+        (** Class name with legacy XHP mangling already applied. *)
     | CVClassPointer of string
     | CVLabel
     | CVAbsent

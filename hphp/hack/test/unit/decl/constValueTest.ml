@@ -34,6 +34,7 @@ let parse_value_source ~parser_options source =
 let parse_value
     ?(namespace = "ShapeKeys")
     ?(parser_options = parser_options)
+    ?(class_name = "Example")
     classish
     expression =
   let source =
@@ -41,13 +42,14 @@ let parse_value
       {|<?hh
 namespace %s {
 use Other\Target as Alias;
-%s Example {
+%s %s {
   <<__ShapeKey>> const arraykey KEY = %s;
 }
 }
 |}
       namespace
       classish
+      class_name
       expression
   in
   parse_value_source ~parser_options source
@@ -95,6 +97,10 @@ let cases =
     ("member_name_string", "class", "'KEY'", Some (SKVString "KEY"));
     ("numeric_string", "class", "'42'", Some (SKVString "42"));
     ("literal_xhp_name", "class", "':foo:bar'", Some (SKVString ":foo:bar"));
+    ( "nameof_self",
+      "class",
+      "nameof self",
+      Some (SKVString "ShapeKeys\\Example") );
     ("nameof_alias", "class", "nameof Alias", Some (SKVString "Other\\Target"));
     ( "literal_leading_backslash",
       "class",
@@ -113,8 +119,13 @@ let cases =
       "interface",
       "Alias::class",
       Some (SKVString "Other\\Target") );
+    ( "interface_nameof_self",
+      "interface",
+      "nameof self",
+      Some (SKVString "ShapeKeys\\Example") );
     ("constant_reference", "class", "Alias::KEY", None);
     ("computed_value", "class", "1 + 2", None);
+    ("trait_nameof_self", "trait", "nameof self", None);
   ]
 
 let xhp_cases =
@@ -164,6 +175,42 @@ let () =
                ~printer:show_value
                (Some (Typing_defs.Const_value.SKVString expected))
                (parse_value ~namespace ~parser_options "class" expression))
+       @ List.concat_map
+           [
+             ("global_xhp_self", "", false, ":x:y", "xhp_x__y");
+             ( "namespaced_xhp_self",
+               "ShapeKeys",
+               false,
+               ":x:y",
+               "ShapeKeys\\xhp_x__y" );
+             ("xhp_self_hyphen", "", false, ":x-y:z", "xhp_x_y__z");
+             ("unmangled_xhp_self", "", true, ":x:y", "x\\y");
+           ]
+           ~f:
+             (fun ( name,
+                    namespace,
+                    disable_xhp_element_mangling,
+                    class_name,
+                    expected ) ->
+             List.map
+               ["nameof self"; "nameof " ^ class_name]
+               ~f:(fun expression ->
+                 name ^ ":" ^ expression >:: fun _ ->
+                 let parser_options =
+                   {
+                     parser_options with
+                     Decl_parser_options.disable_xhp_element_mangling;
+                   }
+                 in
+                 assert_equal
+                   ~printer:show_value
+                   (Some (Typing_defs.Const_value.SKVString expected))
+                   (parse_value
+                      ~namespace
+                      ~parser_options
+                      ~class_name
+                      "class"
+                      expression)))
        @ [
            ( "enum_xhp_nameof" >:: fun _ ->
              let parser_options =

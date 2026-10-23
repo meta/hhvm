@@ -11,6 +11,9 @@ class ShapeKeyValues {
   const string LABEL = 'LABEL';
 
   <<__ShapeKey>>
+  const string SELF_NAME = nameof self;
+
+  <<__ShapeKey>>
   const int SELF_CONST = self::LITERAL;
 
   <<__ShapeKey>>
@@ -27,6 +30,9 @@ trait ShapeKeyTraitValues {
   const int LITERAL = 1;
 
   <<__ShapeKey>>
+  const string SELF_NAME = nameof self;
+
+  <<__ShapeKey>>
   const int SELF_CONST = self::LITERAL;
 }
 
@@ -37,9 +43,20 @@ interface ShapeKeyInterfaceValues {
   <<__ShapeKey>>
   const string LABEL = 'LABEL';
 
+  <<__ShapeKey>>
+  const string SELF_NAME = nameof self;
+
   const int UNANNOTATED = 4;
 }
 
 type IntShapeKeyValue = shape(ShapeKeyValues::LITERAL => int);
 type StringShapeKeyValue = shape(ShapeKeyValues::STRING_LITERAL => string);
 type InterfaceShapeKeyValue = shape(ShapeKeyInterfaceValues::LITERAL => int);
+
+class :x:y {
+  <<__ShapeKey>>
+  const string SELF_NAME = nameof self;
+
+  <<__ShapeKey>>
+  const string EXPLICIT_NAME = nameof :x:y;
+}

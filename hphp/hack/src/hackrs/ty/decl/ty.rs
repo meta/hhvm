@@ -682,6 +682,7 @@ pub enum ConstValue {
     CVInt(isize),
     CVLargeInt(String),
     CVString(String),
+    /// Class name with legacy XHP mangling already applied.
     CVNameof(String),
     CVClassPointer(String),
     CVLabel,

@@ -27,26 +27,33 @@
            scc_refs = []; scc_value = None; scc_is_shape_key = true;
            scc_const_value = Typing_defs.Const_value.CVLabel };
          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-           scc_name = ([14:13-23], "SELF_CONST");
-           scc_type = (Rhint ([14:9-12]), (Tprim Tint));
+           scc_name = ([14:16-25], "SELF_NAME");
+           scc_type =
+           (Rhint ([14:9-15]), (Tapply (([14:9-15], "\\HH\\string"), [])));
+           scc_refs = []; scc_value = None; scc_is_shape_key = true;
+           scc_const_value =
+           (Typing_defs.Const_value.CVNameof "\\ShapeKeyValues") };
+         { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
+           scc_name = ([17:13-23], "SELF_CONST");
+           scc_type = (Rhint ([17:9-12]), (Tprim Tint));
            scc_refs = [(Typing_defs.Self, "LITERAL")]; scc_value = None;
            scc_is_shape_key = true;
            scc_const_value = Typing_defs.Const_value.CVAbsent };
          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-           scc_name = ([17:13-28], "FORWARDED_CONST");
-           scc_type = (Rhint ([17:9-12]), (Tprim Tint));
+           scc_name = ([20:13-28], "FORWARDED_CONST");
+           scc_type = (Rhint ([20:9-12]), (Tprim Tint));
            scc_refs = [((Typing_defs.From "\\ShapeKeyValues"), "LITERAL")];
            scc_value = None; scc_is_shape_key = true;
            scc_const_value = Typing_defs.Const_value.CVAbsent };
          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-           scc_name = ([20:13-21], "COMPUTED");
-           scc_type = (Rhint ([20:9-12]), (Tprim Tint));
+           scc_name = ([23:13-21], "COMPUTED");
+           scc_type = (Rhint ([23:9-12]), (Tprim Tint));
            scc_refs = [(Typing_defs.Self, "LITERAL")]; scc_value = None;
            scc_is_shape_key = true;
            scc_const_value = Typing_defs.Const_value.CVAbsent };
          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-           scc_name = ([22:13-24], "UNANNOTATED");
-           scc_type = (Rhint ([22:9-12]), (Tprim Tint)); scc_refs = [];
+           scc_name = ([25:13-24], "UNANNOTATED");
+           scc_type = (Rhint ([25:9-12]), (Tprim Tint)); scc_refs = [];
            scc_value = None; scc_is_shape_key = false;
            scc_const_value = Typing_defs.Const_value.CVAbsent }
          ];
@@ -59,20 +66,26 @@
       { Shallow_decl_defs.sc_mode = Mstrict; sc_final = false;
         sc_abstract = false; sc_is_xhp = false; sc_internal = false;
         sc_has_xhp_keyword = false; sc_kind = Ctrait; sc_module = None;
-        sc_name = ([25:7-26], "\\ShapeKeyTraitValues"); sc_tparams = [];
+        sc_name = ([28:7-26], "\\ShapeKeyTraitValues"); sc_tparams = [];
         sc_extends = []; sc_uses = []; sc_xhp_attr_uses = [];
         sc_xhp_enum_values = {}; sc_xhp_marked_empty = false;
         sc_req_extends = []; sc_req_implements = []; sc_req_constraints = [];
         sc_implements = []; sc_support_dynamic_type = false;
         sc_consts =
         [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-           scc_name = ([27:13-20], "LITERAL");
-           scc_type = (Rhint ([27:9-12]), (Tprim Tint)); scc_refs = [];
+           scc_name = ([30:13-20], "LITERAL");
+           scc_type = (Rhint ([30:9-12]), (Tprim Tint)); scc_refs = [];
            scc_value = None; scc_is_shape_key = true;
            scc_const_value = (Typing_defs.Const_value.CVInt 1) };
           { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-            scc_name = ([30:13-23], "SELF_CONST");
-            scc_type = (Rhint ([30:9-12]), (Tprim Tint));
+            scc_name = ([33:16-25], "SELF_NAME");
+            scc_type =
+            (Rhint ([33:9-15]), (Tapply (([33:9-15], "\\HH\\string"), [])));
+            scc_refs = []; scc_value = None; scc_is_shape_key = true;
+            scc_const_value = Typing_defs.Const_value.CVAbsent };
+          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
+            scc_name = ([36:13-23], "SELF_CONST");
+            scc_type = (Rhint ([36:9-12]), (Tprim Tint));
             scc_refs = [(Typing_defs.Self, "LITERAL")]; scc_value = None;
             scc_is_shape_key = true;
             scc_const_value = Typing_defs.Const_value.CVAbsent }
@@ -86,26 +99,33 @@
       { Shallow_decl_defs.sc_mode = Mstrict; sc_final = false;
         sc_abstract = false; sc_is_xhp = false; sc_internal = false;
         sc_has_xhp_keyword = false; sc_kind = Cinterface; sc_module = None;
-        sc_name = ([33:11-34], "\\ShapeKeyInterfaceValues"); sc_tparams = [];
+        sc_name = ([39:11-34], "\\ShapeKeyInterfaceValues"); sc_tparams = [];
         sc_extends = []; sc_uses = []; sc_xhp_attr_uses = [];
         sc_xhp_enum_values = {}; sc_xhp_marked_empty = false;
         sc_req_extends = []; sc_req_implements = []; sc_req_constraints = [];
         sc_implements = []; sc_support_dynamic_type = false;
         sc_consts =
         [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-           scc_name = ([35:13-20], "LITERAL");
-           scc_type = (Rhint ([35:9-12]), (Tprim Tint)); scc_refs = [];
+           scc_name = ([41:13-20], "LITERAL");
+           scc_type = (Rhint ([41:9-12]), (Tprim Tint)); scc_refs = [];
            scc_value = None; scc_is_shape_key = true;
            scc_const_value = (Typing_defs.Const_value.CVInt 3) };
           { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-            scc_name = ([38:16-21], "LABEL");
+            scc_name = ([44:16-21], "LABEL");
             scc_type =
-            (Rhint ([38:9-15]), (Tapply (([38:9-15], "\\HH\\string"), [])));
+            (Rhint ([44:9-15]), (Tapply (([44:9-15], "\\HH\\string"), [])));
             scc_refs = []; scc_value = None; scc_is_shape_key = true;
             scc_const_value = Typing_defs.Const_value.CVLabel };
           { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-            scc_name = ([40:13-24], "UNANNOTATED");
-            scc_type = (Rhint ([40:9-12]), (Tprim Tint)); scc_refs = [];
+            scc_name = ([47:16-25], "SELF_NAME");
+            scc_type =
+            (Rhint ([47:9-15]), (Tapply (([47:9-15], "\\HH\\string"), [])));
+            scc_refs = []; scc_value = None; scc_is_shape_key = true;
+            scc_const_value =
+            (Typing_defs.Const_value.CVNameof "\\ShapeKeyInterfaceValues") };
+          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
+            scc_name = ([49:13-24], "UNANNOTATED");
+            scc_type = (Rhint ([49:9-12]), (Tprim Tint)); scc_refs = [];
             scc_value = None; scc_is_shape_key = false;
             scc_const_value = Typing_defs.Const_value.CVAbsent }
           ];
@@ -115,40 +135,40 @@
         sc_package = None }));
   ("\\IntShapeKeyValue",
    (Shallow_decl_defs.Typedef
-      { Typing_defs.td_module = None; td_pos = [43:6-22]; td_tparams = [];
+      { Typing_defs.td_module = None; td_pos = [52:6-22]; td_tparams = [];
         td_as_constraint = None; td_super_constraint = None;
         td_type_assignment =
         (Typing_defs.SimpleTypeDef (Transparent,
-           (Rhint ([43:25-62]),
+           (Rhint ([52:25-62]),
             (Tshape
                { s_origin = Typing_defs_core.Missing_origin;
                  s_fields =
                  { (Typing_defs_core.TSFclass_const (
-                      ([43:31-45], "\\ShapeKeyValues"),
-                      ([43:47-54], "LITERAL"))) ->
+                      ([52:31-45], "\\ShapeKeyValues"),
+                      ([52:47-54], "LITERAL"))) ->
                    { sft_optional = false;
-                     sft_ty = (Rhint ([43:58-61]), (Tprim Tint)) } };
+                     sft_ty = (Rhint ([52:58-61]), (Tprim Tint)) } };
                  s_unknown_value = (Rhint ([Pos.none]), (Tunion [])) }))
            ));
         td_is_ctx = false; td_attributes = []; td_internal = false;
         td_docs_url = None; td_package = None }));
   ("\\StringShapeKeyValue",
    (Shallow_decl_defs.Typedef
-      { Typing_defs.td_module = None; td_pos = [44:6-25]; td_tparams = [];
+      { Typing_defs.td_module = None; td_pos = [53:6-25]; td_tparams = [];
         td_as_constraint = None; td_super_constraint = None;
         td_type_assignment =
         (Typing_defs.SimpleTypeDef (Transparent,
-           (Rhint ([44:28-75]),
+           (Rhint ([53:28-75]),
             (Tshape
                { s_origin = Typing_defs_core.Missing_origin;
                  s_fields =
                  { (Typing_defs_core.TSFclass_const (
-                      ([44:34-48], "\\ShapeKeyValues"),
-                      ([44:50-64], "STRING_LITERAL"))) ->
+                      ([53:34-48], "\\ShapeKeyValues"),
+                      ([53:50-64], "STRING_LITERAL"))) ->
                    { sft_optional = false;
                      sft_ty =
-                     (Rhint ([44:68-74]),
-                      (Tapply (([44:68-74], "\\HH\\string"), [])))
+                     (Rhint ([53:68-74]),
+                      (Tapply (([53:68-74], "\\HH\\string"), [])))
                      } };
                  s_unknown_value = (Rhint ([Pos.none]), (Tunion [])) }))
            ));
@@ -156,21 +176,51 @@
         td_docs_url = None; td_package = None }));
   ("\\InterfaceShapeKeyValue",
    (Shallow_decl_defs.Typedef
-      { Typing_defs.td_module = None; td_pos = [45:6-28]; td_tparams = [];
+      { Typing_defs.td_module = None; td_pos = [54:6-28]; td_tparams = [];
         td_as_constraint = None; td_super_constraint = None;
         td_type_assignment =
         (Typing_defs.SimpleTypeDef (Transparent,
-           (Rhint ([45:31-77]),
+           (Rhint ([54:31-77]),
             (Tshape
                { s_origin = Typing_defs_core.Missing_origin;
                  s_fields =
                  { (Typing_defs_core.TSFclass_const (
-                      ([45:37-60], "\\ShapeKeyInterfaceValues"),
-                      ([45:62-69], "LITERAL"))) ->
+                      ([54:37-60], "\\ShapeKeyInterfaceValues"),
+                      ([54:62-69], "LITERAL"))) ->
                    { sft_optional = false;
-                     sft_ty = (Rhint ([45:73-76]), (Tprim Tint)) } };
+                     sft_ty = (Rhint ([54:73-76]), (Tprim Tint)) } };
                  s_unknown_value = (Rhint ([Pos.none]), (Tunion [])) }))
            ));
         td_is_ctx = false; td_attributes = []; td_internal = false;
-        td_docs_url = None; td_package = None }))
+        td_docs_url = None; td_package = None }));
+  ("\\:x:y",
+   (Shallow_decl_defs.Class
+      { Shallow_decl_defs.sc_mode = Mstrict; sc_final = false;
+        sc_abstract = false; sc_is_xhp = true; sc_internal = false;
+        sc_has_xhp_keyword = false; sc_kind = (Cclass Concrete);
+        sc_module = None; sc_name = ([56:7-11], "\\:x:y"); sc_tparams = [];
+        sc_extends = []; sc_uses = []; sc_xhp_attr_uses = [];
+        sc_xhp_enum_values = {}; sc_xhp_marked_empty = false;
+        sc_req_extends = []; sc_req_implements = []; sc_req_constraints = [];
+        sc_implements = []; sc_support_dynamic_type = false;
+        sc_consts =
+        [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
+           scc_name = ([58:16-25], "SELF_NAME");
+           scc_type =
+           (Rhint ([58:9-15]), (Tapply (([58:9-15], "\\HH\\string"), [])));
+           scc_refs = []; scc_value = None; scc_is_shape_key = true;
+           scc_const_value = (Typing_defs.Const_value.CVNameof "\\xhp_x__y")
+           };
+          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
+            scc_name = ([61:16-29], "EXPLICIT_NAME");
+            scc_type =
+            (Rhint ([61:9-15]), (Tapply (([61:9-15], "\\HH\\string"), [])));
+            scc_refs = []; scc_value = None; scc_is_shape_key = true;
+            scc_const_value = (Typing_defs.Const_value.CVNameof "\\xhp_x__y")
+            }
+          ];
+        sc_typeconsts = []; sc_props = []; sc_sprops = [];
+        sc_constructor = None; sc_static_methods = []; sc_methods = [];
+        sc_user_attributes = []; sc_enum_type = None; sc_docs_url = None;
+        sc_package = None }))
   ]

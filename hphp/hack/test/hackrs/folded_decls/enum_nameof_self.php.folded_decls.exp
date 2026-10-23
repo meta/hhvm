@@ -1,0 +1,278 @@
+FoldedClass {
+    name: "\\YES",
+    kind: Cenum,
+    enum_type: EnumType {
+        base: string,
+        constraint: Some(
+            string,
+        ),
+        includes: [],
+    },
+    substs: {
+        "\\HH\\BuiltinEnum": SubstContext {
+            subst: Subst(
+                {
+                    "T": YES,
+                },
+            ),
+            class_context: "\\YES",
+            from_req_extends: false,
+        },
+    },
+    ancestors: {
+        "\\HH\\BuiltinEnum": HH\BuiltinEnum<YES>,
+    },
+    static_methods: {
+        "getValues": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "getNames": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "isValid": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "coerce": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "assert": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "assertAll": FoldedElement {
+            flags: ClassEltFlags(
+                258,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+    },
+    consts: {
+        "class": ClassConst {
+            is_synthesized: true,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: class<this>,
+            origin: "\\YES",
+            refs: [],
+            is_shape_key: false,
+            value: CVAbsent,
+        },
+        "YES": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: YES,
+            origin: "\\YES",
+            refs: [],
+            is_shape_key: false,
+            value: CVNameof(
+                "\\YES",
+            ),
+        },
+    },
+    extends: {
+        "\\HH\\BuiltinEnum",
+    },
+}
+FoldedClass {
+    name: "\\YEAH",
+    kind: Cenum,
+    enum_type: EnumType {
+        base: string,
+        constraint: Some(
+            string,
+        ),
+        includes: [
+            YES,
+        ],
+    },
+    substs: {
+        "\\HH\\BuiltinEnum": SubstContext {
+            subst: Subst(
+                {
+                    "T": YEAH,
+                },
+            ),
+            class_context: "\\YEAH",
+            from_req_extends: false,
+        },
+    },
+    ancestors: {
+        "\\HH\\BuiltinEnum": HH\BuiltinEnum<YEAH>,
+    },
+    static_methods: {
+        "getValues": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "getNames": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "isValid": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "coerce": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "assert": FoldedElement {
+            flags: ClassEltFlags(
+                2,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+        "assertAll": FoldedElement {
+            flags: ClassEltFlags(
+                258,
+            ),
+            origin: "\\HH\\BuiltinEnum",
+            visibility: Public,
+            deprecated: None,
+            sealed_allowlist: None,
+            overlapping_tparams: None,
+            package_requirement: Some(
+                RPNormal,
+            ),
+        },
+    },
+    consts: {
+        "class": ClassConst {
+            is_synthesized: true,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: class<this>,
+            origin: "\\YEAH",
+            refs: [],
+            is_shape_key: false,
+            value: CVAbsent,
+        },
+        "YES": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: YEAH,
+            origin: "\\YES",
+            refs: [],
+            is_shape_key: false,
+            value: CVNameof(
+                "\\YES",
+            ),
+        },
+        "YEAH": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: YEAH,
+            origin: "\\YEAH",
+            refs: [],
+            is_shape_key: false,
+            value: CVNameof(
+                "\\YEAH",
+            ),
+        },
+    },
+    extends: {
+        "\\HH\\BuiltinEnum",
+    },
+}

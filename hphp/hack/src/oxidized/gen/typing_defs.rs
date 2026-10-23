@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<2ba0bd60fdd976c5c3c226997664b9b1>>
+// @generated SignedSource<<5bb7336428d106c13bbf0c9f59c0d26e>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -259,6 +259,7 @@ pub enum ConstValue {
     CVInt(isize),
     CVLargeInt(String),
     CVString(String),
+    /// Class name with legacy XHP mangling already applied.
     CVNameof(String),
     CVClassPointer(String),
     CVLabel,

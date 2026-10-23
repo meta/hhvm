@@ -38,6 +38,18 @@ FoldedClass {
             is_shape_key: true,
             value: CVLabel,
         },
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\ShapeKeyBase",
+            refs: [],
+            is_shape_key: true,
+            value: CVNameof(
+                "\\ShapeKeyBase",
+            ),
+        },
         "SELF_CONST": ClassConst {
             is_synthesized: false,
             kind: CCConcrete,
@@ -159,6 +171,18 @@ FoldedClass {
             is_shape_key: true,
             value: CVLabel,
         },
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\ShapeKeyBase",
+            refs: [],
+            is_shape_key: true,
+            value: CVNameof(
+                "\\ShapeKeyBase",
+            ),
+        },
         "SELF_CONST": ClassConst {
             is_synthesized: false,
             kind: CCConcrete,
@@ -247,6 +271,16 @@ FoldedClass {
                 1,
             ),
         },
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\ShapeKeyTrait",
+            refs: [],
+            is_shape_key: true,
+            value: CVAbsent,
+        },
         "SELF_CONST": ClassConst {
             is_synthesized: false,
             kind: CCConcrete,
@@ -304,6 +338,16 @@ FoldedClass {
                 1,
             ),
         },
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\ShapeKeyTrait",
+            refs: [],
+            is_shape_key: true,
+            value: CVAbsent,
+        },
         "SELF_CONST": ClassConst {
             is_synthesized: false,
             kind: CCConcrete,
@@ -359,6 +403,18 @@ FoldedClass {
             refs: [],
             is_shape_key: true,
             value: CVLabel,
+        },
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\ShapeKeyInterface",
+            refs: [],
+            is_shape_key: true,
+            value: CVNameof(
+                "\\ShapeKeyInterface",
+            ),
         },
         "UNANNOTATED": ClassConst {
             is_synthesized: false,
@@ -420,6 +476,18 @@ FoldedClass {
             is_shape_key: true,
             value: CVLabel,
         },
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\ShapeKeyInterface",
+            refs: [],
+            is_shape_key: true,
+            value: CVNameof(
+                "\\ShapeKeyInterface",
+            ),
+        },
         "UNANNOTATED": ClassConst {
             is_synthesized: false,
             kind: CCConcrete,
@@ -477,6 +545,18 @@ FoldedClass {
             is_shape_key: true,
             value: CVLabel,
         },
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\ShapeKeyInterface",
+            refs: [],
+            is_shape_key: true,
+            value: CVNameof(
+                "\\ShapeKeyInterface",
+            ),
+        },
         "UNANNOTATED": ClassConst {
             is_synthesized: false,
             kind: CCConcrete,
@@ -493,6 +573,49 @@ FoldedClass {
             pos: NPos,
             ty: class<this>,
             origin: "\\ShapeKeyInterfaceUser",
+            refs: [],
+            is_shape_key: false,
+            value: CVAbsent,
+        },
+    },
+}
+FoldedClass {
+    name: "\\:x:y",
+    kind: Cclass(
+        Concrete,
+    ),
+    is_xhp: true,
+    consts: {
+        "SELF_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\:x:y",
+            refs: [],
+            is_shape_key: true,
+            value: CVNameof(
+                "\\xhp_x__y",
+            ),
+        },
+        "EXPLICIT_NAME": ClassConst {
+            is_synthesized: false,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: string,
+            origin: "\\:x:y",
+            refs: [],
+            is_shape_key: true,
+            value: CVNameof(
+                "\\xhp_x__y",
+            ),
+        },
+        "class": ClassConst {
+            is_synthesized: true,
+            kind: CCConcrete,
+            pos: NPos,
+            ty: class<this>,
+            origin: "\\:x:y",
             refs: [],
             is_shape_key: false,
             value: CVAbsent,

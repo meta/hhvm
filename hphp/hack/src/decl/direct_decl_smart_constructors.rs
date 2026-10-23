@@ -1266,6 +1266,16 @@ impl<'o, 't> Impl<'o, 't> {
         )
     }
 
+    fn in_trait(&self) -> bool {
+        matches!(
+            self.classish_name_builder.as_ref(),
+            Some(ClassishNameBuilder {
+                token_kind: TokenKind::Trait,
+                ..
+            })
+        )
+    }
+
     fn lexed_name_after_classish_keyword(&mut self, name: String, pos: Pos, token_kind: TokenKind) {
         if self.classish_name_builder.is_none() {
             let name = if name.starts_with(':') {
@@ -1429,9 +1439,9 @@ impl<'o, 't> DirectDeclSmartConstructors<'o, 't> {
     }
 
     /// For a class-constant initializer, returns its recorded value when it is a
-    /// recordable kind (int, string, nameof or ::class), and None for computed
-    /// values (constant references, arithmetic, ...).
-    fn const_value(value: &Node) -> Option<ConstValue> {
+    /// recordable kind (int, string, nameof, ::class, or a constant reference),
+    /// and None for arithmetic and other unsupported expressions.
+    fn const_value(&self, value: &Node) -> Option<ConstValue> {
         match value {
             Node::IntLiteral(s, _) => Self::int_const_value(s, false),
             // Only valid UTF-8 strings are recorded; non-UTF-8 bytes -> None
@@ -1463,6 +1473,12 @@ impl<'o, 't> DirectDeclSmartConstructors<'o, 't> {
                     _,
                     aast::ClassId_::CI(Id(_, class_name)),
                 )) => Some(ConstValue::CVNameof(mangle(class_name.clone()))),
+                aast::Expr_::Nameof(box aast::ClassId(_, _, aast::ClassId_::CIself))
+                    if !self.in_trait() =>
+                {
+                    self.get_current_classish_name()
+                        .map(|(class_name, _)| ConstValue::CVNameof(mangle(class_name.to_owned())))
+                }
                 aast::Expr_::Unop(box (Uop::Uminus, aast::Expr(_, _, aast::Expr_::Int(s)))) => {
                     Self::int_const_value(s, true)
                 }
@@ -2972,6 +2988,7 @@ impl<'o, 't> FlattenSmartConstructors for DirectDeclSmartConstructors<'o, 't> {
                 if self.previous_token_kind == TokenKind::Class
                     || self.previous_token_kind == TokenKind::Trait
                     || self.previous_token_kind == TokenKind::Interface
+                    || self.previous_token_kind == TokenKind::Enum
                 {
                     if let Some(current_class_name) = self.elaborate_defined_id(&name) {
                         let previous_token_kind = self.previous_token_kind;
@@ -4310,7 +4327,7 @@ impl<'o, 't> FlattenSmartConstructors for DirectDeclSmartConstructors<'o, 't> {
                                         .unwrap_or_else(tany),
                                 };
                                 let const_value = if should_record_value {
-                                    match Self::const_value(&initializer) {
+                                    match self.const_value(&initializer) {
                                         Some(ConstValue::CVString(s)) if s == id.1 => {
                                             ConstValue::CVLabel
                                         }
@@ -5350,7 +5367,7 @@ impl<'o, 't> FlattenSmartConstructors for DirectDeclSmartConstructors<'o, 't> {
         // Inline the "no value" case as CVAbsent (no option wrapper), and
         // collapse `MEMBER = 'MEMBER'` to the nullary CVLabel (no stored string).
         let const_value = if self.opts.include_enum_member_values {
-            match Self::const_value(&value) {
+            match self.const_value(&value) {
                 Some(ConstValue::CVString(s)) if s == id.1 => ConstValue::CVLabel,
                 Some(v) => v,
                 None => ConstValue::CVAbsent,

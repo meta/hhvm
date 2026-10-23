@@ -1,0 +1,69 @@
+[("\\YES",
+  (Shallow_decl_defs.Class
+     { Shallow_decl_defs.sc_mode = Mstrict; sc_final = false;
+       sc_abstract = false; sc_is_xhp = false; sc_internal = false;
+       sc_has_xhp_keyword = false; sc_kind = Cenum; sc_module = None;
+       sc_name = ([3:6-9], "\\YES"); sc_tparams = [];
+       sc_extends =
+       [(Rhint ([3:6-9]),
+         (Tapply (([3:6-9], "\\HH\\BuiltinEnum"),
+            [(Rhint ([3:6-9]), (Tapply (([3:6-9], "\\YES"), [])))])))
+         ];
+       sc_uses = []; sc_xhp_attr_uses = []; sc_xhp_enum_values = {};
+       sc_xhp_marked_empty = false; sc_req_extends = [];
+       sc_req_implements = []; sc_req_constraints = []; sc_implements = [];
+       sc_support_dynamic_type = false;
+       sc_consts =
+       [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
+          scc_name = ([4:3-6], "YES");
+          scc_type = (Rwitness_from_decl ([4:3-6]), Tany); scc_refs = [];
+          scc_value = None; scc_is_shape_key = false;
+          scc_const_value = (Typing_defs.Const_value.CVNameof "\\YES") }
+         ];
+       sc_typeconsts = []; sc_props = []; sc_sprops = [];
+       sc_constructor = None; sc_static_methods = []; sc_methods = [];
+       sc_user_attributes = [];
+       sc_enum_type =
+       (Some { Typing_defs.te_base =
+               (Rhint ([3:11-17]), (Tapply (([3:11-17], "\\HH\\string"), [])));
+               te_constraint =
+               (Some (Rhint ([3:21-27]),
+                      (Tapply (([3:21-27], "\\HH\\string"), []))));
+               te_includes = [] });
+       sc_docs_url = None; sc_package = None }));
+  ("\\YEAH",
+   (Shallow_decl_defs.Class
+      { Shallow_decl_defs.sc_mode = Mstrict; sc_final = false;
+        sc_abstract = false; sc_is_xhp = false; sc_internal = false;
+        sc_has_xhp_keyword = false; sc_kind = Cenum; sc_module = None;
+        sc_name = ([7:6-10], "\\YEAH"); sc_tparams = [];
+        sc_extends =
+        [(Rhint ([7:6-10]),
+          (Tapply (([7:6-10], "\\HH\\BuiltinEnum"),
+             [(Rhint ([7:6-10]), (Tapply (([7:6-10], "\\YEAH"), [])))])))
+          ];
+        sc_uses = []; sc_xhp_attr_uses = []; sc_xhp_enum_values = {};
+        sc_xhp_marked_empty = false; sc_req_extends = [];
+        sc_req_implements = []; sc_req_constraints = []; sc_implements = [];
+        sc_support_dynamic_type = false;
+        sc_consts =
+        [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
+           scc_name = ([9:3-7], "YEAH");
+           scc_type = (Rwitness_from_decl ([9:3-7]), Tany); scc_refs = [];
+           scc_value = None; scc_is_shape_key = false;
+           scc_const_value = (Typing_defs.Const_value.CVNameof "\\YEAH") }
+          ];
+        sc_typeconsts = []; sc_props = []; sc_sprops = [];
+        sc_constructor = None; sc_static_methods = []; sc_methods = [];
+        sc_user_attributes = [];
+        sc_enum_type =
+        (Some { Typing_defs.te_base =
+                (Rhint ([7:12-18]),
+                 (Tapply (([7:12-18], "\\HH\\string"), [])));
+                te_constraint =
+                (Some (Rhint ([7:22-28]),
+                       (Tapply (([7:22-28], "\\HH\\string"), []))));
+                te_includes =
+                [(Rhint ([8:7-10]), (Tapply (([8:7-10], "\\YES"), [])))] });
+        sc_docs_url = None; sc_package = None }))
+  ]
