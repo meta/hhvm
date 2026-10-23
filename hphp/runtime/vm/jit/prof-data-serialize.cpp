@@ -96,6 +96,8 @@ TRACE_SET_MOD(hhbc)
 
 StaticString s_invoke("__invoke");
 
+// File signature, not a format version. Never change this: profiles from
+// different HHVM versions are not supported.
 constexpr uint32_t kMagic = 0x4d564848;
 
 // SB profile format version.
@@ -2002,6 +2004,20 @@ const TypeAlias* read_typealias(ProfDataDeserializer& ser) {
   return ret;
 }
 
+namespace {
+
+const VMFixedVector<const Func*>* initializerFuncs(const Class* cls,
+                                                   uint32_t slot) {
+  switch (slot) {
+    case k86pinitSlot: return &cls->pinitVec();
+    case k86sinitSlot: return &cls->sinitVec();
+    case k86linitSlot: return &cls->linitVec();
+    default: return nullptr;
+  }
+}
+
+}
+
 void write_func(ProfDataSerializer& ser, const Func* func) {
   SCOPE_EXIT {
     ITRACE(2, "Func: {}\n", func ? func->fullName() : staticEmptyString());
@@ -2042,6 +2058,13 @@ void write_func(ProfDataSerializer& ser, const Func* func) {
     assertx(nslot & 0x80000000);
     write_raw(ser, nslot);
     write_class(ser, cls);
+    if (auto const initializers = initializerFuncs(cls, nslot)) {
+      auto const it = std::find(initializers->begin(), initializers->end(), func);
+      if (it == initializers->end()) {
+        throw std::runtime_error("Property initializer not found in class");
+      }
+      write_raw(ser, safe_cast<uint32_t>(it - initializers->begin()));
+    }
     return;
   }
 
@@ -2068,9 +2091,17 @@ Func* read_func(ProfDataDeserializer& ser) {
         auto const id = read_raw<uint32_t>(ser);
         if (id & 0x80000000) {
           auto const cls = read_class(ser);
-          if (id == k86pinitSlot) return cls->get86pinit();
-          if (id == k86sinitSlot) return cls->get86sinit();
-          if (id == k86linitSlot) return cls->get86linit();
+          if (auto const initializers = initializerFuncs(cls, id)) {
+            auto const index = read_raw<uint32_t>(ser);
+            if (index >= initializers->size()) {
+              throw std::runtime_error("Invalid property initializer index");
+            }
+            auto const initializer = (*initializers)[index];
+            if (initializer->implCls() != cls) {
+              throw std::runtime_error("Invalid property initializer class");
+            }
+            return initializer;
+          }
           const Slot slot = ~id;
           return cls->getMethod(slot);
         }

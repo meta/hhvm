@@ -971,6 +971,12 @@ public:
   const VMFixedVector<const Func*>& pinitVec() const;
 
   /*
+   * Complete static and late-static property initializer function vectors.
+   */
+  const VMFixedVector<const Func*>& sinitVec() const;
+  const VMFixedVector<const Func*>& linitVec() const;
+
+  /*
    * RDS handle which marks whether a property type-hint redefinition check has
    * been performed for this class in this request yet.
    */

@@ -498,6 +498,14 @@ inline const VMFixedVector<const Func*>& Class::pinitVec() const {
   return m_pinitVec;
 }
 
+inline const VMFixedVector<const Func*>& Class::sinitVec() const {
+  return m_sinitVec;
+}
+
+inline const VMFixedVector<const Func*>& Class::linitVec() const {
+  return m_linitVec;
+}
+
 inline rds::Handle Class::checkedPropTypeRedefinesHandle() const {
   assertx(m_allFlags.m_maybeRedefsPropTy);
   m_extra->m_checkedPropTypeRedefs.bind(
