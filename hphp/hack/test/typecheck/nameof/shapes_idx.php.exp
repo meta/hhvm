@@ -8,6 +8,20 @@ shapes_idx.php:5:18
 6 | 
 7 | function expect_nfloat(?float $f): void {}
 
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_idx.php:5:18
+1 | <?hh
+2 | 
+3 | class C {}
+  |       ^ [2]
+4 | type T1 = shape(?nameof C => float);
+5 | type T2 = shape(?C::class => float);
+  |                  ^^^^^^^^ [1]
+6 | 
+7 | function expect_nfloat(?float $f): void {}
+
 error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
 
 shapes_idx.php:11:34
@@ -27,4 +41,4 @@ shapes_idx.php:13:34
    |                                  ^^^^^^^^ [1]
 14 | }
 
-3 errors found
+4 errors found

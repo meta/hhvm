@@ -1,0 +1,217 @@
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for RejectedPointerKeys [2]
+
+rejected_pointer_types.php:20:5
+18 | 
+19 | class RejectedPointerKeys {
+20 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+21 |   const class<RejectedPointerKeys> CLASS_POINTER = self::class;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+22 |   <<__ShapeKey>>
+23 |   const enum<int> INT_ENUM_POINTER = IntKeyEnum::class;
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for HH\BuiltinEnum<int> [2]
+
+rejected_pointer_types.php:22:5
+20 |   <<__ShapeKey>>
+21 |   const class<RejectedPointerKeys> CLASS_POINTER = self::class;
+22 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+23 |   const enum<int> INT_ENUM_POINTER = IntKeyEnum::class;
+   |         ^^^^^^^^^ [2]
+24 |   <<__ShapeKey>>
+25 |   const enum<string> STRING_ENUM_POINTER = StringKeyEnum::class;
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for HH\BuiltinEnum<string> [2]
+
+rejected_pointer_types.php:24:5
+22 |   <<__ShapeKey>>
+23 |   const enum<int> INT_ENUM_POINTER = IntKeyEnum::class;
+24 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+25 |   const enum<string> STRING_ENUM_POINTER = StringKeyEnum::class;
+   |         ^^^^^^^^^^^^ [2]
+26 |   <<__ShapeKey>>
+27 |   const enum<OpaqueKeyEnum> OPAQUE_ENUM_POINTER = OpaqueKeyEnum::class;
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for HH\BuiltinEnum<OpaqueKeyEnum> [2]
+
+rejected_pointer_types.php:26:5
+24 |   <<__ShapeKey>>
+25 |   const enum<string> STRING_ENUM_POINTER = StringKeyEnum::class;
+26 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+27 |   const enum<OpaqueKeyEnum> OPAQUE_ENUM_POINTER = OpaqueKeyEnum::class;
+   |         ^^^^^^^^^^^^^^^^^^^ [2]
+28 |   <<__ShapeKey>>
+29 |   const class<KeyEnumClass> ENUM_CLASS_POINTER = KeyEnumClass::class;
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for KeyEnumClass [2]
+
+rejected_pointer_types.php:28:5
+26 |   <<__ShapeKey>>
+27 |   const enum<OpaqueKeyEnum> OPAQUE_ENUM_POINTER = OpaqueKeyEnum::class;
+28 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+29 |   const class<KeyEnumClass> ENUM_CLASS_POINTER = KeyEnumClass::class;
+   |         ^^^^^^^^^^^^^^^^^^^ [2]
+30 |   <<__ShapeKey>>
+31 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME = self::class;
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class or classname for RejectedPointerKeys [2]
+
+rejected_pointer_types.php:30:5
+28 |   <<__ShapeKey>>
+29 |   const class<KeyEnumClass> ENUM_CLASS_POINTER = KeyEnumClass::class;
+30 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+31 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME = self::class;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+32 |   <<__ShapeKey>>
+33 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME_FROM_NAMEOF = nameof self;
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class or classname for RejectedPointerKeys [2]
+
+rejected_pointer_types.php:32:5
+30 |   <<__ShapeKey>>
+31 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME = self::class;
+32 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+33 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME_FROM_NAMEOF = nameof self;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+34 | 
+35 |   const type ClassPointerKey = shape(self::CLASS_POINTER => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for RejectedPointerKeys [2]
+
+rejected_pointer_types.php:35:38
+19 | class RejectedPointerKeys {
+20 |   <<__ShapeKey>>
+21 |   const class<RejectedPointerKeys> CLASS_POINTER = self::class;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+22 |   <<__ShapeKey>>
+23 |   const enum<int> INT_ENUM_POINTER = IntKeyEnum::class;
+   :
+33 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME_FROM_NAMEOF = nameof self;
+34 | 
+35 |   const type ClassPointerKey = shape(self::CLASS_POINTER => int);
+   |                                      ^^^^^^^^^^^^^^^^^^^ [1]
+36 |   const type IntEnumPointerKey = shape(self::INT_ENUM_POINTER => int);
+37 |   const type StringEnumPointerKey = shape(self::STRING_ENUM_POINTER => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for HH\BuiltinEnum<int> [2]
+
+rejected_pointer_types.php:36:40
+21 |   const class<RejectedPointerKeys> CLASS_POINTER = self::class;
+22 |   <<__ShapeKey>>
+23 |   const enum<int> INT_ENUM_POINTER = IntKeyEnum::class;
+   |         ^^^^^^^^^ [2]
+24 |   <<__ShapeKey>>
+25 |   const enum<string> STRING_ENUM_POINTER = StringKeyEnum::class;
+   :
+34 | 
+35 |   const type ClassPointerKey = shape(self::CLASS_POINTER => int);
+36 |   const type IntEnumPointerKey = shape(self::INT_ENUM_POINTER => int);
+   |                                        ^^^^^^^^^^^^^^^^^^^^^^ [1]
+37 |   const type StringEnumPointerKey = shape(self::STRING_ENUM_POINTER => int);
+38 |   const type OpaqueEnumPointerKey = shape(self::OPAQUE_ENUM_POINTER => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for HH\BuiltinEnum<string> [2]
+
+rejected_pointer_types.php:37:43
+23 |   const enum<int> INT_ENUM_POINTER = IntKeyEnum::class;
+24 |   <<__ShapeKey>>
+25 |   const enum<string> STRING_ENUM_POINTER = StringKeyEnum::class;
+   |         ^^^^^^^^^^^^ [2]
+26 |   <<__ShapeKey>>
+27 |   const enum<OpaqueKeyEnum> OPAQUE_ENUM_POINTER = OpaqueKeyEnum::class;
+   :
+35 |   const type ClassPointerKey = shape(self::CLASS_POINTER => int);
+36 |   const type IntEnumPointerKey = shape(self::INT_ENUM_POINTER => int);
+37 |   const type StringEnumPointerKey = shape(self::STRING_ENUM_POINTER => int);
+   |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+38 |   const type OpaqueEnumPointerKey = shape(self::OPAQUE_ENUM_POINTER => int);
+39 |   const type EnumClassPointerKey = shape(self::ENUM_CLASS_POINTER => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for HH\BuiltinEnum<OpaqueKeyEnum> [2]
+
+rejected_pointer_types.php:38:43
+25 |   const enum<string> STRING_ENUM_POINTER = StringKeyEnum::class;
+26 |   <<__ShapeKey>>
+27 |   const enum<OpaqueKeyEnum> OPAQUE_ENUM_POINTER = OpaqueKeyEnum::class;
+   |         ^^^^^^^^^^^^^^^^^^^ [2]
+28 |   <<__ShapeKey>>
+29 |   const class<KeyEnumClass> ENUM_CLASS_POINTER = KeyEnumClass::class;
+   :
+36 |   const type IntEnumPointerKey = shape(self::INT_ENUM_POINTER => int);
+37 |   const type StringEnumPointerKey = shape(self::STRING_ENUM_POINTER => int);
+38 |   const type OpaqueEnumPointerKey = shape(self::OPAQUE_ENUM_POINTER => int);
+   |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+39 |   const type EnumClassPointerKey = shape(self::ENUM_CLASS_POINTER => int);
+40 |   const type ClassOrNameKey = shape(self::CLASS_OR_NAME => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for KeyEnumClass [2]
+
+rejected_pointer_types.php:39:42
+27 |   const enum<OpaqueKeyEnum> OPAQUE_ENUM_POINTER = OpaqueKeyEnum::class;
+28 |   <<__ShapeKey>>
+29 |   const class<KeyEnumClass> ENUM_CLASS_POINTER = KeyEnumClass::class;
+   |         ^^^^^^^^^^^^^^^^^^^ [2]
+30 |   <<__ShapeKey>>
+31 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME = self::class;
+   :
+37 |   const type StringEnumPointerKey = shape(self::STRING_ENUM_POINTER => int);
+38 |   const type OpaqueEnumPointerKey = shape(self::OPAQUE_ENUM_POINTER => int);
+39 |   const type EnumClassPointerKey = shape(self::ENUM_CLASS_POINTER => int);
+   |                                          ^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+40 |   const type ClassOrNameKey = shape(self::CLASS_OR_NAME => int);
+41 |   const type ClassOrNameFromNameofKey = shape(self::CLASS_OR_NAME_FROM_NAMEOF => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class or classname for RejectedPointerKeys [2]
+
+rejected_pointer_types.php:40:37
+29 |   const class<KeyEnumClass> ENUM_CLASS_POINTER = KeyEnumClass::class;
+30 |   <<__ShapeKey>>
+31 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME = self::class;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+32 |   <<__ShapeKey>>
+33 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME_FROM_NAMEOF = nameof self;
+   :
+38 |   const type OpaqueEnumPointerKey = shape(self::OPAQUE_ENUM_POINTER => int);
+39 |   const type EnumClassPointerKey = shape(self::ENUM_CLASS_POINTER => int);
+40 |   const type ClassOrNameKey = shape(self::CLASS_OR_NAME => int);
+   |                                     ^^^^^^^^^^^^^^^^^^^ [1]
+41 |   const type ClassOrNameFromNameofKey = shape(self::CLASS_OR_NAME_FROM_NAMEOF => int);
+42 | }
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class or classname for RejectedPointerKeys [2]
+
+rejected_pointer_types.php:41:47
+31 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME = self::class;
+32 |   <<__ShapeKey>>
+33 |   const HH\class_or_classname<RejectedPointerKeys> CLASS_OR_NAME_FROM_NAMEOF = nameof self;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+34 | 
+35 |   const type ClassPointerKey = shape(self::CLASS_POINTER => int);
+   :
+39 |   const type EnumClassPointerKey = shape(self::ENUM_CLASS_POINTER => int);
+40 |   const type ClassOrNameKey = shape(self::CLASS_OR_NAME => int);
+41 |   const type ClassOrNameFromNameofKey = shape(self::CLASS_OR_NAME_FROM_NAMEOF => int);
+   |                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+42 | }
+
+14 errors found

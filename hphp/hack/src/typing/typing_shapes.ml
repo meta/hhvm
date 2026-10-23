@@ -18,7 +18,6 @@ open Typing_defs
 module Env = Typing_env
 module Reason = Typing_reason
 module TUtils = Typing_utils
-module Type = Typing_ops
 module MakeType = Typing_make_type
 module Cls = Folded_class
 
@@ -888,18 +887,22 @@ let check_shape_keys_validity env keys =
           Option.iter ~f:(Typing_error_utils.add_typing_error ~env) ty_err_opt;
           let r = Reason.witness key_pos in
           let (env, e2) =
-            Type.sub_type key_pos Reason.URnone env ty (MakeType.arraykey r)
-            @@ Typing_error.(
-                 Callback.always
-                   Primary.(
-                     Shape
-                       (Shape.Invalid_shape_field_type
-                          {
-                            pos = key_pos;
-                            ty_pos = get_pos ty;
-                            ty_name = lazy (Typing_print.error env ty);
-                            trail = [];
-                          })))
+            TUtils.sub_type
+              ~class_sub_classname:false
+              env
+              ty
+              (MakeType.arraykey r)
+            @@ Some
+                 Typing_error.(
+                   Reasons_callback.always
+                   @@ shape
+                   @@ Primary.Shape.Invalid_shape_field_type
+                        {
+                          pos = key_pos;
+                          ty_pos = get_pos ty;
+                          ty_name = lazy (Typing_print.error env ty);
+                          trail = [];
+                        })
           in
           Option.iter ~f:(Typing_error_utils.add_typing_error ~env) e2;
           (env, key_pos, Some (cls, ty)))

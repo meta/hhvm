@@ -16,4 +16,30 @@ shape_key_lazy_class.php:6:16
 6 | type T = shape(C::class => string);
   |                ^^^^^^^^ [1]
 
-2 errors found
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shape_key_lazy_class.php:4:24
+1 | <?hh
+2 | 
+3 | class C {
+  |       ^ [2]
+4 |   const type T = shape(self::class => int);
+  |                        ^^^^^^^^^^^ [1]
+5 | }
+6 | type T = shape(C::class => string);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shape_key_lazy_class.php:6:16
+1 | <?hh
+2 | 
+3 | class C {
+  |       ^ [2]
+4 |   const type T = shape(self::class => int);
+5 | }
+6 | type T = shape(C::class => string);
+  |                ^^^^^^^^ [1]
+
+4 errors found

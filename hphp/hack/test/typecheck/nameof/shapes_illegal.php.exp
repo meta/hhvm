@@ -28,6 +28,37 @@ shapes_illegal.php:9:25
 10 | 
 11 |   public function f(this::T1 $t1, this::T1 $t2): void {
 
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_illegal.php:6:26
+2 | 
+3 | class B {}
+4 | class C extends B {
+  |       ^ [2]
+5 |   const type Te1 = shape(nameof self => float);
+6 |   const type Te2 = shape(self::class => float);
+  |                          ^^^^^^^^^^^ [1]
+7 | 
+8 |   const type T1 = shape(nameof C => float);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_illegal.php:9:25
+ 2 | 
+ 3 | class B {}
+ 4 | class C extends B {
+   |       ^ [2]
+ 5 |   const type Te1 = shape(nameof self => float);
+ 6 |   const type Te2 = shape(self::class => float);
+ 7 | 
+ 8 |   const type T1 = shape(nameof C => float);
+ 9 |   const type T2 = shape(C::class => float);
+   |                         ^^^^^^^^ [1]
+10 | 
+11 |   public function f(this::T1 $t1, this::T1 $t2): void {
+
 error: Typing[4051] Shape access requires a string literal, integer literal, or a class constant [1]
 
 shapes_illegal.php:12:9
@@ -268,4 +299,4 @@ shapes_illegal.php:29:22
 30 |   }
 31 | }
 
-27 errors found
+29 errors found

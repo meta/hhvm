@@ -8,4 +8,18 @@ shapes_args.php:5:17
 6 | 
 7 | function f(T1 $t1, T2 $t2): void {
 
-1 error found
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_args.php:5:17
+1 | <?hh
+2 | 
+3 | class C {}
+  |       ^ [2]
+4 | type T1 = shape(nameof C => float);
+5 | type T2 = shape(C::class => float);
+  |                 ^^^^^^^^ [1]
+6 | 
+7 | function f(T1 $t1, T2 $t2): void {
+
+2 errors found

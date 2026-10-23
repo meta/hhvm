@@ -51,7 +51,7 @@ function f_dict(): void {
 
 function f_shp(): void {
   shape(
-    AA::class => 0,
+    nameof AA => 0,
   );
 }
 
@@ -108,6 +108,6 @@ function f_dict(): void {
 
 function f_shp(): void {
   shape(
-    AA::class => 0,
+    nameof AA => 0,
   );
 }

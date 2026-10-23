@@ -167,6 +167,24 @@ shapes_collide.php:16:51
    |                                                   ^ [1]
 17 | }
 
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:3:18
+ 1 | <?hh
+ 2 | 
+ 3 | type Ts1 = shape(C::class => float, 'C' => int);
+   |                  ^^^^^^^^ [1]
+ 4 | type Ts2 = shape(nameof C => float, 'C' => int);
+ 5 | 
+   :
+10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+11 | }
+12 | class C extends B {
+   |       ^ [2]
+13 |   const type T1 = shape(B::class => float, C::class => int);
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+
 error: Typing[4050] Shape uses literal string as field name [1]
 -> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
 
@@ -191,6 +209,102 @@ shapes_collide.php:4:37
 5 | 
 6 | class B {
 
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:7:26
+ 5 | 
+ 6 | class B {
+ 7 |   const type Tb1 = shape(C::class => float, C::class => int);
+   |                          ^^^^^^^^ [1]
+ 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
+ 9 |   const type Tb3 = shape(nameof C => float, C::class => int);
+10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+11 | }
+12 | class C extends B {
+   |       ^ [2]
+13 |   const type T1 = shape(B::class => float, C::class => int);
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:7:45
+ 5 | 
+ 6 | class B {
+ 7 |   const type Tb1 = shape(C::class => float, C::class => int);
+   |                                             ^^^^^^^^ [1]
+ 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
+ 9 |   const type Tb3 = shape(nameof C => float, C::class => int);
+10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+11 | }
+12 | class C extends B {
+   |       ^ [2]
+13 |   const type T1 = shape(B::class => float, C::class => int);
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:8:26
+ 6 | class B {
+ 7 |   const type Tb1 = shape(C::class => float, C::class => int);
+ 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
+   |                          ^^^^^^^^ [1]
+ 9 |   const type Tb3 = shape(nameof C => float, C::class => int);
+10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+11 | }
+12 | class C extends B {
+   |       ^ [2]
+13 |   const type T1 = shape(B::class => float, C::class => int);
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:9:45
+ 7 |   const type Tb1 = shape(C::class => float, C::class => int);
+ 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
+ 9 |   const type Tb3 = shape(nameof C => float, C::class => int);
+   |                                             ^^^^^^^^ [1]
+10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+11 | }
+12 | class C extends B {
+   |       ^ [2]
+13 |   const type T1 = shape(B::class => float, C::class => int);
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:13:25
+ 4 | type Ts2 = shape(nameof C => float, 'C' => int);
+ 5 | 
+ 6 | class B {
+   |       ^ [2]
+ 7 |   const type Tb1 = shape(C::class => float, C::class => int);
+ 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
+   :
+11 | }
+12 | class C extends B {
+13 |   const type T1 = shape(B::class => float, C::class => int);
+   |                         ^^^^^^^^ [1]
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+15 |   const type T3 = shape(nameof B => float, C::class => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:13:44
+10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+11 | }
+12 | class C extends B {
+   |       ^ [2]
+13 |   const type T1 = shape(B::class => float, C::class => int);
+   |                                            ^^^^^^^^ [1]
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+15 |   const type T3 = shape(nameof B => float, C::class => int);
+
 error: Typing[4085] Shape field name is class constant from `C` [1]
 -> But expected constant from `B` [2]
 
@@ -203,6 +317,24 @@ shapes_collide.php:13:44
 14 |   const type T2 = shape(B::class => float, nameof C => int);
 15 |   const type T3 = shape(nameof B => float, C::class => int);
 
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:14:25
+ 4 | type Ts2 = shape(nameof C => float, 'C' => int);
+ 5 | 
+ 6 | class B {
+   |       ^ [2]
+ 7 |   const type Tb1 = shape(C::class => float, C::class => int);
+ 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
+   :
+12 | class C extends B {
+13 |   const type T1 = shape(B::class => float, C::class => int);
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+   |                         ^^^^^^^^ [1]
+15 |   const type T3 = shape(nameof B => float, C::class => int);
+16 |   const type T4 = shape(nameof B => float, nameof C => int);
+
 error: Typing[4085] Shape field name is class constant from `C` [1]
 -> But expected constant from `B` [2]
 
@@ -214,6 +346,21 @@ shapes_collide.php:14:51
    |                                                   ^ [1]
 15 |   const type T3 = shape(nameof B => float, C::class => int);
 16 |   const type T4 = shape(nameof B => float, nameof C => int);
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for this [2]
+
+shapes_collide.php:15:44
+10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+11 | }
+12 | class C extends B {
+   |       ^ [2]
+13 |   const type T1 = shape(B::class => float, C::class => int);
+14 |   const type T2 = shape(B::class => float, nameof C => int);
+15 |   const type T3 = shape(nameof B => float, C::class => int);
+   |                                            ^^^^^^^^ [1]
+16 |   const type T4 = shape(nameof B => float, nameof C => int);
+17 | }
 
 error: Typing[4085] Shape field name is class constant from `C` [1]
 -> But expected constant from `B` [2]
@@ -238,4 +385,4 @@ shapes_collide.php:16:51
    |                                                   ^ [1]
 17 | }
 
-23 errors found
+32 errors found
