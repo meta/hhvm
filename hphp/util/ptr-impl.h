@@ -19,6 +19,7 @@
 #include "hphp/util/alloc-defs.h"
 #include "hphp/util/assertions.h"
 #include "hphp/util/compilation-flags.h"
+#include "hphp/util/debug-format.h"
 
 #include <cstdint>
 #include <fmt/format.h>
@@ -280,6 +281,18 @@ private:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+namespace HPHP {
+
+// debugFormat() prints a PtrImpl like the raw pointer it holds, as
+// folly::FormatValue<PtrImpl> below does.
+template <class T, typename S, typename P>
+auto hphpDebugFormatArg(DebugFormatTag<ptrimpl::PtrImpl<T, S, P>>,
+                        const ptrimpl::PtrImpl<T, S, P>& v) {
+  return debugFormatArg(v.get());
+}
+
+}
 
 namespace folly {
 

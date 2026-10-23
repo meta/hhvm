@@ -75,6 +75,15 @@ template<> class FormatValue<debug_parser::GlobalOff> {
 };
 }
 
+template <>
+struct fmt::formatter<debug_parser::GlobalOff>
+    : fmt::formatter<std::string_view> {
+  auto format(debug_parser::GlobalOff val, fmt::format_context& ctx) const {
+    return fmt::formatter<std::string_view>::format(
+        fmt::format("{}:{}", val.offset(), val.isInfo() ? 1 : 0), ctx);
+  }
+};
+
 namespace std {
 template<>
 struct hash<debug_parser::GlobalOff> : debug_parser::GlobalOff::Hash {};

@@ -31,6 +31,7 @@
 #include "hphp/runtime/base/string-data-macros.h"
 #include "hphp/util/assertions.h"
 #include "hphp/util/blob-encoder.h"
+#include "hphp/util/debug-format.h"
 #include "hphp/util/hash-map.h"
 #include "hphp/util/ptr-impl.h"
 
@@ -662,6 +663,21 @@ private:
   BlobEncoderHelper<const StringData*>::Indexer m_indexer;
   bool m_used{false};
 };
+
+//////////////////////////////////////////////////////////////////////
+
+// FTRACE, always_assert_flog and other debugFormat() users print a
+// StringData* as its contents, like folly::FormatValue<StringData*> below.
+inline std::string_view hphpDebugFormatArg(DebugFormatTag<const StringData*>,
+                                           const StringData* s) {
+  if (!s) return "(null)";
+  return std::string_view(s->data(), s->size());
+}
+
+inline std::string_view hphpDebugFormatArg(DebugFormatTag<StringData*>,
+                                           const StringData* s) {
+  return hphpDebugFormatArg(DebugFormatTag<const StringData*>{}, s);
+}
 
 //////////////////////////////////////////////////////////////////////
 

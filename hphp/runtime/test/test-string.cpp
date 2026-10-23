@@ -17,7 +17,10 @@
 #include <gtest/gtest.h>
 
 #include "hphp/runtime/base/type-string.h"
+#include "hphp/runtime/base/static-string-table.h"
 #include "hphp/runtime/ext/string/ext_string.h"
+#include "hphp/util/debug-format.h"
+#include "hphp/util/ptr-impl.h"
 
 namespace HPHP {
 
@@ -94,6 +97,17 @@ TEST(OptString, Compare) {
   EXPECT_TRUE(OptString(str1).compare(OptString(str1)) == 0);
   EXPECT_TRUE(OptString(str1).compare(OptString(str2)) > 0);
   EXPECT_TRUE(OptString(str2).compare(OptString(str1)) < 0);
+}
+
+TEST(StringData, DebugFormatPrintsContents) {
+  const StringData* sd = makeStaticString("abc");
+  StringData* mutableSd = const_cast<StringData*>(sd);
+  const StringData* nullSd = nullptr;
+  ptrimpl::PtrImpl<const StringData, ptrimpl::Normal, ptrimpl::UInt64> ptr{sd};
+  EXPECT_EQ("abc abc [  abc] abc (null)",
+            debugFormat("{} {} [{:>5}] {} {}", sd, mutableSd, sd, ptr, nullSd));
+  EXPECT_EQ("test test", debugFormat("{} {}", OptString("test"),
+                                     StaticString("test")));
 }
 
 }
