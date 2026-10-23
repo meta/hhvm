@@ -17,8 +17,6 @@
 
 #include <sys/stat.h>
 
-#include <cstring>
-
 #include <folly/portability/Unistd.h>
 
 #include "hphp/runtime/base/file-util.h"
@@ -30,20 +28,6 @@
 #include "hphp/runtime/server/virtual-host.h"
 
 namespace HPHP {
-namespace {
-
-const char* getValidatedServerObject(Transport* transport) {
-  auto const object = transport->getServerObject();
-  if (!object) return nullptr;
-  if (!*object || *object == '/') return object;
-  if (!strcmp(object, "*")) {
-    auto const method = transport->getMethodName();
-    if (method && !strcmp(method, "OPTIONS")) return object;
-  }
-  return nullptr;
-}
-
-}
 ///////////////////////////////////////////////////////////////////////////////
 
 RequestURI::RequestURI(const VirtualHost *vhost, Transport *transport,
@@ -56,15 +40,8 @@ RequestURI::RequestURI(const VirtualHost *vhost, Transport *transport,
   , m_forbidden(false)
   , m_ext(nullptr)
 {
-  auto const serverObject = getValidatedServerObject(transport);
-  if (!serverObject) {
-    transport->sendString("Bad Request", 400);
-    transport->onSendEnd();
-    m_done = true;
-    return;
-  }
   if (!process(vhost, transport, sourceRoot, pathTranslation,
-               serverObject) ||
+               transport->getServerObject()) ||
       (m_forbidden && Cfg::Server::ForbiddenAs404)) {
     m_forbidden = false; // put down forbidden flag since we are redirecting
     if (!Cfg::Server::ErrorDocument404.empty()) {
