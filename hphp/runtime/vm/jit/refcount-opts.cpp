@@ -2282,6 +2282,103 @@ bool observes_reference(const IRInstruction& inst, uint32_t srcID) {
 
 //////////////////////////////////////////////////////////////////////
 
+/*
+ * Apply this Jmp's parallel assignments to its target DefLabel. Replace each
+ * destination's reference-count state with the incoming state; assignments
+ * within one alias set need no update. Snapshot all inputs first so swaps and
+ * other backedge assignments read the old values.
+ *
+ * A phi adds another name for its input without creating references. Transfer
+ * each source's supported credit and memory support to one destination, leaving
+ * the other aliases with unsupported bounds. Pending reductions travel with the
+ * copied state. The caller then merges this edge state into the target block.
+ */
+void propagate_phi(Env& env, const IRInstruction& inst, RCState& state) {
+  if (!inst.numSrcs()) return;
+  auto const& defLabel = inst.taken()->front();
+  assertx(defLabel.is(DefLabel));
+
+  struct Input {
+    ASetID src;
+    ASetID dst;
+    ASetInfo info;
+  };
+  jit::vector<Input> inputs;
+  jit::fast_map<ASetID, ASetID> owners;
+
+  for (auto i = 0; i < inst.numSrcs(); ++i) {
+    auto const dst = lookup_aset(env, defLabel.dst(i));
+    if (!dst) continue;
+    auto const src = lookup_aset(env, inst.src(i));
+    inputs.push_back({src.value_or(-1), *dst,
+                      src ? state.asets[*src] : ASetInfo{}});
+    if (!src) continue;
+
+    // Choose one destination to own each source's supported references. Prefer
+    // an identity assignment so a source which remains a phi result keeps its
+    // support; otherwise give it to the first destination using that source.
+    auto const owner = owners.emplace(*src, *dst).first;
+    if (*src == *dst) owner->second = *dst;
+  }
+
+  // Detach support for overwritten destination values before installing any
+  // incoming support. Otherwise an old destination could clear a location
+  // already transferred to another destination when the assignments overlap.
+  for (auto const& input : inputs) {
+    if (input.src == input.dst) continue;
+    drop_support_bits(env, state, state.asets[input.dst].memory_support);
+  }
+
+  // Detach sources whose support moves to another alias set. Do this before
+  // populating any destinations so a cyclic transfer cannot clear newly
+  // installed support.
+  for (auto const& [src, dst] : owners) {
+    if (src == dst) continue;
+    auto& aset = state.asets[src];
+    drop_support_bits(env, state, aset.memory_support);
+    if (aset.lower_bound != kInfReferences) {
+      // The bound still holds, but its supported references now belong to dst.
+      // Mark all retained credit unsupported so a later DecRef of this source
+      // also reduces the new owner's bound instead of spending it
+      // independently.
+      aset.unsupported_refs = aset.lower_bound;
+      if (aset.unsupported_refs) state.has_unsupported_refs = true;
+    }
+  }
+
+  // Destination IDs can repeat when alias-set construction coalesces phis.
+  // Their inputs denote the same value, but an uncounted refinement can lack
+  // a source ASetID and therefore have a different snapshot. Either snapshot
+  // gives valid bounds. Each replacement must detach support installed by an
+  // earlier copy so the reverse map describes only the snapshot that remains.
+  for (auto const& input : inputs) {
+    if (input.src == input.dst) continue;
+    auto& aset = state.asets[input.dst];
+    drop_support_bits(env, state, aset.memory_support);
+    if (aset.pending_reductions) --state.num_pending_requirements;
+    aset = input.info;
+    if (aset.pending_reductions) ++state.num_pending_requirements;
+    if (input.src != -1 && owners.at(input.src) != input.dst) {
+      // This destination shares the owner's references, not independent credit.
+      // Retain its bounds as unsupported knowledge and remove memory ownership;
+      // keeping either kind of support would let both sets spend the same
+      // credit.
+      if (aset.lower_bound != kInfReferences) {
+        aset.unsupported_refs = aset.lower_bound;
+      }
+      aset.memory_support.reset();
+    }
+    if (aset.unsupported_refs) state.has_unsupported_refs = true;
+    bitset_for_each_set(aset.memory_support, [&](size_t id) {
+      assertx(state.support_map[id] == -1 ||
+              state.support_map[id] == input.dst);
+      state.support_map[id] = input.dst;
+    });
+    FTRACE(3, "    DefLabel dstID {} lb = {}({}), ub = {}\n",
+           input.dst, aset.lower_bound, aset.unsupported_refs, aset.upper_bound);
+  }
+}
+
 template<typename Propagate>
 void rc_analyze_inst(Env& env,
                      IRInstruction& inst,
@@ -2292,34 +2389,7 @@ void rc_analyze_inst(Env& env,
 
   switch (inst.op()) {
   case Jmp:
-    if (inst.numSrcs()) {
-      auto const& defLabel = inst.taken()->front();
-      assertx(defLabel.is(DefLabel));
-      for (auto i = 0; i < inst.numSrcs(); i++) {
-        auto const dstID = lookup_aset(env, defLabel.dst(i));
-        if (!dstID) continue;
-        auto& dstSet = state.asets[*dstID];
-        auto const srcID = lookup_aset(env, inst.src(i));
-        if (!srcID) {
-          dstSet.upper_bound = kInfReferences;
-          FTRACE(3, "    DefLabel dstID {} set ub = {}\n", *dstID, dstSet.upper_bound);
-          continue;
-        }
-        auto& srcSet = state.asets[*srcID];
-        dstSet.upper_bound = srcSet.upper_bound;
-        FTRACE(3, "    DefLabel dstID {} set ub = {}\n", *dstID, dstSet.upper_bound);
-        if (dstSet.lower_bound < srcSet.lower_bound) {
-          auto const delta = srcSet.lower_bound - dstSet.lower_bound;
-          // Add assumed references to dstSet
-          dstSet.unsupported_refs += delta;
-          dstSet.lower_bound = srcSet.lower_bound;
-          state.has_unsupported_refs = true;
-          FTRACE(3,
-                 "    {} DefLabel lb({}) += {}\n",
-                 *dstID, dstSet.lower_bound, delta);
-        }
-      }
-    }
+    propagate_phi(env, inst, state);
     propagate(inst.taken());
     return;
   case IncRef:

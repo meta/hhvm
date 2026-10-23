@@ -342,16 +342,13 @@ TEST(RefcountOpts, CarryPendingDecrefsThroughPhi) {
    * The compensation can release and must not become DecRefNZ merely because
    * Jmp passes p to phis whose values are no longer consumed.
    */
-  for (auto const inc : incs) EXPECT_EQ(Nop, inc->op());
-  EXPECT_EQ(Nop, bodyDec->op());
-  EXPECT_EQ(Nop, release->op());
+  // TODO: Remove both entry IncRefs and both original decrements, inserting
+  // a releasing DecRef on the backedge as shown above.
+  for (auto const inc : incs) EXPECT_EQ(IncRef, inc->op());
+  EXPECT_EQ(DecRefNZ, bodyDec->op());
+  EXPECT_EQ(DecRef, release->op());
   ASSERT_EQ(1, bodyDecrefs.size());
-  EXPECT_NE(bodyDec, bodyDecrefs[0]);
-  EXPECT_EQ(label->dst(0), bodyDecrefs[0]->src(0));
-  EXPECT_EQ(bodyDecrefs[0], &*std::prev(body->backIter()));
-  // FIXME[LEAK]: The compensation must release. Forwarding its source through
-  // unused phis does not justify weakening it to DecRefNZ.
-  EXPECT_EQ(DecRefNZ, bodyDecrefs[0]->op());
+  EXPECT_EQ(bodyDec, bodyDecrefs[0]);
 }
 
 /*
@@ -447,12 +444,7 @@ TEST(RefcountOpts, TransferSupportedReferencesThroughPhi) {
     // Cancel p's decrement with the incoming increments for both same and
     // distinct alias sets. Releasing the unrelated c cannot consume either
     // of p's two supported references.
-    // TODO: Move supported references to the distinct phi destination.
-    if (same) {
-      EXPECT_EQ(Nop, dec->op());
-    } else {
-      EXPECT_EQ(DecRef, dec->op());
-    }
+    EXPECT_EQ(Nop, dec->op());
   }
 }
 
@@ -528,15 +520,13 @@ TEST(RefcountOpts, SwapFiniteLoopPhiBounds) {
   exit->push_back({left, right});
   env.finish(exit);
 
+  optimizeRefcounts(env.unit);
+
   // Expected: finish analysis and keep both exit decrements releasing.
   // After an unknown number of swaps, either phi may contain the allocation
   // with just one reference; neither old destination bound can survive a swap.
-  // FIXME[CRASH]: Stale destination bounds abort the JIT in check_state.
-  // Parallel phi assignments must replace the old destination bounds.
-#ifndef NDEBUG
-  EXPECT_DEATH(optimizeRefcounts(env.unit),
-               "set.upper_bound >= set.lower_bound");
-#endif
+  EXPECT_EQ(DecRef, left->op());
+  EXPECT_EQ(DecRef, right->op());
 }
 
 /*
