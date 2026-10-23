@@ -63,7 +63,7 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^^^^^^^ [4]
 72 |     ?'access_list' => varray<string>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
-73 |     'fields' => ?darray<arraykey, mixed>,
+73 |     ?'fields' => darray<arraykey, mixed>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
 74 |     ?'allows_unknown_fields' => bool,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
@@ -195,7 +195,7 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^^^^^^^ [4]
 72 |     ?'access_list' => varray<string>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
-73 |     'fields' => ?darray<arraykey, mixed>,
+73 |     ?'fields' => darray<arraykey, mixed>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
 74 |     ?'allows_unknown_fields' => bool,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
@@ -328,7 +328,7 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^^^^^^^ [3]
 72 |     ?'access_list' => varray<string>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
-73 |     'fields' => ?darray<arraykey, mixed>,
+73 |     ?'fields' => darray<arraykey, mixed>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
 74 |     ?'allows_unknown_fields' => bool,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
@@ -404,7 +404,7 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^^^^^^^ [3]
 72 |     ?'access_list' => varray<string>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
-73 |     'fields' => ?darray<arraykey, mixed>,
+73 |     ?'fields' => darray<arraykey, mixed>,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
 74 |     ?'allows_unknown_fields' => bool,
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]

@@ -80,8 +80,8 @@ typestructure.hhi:61:6
 62 |     'kind' => TypeStructureKind,
 63 |     ?'name' => string,
 
-error: Typing[4108] This shape doesn't have a field `fields` [1]
--> The shape is defined here [2]
+error: Typing[4165] The field `fields` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
 
 bad_type_structure_tuple.php:12:15
 10 |   hh_show($ts['classname']);
@@ -91,59 +91,13 @@ bad_type_structure_tuple.php:12:15
 13 |   hh_show($ts['param_types']);
 14 |   hh_show($ts['return_type']);
 
-typestructure.hhi:60:31
-58 |   // should be considered optional. Additionally, shapes of this type may contain
-59 |   // additional fields other than those specified here.
-60 |   newtype TypeStructure<T> as shape(
-   |                               ^^^^^^ [2]
-61 |     ?'nullable' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^ [2]
-62 |     'kind' => TypeStructureKind,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-63 |     ?'name' => string,
-   |     ^^^^^^^^^^^^^^^^^^ [2]
-64 |     ?'classname' => classname<T>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-65 |     ?'elem_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-66 |     ?'optional_elem_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-67 |     ?'variadic_type' => mixed,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-68 |     ?'return_type' => mixed,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-69 |     ?'param_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-70 |     ?'generic_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+typestructure.hhi:73:6
 71 |     ?'root_name' => string,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^ [2]
 72 |     ?'access_list' => varray<string>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-73 |     'fields' => ?darray<arraykey, mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+73 |     ?'fields' => darray<arraykey, mixed>,
+   |      ^^^^^^^^ [2]
 74 |     ?'allows_unknown_fields' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
 75 |     ?'is_cls_cns' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^^^ [2]
-76 |     ?'optional_shape_field' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-77 |     ?'value' => mixed,
-   |     ^^^^^^^^^^^^^^^^^^ [2]
-78 |     ?'typevars' => string,
-   |     ^^^^^^^^^^^^^^^^^^^^^^ [2]
-79 |     ?'alias' => string,
-   |     ^^^^^^^^^^^^^^^^^^^ [2]
-80 |     ?'exact' => bool,
-   |     ^^^^^^^^^^^^^^^^^ [2]
-81 |     ?'like' => bool,
-   |     ^^^^^^^^^^^^^^^^ [2]
-82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-83 |   ) = shape(
-   |   ^ [2]
-84 |     ?'nullable' => bool,
-85 |     'kind' => TypeStructureKind,
 
 error: Typing[4165] The field `param_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
 -> This is where the field was declared as optional. [2]
@@ -240,8 +194,8 @@ typestructure.hhi:61:6
 62 |     'kind' => TypeStructureKind,
 63 |     ?'name' => string,
 
-error: Typing[4108] This shape doesn't have a field `fields` [1]
--> The shape is defined here [2]
+error: Typing[4165] The field `fields` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
 
 bad_type_structure_tuple.php:30:15
 28 |   hh_show($ts['classname']);
@@ -251,59 +205,13 @@ bad_type_structure_tuple.php:30:15
 31 |   hh_show($ts['param_types']);
 32 |   hh_show($ts['return_type']);
 
-typestructure.hhi:60:31
-58 |   // should be considered optional. Additionally, shapes of this type may contain
-59 |   // additional fields other than those specified here.
-60 |   newtype TypeStructure<T> as shape(
-   |                               ^^^^^^ [2]
-61 |     ?'nullable' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^ [2]
-62 |     'kind' => TypeStructureKind,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-63 |     ?'name' => string,
-   |     ^^^^^^^^^^^^^^^^^^ [2]
-64 |     ?'classname' => classname<T>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-65 |     ?'elem_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-66 |     ?'optional_elem_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-67 |     ?'variadic_type' => mixed,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-68 |     ?'return_type' => mixed,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-69 |     ?'param_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-70 |     ?'generic_types' => varray<mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+typestructure.hhi:73:6
 71 |     ?'root_name' => string,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^ [2]
 72 |     ?'access_list' => varray<string>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-73 |     'fields' => ?darray<arraykey, mixed>,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+73 |     ?'fields' => darray<arraykey, mixed>,
+   |      ^^^^^^^^ [2]
 74 |     ?'allows_unknown_fields' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
 75 |     ?'is_cls_cns' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^^^ [2]
-76 |     ?'optional_shape_field' => bool,
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-77 |     ?'value' => mixed,
-   |     ^^^^^^^^^^^^^^^^^^ [2]
-78 |     ?'typevars' => string,
-   |     ^^^^^^^^^^^^^^^^^^^^^^ [2]
-79 |     ?'alias' => string,
-   |     ^^^^^^^^^^^^^^^^^^^ [2]
-80 |     ?'exact' => bool,
-   |     ^^^^^^^^^^^^^^^^^ [2]
-81 |     ?'like' => bool,
-   |     ^^^^^^^^^^^^^^^^ [2]
-82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-83 |   ) = shape(
-   |   ^ [2]
-84 |     ?'nullable' => bool,
-85 |     'kind' => TypeStructureKind,
 
 error: Typing[4165] The field `param_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
 -> This is where the field was declared as optional. [2]

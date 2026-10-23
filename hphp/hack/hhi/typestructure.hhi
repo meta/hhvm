@@ -70,7 +70,7 @@ namespace HH {
     ?'generic_types' => varray<mixed>,
     ?'root_name' => string,
     ?'access_list' => varray<string>,
-    'fields' => ?darray<arraykey, mixed>,
+    ?'fields' => darray<arraykey, mixed>,
     ?'allows_unknown_fields' => bool,
     ?'is_cls_cns' => bool,
     ?'optional_shape_field' => bool,
@@ -100,7 +100,7 @@ namespace HH {
     ?'root_name' => string,
     ?'access_list' => varray<string>,
     // for shapes
-    'fields' => ?darray<arraykey, mixed>,
+    ?'fields' => darray<arraykey, mixed>,
     ?'allows_unknown_fields' => bool,
     ?'is_cls_cns' => bool,
     ?'optional_shape_field' => bool,
