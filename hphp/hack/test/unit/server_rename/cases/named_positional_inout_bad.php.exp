@@ -1,0 +1,2 @@
+ERROR: File "named_positional_inout_bad.php", line 4, characters 18-22:
+It is currently unsupported for a parameter list to contain both `inout` and `named` parameters. (Parsing[1002])
