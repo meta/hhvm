@@ -578,9 +578,8 @@ TEST(AliasClass, FrameUnionGenericActRec) {
 TEST(AliasClass, FrameSubsetUnrelatedSpecialization) {
   AliasClass const a = AFMeta { 0u };
   auto const b = AFMetaAny | AFFunc { 1u };
-  // FIXME: The function specialization cannot restrict metadata membership.
-  EXPECT_FALSE(a <= b);
-  EXPECT_FALSE(a < b);
+  EXPECT_TRUE(a <= b);
+  EXPECT_TRUE(a < b);
   EXPECT_FALSE(b <= a);
   EXPECT_TRUE(a.maybe(b));
   EXPECT_TRUE(b.maybe(a));

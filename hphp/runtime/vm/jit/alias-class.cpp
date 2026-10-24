@@ -655,6 +655,7 @@ bool AliasClass::operator<=(AliasClass o) const {
 
   auto const isect = static_cast<rep>(m_bits & o.m_bits);
   if (isect != m_bits) return false;
+  if (!(o.m_stagBits & isect)) return true;
 
   // If they have the same specialized tag, then since isect is equal to
   // m_bits, the stagBits must be part of the intersection or be BEmpty.  This
