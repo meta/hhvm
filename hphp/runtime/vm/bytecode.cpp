@@ -2175,7 +2175,10 @@ OPTBLD_INLINE JitResumeAddr ret(PC& pc) {
   }
 
   // Return control to the caller.
-  returnToCaller(pc, sfp, jitReturn.callOff, asyncEagerReturn);
+  returnToCaller(
+    pc, sfp, jitReturn.callOff,
+    asyncEagerReturn && isReturnHelper(jitReturn.savedRip)
+  );
 
   return jitReturnPost(jitReturn);
 }
