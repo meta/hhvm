@@ -308,7 +308,7 @@ bool tvSame(TypedValue c1, TypedValue c2) {
       const auto warn_on_conv = tvIsString(c2);
       return convStringishToStringData(c1, warn_on_conv)
               ->same(convStringishToStringData(c2, warn_on_conv));
-    } break;
+    }
     case KindOfPersistentVec:
     case KindOfVec:
       return vecSameHelper(c1.m_data.parr, c2.m_data.parr);

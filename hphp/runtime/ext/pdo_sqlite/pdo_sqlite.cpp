@@ -575,7 +575,6 @@ bool PDOSqliteStatement::paramHook(PDOBoundParam* param,
         handleError(__FILE__, __LINE__);
         return false;
       }
-    break;
 
   default:;
   }

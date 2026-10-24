@@ -606,7 +606,6 @@ void ProxygenServer::doShutdown() {
       // Transition from SHUTDOWN_NONE to DRAINING_READS needs to happen
       // explicitly through `stopListening`, not here.
       not_reached();
-      break;
     case ShutdownState::DRAINING_READS:
       // Even though connections may be open for reading, they will not be
       // executed in the VM

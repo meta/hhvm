@@ -7839,7 +7839,6 @@ static int exif_scan_thumbnail(image_info_type *ImageInfo) {
       case M_EOI:
         raise_warning("Could not compute size of thumbnail");
         return 0;
-        break;
 
       default:
         /* just skip */

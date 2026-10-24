@@ -1665,7 +1665,6 @@ static int model_to_xml_object(xmlNodePtr node, sdlContentModelPtr model,
       }
       return 0;
     }
-    break;
   }
   case XSD_CONTENT_ANY: {
     encodePtr enc;
@@ -1691,7 +1690,6 @@ static int model_to_xml_object(xmlNodePtr node, sdlContentModelPtr model,
       }
       return 0;
     }
-    break;
   }
   case XSD_CONTENT_SEQUENCE:
   case XSD_CONTENT_ALL:
@@ -3003,7 +3001,6 @@ Variant sdl_guess_convert_zval(encodeType* enc, xmlNodePtr data) {
     } else {
       return guess_zval_convert(enc, data);
     }
-    break;
   case XSD_TYPEKIND_LIST:
     return to_zval_list(enc, data);
   case XSD_TYPEKIND_UNION:
@@ -3080,10 +3077,8 @@ xmlNodePtr sdl_guess_convert_xml(encodeType* enc, const Variant& data,
     } else {
       return to_xml_object(enc, data, style, parent);
     }
-    break;
   default:
     throw SoapException("Encoding: Internal Error");
-    break;
   }
   if (style == SOAP_ENCODED) {
     set_ns_and_type(ret, enc);

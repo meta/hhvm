@@ -342,7 +342,6 @@ annotCompat(DataType dt, AnnotType at, const StringData* annotClsName) {
         return AnnotAction::Fail;
       case KindOfObject:
         not_reached();
-        break;
     }
   }
 

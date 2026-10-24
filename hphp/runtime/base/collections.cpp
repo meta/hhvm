@@ -450,7 +450,6 @@ void append(ObjectData* obj, TypedValue* val) {
       break;
     case CollectionType::Map:
       SystemLib::throwInvalidArgumentExceptionObject("Cannot append to Map");
-      break;
     case CollectionType::Set:
       static_cast<c_Set*>(obj)->add(tvClassToString(*val));
       break;
@@ -474,7 +473,6 @@ void set(ObjectData* obj, const TypedValue* key, const TypedValue* val) {
     case CollectionType::Set:
     case CollectionType::ImmSet:
       BaseSet::throwNoMutableIndexAccess();
-      break;
     case CollectionType::ImmVector:
     case CollectionType::ImmMap:
     case CollectionType::Pair:

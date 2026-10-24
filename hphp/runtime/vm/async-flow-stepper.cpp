@@ -151,7 +151,6 @@ AsyncStepHandleOpcodeResult AsyncFlowStepper::handleOpcode(PC pc) {
 
     default:
       not_reached();
-      break;
   }
   return ret;
 }

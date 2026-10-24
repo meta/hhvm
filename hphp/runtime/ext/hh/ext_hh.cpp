@@ -474,7 +474,6 @@ void serialize_memoize_tv(StringBuffer& sb, int depth, TypedValue tv) {
         tname(tv.m_type)
       );
       SystemLib::throwInvalidArgumentExceptionObject(msg);
-      break;
     }
   }
 }

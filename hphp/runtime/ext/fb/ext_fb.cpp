@@ -645,7 +645,6 @@ static int fb_compact_serialize_variant(
       SystemLib::throwInvalidOperationExceptionObject(
         "Unable to serialize reified class method pointer"
       );
-      break;
     }
 
     case KindOfObject:
@@ -674,12 +673,10 @@ static int fb_compact_serialize_variant(
       SystemLib::throwInvalidOperationExceptionObject(
         "Unable to serialize reified function pointer"
       );
-      break;
     case KindOfEnumClassLabel:
       SystemLib::throwInvalidOperationExceptionObject(
         "Unable to serialize enum class label"
       );
-      break;
   }
 
   return 1;

@@ -1867,11 +1867,9 @@ OPTBLD_INLINE void iopFatal(FatalOp kind_char) {
   switch (kind_char) {
   case FatalOp::RuntimeOmitFrame:
     raise_error_without_first_frame(msg);
-    break;
   case FatalOp::Runtime:
   case FatalOp::Parse:
     raise_error(msg);
-    break;
   }
 }
 

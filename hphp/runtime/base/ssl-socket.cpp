@@ -526,7 +526,6 @@ bool SSLSocket::setupCrypto(SSLSocket *session /* = NULL */) {
   case CryptoMethod::ServerSSLv2:
     raise_warning("OpenSSL library does not support SSL2 protocol");
     return false;
-  break;
 
   case CryptoMethod::ServerTLS:
     m_data->m_client = false;

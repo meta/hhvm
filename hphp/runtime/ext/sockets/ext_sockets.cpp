@@ -747,7 +747,6 @@ Variant HHVM_FUNCTION(socket_get_option,
         s_l_linger, linger_val.l_linger
       );
     }
-    break;
 
   case SO_RCVTIMEO:
   case SO_SNDTIMEO:
@@ -763,7 +762,6 @@ Variant HHVM_FUNCTION(socket_get_option,
         s_usec, (int)tv.tv_usec
       );
     }
-    break;
 
   default:
     {

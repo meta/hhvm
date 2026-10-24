@@ -1452,7 +1452,6 @@ Index::Input make_index_input(WholeProgramInput input) {
           // to exit immediately with an error.
           fprintf(stderr, "%s", p.first.m_impl->fail.message->data());
           _Exit(HPHP_EXIT_FAILURE);
-          break;
         case Key::Type::Class:
           out.classes.emplace_back(
             Index::Input::ClassMeta{

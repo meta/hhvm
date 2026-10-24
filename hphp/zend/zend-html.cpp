@@ -597,7 +597,6 @@ inline static bool decode_entity(char *entity, int *len,
 
       default:
         return false;
-        break;
     }
     *len = l;
     return true;

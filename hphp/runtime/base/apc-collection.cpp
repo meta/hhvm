@@ -76,7 +76,6 @@ Object createFromSerialized(CollectionType colType, APCHandle* handle, bool pure
     break;
   case CollectionType::Pair:
     not_reached();
-    break;
   }
   return col;
 }

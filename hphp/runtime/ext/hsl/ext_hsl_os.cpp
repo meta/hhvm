@@ -130,7 +130,6 @@ Object hsl_sockaddr_from_native(const sockaddr_storage& addr, socklen_t len) {
           make_vec_array(OptString(detail->sun_path, actual_path_len, CopyString))
         );
       }
-      break;
     case AF_INET:
       {
         static_assert(
@@ -146,7 +145,6 @@ Object hsl_sockaddr_from_native(const sockaddr_storage& addr, socklen_t len) {
           )
         );
       }
-      break;
     case AF_INET6:
       {
         static_assert(
@@ -164,7 +162,6 @@ Object hsl_sockaddr_from_native(const sockaddr_storage& addr, socklen_t len) {
           )
         );
       }
-      break;
     default:
       {
         return create_object(
@@ -172,7 +169,6 @@ Object hsl_sockaddr_from_native(const sockaddr_storage& addr, socklen_t len) {
           make_vec_array(ntohs(addr.ss_family))
         );
       }
-      break;
   }
 }
 

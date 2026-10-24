@@ -102,7 +102,6 @@ bool typeSatisfiesConstraint(const TypeIntersectionConstraint& tc,
       } else {
         return tc.alwaysPasses(KindOfDict);
       }
-      break;
     }
     case T_LIST: {
       auto const format = tvCastToString(spec.lookup(s_format));
@@ -111,7 +110,6 @@ bool typeSatisfiesConstraint(const TypeIntersectionConstraint& tc,
       } else {
         return tc.alwaysPasses(KindOfVec);
       }
-      break;
     }
     case T_SET: {
       auto const format = tvCastToString(spec.lookup(s_format));
@@ -122,7 +120,6 @@ bool typeSatisfiesConstraint(const TypeIntersectionConstraint& tc,
       } else {
         return tc.alwaysPasses(KindOfDict);
       }
-      break;
     }
   }
   return false;
