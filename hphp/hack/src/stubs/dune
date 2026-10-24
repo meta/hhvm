@@ -6,6 +6,11 @@
   (pps lwt_ppx ppx_deriving.std)))
 
 (library
+ (name art_cli_lite_stubs)
+ (wrapped false)
+ (modules art_cli_lite))
+
+(library
  (name ai_stubs)
  (wrapped false)
  (modules ai ai_decl_heap)

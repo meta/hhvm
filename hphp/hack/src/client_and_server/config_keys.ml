@@ -388,6 +388,9 @@ module Hhconf = struct
 
   (* experiments / infrastructure *)
 
+  let art_cli_lite_exit_status_enabled =
+    hhconf_key "art_cli_lite_exit_status_enabled"
+
   let experiments = hhconf_key "experiments"
 
   let experiments_config_enabled = hhconf_key "experiments_config_enabled"

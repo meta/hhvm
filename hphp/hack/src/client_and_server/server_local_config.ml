@@ -216,6 +216,7 @@ type t = {
       (** A few select events like to log the init_proc_stack, but it's voluminous!
       The default behavior is to log init_proc_stack only when "--from" is absent.
       This flag lets us log it also when "--from" is present. *)
+  art_cli_lite_exit_status_enabled: bool;
   log_inference_constraints: bool;
       (** log type inference constraints into HackEventLogger *)
   experiments: string list;

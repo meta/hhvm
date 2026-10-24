@@ -349,6 +349,8 @@ module Hhconf : sig
 
   (* experiments / infrastructure *)
 
+  val art_cli_lite_exit_status_enabled : string
+
   val experiments : string
 
   val experiments_config_enabled : string

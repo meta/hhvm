@@ -36,6 +36,7 @@ let default =
     log_categories = [];
     log_large_fanouts_threshold = None;
     log_init_proc_stack_also_on_absent_from = false;
+    art_cli_lite_exit_status_enabled = false;
     log_inference_constraints = false;
     experiments = [];
     experiments_config_meta = "";
@@ -372,6 +373,12 @@ let load_
     bool_
       Config_keys.Hhconf.log_init_proc_stack_also_on_absent_from
       ~default:default.log_init_proc_stack_also_on_absent_from
+      config
+  in
+  let art_cli_lite_exit_status_enabled =
+    bool_
+      Config_keys.Hhconf.art_cli_lite_exit_status_enabled
+      ~default:default.art_cli_lite_exit_status_enabled
       config
   in
   let log_inference_constraints =
@@ -1223,6 +1230,7 @@ let load_
     log_categories;
     log_large_fanouts_threshold;
     log_init_proc_stack_also_on_absent_from;
+    art_cli_lite_exit_status_enabled;
     log_inference_constraints;
     experiments;
     experiments_config_meta;

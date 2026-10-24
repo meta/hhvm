@@ -179,6 +179,9 @@ let exec_command_with_config
       ~from
       ~cli_config_overrides
   in
+  if local_config.Server_local_config.art_cli_lite_exit_status_enabled then
+    Exit.add_hook_upon_clean_exit (fun { Exit_status.exit_status; _ } ->
+        Art_cli_lite.exit_status (Exit_status.show exit_status));
   init_event_logger root command ~init_id ~from config local_config;
   List.iter !qe_fetches ~f:log_qe_fetch;
 
