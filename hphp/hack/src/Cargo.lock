@@ -601,7 +601,7 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf74ea341ae8905eac9a234b6a5a845e118c25bbbdecf85ec77431a8b3bfa0be"
 dependencies = [
- "indexmap 1.9.2",
+ "indexmap 1.9.3",
  "lazy_static",
  "num-traits",
  "regex",
@@ -2395,9 +2395,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.9.2"
+version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1885e79c1fc4b10f0e172c475f458b7f7b93061064d98c3293e98c5ba0c8b399"
+checksum = "bd070e393353796e801d209ad339e89596eb4c8d430d18ede6a1cced8fafbd99"
 dependencies = [
  "autocfg",
  "hashbrown 0.12.3",
@@ -2788,7 +2788,7 @@ dependencies = [
  "cactus",
  "cfgrammar",
  "filetime",
- "indexmap 1.9.2",
+ "indexmap 1.9.3",
  "lazy_static",
  "lrtable",
  "num-traits",
@@ -3678,7 +3678,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0bda9164fe05bc9225752d54aae413343c36f684380005398a6a8fde95fe785"
 dependencies = [
  "autocfg",
- "indexmap 1.9.2",
+ "indexmap 1.9.3",
 ]
 
 [[package]]
