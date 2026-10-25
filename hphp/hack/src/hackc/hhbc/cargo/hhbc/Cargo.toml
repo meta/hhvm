@@ -24,5 +24,5 @@ naming_special_names_rust = { path = "../../../../naming" }
 oxidized = { path = "../../../../oxidized" }
 relative_path = { path = "../../../../utils/rust/relative_path" }
 serde = { version = "1.0.229", features = ["derive", "rc"] }
-triomphe = { version = "0.1.16", features = ["arc-swap"] }
+triomphe = { version = "0.1.17", features = ["arc-swap"] }
 write_bytes = { path = "../../../../utils/write_bytes/write_bytes" }

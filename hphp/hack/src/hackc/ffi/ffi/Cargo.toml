@@ -12,4 +12,4 @@ path = "../lib.rs"
 
 [dependencies]
 serde = { version = "1.0.229", features = ["derive", "rc"] }
-triomphe = { version = "0.1.16", features = ["arc-swap"] }
+triomphe = { version = "0.1.17", features = ["arc-swap"] }
