@@ -356,7 +356,7 @@ class EdenFileResult : public FileResult {
       // Copy thrift SHA1Result aka (std::string) into
       // watchman FileResult::ContentHash aka (std::array<uint8_t, 20>)
       case SHA1Result::Type::sha1: {
-        auto& hash = sha1_->get_sha1();
+        auto& hash = sha1_->sha1().as_const().value();
         FileResult::ContentHash result;
         std::copy(hash.begin(), hash.end(), result.begin());
 
@@ -365,7 +365,7 @@ class EdenFileResult : public FileResult {
 
       // Thrift error occured
       case SHA1Result::Type::error: {
-        auto& err = sha1_->get_error();
+        auto& err = sha1_->error().as_const().value();
         XCHECK(err.errorCode());
         throw std::system_error(
             *err.errorCode(), std::generic_category(), *err.message());
@@ -562,7 +562,7 @@ class EdenFileResult : public FileResult {
 
   void applyInformationOrError(const EntryInformationOrError& infoOrErr) {
     if (infoOrErr.getType() == EntryInformationOrError::Type::info) {
-      dtype_ = getDTypeFromEden(*infoOrErr.get_info().dtype());
+      dtype_ = getDTypeFromEden(*infoOrErr.info()->dtype());
       setExists(true);
     } else {
       setExists(false);
@@ -573,10 +573,10 @@ class EdenFileResult : public FileResult {
     if (infoOrErr.getType() == FileInformationOrError::Type::info) {
       FileInformation stat;
 
-      stat.size = *infoOrErr.get_info().size();
-      stat.mode = *infoOrErr.get_info().mode();
-      stat.mtime.tv_sec = *infoOrErr.get_info().mtime()->seconds();
-      stat.mtime.tv_nsec = *infoOrErr.get_info().mtime()->nanoSeconds();
+      stat.size = *infoOrErr.info()->size();
+      stat.mode = *infoOrErr.info()->mode();
+      stat.mtime.tv_sec = *infoOrErr.info()->mtime()->seconds();
+      stat.mtime.tv_nsec = *infoOrErr.info()->mtime()->nanoSeconds();
 
       stat_ = std::move(stat);
       setExists(true);
