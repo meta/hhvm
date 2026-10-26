@@ -702,10 +702,6 @@ class TestSubscribe(WatchmanTestCase.WatchmanTestCase):
 
         self.assertWaitForEqual([], checkSubscribers)
 
-    # TODO: Assimilate this test into test_subscribe when Watchman gets
-    # unicode support.
-    # TODO: Correctly test subscribe with unicode on Windows.
-    @unittest.skipIf(os.name == "nt", "win")
     @WatchmanTestCase.skip_for(codecs=["json"])
     def test_subscribe_unicode(self) -> None:
         unicode_filename = "\u263a"

@@ -9,13 +9,11 @@
 import os
 import subprocess
 import sys
-import unittest
 
 from watchman.integration.lib import WatchmanTestCase
 
 
 @WatchmanTestCase.expand_matrix
-@unittest.skipIf(os.name == "nt", "Doesn't run on Windows")
 class TestWatchmanWait(WatchmanTestCase.WatchmanTestCase):
     def requiresPersistentSession(self) -> bool:
         return True
@@ -23,7 +21,8 @@ class TestWatchmanWait(WatchmanTestCase.WatchmanTestCase):
     def spawnWatchmanWait(self, cmdArgs):
         wait_script = os.environ.get("WATCHMAN_WAIT_PATH")
         if wait_script:
-            args = [wait_script]
+            # Windows can't execute a .par directly.
+            args = [sys.executable, wait_script] if os.name == "nt" else [wait_script]
         else:
             args = [
                 sys.executable,
