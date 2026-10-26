@@ -5826,7 +5826,7 @@
             "kind": "end_of_file",
             "text": "",
             "offset": 1219,
-            "leading_width": 3,
+            "leading_width": 6,
             "width": 0,
             "trailing_width": 0,
             "leading": [
@@ -5841,10 +5841,22 @@
                 "text": "\n",
                 "offset": 1221,
                 "width": 1
+              },
+              {
+                "kind": "single_line_comment",
+                "text": "//",
+                "offset": 1222,
+                "width": 2
+              },
+              {
+                "kind": "end_of_line",
+                "text": "\n",
+                "offset": 1224,
+                "width": 1
               }
             ],
             "trailing": [],
-            "line_number": 32
+            "line_number": 33
           }
         }
       }

@@ -88,3 +88,4 @@ function test_inferred(): void {
   });
 }
 //
+//

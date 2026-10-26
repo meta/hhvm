@@ -1,6 +1,20 @@
+(5,23)-(5,35) A variadic `named` parameter may only appear at the end of a parameter list.
+(6,28)-(6,40) A variadic `named` parameter may only appear at the end of a parameter list.
 (6,28)-(6,40) A variadic parameter `...` may only appear at the end of a parameter list.
+(7,22)-(7,34) A variadic `named` parameter may only appear at the end of a parameter list.
 (7,22)-(7,34) A variadic parameter `...` may only appear at the end of a parameter list.
 (8,26)-(8,36) A variadic parameter `...` may only appear at the end of a parameter list.
+(11,31)-(11,43) A variadic `named` parameter may only appear at the end of a parameter list.
 (11,31)-(11,43) A variadic parameter `...` may only appear at the end of a parameter list.
+(12,30)-(12,42) A variadic `named` parameter may only appear at the end of a parameter list.
+(16,21)-(16,33) A variadic `named` parameter may only appear at the end of a parameter list.
+(20,9)-(20,21) A variadic `named` parameter may only appear at the end of a parameter list.
+(21,17)-(21,29) A variadic `named` parameter may only appear at the end of a parameter list.
+(24,30)-(24,42) A variadic `named` parameter may only appear at the end of a parameter list.
+(25,35)-(25,47) A variadic `named` parameter may only appear at the end of a parameter list.
+(26,29)-(26,41) A variadic `named` parameter may only appear at the end of a parameter list.
 (27,33)-(27,39) A variadic parameter `...` may only appear at the end of a parameter list.
+(28,35)-(28,47) A variadic `named` parameter may only appear at the end of a parameter list.
+(29,13)-(29,28) A variadic `named` parameter may only appear at the end of a parameter list.
+(30,20)-(30,32) A variadic `named` parameter may only appear at the end of a parameter list.
 (30,34)-(30,49) A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter.

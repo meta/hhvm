@@ -1,3 +1,33 @@
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_lambda_positional_variadic.php:42:9
+40 |     hh_expect_equivalent<bool>($flag);
+41 |   };
+42 |   $_ = (named int..., named string $label) ==> {
+   |         ^^^^^^^^^^^^ [1]
+43 |     hh_expect_equivalent<string>($label);
+44 |   };
+
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_lambda_positional_variadic.php:45:21
+43 |     hh_expect_equivalent<string>($label);
+44 |   };
+45 |   $_ = (int $first, named bool..., named string $label) ==> {
+   |                     ^^^^^^^^^^^^^ [1]
+46 |     hh_expect_equivalent<int>($first);
+47 |     hh_expect_equivalent<string>($label);
+
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_lambda_positional_variadic.php:49:25
+47 |     hh_expect_equivalent<string>($label);
+48 |   };
+49 |   $_ = (int ...$values, named float..., named string $label) ==> {
+   |                         ^^^^^^^^^^^^^^ [1]
+50 |     hh_expect_equivalent<vec<int>>($values);
+51 |     hh_expect_equivalent<string>($label);
+
 error: Typing[4452] hh_expect_equivalent type mismatch [1]
 -> Expected `int` [2]
 -> But got `string` (variadic argument) [3]
@@ -782,4 +812,4 @@ hh_single_type_check_magic.hhi:5:108
  6 | <<__NoAutoDynamic>> function hh_show_env()[]:void {}
  7 | <<__NoAutoDynamic>> function hh_log_level(string $key, int $level)[]:void {}
 
-40 errors found
+43 errors found

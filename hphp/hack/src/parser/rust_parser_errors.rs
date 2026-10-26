@@ -522,6 +522,26 @@ fn misplaced_variadic_param<'a>(params: S<'a>) -> Option<S<'a>> {
     }
     None
 }
+
+fn is_variadic_named_param(param: S<'_>) -> bool {
+    let ellipsis = match &param.children {
+        ParameterDeclaration(x) => &x.ellipsis,
+        ClosureParameterTypeSpecifier(x) => &x.ellipsis,
+        _ => return false,
+    };
+    parameter_modifier(param, TokenKind::Named).is_some() && ellipsis.is_ellipsis()
+}
+
+fn misplaced_variadic_named_param<'a>(params: S<'a>) -> Option<S<'a>> {
+    let mut params = syntax_to_list_no_separators(params).peekable();
+    while let Some(param) = params.next() {
+        if is_variadic_named_param(param) && params.peek().is_some() {
+            return Some(param);
+        }
+    }
+    None
+}
+
 // A variadic `named` parameter collects arguments nothing can refer to, so it
 // has no name. Return the name of any that was given one.
 fn variadic_named_param_with_name<'a>(params: S<'a>) -> Option<S<'a>> {
@@ -546,14 +566,7 @@ fn variadic_named_param_with_name<'a>(params: S<'a>) -> Option<S<'a>> {
 // matches no named parameter, so a second one can never be reached. Return it.
 fn duplicate_variadic_named_param<'a>(params: S<'a>) -> Option<S<'a>> {
     syntax_to_list_no_separators(params)
-        .filter(|param| {
-            let ellipsis = match &param.children {
-                ParameterDeclaration(x) => &x.ellipsis,
-                ClosureParameterTypeSpecifier(x) => &x.ellipsis,
-                _ => return false,
-            };
-            parameter_modifier(param, TokenKind::Named).is_some() && ellipsis.is_ellipsis()
-        })
+        .filter(|param| is_variadic_named_param(param))
         .nth(1)
 }
 
@@ -2578,6 +2591,9 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
     fn params_errors(&mut self, params: S<'a>) {
         self.produce_error_from_check(ends_with_variadic_comma, params, || errors::error2022);
         self.produce_error_from_check(misplaced_variadic_param, params, || errors::error2021);
+        self.produce_error_from_check(misplaced_variadic_named_param, params, || {
+            errors::misplaced_variadic_named_param
+        });
         self.produce_error_from_check(misplaced_splat_param, params, || errors::error2081);
         self.produce_error_from_check(variadic_named_param_with_name, params, || {
             errors::variadic_named_param_with_name

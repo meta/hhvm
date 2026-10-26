@@ -658,6 +658,9 @@ pub const variadic_named_param_with_name: Error = Cow::Borrowed(
     "A variadic `named` parameter cannot have a name, since nothing can refer to the arguments it collects. For example: `named int...`.",
 );
 
+pub const misplaced_variadic_named_param: Error =
+    Cow::Borrowed("A variadic `named` parameter may only appear at the end of a parameter list.");
+
 pub const duplicate_variadic_named_param: Error = Cow::Borrowed(
     "A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter.",
 );

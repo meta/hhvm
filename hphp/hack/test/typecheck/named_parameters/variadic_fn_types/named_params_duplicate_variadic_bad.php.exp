@@ -1,3 +1,13 @@
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:5:14
+3 | <<file: __EnableUnstableFeatures('named_parameters')>>
+4 | 
+5 | function two(named int..., named string...): void {}
+  |              ^^^^^^^^^^^^ [1]
+6 | function two_after_positional(int ...$rest, named int..., named string...): void {}
+7 | function three(named int..., named string..., named bool...): void {}
+
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
 named_params_duplicate_variadic_bad.php:5:28
@@ -7,6 +17,16 @@ named_params_duplicate_variadic_bad.php:5:28
   |                            ^^^^^^^^^^^^^^^ [1]
 6 | function two_after_positional(int ...$rest, named int..., named string...): void {}
 7 | function three(named int..., named string..., named bool...): void {}
+
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:6:45
+4 | 
+5 | function two(named int..., named string...): void {}
+6 | function two_after_positional(int ...$rest, named int..., named string...): void {}
+  |                                             ^^^^^^^^^^^^ [1]
+7 | function three(named int..., named string..., named bool...): void {}
+8 | 
 
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
@@ -18,6 +38,16 @@ named_params_duplicate_variadic_bad.php:6:59
 7 | function three(named int..., named string..., named bool...): void {}
 8 | 
 
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:7:16
+5 | function two(named int..., named string...): void {}
+6 | function two_after_positional(int ...$rest, named int..., named string...): void {}
+7 | function three(named int..., named string..., named bool...): void {}
+  |                ^^^^^^^^^^^^ [1]
+8 | 
+9 | abstract class C {
+
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
 named_params_duplicate_variadic_bad.php:7:30
@@ -27,6 +57,16 @@ named_params_duplicate_variadic_bad.php:7:30
   |                              ^^^^^^^^^^^^^^^ [1]
 8 | 
 9 | abstract class C {
+
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:10:30
+ 8 | 
+ 9 | abstract class C {
+10 |   abstract public function m(named bool..., named int...): void;
+   |                              ^^^^^^^^^^^^^ [1]
+11 | }
+12 | 
 
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
@@ -38,6 +78,16 @@ named_params_duplicate_variadic_bad.php:10:45
 11 | }
 12 | 
 
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:14:21
+12 | 
+13 | interface I {
+14 |   public function j(named mixed..., named int...): void;
+   |                     ^^^^^^^^^^^^^^ [1]
+15 | }
+16 | 
+
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
 named_params_duplicate_variadic_bad.php:14:37
@@ -47,6 +97,16 @@ named_params_duplicate_variadic_bad.php:14:37
    |                                     ^^^^^^^^^^^^ [1]
 15 | }
 16 | 
+
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:18:9
+16 | 
+17 | function in_lambdas(): void {
+18 |   $_ = (named int..., named string...) ==> 1;
+   |         ^^^^^^^^^^^^ [1]
+19 |   $_ = function(named int..., named string...): void {};
+20 | }
 
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
@@ -58,6 +118,16 @@ named_params_duplicate_variadic_bad.php:18:23
 19 |   $_ = function(named int..., named string...): void {};
 20 | }
 
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:19:17
+17 | function in_lambdas(): void {
+18 |   $_ = (named int..., named string...) ==> 1;
+19 |   $_ = function(named int..., named string...): void {};
+   |                 ^^^^^^^^^^^^ [1]
+20 | }
+21 | 
+
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
 named_params_duplicate_variadic_bad.php:19:31
@@ -68,6 +138,16 @@ named_params_duplicate_variadic_bad.php:19:31
 20 | }
 21 | 
 
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_duplicate_variadic_bad.php:22:31
+20 | }
+21 | 
+22 | function in_fn_type((function(named int..., named string...): void) $_): void {}
+   |                               ^^^^^^^^^^^^ [1]
+23 | //
+24 | //
+
 error: Parsing[1002] A parameter list may have at most one variadic `named` parameter. The first one already collects every named argument that matches no named parameter. [1]
 
 named_params_duplicate_variadic_bad.php:22:45
@@ -76,6 +156,7 @@ named_params_duplicate_variadic_bad.php:22:45
 22 | function in_fn_type((function(named int..., named string...): void) $_): void {}
    |                                             ^^^^^^^^^^^^^^^ [1]
 23 | //
+24 | //
 
 error: Naming[2036] Argument already bound: `...` [1]
 
@@ -157,4 +238,4 @@ named_params_duplicate_variadic_bad.php:19:43
 20 | }
 21 | 
 
-16 errors found
+24 errors found

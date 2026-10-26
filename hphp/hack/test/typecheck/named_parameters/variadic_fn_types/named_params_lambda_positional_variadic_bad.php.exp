@@ -1,3 +1,33 @@
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_lambda_positional_variadic_bad.php:25:9
+23 |     expect_int($flag); // Error
+24 |   };
+25 |   $_ = (named int..., named string $label) ==> {
+   |         ^^^^^^^^^^^^ [1]
+26 |     expect_int($label); // Error
+27 |   };
+
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_lambda_positional_variadic_bad.php:28:21
+26 |     expect_int($label); // Error
+27 |   };
+28 |   $_ = (int $first, named bool..., named string $label) ==> {
+   |                     ^^^^^^^^^^^^^ [1]
+29 |     expect_string($first); // Error
+30 |     expect_int($label); // Error
+
+error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+
+named_params_lambda_positional_variadic_bad.php:32:25
+30 |     expect_int($label); // Error
+31 |   };
+32 |   $_ = (int ...$values, named float..., named string $label) ==> {
+   |                         ^^^^^^^^^^^^^^ [1]
+33 |     expect_string($values[0]); // Error
+34 |     expect_int($label); // Error
+
 error: Typing[4110] Invalid argument [1]
 -> Expected `int` [2]
 -> But got `string` [3]
@@ -279,4 +309,4 @@ named_params_lambda_positional_variadic_bad.php:69:17
 70 |     expect_int($flag); // Error
 71 |   });
 
-12 errors found
+15 errors found

@@ -29,3 +29,4 @@ type Nested = (function((function(named int..., int): void)): void);
 function ro(named string..., named readonly string $s): void {}
 function duplicate(named int..., named string...): void {}
 //
+//

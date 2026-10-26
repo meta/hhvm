@@ -21,3 +21,4 @@ function in_lambdas(): void {
 
 function in_fn_type((function(named int..., named string...): void) $_): void {}
 //
+//
