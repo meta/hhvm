@@ -1020,6 +1020,17 @@ module M = struct
     Deps.make_depend_on_constructor env class_;
     Cls.construct class_ [@alert "-dependencies"]
 
+  let valid_newable_class env class_ =
+    if Ast_defs.is_c_class (Cls.kind class_) then
+      Cls.final class_
+      || not
+           (equal_consistent_kind (snd (get_construct env class_)) Inconsistent)
+    else
+      (* There is currently a bug with interfaces that allows constructors to
+         change their signature, so they are not considered here.
+         TODO: T41093452 *)
+      false
+
   let get_return env = env.genv.return
 
   let set_return env x =

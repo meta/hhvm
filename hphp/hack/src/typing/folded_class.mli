@@ -186,8 +186,6 @@ val smethods : t -> (string * class_elt) list
       differ between legacy and shallow decl due to the perf cost in shallow). *)
 val get_typeconst_enforceability : t -> string -> (Pos_or_decl.t * bool) option
 
-val valid_newable_class : t -> bool
-
 val overridden_method :
   t ->
   method_name:string ->

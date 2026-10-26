@@ -87,6 +87,10 @@ module Expose_to_tast_env : sig
   (** Get class constructor declaration from the appropriate backend and add dependency. *)
   val get_construct : env -> class_decl -> class_elt option * consistent_kind
 
+  (** Check whether a class is a valid newable bound, recording a constructor
+      dependency when its consistency is inspected. *)
+  val valid_newable_class : env -> class_decl -> bool
+
   val get_self_class : env -> class_decl Decl_entry.t
 
   val get_parent_class : env -> class_decl Decl_entry.t

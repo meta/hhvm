@@ -67,7 +67,7 @@ let verify_has_consistent_bound env (tparam : Tast.tparam) =
         let open Option.Let_syntax in
         let* acc = acc in
         let* cls = cls in
-        if Cls.valid_newable_class cls then
+        if Env.valid_newable_class env cls then
           Some (cls :: acc)
         else
           Some acc)
