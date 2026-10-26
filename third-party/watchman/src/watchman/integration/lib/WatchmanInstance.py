@@ -8,6 +8,7 @@
 
 
 import atexit
+import functools
 import hashlib
 import json
 import os
@@ -45,6 +46,21 @@ def getSharedInstance(config=None):
         setattr(tls, attr, inst)
         atexit.register(lambda inst=inst: inst.stop())
     return inst
+
+
+KICKSTART_FSEVENTSD = "/usr/local/bin/kickstart-fseventsd"
+
+
+@functools.cache
+def startFseventsd() -> None:
+    """Start fseventsd on macOS hosts that provide KICKSTART_FSEVENTSD.
+
+    Watchman cannot watch anything on macOS without fseventsd. Sandcastle's
+    Mac VM images keep it off and provide the script, which the job user may
+    run with ``sudo -n``; other hosts do not have the script.
+    """
+    if sys.platform == "darwin" and os.access(KICKSTART_FSEVENTSD, os.X_OK):
+        subprocess.call(["sudo", "-n", KICKSTART_FSEVENTSD])
 
 
 def mergeTestConfig(config):
@@ -202,6 +218,7 @@ class _Instance:
         return proc.communicate()
 
     def start(self, extra_env=None) -> None:
+        startFseventsd()
         args = [self.watchmanBinary(), "--foreground", "--log-level=2"]
         # pyre-fixme[16]: `_Instance` has no attribute `get_state_args`.
         args.extend(self.get_state_args())
