@@ -1629,7 +1629,7 @@ struct PredictiveFetch {
   6: optional unsigned64 endTime;
 }
 
-/** Params for prefetchFiles(). */
+/** Params for prefetchFilesV2(). */
 struct PrefetchParams {
   1: PathString mountPoint;
   2: list<string> globs;
@@ -1732,7 +1732,7 @@ struct HgCacheStats {
   11: i64 lfsBytesLimit;
 }
 
-/** Result for prefetchFiles(). */
+/** Result for prefetchFilesV2(). */
 struct PrefetchResult {
   1: optional Glob prefetchedFiles;
   2: optional PrefetchStats stats;
@@ -2840,17 +2840,6 @@ service EdenService extends fb303_core.BaseService {
   ReaddirResult readdir(1: ReaddirParams params) throws (1: EdenError ex);
 
   /**
-   * DEPRECATED: Use globFiles().
-   *
-   * Note: may return stale data if synchronizeWorkingCopy isn't called, see the
-   * documentation for that method.
-   */
-  list<PathString> glob(
-    1: PathString mountPoint,
-    2: list<string> globs,
-  ) throws (1: EdenError ex);
-
-  /**
    * Returns a list of files that match the GlobParams, notably,
    * the list of glob patterns.
    * There are no duplicate values in the result.
@@ -2860,17 +2849,6 @@ service EdenService extends fb303_core.BaseService {
    * these for more details.
    */
   Glob globFiles(1: GlobParams params) throws (1: EdenError ex);
-
-  /**
-   * DEPRECATED: use prefetchFilesV2
-   *
-   * Has the same behavior as globFiles, but should be called in the case of a prefetch.
-   * This request could be deprioritized since it will be assumed that this call is used
-   * for optimization and the result not relied on for operations. This command does not
-   * return the list of prefetched files.
-   */
-  @thrift.Priority{level = thrift.RpcPriority.BEST_EFFORT}
-  void prefetchFiles(1: PrefetchParams params) throws (1: EdenError ex);
 
   /**
    * Has the same behavior as globFiles, but should be called in the case of a prefetch.
@@ -2892,21 +2870,6 @@ service EdenService extends fb303_core.BaseService {
   PreloadProgressResponse queryPreloadProgress(
     1: PreloadProgressRequest request,
   ) throws (1: EdenError ex);
-
-  /**
-   * DEPRECATED: predictive prefetching has been removed. This method is a
-   * no-op that always returns an empty Glob.
-   */
-  Glob predictiveGlobFiles(1: GlobParams params) throws (1: EdenError ex);
-
-  /**
-   * Chowns all files in the requested mount to the requested uid and gid
-   *
-   * DEPRECATED: Prefer using ChangeOwnership in new code.  Callers may still
-   * need to fall back to chown() if talking to an older edenfs daemon
-   * that does not support ChangeOwnership() yet.
-   */
-  void chown(1: PathString mountPoint, 2: i32 uid, 3: i32 gid);
 
   /**
    * Changes ownership all files in the requested mount to the requested uid and gid
@@ -2990,26 +2953,6 @@ service EdenService extends fb303_core.BaseService {
   void reloadConfig() throws (1: EdenError ex);
 
   //////// Debugging APIs ////////
-
-  /**
-   * DEPRECATED: Use debugGetTree().
-   * TODO: remove this API after 07/01/2024
-   *
-   * Get the contents of a source control Tree.
-   *
-   * This can be used to confirm if eden's LocalStore contains information
-   * for the tree, and that the information is correct.
-   *
-   * If localStoreOnly is true, the data is loaded directly from the
-   * LocalStore, and an error will be raised if it is not already present in
-   * the LocalStore.  If localStoreOnly is false, the data may be retrieved
-   * from the BackingStore if it is not already present in the LocalStore.
-   */
-  list<ScmTreeEntry> debugGetScmTree(
-    1: PathString mountPoint,
-    2: ThriftObjectId id,
-    3: bool localStoreOnly,
-  ) throws (1: EdenError ex);
 
   DebugGetScmTreeResponse debugGetTree(
     1: DebugGetScmTreeRequest request,
