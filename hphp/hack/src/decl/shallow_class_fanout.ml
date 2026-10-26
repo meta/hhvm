@@ -107,16 +107,24 @@ let get_minor_change_fanout
     S_map.fold
       (fun name change acc ->
         let acc =
-          (* If a const has been added or removed in an enum type, we must recheck
+          (* If a const changed in an enum type, we must recheck
              all switch statements which need to have a case for each variant
              (exhaustive switch statements add an AllMembers dependency).
              We don't bother to test whether the class is an enum type because
-             non-enum classes will have no AllMembers dependents anyway. *)
+             non-enum classes will have no AllMembers dependents anyway.
+             Note that if an existing constant's type changes, we also need to
+             re-check exhaustive switches, since this can change the inhabitants
+             of \HH\MemberOf<MyEnum, Foo>.
+             We must include `Changed_inheritance` as well because changing
+             abstractness and the constant's type at the same time yields
+             `Changed_inheritance` instead of `Modified`. *)
           match change with
           | Added
-          | Removed ->
+          | Removed
+          | Changed_inheritance
+          | Modified _ ->
             recheck_descendants_and_their_member_dependents acc Dep.Member.all
-          | _ -> acc
+          | Private_change_not_in_trait -> acc
         in
         add_member_fanout ~is_const:true (Dep.Member.const name) change acc)
       consts
