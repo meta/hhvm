@@ -34,6 +34,24 @@ module Primary : sig
           class_name: string;
           const_name: string;
         }
+      | Shape_key_class_const_value_unresolvable of {
+          pos: Pos.t;
+          value_pos: Pos.t;
+          class_name: string;
+          const_name: string;
+        }
+      | Shape_key_class_const_nameof_self_in_trait of {
+          pos: Pos.t;
+          value_pos: Pos.t;
+          class_name: string;
+          const_name: string;
+        }
+      | Shape_key_class_const_is_abstract of {
+          pos: Pos.t;
+          decl_pos: Pos.t;
+          class_name: string;
+          const_name: string;
+        }
       | Invalid_shape_field_type of {
           pos: Pos.t;
           ty_pos: Pos_or_decl.t;

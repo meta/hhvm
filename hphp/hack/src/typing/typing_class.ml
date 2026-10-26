@@ -1438,23 +1438,13 @@ let class_const_def ~in_enum_class c cls env cc =
   in
   Option.iter ty_err_opt ~f:(Typing_error_utils.add_typing_error ~env);
   let env =
-    if TCO.require_shape_key_attribute tcopt then (
-      match
-        Naming_attributes.mem_pos
-          SN.UserAttributes.uaShapeKey
-          cc.cc_user_attributes
-      with
-      | None -> env
-      | Some pos ->
-        let key = Ast_defs.SFclass_const ((pos, snd c.c_name), (pos, snd id)) in
-        (match kind with
-        | CCConcrete expr -> Typing_shapes.check_trait_self_shape_key env expr
-        | CCAbstract _ -> ());
-        let (env, errors) = Typing_shapes.check_shape_keys_validity env [key] in
-        List.iter errors ~f:(Typing_error_utils.add_typing_error ~env);
-        env
-    ) else
-      env
+    match
+      Naming_attributes.mem_pos
+        SN.UserAttributes.uaShapeKey
+        cc.cc_user_attributes
+    with
+    | None -> env
+    | Some pos -> Typing_shapes.check_shape_key_const env pos c cls cc kind
   in
   ( env,
     ( {

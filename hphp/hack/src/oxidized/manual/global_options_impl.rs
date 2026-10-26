@@ -79,6 +79,7 @@ impl Default for GlobalOptions {
             tco_disallow_discarded_nullable_awaitables: false,
             tco_check_duplicate_enum_values: false,
             tco_require_shape_key_attribute: false,
+            tco_require_const_shape_key_be_resolvable: false,
             glean_reponame: String::from("www.hack.light"),
             symbol_write_index_inherited_members: true,
             symbol_write_ownership: false,

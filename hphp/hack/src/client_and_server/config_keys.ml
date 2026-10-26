@@ -122,6 +122,9 @@ module Hhconfig = struct
 
   let require_shape_key_attribute = key "require_shape_key_attribute"
 
+  let require_const_shape_key_be_resolvable =
+    key "require_const_shape_key_be_resolvable"
+
   let include_enum_member_values = key "include_enum_member_values"
 
   let include_const_shape_key_values = key "include_const_shape_key_values"

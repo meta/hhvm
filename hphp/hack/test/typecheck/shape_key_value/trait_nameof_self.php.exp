@@ -1,0 +1,14 @@
+error: Typing[4534] Class constant `TraitShapeKeyValues::SELF_NAME` marked with `<<__ShapeKey>>` cannot be initialized with `nameof self` in a trait [1]
+-> `nameof self` resolves to the using class; use a literal or an explicit class name with `nameof` [2]
+
+trait_nameof_self.php:4:5
+2 | 
+3 | trait TraitShapeKeyValues {
+4 |   <<__ShapeKey>>
+  |     ^^^^^^^^^^ [1]
+5 |   const string SELF_NAME = nameof self;
+  |                            ^^^^^^^^^^^ [2]
+6 | 
+7 |   <<__ShapeKey>>
+
+1 error found

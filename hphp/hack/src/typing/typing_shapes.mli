@@ -75,6 +75,17 @@ val to_dict :
   Typing_defs.locl_phase Typing_defs.ty ->
   Type_mapper.result
 
+(** Check a class constant annotated with [__ShapeKey], including its initializer
+    value, trait restrictions, and shape-key validity. *)
+val check_shape_key_const :
+  Typing_env_types.env ->
+  Pos.t ->
+  Nast.class_ ->
+  Folded_class.t ->
+  Nast.class_const ->
+  ('a, 'b) Aast.class_const_kind ->
+  Typing_env_types.env
+
 (** Report `self::CONST` or `nameof self` used as a shape key inside a trait. *)
 val check_trait_self_shape_key :
   Typing_env_types.env -> ('a, 'b) Aast.expr -> unit

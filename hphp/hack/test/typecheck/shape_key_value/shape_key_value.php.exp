@@ -1,0 +1,66 @@
+error: Typing[4535] Abstract class constant `AbstractShapeKeyValues::DEFAULTED` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+shape_key_value.php:27:5
+25 |   <<__ShapeKey>>
+26 |   const string CONCRETE = 'concrete';
+27 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+28 |   abstract const string DEFAULTED = 'default';
+   |                         ^^^^^^^^^ [2]
+29 |   <<__ShapeKey>>
+30 |   abstract const string MISSING;
+
+error: Typing[4535] Abstract class constant `AbstractShapeKeyValues::MISSING` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+shape_key_value.php:29:5
+27 |   <<__ShapeKey>>
+28 |   abstract const string DEFAULTED = 'default';
+29 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+30 |   abstract const string MISSING;
+   |                         ^^^^^^^ [2]
+31 | }
+32 | 
+
+error: Typing[4534] Class constant `InvalidShapeKeyValues::COMPUTED` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shape_key_value.php:34:5
+32 | 
+33 | class InvalidShapeKeyValues {
+34 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+35 |   const string COMPUTED = 'computed'.'value';
+   |                           ^^^^^^^^^^^^^^^^^^ [2]
+36 |   <<__ShapeKey>>
+37 |   const string FORWARDED = ValidShapeKeyValues::STRING;
+
+error: Typing[4534] Class constant `InvalidShapeKeyValues::FORWARDED` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shape_key_value.php:36:5
+34 |   <<__ShapeKey>>
+35 |   const string COMPUTED = 'computed'.'value';
+36 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+37 |   const string FORWARDED = ValidShapeKeyValues::STRING;
+   |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+38 |   <<__ShapeKey>>
+39 |   const string INVALID_UTF8 = "\xff";
+
+error: Typing[4534] Class constant `InvalidShapeKeyValues::INVALID_UTF8` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shape_key_value.php:38:5
+36 |   <<__ShapeKey>>
+37 |   const string FORWARDED = ValidShapeKeyValues::STRING;
+38 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+39 |   const string INVALID_UTF8 = "\xff";
+   |                               ^^^^^^ [2]
+40 | }
+41 | 
+
+5 errors found

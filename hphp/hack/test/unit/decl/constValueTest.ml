@@ -106,19 +106,15 @@ let cases =
       "class",
       {|'\Other\Target'|},
       Some (SKVString "\\Other\\Target") );
-    ("class_pointer", "class", "Alias::class", Some (SKVString "Other\\Target"));
-    ( "trait_class_pointer",
-      "trait",
-      "Alias::class",
-      Some (SKVString "Other\\Target") );
+    ("class_pointer", "class", "Alias::class", None);
+    ("self_class_pointer", "class", "self::class", None);
+    ("trait_class_pointer", "trait", "Alias::class", None);
     ( "interface_member_name_string",
       "interface",
       "'KEY'",
       Some (SKVString "KEY") );
-    ( "interface_class_pointer",
-      "interface",
-      "Alias::class",
-      Some (SKVString "Other\\Target") );
+    ("interface_class_pointer", "interface", "Alias::class", None);
+    ("interface_self_class_pointer", "interface", "self::class", None);
     ( "interface_nameof_self",
       "interface",
       "nameof self",
@@ -130,21 +126,17 @@ let cases =
 
 let xhp_cases =
   [
-    ("global_xhp_nameof", "", false, "nameof :foo:bar", "xhp_foo__bar");
-    ("global_xhp_class_pointer", "", false, ":foo:bar::class", "xhp_foo__bar");
+    ("global_xhp_nameof", "", false, "nameof :foo:bar", Some "xhp_foo__bar");
+    ("global_xhp_class_pointer", "", false, ":foo:bar::class", None);
     ( "namespaced_xhp_nameof",
       "ShapeKeys",
       false,
       "nameof :foo:bar",
-      "ShapeKeys\\xhp_foo__bar" );
-    ( "namespaced_xhp_class_pointer",
-      "ShapeKeys",
-      false,
-      ":foo:bar::class",
-      "ShapeKeys\\xhp_foo__bar" );
-    ("xhp_hyphen", "", false, ":foo-bar::class", "xhp_foo_bar");
-    ("unmangled_xhp_nameof", "", true, "nameof :foo:bar", "foo\\bar");
-    ("unmangled_xhp_class_pointer", "", true, ":foo:bar::class", "foo\\bar");
+      Some "ShapeKeys\\xhp_foo__bar" );
+    ("namespaced_xhp_class_pointer", "ShapeKeys", false, ":foo:bar::class", None);
+    ("xhp_hyphen", "", false, ":foo-bar::class", None);
+    ("unmangled_xhp_nameof", "", true, "nameof :foo:bar", Some "foo\\bar");
+    ("unmangled_xhp_class_pointer", "", true, ":foo:bar::class", None);
   ]
 
 let () =
@@ -173,7 +165,8 @@ let () =
              in
              assert_equal
                ~printer:show_value
-               (Some (Typing_defs.Const_value.SKVString expected))
+               (Option.map expected ~f:(fun value ->
+                    Typing_defs.Const_value.SKVString value))
                (parse_value ~namespace ~parser_options "class" expression))
        @ List.concat_map
            [

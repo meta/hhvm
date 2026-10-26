@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<7b625864456df827ee58ea9ce906593b>>
+// @generated SignedSource<<92b38dcab7173d2b61789a63198513f1>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -602,6 +602,8 @@ pub enum Typing {
     RedundantShapeSplat = 4531,
     UnsupportedCyclicShapeSplatBounds = 4532,
     ShapeKeyClassConstMissingAttribute = 4533,
+    ShapeKeyClassConstValueUnresolvable = 4534,
+    ShapeKeyClassConstIsAbstract = 4535,
 }
 impl TrivialDrop for Typing {}
 arena_deserializer::impl_deserialize_in_arena!(Typing);
@@ -663,6 +665,7 @@ pub enum Warning {
     RedundantRequireThisAs = 12043,
     DynamicReturn = 12044,
     ReadonlyPropertyOverride = 12045,
+    ShapeKeyClassConstValueUnresolvable = 12046,
 }
 impl TrivialDrop for Warning {}
 arena_deserializer::impl_deserialize_in_arena!(Warning);

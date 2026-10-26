@@ -123,8 +123,9 @@ module Const_value : sig
     | SKVInt of string
     | SKVString of string
 
-  (** For shape key normalisation only; class pointers become class-name strings,
-      with legacy XHP names mangled as at runtime. Unresolved values return [None]. *)
+  (** For shape key normalisation only; [nameof] values become class-name strings,
+      with legacy XHP names mangled as at runtime. Class pointers and unresolved
+      values return [None]. *)
   val concrete_value : member_name:string -> t -> concrete_value option
 
   (** Whether the value cannot be resolved to a concrete, comparable form. *)

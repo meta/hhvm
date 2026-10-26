@@ -834,6 +834,8 @@ module Typing = struct
     | RedundantShapeSplat [@value 4531]
     | UnsupportedCyclicShapeSplatBounds [@value 4532]
     | ShapeKeyClassConstMissingAttribute [@value 4533]
+    | ShapeKeyClassConstValueUnresolvable [@value 4534]
+    | ShapeKeyClassConstIsAbstract [@value 4535]
   (* Add new Typing codes here! Comment out when deprecating. *)
   [@@deriving enum, show { with_path = false }]
 
@@ -883,6 +885,7 @@ module Warning = struct
     | RedundantRequireThisAs [@value 12043]
     | DynamicReturn [@value 12044]
     | ReadonlyPropertyOverride [@value 12045]
+    | ShapeKeyClassConstValueUnresolvable [@value 12046]
       (* Add new Warning codes here! Comment out when deprecating. *)
   [@@deriving enum, ord, show { with_path = false }]
 end

@@ -112,6 +112,8 @@ module Hhconfig : sig
 
   val require_shape_key_attribute : string
 
+  val require_const_shape_key_be_resolvable : string
+
   val include_enum_member_values : string
 
   val include_const_shape_key_values : string

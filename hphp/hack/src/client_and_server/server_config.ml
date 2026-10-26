@@ -494,6 +494,10 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt Config_keys.Hhconfig.check_duplicate_enum_values config)
     ?tco_require_shape_key_attribute:
       (bool_opt Config_keys.Hhconfig.require_shape_key_attribute config)
+    ?tco_require_const_shape_key_be_resolvable:
+      (bool_opt
+         Config_keys.Hhconfig.require_const_shape_key_be_resolvable
+         config)
     ?tco_typecheck_sample_rate:
       (float_opt Config_keys.Hhconfig.typecheck_sample_rate config)
     ?tco_pessimise_builtins:

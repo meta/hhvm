@@ -45,6 +45,61 @@ let shape_key_attribute_error env pos cls const_name class_const =
   else
     None
 
+let check_shape_key_value env pos c cls cc =
+  let open Aast in
+  let tcopt = Env.get_tcopt env in
+  if tcopt.Global_options.po.Parser_options.include_const_shape_key_values then begin
+    let class_name = Utils.strip_ns (snd c.c_name) in
+    let const_name = snd cc.cc_id in
+    let error =
+      let open Typing_error.Primary.Shape in
+      match cc.cc_kind with
+      | CCAbstract _ ->
+        Some
+          (Shape_key_class_const_is_abstract
+             { pos; decl_pos = fst cc.cc_id; class_name; const_name })
+      | CCConcrete ((_, _, Aast.Nameof (_, _, Aast.CIself)) as value)
+        when Ast_defs.is_c_trait c.c_kind ->
+        Some
+          (Shape_key_class_const_nameof_self_in_trait
+             {
+               pos;
+               value_pos = Aast_utils.get_expr_pos value;
+               class_name;
+               const_name;
+             })
+      | CCConcrete value ->
+        let recorded_value =
+          Env.get_const env cls const_name
+          |> Option.bind ~f:(fun const ->
+                 Const_value.concrete_value
+                   ~member_name:const_name
+                   const.cc_value)
+        in
+        (match recorded_value with
+        | Some _ -> None
+        | None ->
+          let value_pos = Aast_utils.get_expr_pos value in
+          if Typechecker_options.require_const_shape_key_be_resolvable tcopt
+          then
+            Some
+              (Shape_key_class_const_value_unresolvable
+                 { pos; value_pos; class_name; const_name })
+          else begin
+            Typing_warning_utils.add
+              env
+              Typing_warning.
+                ( pos,
+                  Shape_key_class_const_value_unresolvable,
+                  Shape_key_class_const_value_unresolvable.
+                    { class_name; const_name; value_pos } );
+            None
+          end)
+    in
+    Option.iter error ~f:(fun error ->
+        Typing_error_utils.add_typing_error ~env @@ Typing_error.shape error)
+  end
+
 let check_trait_self_shape_key env (_, pos, field) =
   let key_name =
     match field with
@@ -984,6 +1039,21 @@ let check_shape_keys_validity env keys =
         match check_field pos info env k with
         | (env, Some ty_err) -> (env, ty_err :: ty_errs)
         | (env, _) -> (env, ty_errs))
+
+let check_shape_key_const env pos c cls cc kind =
+  check_shape_key_value env pos c cls cc;
+  if Typechecker_options.require_shape_key_attribute (Env.get_tcopt env) then (
+    let key =
+      Ast_defs.SFclass_const ((pos, snd c.Aast.c_name), (pos, snd cc.Aast.cc_id))
+    in
+    (match kind with
+    | Aast.CCConcrete expr -> check_trait_self_shape_key env expr
+    | Aast.CCAbstract _ -> ());
+    let (env, errors) = check_shape_keys_validity env [key] in
+    List.iter errors ~f:(Typing_error_utils.add_typing_error ~env);
+    env
+  ) else
+    env
 
 let update_param : decl_fun_param -> decl_ty -> decl_fun_param =
  (fun param ty -> { param with fp_type = ty })

@@ -197,9 +197,8 @@ module Const_value = struct
     | CVLargeInt value -> Some (SKVInt value)
     | CVString value -> Some (SKVString value)
     | CVLabel -> Some (SKVString member_name)
-    | CVNameof value
-    | CVClassPointer value ->
-      Some (SKVString (Utils.strip_ns value))
+    | CVNameof value -> Some (SKVString (Utils.strip_ns value))
+    | CVClassPointer _
     | CVAbsent
     | CVConstAccess _ ->
       None

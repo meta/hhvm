@@ -176,6 +176,10 @@ type t = {
       (** Flag to error on enums whose member values are not distinct *)
   tco_require_shape_key_attribute: bool;
       (** Require the ShapeKey attribute at class-constant shape-key use sites. *)
+  tco_require_const_shape_key_be_resolvable: bool;
+      (** Report errors instead of warnings for statically unresolvable ShapeKey
+          values when include_const_shape_key_values is enabled. Abstract constants
+          and trait-dependent [nameof self] always produce errors. *)
   tco_typecheck_sample_rate: float;
       (** Type check this proportion of all files. Default is 1.0.
         DO NOT set to any other value except for testing purposes. *)
@@ -368,6 +372,7 @@ val set :
   ?tco_disallow_discarded_nullable_awaitables:bool ->
   ?tco_check_duplicate_enum_values:bool ->
   ?tco_require_shape_key_attribute:bool ->
+  ?tco_require_const_shape_key_be_resolvable:bool ->
   ?tco_typecheck_sample_rate:float ->
   ?tco_pessimise_builtins:bool ->
   ?tco_enable_no_auto_dynamic:bool ->

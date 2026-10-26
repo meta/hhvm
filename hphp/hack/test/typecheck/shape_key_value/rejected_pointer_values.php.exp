@@ -1,0 +1,178 @@
+error: Typing[4534] Class constant `RejectedPointerValues::CLASS_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:20:5
+18 | 
+19 | class RejectedPointerValues {
+20 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+21 |   const class<RejectedPointerValues> CLASS_POINTER = RejectedPointerValues::class;
+   |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+22 |   <<__ShapeKey>>
+23 |   const class<RejectedPointerValues> SELF_CLASS_POINTER = self::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::SELF_CLASS_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:22:5
+20 |   <<__ShapeKey>>
+21 |   const class<RejectedPointerValues> CLASS_POINTER = RejectedPointerValues::class;
+22 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+23 |   const class<RejectedPointerValues> SELF_CLASS_POINTER = self::class;
+   |                                                           ^^^^^^^^^^^ [2]
+24 |   <<__ShapeKey>>
+25 |   const classname<RejectedPointerValues> CLASSNAME_FROM_POINTER = self::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::CLASSNAME_FROM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:24:5
+22 |   <<__ShapeKey>>
+23 |   const class<RejectedPointerValues> SELF_CLASS_POINTER = self::class;
+24 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+25 |   const classname<RejectedPointerValues> CLASSNAME_FROM_POINTER = self::class;
+   |                                                                   ^^^^^^^^^^^ [2]
+26 |   <<__ShapeKey>>
+27 |   const HH\typename<RejectedPointerValues> TYPENAME_FROM_POINTER = self::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::TYPENAME_FROM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:26:5
+24 |   <<__ShapeKey>>
+25 |   const classname<RejectedPointerValues> CLASSNAME_FROM_POINTER = self::class;
+26 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+27 |   const HH\typename<RejectedPointerValues> TYPENAME_FROM_POINTER = self::class;
+   |                                                                    ^^^^^^^^^^^ [2]
+28 |   <<__ShapeKey>>
+29 |   const enum<int> INT_ENUM_POINTER = IntNameEnum::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::INT_ENUM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:28:5
+26 |   <<__ShapeKey>>
+27 |   const HH\typename<RejectedPointerValues> TYPENAME_FROM_POINTER = self::class;
+28 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+29 |   const enum<int> INT_ENUM_POINTER = IntNameEnum::class;
+   |                                      ^^^^^^^^^^^^^^^^^^ [2]
+30 |   <<__ShapeKey>>
+31 |   const enum<string> STRING_ENUM_POINTER = StringNameEnum::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::STRING_ENUM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:30:5
+28 |   <<__ShapeKey>>
+29 |   const enum<int> INT_ENUM_POINTER = IntNameEnum::class;
+30 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+31 |   const enum<string> STRING_ENUM_POINTER = StringNameEnum::class;
+   |                                            ^^^^^^^^^^^^^^^^^^^^^ [2]
+32 |   <<__ShapeKey>>
+33 |   const enum<OpaqueNameEnum> OPAQUE_ENUM_POINTER = OpaqueNameEnum::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::OPAQUE_ENUM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:32:5
+30 |   <<__ShapeKey>>
+31 |   const enum<string> STRING_ENUM_POINTER = StringNameEnum::class;
+32 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+33 |   const enum<OpaqueNameEnum> OPAQUE_ENUM_POINTER = OpaqueNameEnum::class;
+   |                                                    ^^^^^^^^^^^^^^^^^^^^^ [2]
+34 |   <<__ShapeKey>>
+35 |   const HH\enumname<int> INT_ENUMNAME_FROM_POINTER = IntNameEnum::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::INT_ENUMNAME_FROM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:34:5
+32 |   <<__ShapeKey>>
+33 |   const enum<OpaqueNameEnum> OPAQUE_ENUM_POINTER = OpaqueNameEnum::class;
+34 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+35 |   const HH\enumname<int> INT_ENUMNAME_FROM_POINTER = IntNameEnum::class;
+   |                                                      ^^^^^^^^^^^^^^^^^^ [2]
+36 |   <<__ShapeKey>>
+37 |   const HH\enumname<string> STRING_ENUMNAME_FROM_POINTER = StringNameEnum::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::STRING_ENUMNAME_FROM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:36:5
+34 |   <<__ShapeKey>>
+35 |   const HH\enumname<int> INT_ENUMNAME_FROM_POINTER = IntNameEnum::class;
+36 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+37 |   const HH\enumname<string> STRING_ENUMNAME_FROM_POINTER = StringNameEnum::class;
+   |                                                            ^^^^^^^^^^^^^^^^^^^^^ [2]
+38 |   <<__ShapeKey>>
+39 |   const HH\enumname<OpaqueNameEnum> OPAQUE_ENUMNAME_FROM_POINTER = OpaqueNameEnum::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::OPAQUE_ENUMNAME_FROM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:38:5
+36 |   <<__ShapeKey>>
+37 |   const HH\enumname<string> STRING_ENUMNAME_FROM_POINTER = StringNameEnum::class;
+38 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+39 |   const HH\enumname<OpaqueNameEnum> OPAQUE_ENUMNAME_FROM_POINTER = OpaqueNameEnum::class;
+   |                                                                    ^^^^^^^^^^^^^^^^^^^^^ [2]
+40 |   <<__ShapeKey>>
+41 |   const class<NameEnumClass> ENUM_CLASS_POINTER = NameEnumClass::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::ENUM_CLASS_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:40:5
+38 |   <<__ShapeKey>>
+39 |   const HH\enumname<OpaqueNameEnum> OPAQUE_ENUMNAME_FROM_POINTER = OpaqueNameEnum::class;
+40 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+41 |   const class<NameEnumClass> ENUM_CLASS_POINTER = NameEnumClass::class;
+   |                                                   ^^^^^^^^^^^^^^^^^^^^ [2]
+42 |   <<__ShapeKey>>
+43 |   const classname<NameEnumClass> ENUM_CLASSNAME_FROM_POINTER = NameEnumClass::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::ENUM_CLASSNAME_FROM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:42:5
+40 |   <<__ShapeKey>>
+41 |   const class<NameEnumClass> ENUM_CLASS_POINTER = NameEnumClass::class;
+42 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+43 |   const classname<NameEnumClass> ENUM_CLASSNAME_FROM_POINTER = NameEnumClass::class;
+   |                                                                ^^^^^^^^^^^^^^^^^^^^ [2]
+44 |   <<__ShapeKey>>
+45 |   const arraykey ARRAYKEY_FROM_POINTER = self::class;
+
+error: Typing[4534] Class constant `RejectedPointerValues::ARRAYKEY_FROM_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+rejected_pointer_values.php:44:5
+42 |   <<__ShapeKey>>
+43 |   const classname<NameEnumClass> ENUM_CLASSNAME_FROM_POINTER = NameEnumClass::class;
+44 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+45 |   const arraykey ARRAYKEY_FROM_POINTER = self::class;
+   |                                          ^^^^^^^^^^^ [2]
+46 | }
+
+error: Typing[4482] Using `self::class` in this position will trigger an implicit runtime conversion to string, please use `nameof self` [1]
+
+rejected_pointer_values.php:45:42
+43 |   const classname<NameEnumClass> ENUM_CLASSNAME_FROM_POINTER = NameEnumClass::class;
+44 |   <<__ShapeKey>>
+45 |   const arraykey ARRAYKEY_FROM_POINTER = self::class;
+   |                                          ^^^^^^^^^^^ [1]
+46 | }
+
+14 errors found

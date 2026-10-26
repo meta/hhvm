@@ -983,6 +983,34 @@ module Redundant_require_this_as = struct
   let quickfixes _ = []
 end
 
+module Shape_key_class_const_value_unresolvable = struct
+  type t = Typing_warning.Shape_key_class_const_value_unresolvable.t
+
+  let codes = [Codes.ShapeKeyClassConstValueUnresolvable]
+
+  let code _ = Codes.ShapeKeyClassConstValueUnresolvable
+
+  let claim
+      {
+        Typing_warning.Shape_key_class_const_value_unresolvable.class_name;
+        const_name;
+        _;
+      } =
+    "Class constant "
+    ^ Markdown_lite.md_codify (class_name ^ "::" ^ const_name)
+    ^ " marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression"
+
+  let reasons
+      { Typing_warning.Shape_key_class_const_value_unresolvable.value_pos; _ } =
+    [
+      ( Pos_or_decl.of_raw_pos value_pos,
+        "Class pointers, constant forwarding, and computed expressions are not allowed"
+      );
+    ]
+
+  let quickfixes _ = []
+end
+
 let module_of (type a x) (kind : (x, a) Typing_warning.kind) :
     (module Warning with type t = x) =
   match kind with
@@ -1018,6 +1046,8 @@ let module_of (type a x) (kind : (x, a) Typing_warning.kind) :
   | Typing_warning.Sealed_not_override -> (module Sealed_not_override)
   | Typing_warning.Redundant_require_this_as ->
     (module Redundant_require_this_as)
+  | Typing_warning.Shape_key_class_const_value_unresolvable ->
+    (module Shape_key_class_const_value_unresolvable)
 
 let module_of_migrated
     (type x) (kind : (x, Typing_warning.migrated) Typing_warning.kind) :
@@ -1048,6 +1078,7 @@ let is_type_dependent (type a x) (kind : (x, a) Typing_warning.kind) : bool =
   | Typing_warning.Sealed_not_override -> false
   | Typing_warning.Consistent_construct_abstract_final -> false
   | Typing_warning.Redundant_require_this_as -> false
+  | Typing_warning.Shape_key_class_const_value_unresolvable -> false
   (* Type-dependent: rely on type precision that could differ under dynamic *)
   | Typing_warning.Is_as_always -> true
   | Typing_warning.Non_disjoint_check -> true

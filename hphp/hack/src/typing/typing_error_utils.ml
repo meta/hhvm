@@ -414,6 +414,69 @@ end = struct
         ~reasons
         ()
 
+    let shape_key_class_const_value_unresolvable
+        pos value_pos class_name const_name =
+      let claim =
+        lazy
+          ( pos,
+            "Class constant "
+            ^ Markdown_lite.md_codify (class_name ^ "::" ^ const_name)
+            ^ " marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression"
+          )
+      and reasons =
+        lazy
+          [
+            ( Pos_or_decl.of_raw_pos value_pos,
+              "Class pointers, constant forwarding, and computed expressions are not allowed"
+            );
+          ]
+      in
+      create
+        ~code:Error_code.ShapeKeyClassConstValueUnresolvable
+        ~claim
+        ~reasons
+        ()
+
+    let shape_key_class_const_nameof_self_in_trait
+        pos value_pos class_name const_name =
+      let claim =
+        lazy
+          ( pos,
+            "Class constant "
+            ^ Markdown_lite.md_codify (class_name ^ "::" ^ const_name)
+            ^ " marked with `<<__ShapeKey>>` cannot be initialized with `nameof self` in a trait"
+          )
+      and reasons =
+        lazy
+          [
+            ( Pos_or_decl.of_raw_pos value_pos,
+              "`nameof self` resolves to the using class; use a literal or an explicit class name with `nameof`"
+            );
+          ]
+      in
+      create
+        ~code:Error_code.ShapeKeyClassConstValueUnresolvable
+        ~claim
+        ~reasons
+        ()
+
+    let shape_key_class_const_is_abstract pos decl_pos class_name const_name =
+      let claim =
+        lazy
+          ( pos,
+            "Abstract class constant "
+            ^ Markdown_lite.md_codify (class_name ^ "::" ^ const_name)
+            ^ " cannot be used as a shape key" )
+      and reasons =
+        lazy
+          [
+            ( Pos_or_decl.of_raw_pos decl_pos,
+              "The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value"
+            );
+          ]
+      in
+      create ~code:Error_code.ShapeKeyClassConstIsAbstract ~claim ~reasons ()
+
     let shape_field_class_mismatch pos class_name witness_pos witness_class_name
         =
       let claim =
@@ -533,6 +596,23 @@ end = struct
           decl_pos
           class_name
           const_name
+      | Shape_key_class_const_value_unresolvable
+          { pos; value_pos; class_name; const_name } ->
+        shape_key_class_const_value_unresolvable
+          pos
+          value_pos
+          class_name
+          const_name
+      | Shape_key_class_const_nameof_self_in_trait
+          { pos; value_pos; class_name; const_name } ->
+        shape_key_class_const_nameof_self_in_trait
+          pos
+          value_pos
+          class_name
+          const_name
+      | Shape_key_class_const_is_abstract
+          { pos; decl_pos; class_name; const_name } ->
+        shape_key_class_const_is_abstract pos decl_pos class_name const_name
       | Shape_field_class_mismatch
           { pos; class_name; witness_pos; witness_class_name } ->
         shape_field_class_mismatch pos class_name witness_pos witness_class_name
