@@ -28,7 +28,6 @@
 #include "eden/fs/service/gen-cpp2/StreamingEdenService.h"
 #include "watchman/ChildProcess.h"
 #include "watchman/Errors.h"
-#include "watchman/LRUCache.h"
 #include "watchman/QueryableView.h"
 #include "watchman/ThreadPool.h"
 #include "watchman/fs/FSDetect.h"
@@ -43,7 +42,6 @@
 #include "watchman/watcher/Watcher.h"
 #include "watchman/watcher/WatcherRegistry.h"
 
-using apache::thrift::TApplicationException;
 using namespace facebook::eden;
 using folly::AsyncSocket;
 using std::make_unique;
@@ -479,8 +477,8 @@ class EdenFileResult : public FileResult {
   w_string fullName_;
   std::optional<FileInformation> stat_;
   std::optional<bool> exists_;
-  ClockStamp ctime_;
-  ClockStamp otime_;
+  ClockStamp ctime_{};
+  ClockStamp otime_{};
   std::optional<SHA1Result> sha1_;
   std::optional<ResolvedSymlink> symlinkTarget_;
   DType dtype_{DType::Unknown};
@@ -539,19 +537,10 @@ class EdenFileResult : public FileResult {
 
     if (onlyEntryInfoNeeded) {
       std::vector<EntryInformationOrError> info;
-      try {
-        client->sync_getEntryInformation(
-            info, std::string{rootPath.view()}, names, getSyncBehavior());
-        applyResults(info);
-        return;
-      } catch (const TApplicationException& ex) {
-        if (TApplicationException::UNKNOWN_METHOD != ex.getType()) {
-          throw;
-        }
-        // getEntryInformation is not available in this version of
-        // Eden. Fall back to the older, more expensive
-        // getFileInformation below.
-      }
+      client->sync_getEntryInformation(
+          info, std::string{rootPath.view()}, names, getSyncBehavior());
+      applyResults(info);
+      return;
     }
 
     std::vector<FileInformationOrError> info;
@@ -860,12 +849,6 @@ class EdenView final : public QueryableView {
            })
         .defer([](folly::Try<folly::Unit> try_) {
           if (try_.hasException()) {
-            if (auto* exc =
-                    try_.tryGetExceptionObject<TApplicationException>()) {
-              if (exc->getType() == TApplicationException::UNKNOWN_METHOD) {
-                return folly::Try{CookieSync::SyncResult{}};
-              }
-            }
             return folly::Try<CookieSync::SyncResult>{
                 std::move(try_.exception())};
           }
@@ -1072,19 +1055,8 @@ class EdenView final : public QueryableView {
       GetJournalPositionCallback& getJournalPositionCallback,
       std::chrono::milliseconds settleTimeout) {
     auto client = getEdenClient(thriftChannel_);
-    apache::thrift::ClientBufferedStream<::facebook::eden::JournalPosition>
-        stream;
-    try {
-      stream = client->sync_streamJournalChanged(
-          std::string(root->root_path.data(), root->root_path.size()));
-    } catch (const apache::thrift::TApplicationException& exc) {
-      log(DBG,
-          "running eden version does not have streamJournalChanged, falling back to subscribeStreamTemporary: ",
-          exc.what(),
-          "\n");
-      stream = client->sync_subscribeStreamTemporary(
-          std::string(root->root_path.data(), root->root_path.size()));
-    }
+    auto stream = client->sync_streamJournalChanged(
+        std::string(root->root_path.data(), root->root_path.size()));
     return std::move(stream).subscribeExTry(
         &subscriberEventBase_,
         [&settleCallback,
@@ -1275,7 +1247,7 @@ class EdenView final : public QueryableView {
     return globNameAndDType(
         client.get(),
         mountPoint_,
-        std::move(globPatterns),
+        globPatterns,
         /*includeDotfiles=*/true,
         splitGlobPattern_,
         /*listOnlyFiles=*/false,
@@ -1283,7 +1255,7 @@ class EdenView final : public QueryableView {
   }
 
   struct GetAllChangesSinceResult {
-    ClockTicks ticks;
+    ClockTicks ticks{};
     std::vector<NameAndDType> fileInfo;
     std::unordered_set<folly::fbstring> createdFileNames;
   };
