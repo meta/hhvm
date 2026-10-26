@@ -45,7 +45,6 @@ def lookup_func(val):
     funcid = val.cast(T("HPHP::FuncId"))
     try:
         # Not LowPtr
-        # TODO T136489519
         global _first_lookup
         if _first_lookup:
             gdb.execute("ptype HPHP::Func::s_funcVec", to_string=True)
