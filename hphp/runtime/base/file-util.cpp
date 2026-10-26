@@ -148,8 +148,10 @@ void FileUtil::syncdir(const std::string &dest_, const std::string &src_,
 
     // delete mismatched types so to copy over new ones
     struct stat sb1, sb2;
-    stat(fsrc.c_str(), &sb1);
-    stat(fdest.c_str(), &sb2);
+    if (stat(fsrc.c_str(), &sb1) != 0 || stat(fdest.c_str(), &sb2) != 0) {
+      // Either path is gone; leave the dest entry in place.
+      continue;
+    }
     if ((sb1.st_mode & S_IFMT) != (sb2.st_mode & S_IFMT)) {
       todelete.insert(fdest.c_str());
       continue;
