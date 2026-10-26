@@ -965,7 +965,7 @@ void AdminRequestHandler::handleRequest(Transport *transport) {
       stats << "  <active>" << active << "</active>" << endl;
       stats << "  <mapped>" << mapped << "</mapped>" << endl;
       stats << "  <low_mapped>" << low_mapped << "</low_mapped>" << endl;
-      stats << "  <mid_mapped>" << mid_mapped << "</low_mapped>" << endl;
+      stats << "  <mid_mapped>" << mid_mapped << "</mid_mapped>" << endl;
       stats << "</jemalloc-stats>" << endl;
       transport->sendString(stats.str());
       break;
