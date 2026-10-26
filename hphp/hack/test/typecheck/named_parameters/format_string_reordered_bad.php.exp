@@ -1,0 +1,127 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` because of the `%d` format specifier [2]
+-> But got `string` [1]
+
+format_string_reordered_bad.php:18:17
+16 | 
+17 | function test_named_first_bad(): void {
+18 |   f(fmt = "%d", "%s");
+   |           ^^^^ [2]
+   |                 ^^^^ [1]
+19 | }
+20 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` because of the `%d` format specifier [2]
+-> But got `string` [1]
+
+format_string_reordered_bad.php:22:11
+20 | 
+21 | function test_positional_bad(): void {
+22 |   g("%d", "s");
+   |     ^^^^ [2]
+   |           ^^^ [1]
+23 | }
+24 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `HH\FormatString<Fmt>` [2]
+-> But got `string` [1]
+
+format_string_reordered_bad.php:30:5
+23 | }
+24 | 
+25 | function k(named int $tag, \HH\FormatString<Fmt> $template, mixed ...$values): void {}
+   |                            ^^^^^^^^^^^^^^^^^^^^^ [2]
+26 | 
+27 | function m(named int $tag, named \HH\FormatString<Fmt> $fmt, mixed ...$values): void {}
+28 | 
+29 | function test_named_middle_bad(): void {
+30 |   k("%d", tag = 1, "s");
+   |     ^^^^ [1]
+31 |   k(tag = 1, "%d", "s");
+32 |   k("%d", "s", tag = 1);
+
+error: Typing[4027] This argument must be a literal format string [1]
+
+format_string_reordered_bad.php:30:17
+28 | 
+29 | function test_named_middle_bad(): void {
+30 |   k("%d", tag = 1, "s");
+   |                 ^ [1]
+31 |   k(tag = 1, "%d", "s");
+32 |   k("%d", "s", tag = 1);
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` because of the `%d` format specifier [2]
+-> But got `string` [1]
+
+format_string_reordered_bad.php:31:20
+29 | function test_named_middle_bad(): void {
+30 |   k("%d", tag = 1, "s");
+31 |   k(tag = 1, "%d", "s");
+   |              ^^^^ [2]
+   |                    ^^^ [1]
+32 |   k("%d", "s", tag = 1);
+33 | }
+
+error: Typing[4105] Too many positional arguments (expected 1 but got 2) [1]
+-> Definition is here [2]
+
+format_string_reordered_bad.php:32:3
+23 | }
+24 | 
+25 | function k(named int $tag, \HH\FormatString<Fmt> $template, mixed ...$values): void {}
+   |          ^ [2]
+26 | 
+27 | function m(named int $tag, named \HH\FormatString<Fmt> $fmt, mixed ...$values): void {}
+   :
+30 |   k("%d", tag = 1, "s");
+31 |   k(tag = 1, "%d", "s");
+32 |   k("%d", "s", tag = 1);
+   |   ^^^^^^^^^^^^^^^^^^^^^ [1]
+33 | }
+34 | 
+
+error: Typing[4027] This argument must be a literal format string [1]
+
+format_string_reordered_bad.php:36:17
+34 | 
+35 | function test_mixed_named_order_bad(): void {
+36 |   m("%s", tag = 1, fmt = "%d");
+   |                 ^ [1]
+37 |   m(fmt = "%d", "%s", tag = 1);
+38 |   m(tag = 1, fmt = "%d", "%s");
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `HH\FormatString<Fmt>` [2]
+-> But got `string` [1]
+
+format_string_reordered_bad.php:36:26
+25 | function k(named int $tag, \HH\FormatString<Fmt> $template, mixed ...$values): void {}
+26 | 
+27 | function m(named int $tag, named \HH\FormatString<Fmt> $fmt, mixed ...$values): void {}
+   |                                  ^^^^^^^^^^^^^^^^^^^^^ [2]
+28 | 
+29 | function test_named_middle_bad(): void {
+   :
+34 | 
+35 | function test_mixed_named_order_bad(): void {
+36 |   m("%s", tag = 1, fmt = "%d");
+   |                          ^^^^ [1]
+37 |   m(fmt = "%d", "%s", tag = 1);
+38 |   m(tag = 1, fmt = "%d", "%s");
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` because of the `%d` format specifier [2]
+-> But got `string` [1]
+
+format_string_reordered_bad.php:38:26
+36 |   m("%s", tag = 1, fmt = "%d");
+37 |   m(fmt = "%d", "%s", tag = 1);
+38 |   m(tag = 1, fmt = "%d", "%s");
+   |                    ^^^^ [2]
+   |                          ^^^^ [1]
+39 | }
+
+9 errors found

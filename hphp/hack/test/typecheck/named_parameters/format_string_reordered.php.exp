@@ -1,0 +1,144 @@
+error: Typing[4027] This argument must be a literal format string [1]
+
+format_string_reordered.php:14:5
+12 | 
+13 | function test_reordered_good(): void {
+14 |   f(42, fmt = "%d");
+   |     ^^ [1]
+15 | }
+16 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `HH\FormatString<Fmt>` [2]
+-> But got `string` [1]
+
+format_string_reordered.php:14:15
+ 7 | }
+ 8 | 
+ 9 | function f(named \HH\FormatString<Fmt> $fmt, mixed ...$args): void {}
+   |                  ^^^^^^^^^^^^^^^^^^^^^ [2]
+10 | 
+11 | function g(\HH\FormatString<Fmt> $fmt, mixed ...$args): void {}
+12 | 
+13 | function test_reordered_good(): void {
+14 |   f(42, fmt = "%d");
+   |               ^^^^ [1]
+15 | }
+16 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `HH\FormatString<Fmt>` [2]
+-> But got `string` [1]
+
+format_string_reordered.php:30:5
+23 | }
+24 | 
+25 | function k(named int $tag, \HH\FormatString<Fmt> $template, mixed ...$values): void {}
+   |                            ^^^^^^^^^^^^^^^^^^^^^ [2]
+26 | 
+27 | function m(named int $tag, named \HH\FormatString<Fmt> $fmt, mixed ...$values): void {}
+28 | 
+29 | function test_named_middle_good(): void {
+30 |   k("%d", tag = 1, 42);
+   |     ^^^^ [1]
+31 |   k(tag = 1, "%d", 42);
+32 |   k("%d", 42, tag = 1);
+
+error: Typing[4027] This argument must be a literal format string [1]
+
+format_string_reordered.php:30:17
+28 | 
+29 | function test_named_middle_good(): void {
+30 |   k("%d", tag = 1, 42);
+   |                 ^ [1]
+31 |   k(tag = 1, "%d", 42);
+32 |   k("%d", 42, tag = 1);
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `HH\FormatString<Fmt>` [2]
+-> But got `string` [1]
+
+format_string_reordered.php:32:5
+23 | }
+24 | 
+25 | function k(named int $tag, \HH\FormatString<Fmt> $template, mixed ...$values): void {}
+   |                            ^^^^^^^^^^^^^^^^^^^^^ [2]
+26 | 
+27 | function m(named int $tag, named \HH\FormatString<Fmt> $fmt, mixed ...$values): void {}
+   :
+30 |   k("%d", tag = 1, 42);
+31 |   k(tag = 1, "%d", 42);
+32 |   k("%d", 42, tag = 1);
+   |     ^^^^ [1]
+33 | }
+34 | 
+
+error: Typing[4027] This argument must be a literal format string [1]
+
+format_string_reordered.php:32:11
+30 |   k("%d", tag = 1, 42);
+31 |   k(tag = 1, "%d", 42);
+32 |   k("%d", 42, tag = 1);
+   |           ^^ [1]
+33 | }
+34 | 
+
+error: Typing[4027] This argument must be a literal format string [1]
+
+format_string_reordered.php:36:15
+34 | 
+35 | function test_mixed_named_order_good(): void {
+36 |   m(42, tag = 1, fmt = "%d");
+   |               ^ [1]
+37 |   m(fmt = "%d", 42, tag = 1);
+38 |   m(tag = 1, fmt = "%d", 42);
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `HH\FormatString<Fmt>` [2]
+-> But got `string` [1]
+
+format_string_reordered.php:36:24
+25 | function k(named int $tag, \HH\FormatString<Fmt> $template, mixed ...$values): void {}
+26 | 
+27 | function m(named int $tag, named \HH\FormatString<Fmt> $fmt, mixed ...$values): void {}
+   |                                  ^^^^^^^^^^^^^^^^^^^^^ [2]
+28 | 
+29 | function test_named_middle_good(): void {
+   :
+34 | 
+35 | function test_mixed_named_order_good(): void {
+36 |   m(42, tag = 1, fmt = "%d");
+   |                        ^^^^ [1]
+37 |   m(fmt = "%d", 42, tag = 1);
+38 |   m(tag = 1, fmt = "%d", 42);
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `HH\FormatString<Fmt>` [2]
+-> But got `string` [1]
+
+format_string_reordered.php:37:11
+25 | function k(named int $tag, \HH\FormatString<Fmt> $template, mixed ...$values): void {}
+26 | 
+27 | function m(named int $tag, named \HH\FormatString<Fmt> $fmt, mixed ...$values): void {}
+   |                                  ^^^^^^^^^^^^^^^^^^^^^ [2]
+28 | 
+29 | function test_named_middle_good(): void {
+   :
+35 | function test_mixed_named_order_good(): void {
+36 |   m(42, tag = 1, fmt = "%d");
+37 |   m(fmt = "%d", 42, tag = 1);
+   |           ^^^^ [1]
+38 |   m(tag = 1, fmt = "%d", 42);
+39 | }
+
+error: Typing[4027] This argument must be a literal format string [1]
+
+format_string_reordered.php:37:17
+35 | function test_mixed_named_order_good(): void {
+36 |   m(42, tag = 1, fmt = "%d");
+37 |   m(fmt = "%d", 42, tag = 1);
+   |                 ^^ [1]
+38 |   m(tag = 1, fmt = "%d", 42);
+39 | }
+
+10 errors found
