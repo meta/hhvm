@@ -434,6 +434,10 @@ inline bool Func::hasVariadicCaptureParam() const {
   return m_attrs & AttrVariadicParam;
 }
 
+inline bool Func::hasVariadicNamedParam() const {
+  return m_attrs & AttrVariadicNamedParam;
+}
+
 inline bool Func::hasSplatParam() const {
   return m_attrs & AttrSplatParam;
 }

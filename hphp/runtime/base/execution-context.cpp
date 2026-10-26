@@ -1584,8 +1584,8 @@ TypedValue ExecutionContext::invokeFuncImpl(const Func* f,
   void* ctx = thiz ? (void*)thiz : (void*)cls;
 
   // Callee checks and input initialization.
-  calleeNamedArgChecks(f, numPositionalArgs, namedArgNames);
   calleeGenericsChecks(f, hasGenerics);
+  calleeNamedArgChecks(f, numPositionalArgs, namedArgNames);
   calleeArgumentArityChecks(f, numPositionalArgs);
   calleeArgumentTypeChecks(f, numPositionalArgs, namedArgNames, ctx);
   calleeDynamicCallChecks(f, dynamic, allowDynCallNoPointer);
@@ -1636,7 +1636,9 @@ TypedValue ExecutionContext::invokeFuncImpl(const Func* f,
   try {
     enterVM(ar, [&] {
       exception_handler([&] {
-        enterVMAtFunc(ar, numPositionalArgs, numNamedArgs == f->numNamedParams());
+        enterVMAtFunc(ar, numPositionalArgs,
+                      numMatchedNamedArgs(f, namedArgNames) ==
+                        f->numNamedParams());
       });
     });
 
@@ -1681,7 +1683,11 @@ TypedValue ExecutionContext::invokeFunc(const Func* f,
 
   // Check both the native stack and VM stack for overflow, numParams
   // is already included in f->maxStackCells().
-  checkStack(vmStack(), f, f->numInOutParams() + kNumActRecCells);
+  auto const unpackedNamedArgs = namedArgsToUnpack == nullptr
+    ? 0
+    : static_cast<int32_t>(namedArgsToUnpack->size());
+  checkStack(vmStack(), f,
+             f->numInOutParams() + kNumActRecCells + unpackedNamedArgs);
 
   // Reserve space for inout outputs and ActRec.
   for (auto i = f->numInOutParams(); i > 0; --i) vmStack().pushUninit();
@@ -1727,28 +1733,46 @@ TypedValue ExecutionContext::invokeFuncFew(
   bool allowDynCallNoPointer /* = false */) {
   VMRegAnchor _;
   auto& stack = vmStack();
+  auto const numNamedArgs = static_cast<uint32_t>(
+    namedArgNames ? namedArgNames->size() : 0
+  );
+  assertx(numArgs >= numNamedArgs);
+  auto numPositionalArgs = numArgs - numNamedArgs;
 
   // See comments in invokeFunc().
-  checkStack(stack, f, f->numInOutParams() + kNumActRecCells);
+  checkStack(stack, f,
+             f->numInOutParams() + kNumActRecCells +
+               static_cast<int32_t>(numNamedArgs));
 
   // Reserve space for inout outputs and ActRec.
   for (auto i = f->numInOutParams(); i > 0; --i) stack.pushUninit();
   for (auto i = kNumActRecCells; i > 0; --i) stack.pushUninit();
 
-  // Push non-variadic arguments.
-  auto const numParams = f->numNonVariadicParams();
-  for (auto i = 0; i < numArgs && i < numParams; ++i) {
+  // Named values precede positional values in argv and on the VM stack.
+  for (auto i = 0; i < numNamedArgs; ++i) {
     const TypedValue *from = &argv[i];
     TypedValue* to = stack.allocTV();
     tvDup(*from, *to);
   }
 
-  // Push variadic arguments.
-  if (UNLIKELY(numParams < numArgs)) {
-    VecInit ai{numArgs - numParams};
-    for (auto i = numParams; i < numArgs; ++i) ai.append(argv[i]);
+  // Push non-variadic positional arguments.
+  auto const numPositionalParams = f->numPositionalParams();
+  auto const numNonVariadicPositionals =
+    std::min(numPositionalArgs, numPositionalParams);
+  for (auto i = 0; i < numNonVariadicPositionals; ++i) {
+    auto const from = &argv[numNamedArgs + i];
+    auto const to = stack.allocTV();
+    tvDup(*from, *to);
+  }
+
+  // Pack excess positional arguments.
+  if (UNLIKELY(numPositionalParams < numPositionalArgs)) {
+    VecInit ai{numPositionalArgs - numPositionalParams};
+    for (auto i = numPositionalParams; i < numPositionalArgs; ++i) {
+      ai.append(argv[numNamedArgs + i]);
+    }
     stack.pushArrayLikeNoRc(ai.create());
-    numArgs = numParams + 1;
+    numPositionalArgs = numPositionalParams + 1;
   }
 
   // Caller checks.
@@ -1757,10 +1781,8 @@ TypedValue ExecutionContext::invokeFuncFew(
     throwReadonlyMismatch(f, kReadonlyReturnId);
   }
 
-  auto numNamedArgs = namedArgNames ? namedArgNames->size() : 0;
-
   return invokeFuncImpl(f, thisOrCls.left(), thisOrCls.right(),
-                        numArgs - numNamedArgs, namedArgNames,
+                        numPositionalArgs, namedArgNames,
                         providedCoeffects, false /* hasGenerics */, dynamic,
                         false);
 }

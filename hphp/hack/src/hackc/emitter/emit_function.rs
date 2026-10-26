@@ -158,6 +158,7 @@ pub fn emit_function<'a>(e: &mut Emitter, fd: &'a ast::FunDef) -> Result<Vec<Fun
     flags.set(FunctionFlags::GENERATOR, is_gen);
     flags.set(FunctionFlags::PAIR_GENERATOR, is_pair_gen);
     let has_variadic = emit_param::has_variadic(&body.repr.params);
+    let has_variadic_named = emit_param::has_variadic_named(&f.params);
     let has_splat = emit_param::has_splat(&body.repr.params);
     body.attrs = emit_memoize_function::get_attrs_for_fun(
         e,
@@ -165,6 +166,7 @@ pub fn emit_function<'a>(e: &mut Emitter, fd: &'a ast::FunDef) -> Result<Vec<Fun
         &body.attributes,
         memoized,
         has_variadic,
+        has_variadic_named,
         has_splat,
     );
     let normal_function = Function {

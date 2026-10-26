@@ -794,6 +794,13 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
     }
   };
 
+  if (callee->hasVariadicNamedParam() && namedArgc > 0) {
+    // Named arguments matching no named parameter have to be dropped from the
+    // stack, which only the prologue helper knows how to do. Inlining the
+    // callee checks here would have to reproduce it in IR, so don't.
+    return doCall(fca, false /* skipRepack */);
+  }
+
   const int32_t numToPack =
     static_cast<int32_t>(fca.numArgs) - namedArgc - callee->numPositionalParams();
   if (fca.hasUnpack()) {

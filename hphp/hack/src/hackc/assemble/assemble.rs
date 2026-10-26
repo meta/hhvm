@@ -1243,6 +1243,7 @@ fn assemble_hhvm_attr(token_iter: &mut Lexer<'_>) -> Result<hhvm_types_ffi::ffi:
         b"sys_initial_val" => Attr::AttrSystemInitialValue,
         b"trait" => Attr::AttrTrait,
         b"unused_max_attr" => Attr::AttrUnusedMaxAttr,
+        b"variadic_named_param" => Attr::AttrVariadicNamedParam,
         b"variadic_param" => Attr::AttrVariadicParam,
         _ => return Err(tok.error("Unknown attr")),
     };

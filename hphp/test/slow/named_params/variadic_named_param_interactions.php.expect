@@ -1,0 +1,71 @@
+vec(2) {
+  int(1)
+  int(20)
+}
+vec(0) {
+}
+vec(2) {
+  int(1)
+  int(2)
+}
+vec(0) {
+}
+vec(2) {
+  int(1)
+  int(20)
+}
+vec(2) {
+  int(2)
+  int(3)
+}
+vec(2) {
+  int(1)
+  int(4)
+}
+vec(2) {
+  int(2)
+  int(3)
+}
+vec(2) {
+  int(1)
+  int(4)
+}
+vec(2) {
+  int(2)
+  int(3)
+}
+vec(2) {
+  int(1)
+  int(20)
+}
+vec(0) {
+}
+vec(2) {
+  int(1)
+  int(4)
+}
+vec(0) {
+}
+vec(2) {
+  int(1)
+  int(4)
+}
+vec(1) {
+  int(2)
+}
+int(1)
+int(1)
+int(1)
+int(1)
+int(10)
+int(30)
+int(300)
+vec(2) {
+  int(1)
+  int(20)
+}
+vec(2) {
+  int(7)
+  int(8)
+}
+string(57) "reified() expects exactly 1 positional parameter, 0 given"

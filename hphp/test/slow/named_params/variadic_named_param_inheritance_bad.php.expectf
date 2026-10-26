@@ -1,0 +1,1 @@
+Fatal error: Declaration of MissingVariadicNamedParameter::f() must be compatible with that of VariadicNamedContract::f() in %s on line %d

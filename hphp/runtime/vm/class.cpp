@@ -2105,6 +2105,8 @@ bool namedParamsCompatible(const Func* implementation,
   auto const declarationNames = declaration->sortedNamedParamNames();
   auto const numImplementationNames = implementation->numNamedParams();
   auto const numDeclarationNames = declaration->numNamedParams();
+  auto const implementationVariadic = implementation->hasVariadicNamedParam();
+  auto const declarationVariadic = declaration->hasVariadicNamedParam();
 
   size_t implementationIdx = 0;
   size_t declarationIdx = 0;
@@ -2119,7 +2121,8 @@ bool namedParamsCompatible(const Func* implementation,
       }
       ++implementationIdx;
     } else if (comparison > 0) {
-      return false;
+      if (!implementationVariadic) return false;
+      ++declarationIdx;
     } else {
       if (!isRequiredParam(declaration->params()[declarationIdx]) &&
           isRequiredParam(implementation->params()[implementationIdx])) {
@@ -2130,13 +2133,15 @@ bool namedParamsCompatible(const Func* implementation,
     }
   }
 
-  if (declarationIdx != numDeclarationNames) return false;
+  if (declarationIdx != numDeclarationNames && !implementationVariadic) {
+    return false;
+  }
   for (; implementationIdx < numImplementationNames; ++implementationIdx) {
     if (isRequiredParam(implementation->params()[implementationIdx])) {
       return false;
     }
   }
-  return true;
+  return !declarationVariadic || implementationVariadic;
 }
 
 // Check compatibility vs interface and abstract declarations

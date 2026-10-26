@@ -133,7 +133,7 @@ impl Display for FmtAttr {
                 get_bit(&mut attr, Attr::AttrNoImplicitNullable, "no_implicit_null"),
                 get_bit(&mut attr, Attr::AttrNoInjection, "no_injection"),
                 get_bit(&mut attr, Attr::AttrNoOverride, "no_override"),
-                get_bit(&mut attr, Attr::AttrNoReifiedInit, "no_reified_init"),
+                flag_get_bit(is_class, &mut attr, Attr::AttrNoReifiedInit, "no_reified_init"),
                 get_bit(&mut attr, Attr::AttrPersistent, "persistent"),
                 get_bit(&mut attr, Attr::AttrPrivate, "private"),
                 get_bit(&mut attr, Attr::AttrProtected, "protected"),
@@ -151,6 +151,12 @@ impl Display for FmtAttr {
                 ),
                 get_bit(&mut attr, Attr::AttrSystemInitialValue, "system_initial_value"),
                 get_bit(&mut attr, Attr::AttrTrait, "trait"),
+                flag_get_bit(
+                    is_func_or_method,
+                    &mut attr,
+                    Attr::AttrVariadicNamedParam,
+                    "variadic_named_param",
+                ),
                 get_bit(&mut attr, Attr::AttrVariadicParam, "variadic_param"),
             ]
             .into_iter()
@@ -162,6 +168,27 @@ impl Display for FmtAttr {
         assert!(attr.is_empty(), "Unprocessed attr: {attr:?}");
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn formats_context_dependent_attrs() {
+        assert_eq!(
+            FmtAttr(Attr::AttrNoReifiedInit, AttrContext::Class).to_string(),
+            "[no_reified_init]"
+        );
+        assert_eq!(
+            FmtAttr(Attr::AttrVariadicNamedParam, AttrContext::Function).to_string(),
+            "[variadic_named_param]"
+        );
+        assert_eq!(
+            FmtAttr(Attr::AttrVariadicNamedParam, AttrContext::Method).to_string(),
+            "[variadic_named_param]"
+        );
     }
 }
 

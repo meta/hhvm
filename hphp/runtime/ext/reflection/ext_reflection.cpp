@@ -474,7 +474,8 @@ Variant HHVM_FUNCTION(hphp_invoke_callable_named_args,
     if (!namedArgs.isDict()) {
       Reflection::ThrowReflectionExceptionObject(s_non_dict_named_args);
     }
-    auto const namedArgsDict = namedArgs.toDict().get();
+    auto const namedArgsArray = namedArgs.toDict();
+    auto const namedArgsDict = namedArgsArray.get();
     if (namedArgsDict->size() > 0) {
       auto const sorted = namedArgsDict->escalateForSort(SORTFUNC_KSORT);
       SCOPE_EXIT { if (sorted != namedArgsDict) decRefArr(sorted); };

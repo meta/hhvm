@@ -125,6 +125,7 @@ pub(crate) fn parse_attr(tokenizer: &mut Tokenizer<'_>) -> Result<Attr> {
             "in_strict_package" => Attr::AttrInStrictPackage,
             "system_initial_value" => Attr::AttrSystemInitialValue,
             "trait" => Attr::AttrTrait,
+            "variadic_named_param" => Attr::AttrVariadicNamedParam,
             "variadic_param" => Attr::AttrVariadicParam,
             _ => return None,
         })

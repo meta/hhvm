@@ -173,6 +173,11 @@ namespace HPHP {
      */                                                                        \
   ATTR(NoReifiedInit, 23)                /*    X  |          |         */      \
                                          /*       |          |         */      \
+  /* Does this function have a `named t...' parameter? Such a parameter has no \
+     name, so it declares nothing the body can read; it only signals that the  \
+     function accepts named arguments that match no named parameter. */        \
+  ATTR(VariadicNamedParam, 23)           /*       |          |    X    */      \
+                                         /*       |          |         */      \
   ATTR(IsMethCaller, 24)                 /*       |          |    X    */      \
                                          /*       |          |         */      \
   /* Set on closure classes */                                                 \

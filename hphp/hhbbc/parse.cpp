@@ -757,6 +757,9 @@ std::unique_ptr<php::Func> parse_func(ParseUnitState& puState,
     return false;
   }();
   ret->hasNamedParams = [&] {
+    // A `named t...' parameter declares no named parameter, but it does mean
+    // the call may carry named arguments, so the same conservatism applies.
+    if (fe.attrs & AttrVariadicNamedParam) return true;
     for (auto& a : fe.params) if (a.isNamed()) return true;
     return false;
   }();

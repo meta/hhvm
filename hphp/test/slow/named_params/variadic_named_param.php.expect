@@ -1,0 +1,52 @@
+int(1)
+int(1)
+int(1)
+string(9) "evaluated"
+int(1)
+vec(3) {
+  int(1)
+  int(2)
+  int(40)
+}
+vec(3) {
+  int(1)
+  int(2)
+  int(4)
+}
+vec(3) {
+  int(1)
+  int(2)
+  int(4)
+}
+vec(3) {
+  int(1)
+  int(2)
+  int(40)
+}
+vec(3) {
+  int(1)
+  int(2)
+  int(40)
+}
+string(73) "Call to mixed_named() has no argument matching required named parameter b"
+string(73) "Call to mixed_named() has no argument matching required named parameter b"
+vec(3) {
+  int(1)
+  int(2)
+  int(3)
+}
+vec(3) {
+  int(1)
+  int(2)
+  int(3)
+}
+vec(3) {
+  int(1)
+  int(2)
+  int(3)
+}
+string(1) "m"
+int(7)
+string(24) "absorbing implementation"
+int(1)
+string(87) "only_positional_variadic() has no named parameters but was called with named arguments."

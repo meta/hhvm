@@ -341,7 +341,11 @@ Func* FuncEmitter::create(Unit& unit, PreClass* preClass /* = NULL */) const {
     }
     namedParamCount++;
   }
-  f->m_allFlags.m_hasNamedParams = namedParamCount > 0;
+  // A `named t...' parameter declares no named parameter of its own, but such a
+  // function still has to take the named-argument paths in the prologues, so
+  // that unmatched named arguments are dropped rather than rejected.
+  f->m_allFlags.m_hasNamedParams =
+    namedParamCount > 0 || (attrs & AttrVariadicNamedParam);
   bool const needsExtendedSharedData =
     isNative ||
     line2 - line1 >= Func::kSmallDeltaLimit ||

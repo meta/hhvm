@@ -239,7 +239,16 @@ inline void initFuncNamedParamDefaults(const Func* callee, uint32_t numPositiona
                                        const ArrayData* namedArgNames) {
   TypedValue* stackTop = vmStack().top();
   int32_t numNamedArgs = namedArgNames ? namedArgNames->size() : 0;
-  int32_t delta = callee->numNamedParams() - numNamedArgs;
+  int32_t delta = namedParamStackDelta(callee, namedArgNames);
+  if (callee->hasVariadicNamedParam()) {
+    // Unmatched named arguments are dropped, so the region can shrink.
+    if (delta == 0 && numNamedArgs == 0) return;
+    if (delta > 0) vmStack().nalloc(delta);
+    initVariadicNamedParamValues(callee, numPositionalArgs, namedArgNames,
+                                 stackTop);
+    if (delta < 0) vmStack().ndiscard(-delta);
+    return;
+  }
   if (delta == 0) return;
   assertx(delta > 0);
   vmStack().nalloc(delta);
@@ -308,10 +317,21 @@ inline void calleeArgumentTypeChecks(const Func* callee,
     + (callee->hasReifiedGenerics() ? 1 : 0);
   auto const numNamedArgs = namedArgNames ? namedArgNames->size() : 0;
   auto pIdx = 0;
+  auto const numNamedParams = static_cast<int32_t>(callee->numNamedParams());
+  auto const absorbsUnmatched = callee->hasVariadicNamedParam();
   auto const namedParamNames = callee->sortedNamedParamNames();
   for (auto i = 0; i < numNamedArgs; ++i) {
     auto argName = namedArgNames->at(i).val().pstr;
-    while (namedParamNames[pIdx] != argName) ++pIdx;
+    if (absorbsUnmatched) {
+      // These arguments were dropped, so there is no cell to check.
+      while (pIdx < numNamedParams &&
+             argName->slice().compare(namedParamNames[pIdx]->slice()) > 0) {
+        ++pIdx;
+      }
+      if (pIdx >= numNamedParams || namedParamNames[pIdx] != argName) continue;
+    } else {
+      while (namedParamNames[pIdx] != argName) ++pIdx;
+    }
     // We pushed uninits for missing named args already, so we
     // index the vmStack from the parameter index.
     verifyParamType(callee, pIdx, vmStack().indC(firstArgIdx - pIdx), getCtx);

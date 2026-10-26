@@ -618,15 +618,30 @@ MemEffects memory_effects_impl(const IRInstruction& inst) {
     auto const last = static_cast<int32_t>(extra->lastArgOffset);
     auto const named = static_cast<int32_t>(func->numNamedParams());
     auto const posArgc = static_cast<int32_t>(extra->posArgc);
+    auto const upper = IRSPRelOffset { last + reified + posArgc };
+    if (func->hasVariadicNamedParam()) {
+      // The number of named arguments is not statically known. They are below
+      // the positional arguments and reified-generics cell covered by `upper`.
+      auto const stack = stack_below(upper);
+      return may_load_store(AHeapAny | stack, AHeapAny | stack);
+    }
     auto const stackRange = AStack::range(
       IRSPRelOffset { last - named },
-      IRSPRelOffset { last + reified + posArgc }
+      upper
     );
     return may_load_store(AHeapAny | stackRange, AHeapAny | stackRange);
   }
 
   case PushEmptyReifiedGenericsWithNamedArgs: {
    auto const extra = inst.extra<GenericsWithNamedArgsData>();
+   if (extra->callee->hasVariadicNamedParam()) {
+      // The runtime named-argument count can exceed the declared named-
+      // parameter count, so the empty generics cell has no static offset.
+      auto const stack = stack_below(
+        IRSPRelOffset{static_cast<int32_t>(extra->lastArgOffset)}
+      );
+      return may_load_store(AHeapAny, AHeapAny | stack);
+   }
    auto startOffset = IRSPRelOffset{static_cast<int32_t>(extra->lastArgOffset) + 1};
    if (extra->callee->numNamedParams() > 0) {
       auto const writeRange = AStack::range(

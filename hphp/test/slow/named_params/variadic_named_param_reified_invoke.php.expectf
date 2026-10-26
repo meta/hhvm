@@ -1,0 +1,3 @@
+Warning: Generic at index 0 to Function soft_reified must be reified, erased given in %s on line %d
+string(12) "soft reified"
+string(76) "Cannot call the reified function 'hard_reified' without the reified generics"

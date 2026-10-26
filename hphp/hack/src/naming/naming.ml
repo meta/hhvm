@@ -180,7 +180,9 @@ let passes =
        tco_named_variadic_type is enabled *)
     Naming_validate_named_variadic_type.pass on_error;
     (* Reject variadic named parameters on function definitions (e.g.
-       `named int...`) unless tco_variadic_named_parameters is enabled *)
+       `named int...`) unless tco_variadic_named_parameters is enabled.
+       Note: the variadic cannot be named. We have no immediate plans to support `named int ...$xs`.
+    *)
     Naming_validate_variadic_named_parameter.pass on_error;
     (* Validate that return type of __clone is void *)
     Naming_validate_clone_return_hint.pass on_error;

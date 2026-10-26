@@ -705,6 +705,12 @@ void initFuncNamedParamDefaults(const Func* callee,
   // We need to manually adjust the stack top to account for the named args.
   // Since the stack grows down, we subtract.
   stackTop -= numNamedArgs;
+  if (callee->hasVariadicNamedParam()) {
+    // Arguments may be dropped here, but the final layout is the same either
+    // way, so the prologue's static stack accounting is unaffected.
+    initVariadicNamedParamValues(callee, posArgc, namedArgNames, stackTop);
+    return;
+  }
   initFuncNamedParamDefaultValues(callee, posArgc, namedArgNames, stackTop);
 }
 

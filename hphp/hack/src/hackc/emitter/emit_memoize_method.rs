@@ -186,6 +186,7 @@ fn make_memoize_wrapper_method<'a>(
     flags.set(MethodFlags::IS_ASYNC, is_async);
 
     let has_variadic = emit_param::has_variadic(&body.repr.params);
+    let has_variadic_named = emit_param::has_variadic_named(&method.params);
     let has_splat = emit_param::has_splat(&body.repr.params);
     body.attrs = get_attrs_for_method(
         emitter,
@@ -195,6 +196,7 @@ fn make_memoize_wrapper_method<'a>(
         class,
         false,
         has_variadic,
+        has_variadic_named,
         has_splat,
     );
     Ok(Method {

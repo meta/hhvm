@@ -598,6 +598,15 @@ public:
   bool hasVariadicCaptureParam() const;
 
   /*
+   * Whether the function is declared with a `named T...' parameter.
+   *
+   * Such a parameter has no name, so it declares nothing the body can read. It
+   * only means that named arguments matching no named parameter are accepted
+   * and discarded, rather than rejected.
+   */
+  bool hasVariadicNamedParam() const;
+
+  /*
    * Whether the function is declared with a `...T' parameter (splat).
    */
    bool hasSplatParam() const;

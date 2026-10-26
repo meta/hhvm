@@ -47,6 +47,16 @@ pub fn has_splat(params: &[ParamEntry]) -> bool {
     params.iter().rev().any(|p| p.param.is_splat)
 }
 
+/// Whether the function declares a `named t...` parameter. Such a parameter has
+/// no name, so `from_ast` drops it rather than emitting a parameter nothing can
+/// bind; callers record it as `AttrVariadicNamedParam` instead. Note this takes
+/// the AST parameters, not the emitted ones, for that reason.
+pub fn has_variadic_named(ast_params: &[a::FunParam]) -> bool {
+    ast_params.iter().any(|p| {
+        matches!(p.info, a::FunParamInfo::ParamVariadic) && p.named.is_some() && p.name == "..."
+    })
+}
+
 pub fn from_asts<'a>(
     emitter: &mut Emitter,
     tparams: &mut Vec<&str>,

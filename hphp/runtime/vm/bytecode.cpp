@@ -3617,7 +3617,12 @@ void doFCall(PrologueFlags prologueFlags, const Func* func,
   );
   ar->setThisOrClassAllowNull(ctx);
 
-  prepareFuncEntry(ar, numPositionalArgs, numNamedArgs == func->numNamedParams());
+  // A `named t...' parameter absorbs argument names matching no named
+  // parameter, so the raw count of named arguments does not tell us whether
+  // every named parameter was given a value.
+  prepareFuncEntry(ar, numPositionalArgs,
+                   numMatchedNamedArgs(func, namedArgNames) ==
+                     func->numNamedParams());
 }
 
 namespace {
