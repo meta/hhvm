@@ -431,6 +431,9 @@ let handle :
     (env, Ok 0)
   | Server_command_types.SAVE_NAMING filename ->
     (env, Save_state_service.go_naming env.Server_env.naming_table filename)
+  | Server_command_types.PAUSE ->
+    ( { env with Server_env.full_check_status = Server_env.Full_check_paused },
+      () )
   | Server_command_types.CHECK_LIVENESS ->
     (* This is for the client to know "is the server available to process requests?" *)
     (env, ())

@@ -57,6 +57,7 @@ type client_mode =
   | MODE_OUTLINE
   | MODE_OUTLINE2
   | MODE_OUTLINE_FOR_AGENTS of string
+  | MODE_PAUSE
   | MODE_RENAME of rename_mode * string * string
   | MODE_REMOVE_DEAD_FIXMES of int list
   | MODE_REMOVE_DEAD_UNSAFE_CASTS

@@ -949,6 +949,10 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
            ]),
         " <target_file> <file1,file2,...> Package-aware find-refs lint",
         (Arg_non_user_facing, Help_modes) );
+      ( "--pause",
+        Arg.Unit (fun () -> set_mode MODE_PAUSE),
+        " pause automatic rechecks after current work finishes; the next client request resumes them",
+        (Arg_non_user_facing, Help_modes) );
       tuple_3_append
         (Common_argspecs.prechecked prechecked)
         (Arg_non_user_facing, Help_options);

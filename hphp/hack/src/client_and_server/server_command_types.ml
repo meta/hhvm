@@ -621,6 +621,9 @@ type _ t =
       string
       -> (Save_state_service_types.save_naming_result, string) Stdlib.result t
   | CHECK_LIVENESS : unit t
+  | PAUSE : unit t
+      (** Pause automatic rechecks until the next client connection. This uses
+          the default pipe so that ongoing typechecking finishes first. *)
   | LINT : string list -> Server_lint_types.result t
   | LINT_STDIN : lint_stdin_input -> Server_lint_types.result t
   | LINT_ALL : int -> Server_lint_types.result t
@@ -733,6 +736,7 @@ let rpc_command_needs_full_check : type a. a t -> bool =
   | RAGE -> false
   | CST_SEARCH _ -> false
   | CHECK_LIVENESS -> false
+  | PAUSE -> true
   | FUN_DEPS_BATCH _ -> false
   | DEPS_OUT_BATCH _ -> false
   | FILE_DEPENDENTS _ -> true

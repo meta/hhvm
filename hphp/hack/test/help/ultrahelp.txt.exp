@@ -49,6 +49,7 @@ Modes (mutually exclusive; choose one; default: --status):
   --outline-for-agents                     <file> outline the file, including line spans, to help agents efficiently navigate large files
   --package-lint                           Support for linting of __PackageOverride annotations
   --package-lint-full                      <target_file> <file1,file2,...> Package-aware find-refs lint
+  --pause                                  pause automatic rechecks after current work finishes; the next client request resumes them
   --refactor                               rename a symbol, Usage: hh_client ["Class", "Function", "Method"] <Current Name> <New Name>
   --remove-dead-fixme                      remove dead HH_FIXME for specified error code (first do hh_client restart --no-load)
   --remove-dead-fixmes                     remove dead HH_FIXME for any error code < 5000 (first do hh_client restart --no-load)

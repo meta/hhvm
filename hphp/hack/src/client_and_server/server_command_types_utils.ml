@@ -28,6 +28,7 @@ let debug_describe_t : type a. a t -> string = function
   | REMOVE_DEAD_UNSAFE_CASTS -> "REMOVE_DEAD_UNSAFE_CASTS"
   | REWRITE_LAMBDA_PARAMETERS _ -> "REWRITE_LAMBDA_PARAMETERS"
   | CHECK_LIVENESS -> "CHECK_LIVENESS"
+  | PAUSE -> "PAUSE"
   | LINT _ -> "LINT"
   | LINT_STDIN _ -> "LINT_STDIN"
   | LINT_ALL _ -> "LINT_ALL"

@@ -380,7 +380,15 @@ let rec recheck_until_no_changes_left
     if Relative_path.Set.is_empty disk_needs_parsing then
       env
     else
-      { env with disk_needs_parsing; full_check_status = Full_check_started }
+      let full_check_status =
+        match env.full_check_status with
+        | Full_check_paused -> Full_check_paused
+        | Full_check_needed
+        | Full_check_started
+        | Full_check_done ->
+          Full_check_started
+      in
+      { env with disk_needs_parsing; full_check_status }
   in
   let telemetry = Telemetry.duration telemetry ~key:"got_updates" ~start_time in
 
@@ -427,6 +435,19 @@ let rec recheck_until_no_changes_left
     |> Telemetry.duration ~key:"figured_check_kind" ~start_time
   in
   if not full_check then
+    let () =
+      match env.full_check_status with
+      | Full_check_paused ->
+        if not (Relative_path.Set.is_empty updates) then
+          Hh_logger.log
+            ~lvl:Hh_logger.Level.Debug
+            "Queued file changes while paused: %d files awaiting parsing"
+            (Relative_path.Set.cardinal env.disk_needs_parsing)
+      | Full_check_needed
+      | Full_check_started
+      | Full_check_done ->
+        ()
+    in
     let telemetry =
       Telemetry.string_ telemetry ~key:"check_kind" ~value:"None"
     in
@@ -634,6 +655,27 @@ let serve_one_iteration genv env client_provider =
     | _ -> selected_client
   in
 
+  let env =
+    match selected_client with
+    | Client_provider.Select_new _ -> begin
+      match env.full_check_status with
+      | Full_check_paused ->
+        (* We can unconditionally switch to [Full_check_done] here: The invariant for
+           [Full_check_paused] tells us that [env.needs_recheck] is empty.
+           [recheck_until_no_changes_left] will switch to [Full_check_started] later if
+           [env.disk_needs_parsing] is non-empty. *)
+        { env with full_check_status = Full_check_done }
+      | Full_check_needed
+      | Full_check_started
+      | Full_check_done ->
+        env
+    end
+    | Client_provider.Select_nothing
+    | Client_provider.Select_exception _
+    | Client_provider.Not_selecting_deferring _ ->
+      env
+  in
+
   (* Server_progress: By updating status now at the start of the serve_one_iteration,
    * it means there's no obligation on the "doing work" part of the previous
    * iteration to clean up its own status-reporting once done.
@@ -665,6 +707,9 @@ let serve_one_iteration genv env client_provider =
         | Full_check_needed -> (Server_progress.DWorking, "will resume")
         | Full_check_started -> (Server_progress.DWorking, "typechecking")
         | Full_check_done -> (Server_progress.DReady, "ready")
+        | Full_check_paused ->
+          ( Server_progress.DReady,
+            "paused until the next client request (e.g., hh --stats)" )
       in
       Server_progress.write ~include_in_logs:false ~disposition "%s" msg
     | Client_provider.Not_selecting_deferring states ->

@@ -169,6 +169,12 @@ type full_check_status =
           whenever there is a command requiring full check pending, or when user
           saves a file. *)
   | Full_check_done  (** All the changes have been fully processed. *)
+  | Full_check_paused
+      (** Automatic checks are paused by [hh --pause] until the next accepted client connection.
+          Invariants:
+            - When transitioning to this state, [disk_needs_parsing] and [needs_recheck] are empty.
+            - While paused, [needs_recheck] remains empty, but new file changes
+              accumulate in [disk_needs_parsing]. *)
 [@@deriving show]
 
 let is_full_check_done = function

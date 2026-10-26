@@ -925,6 +925,11 @@ let main_internal
     in
     SaveNamingResultPrinter.go result args.output_json;
     Lwt.return (Exit_status.No_error, telemetry)
+  | Client_env.MODE_PAUSE ->
+    let%lwt ((), telemetry) = rpc args Server_command_types.PAUSE in
+    print_endline
+      "Paused automatic rechecks. The next client request resumes them.";
+    Lwt.return (Exit_status.No_error, telemetry)
   | Client_env.MODE_SEARCH query ->
     if not (String.equal query "this_is_just_to_check_liveness_of_hh_server")
     then begin
