@@ -505,12 +505,12 @@ void ContProfConsumeTest::checkReuse(double probability, bool captureEnabled) {
   EXPECT_EQ(beforeTargets + (refresh ? 0 : 1),
     ServiceData::exportCounterByKey(
       "jit.cprof.target.install.attempts"
-    ).value_or(-1)
+    ).value_or(0)
   );
   EXPECT_EQ(beforeRefresh + (refresh ? 1 : 0),
     ServiceData::exportCounterByKey(
       "jit.cprof.startup.refresh_selected"
-    ).value_or(-1)
+    ).value_or(0)
   );
   EXPECT_FALSE(profData->profiling(m_alphaFunc));
   EXPECT_TRUE(profData->funcProfTransIDs(m_alphaFunc->getFuncId()).empty());

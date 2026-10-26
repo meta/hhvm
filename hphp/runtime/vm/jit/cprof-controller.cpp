@@ -32,6 +32,7 @@
 #include "hphp/runtime/vm/func.h"
 #include "hphp/runtime/vm/jit/cprof-capture.h"
 #include "hphp/runtime/vm/jit/cprof-checkpoint.h"
+#include "hphp/runtime/vm/jit/cprof-counter.h"
 #include "hphp/runtime/vm/jit/cprof-key.h"
 #include "hphp/runtime/vm/jit/cprof-target-profile.h"
 #include "hphp/runtime/vm/unit.h"
@@ -48,79 +49,79 @@ namespace {
 // Cumulative process totals. Opportunities are sync/async profile optimizations
 // with capture configured, including those skipped because the writer is not
 // active. Disabled capture does not touch any counters.
-auto const s_captureOpportunities = ServiceData::createCounter(
+auto const s_captureOpportunities = ContProfCounter(
   "jit.cprof.capture.opportunities"
 );
 // The async-only subset, counted after the queued optimization is accepted,
 // not when it is enqueued (enqueueing can deduplicate or reject requests).
-auto const s_asyncCaptureOpportunities = ServiceData::createCounter(
+auto const s_asyncCaptureOpportunities = ContProfCounter(
   "jit.cprof.capture.async_opportunities"
 );
-auto const s_captureSkippedInactive = ServiceData::createCounter(
+auto const s_captureSkippedInactive = ContProfCounter(
   "jit.cprof.capture.skipped_inactive"
 );
 // Attempts count calls to captureContProfProfile. Snapshot outcomes precede
 // duplicate detection, so successes = stored_records + replaced_records +
 // duplicates. Retaining imported originals does not count as a fresh capture.
-auto const s_captureAttempts = ServiceData::createCounter(
+auto const s_captureAttempts = ContProfCounter(
   "jit.cprof.capture.attempts"
 );
-auto const s_snapshotSuccesses = ServiceData::createCounter(
+auto const s_snapshotSuccesses = ContProfCounter(
   "jit.cprof.capture.snapshot_successes"
 );
-auto const s_snapshotFailures = ServiceData::createCounter(
+auto const s_snapshotFailures = ContProfCounter(
   "jit.cprof.capture.snapshot_failures"
 );
-auto const s_storedRecords = ServiceData::createCounter(
+auto const s_storedRecords = ContProfCounter(
   "jit.cprof.capture.stored_records"
 );
 // Successful fresh captures replacing a retained original, once per key.
-auto const s_replacedRecords = ServiceData::createCounter(
+auto const s_replacedRecords = ContProfCounter(
   "jit.cprof.capture.replaced_records"
 );
 // Compatible replay records newly retained for subsequent checkpoints.
-auto const s_retainedRecords = ServiceData::createCounter(
+auto const s_retainedRecords = ContProfCounter(
   "jit.cprof.startup.retained_records"
 );
-auto const s_duplicates = ServiceData::createCounter(
+auto const s_duplicates = ContProfCounter(
   "jit.cprof.capture.duplicates"
 );
 // Translation totals include successful snapshots discarded as duplicate
 // functions. Retained translations precede final record validation.
-auto const s_translationsExamined = ServiceData::createCounter(
+auto const s_translationsExamined = ContProfCounter(
   "jit.cprof.capture.translations_examined"
 );
-auto const s_translationsEligible = ServiceData::createCounter(
+auto const s_translationsEligible = ContProfCounter(
   "jit.cprof.capture.translations_eligible"
 );
-auto const s_translationsRetained = ServiceData::createCounter(
+auto const s_translationsRetained = ContProfCounter(
   "jit.cprof.capture.translations_retained"
 );
-auto const s_translationsStartDeduplicated = ServiceData::createCounter(
+auto const s_translationsStartDeduplicated = ContProfCounter(
   "jit.cprof.capture.translations_start_deduplicated"
 );
 // First-failing detail subsets of unexpected_region and unexpected_block.
-auto const s_missingRegions = ServiceData::createCounter(
+auto const s_missingRegions = ContProfCounter(
   "jit.cprof.capture.rejected.missing_region"
 );
-auto const s_multipleBlockRegions = ServiceData::createCounter(
+auto const s_multipleBlockRegions = ContProfCounter(
   "jit.cprof.capture.rejected.multiple_blocks"
 );
-auto const s_mismatchedBlockStarts = ServiceData::createCounter(
+auto const s_mismatchedBlockStarts = ContProfCounter(
   "jit.cprof.capture.rejected.mismatched_block_start"
 );
-auto const s_nonzeroStackOffsets = ServiceData::createCounter(
+auto const s_nonzeroStackOffsets = ContProfCounter(
   "jit.cprof.capture.rejected.nonzero_stack_offset"
 );
-auto const s_emptyBlocks = ServiceData::createCounter(
+auto const s_emptyBlocks = ContProfCounter(
   "jit.cprof.capture.rejected.empty_block"
 );
 // Current process-local record count, updated under the record-map lock.
-auto const s_recordsCount = ServiceData::createCounter(
+auto const s_recordsCount = ContProfCounter(
   "jit.cprof.capture.records"
 );
 // Target sites in retained translations rejected before snapshot attempts.
-auto const s_targetProfilesOutOfBounds = ServiceData::createCounter(
+auto const s_targetProfilesOutOfBounds = ContProfCounter(
   "jit.cprof.target.capture.out_of_bounds"
 );
 
@@ -128,33 +129,33 @@ auto const s_targetProfilesOutOfBounds = ServiceData::createCounter(
 // ContProfCaptureStats. Flush at most once per nonzero reason per function.
 struct RejectionCounter {
   ContProfCaptureRejection reason;
-  ServiceData::ExportedCounter* counter;
+  ContProfCounter counter;
 };
 using Rejection = ContProfCaptureRejection;
 RejectionCounter const s_rejections[] = {
-  {Rejection::InvalidFuncKey, ServiceData::createCounter(
+  {Rejection::InvalidFuncKey, ContProfCounter(
     "jit.cprof.capture.rejected.invalid_func_key")},
-  {Rejection::NoProfileTranslations, ServiceData::createCounter(
+  {Rejection::NoProfileTranslations, ContProfCounter(
     "jit.cprof.capture.rejected.no_profile_translations")},
-  {Rejection::PrologueOrResumedTranslation, ServiceData::createCounter(
+  {Rejection::PrologueOrResumedTranslation, ContProfCounter(
     "jit.cprof.capture.rejected.prologue_or_resumed_translation")},
-  {Rejection::UnexpectedRegion, ServiceData::createCounter(
+  {Rejection::UnexpectedRegion, ContProfCounter(
     "jit.cprof.capture.rejected.unexpected_region")},
-  {Rejection::UnexpectedBlock, ServiceData::createCounter(
+  {Rejection::UnexpectedBlock, ContProfCounter(
     "jit.cprof.capture.rejected.unexpected_block")},
-  {Rejection::InvalidEntry, ServiceData::createCounter(
+  {Rejection::InvalidEntry, ContProfCounter(
     "jit.cprof.capture.rejected.invalid_entry")},
-  {Rejection::InvalidLocalTypeGuards, ServiceData::createCounter(
+  {Rejection::InvalidLocalTypeGuards, ContProfCounter(
     "jit.cprof.capture.rejected.invalid_local_type_guards")},
-  {Rejection::InvalidEntryTypeGuards, ServiceData::createCounter(
+  {Rejection::InvalidEntryTypeGuards, ContProfCounter(
     "jit.cprof.capture.rejected.invalid_entry_type_guards")},
-  {Rejection::InvalidLocalPostconditions, ServiceData::createCounter(
+  {Rejection::InvalidLocalPostconditions, ContProfCounter(
     "jit.cprof.capture.rejected.invalid_local_postconditions")},
-  {Rejection::ZeroExecutionCount, ServiceData::createCounter(
+  {Rejection::ZeroExecutionCount, ContProfCounter(
     "jit.cprof.capture.rejected.zero_execution_count")},
-  {Rejection::NoEligibleCandidates, ServiceData::createCounter(
+  {Rejection::NoEligibleCandidates, ContProfCounter(
     "jit.cprof.capture.rejected.no_eligible_candidates")},
-  {Rejection::InvalidFinalRecord, ServiceData::createCounter(
+  {Rejection::InvalidFinalRecord, ContProfCounter(
     "jit.cprof.capture.rejected.invalid_final_record")},
 };
 
@@ -291,7 +292,7 @@ bool captureContProfProfile(const ProfData& profData, const Func& func) {
   auto record = snapshotContProfProfileRecord(
     profData, func, &sourceTransIds, &stats
   );
-  auto const addCount = [](ServiceData::ExportedCounter* counter, size_t count) {
+  auto const addCount = [](const ContProfCounter& counter, size_t count) {
     if (count) counter->addValue(count);
   };
   addCount(s_translationsExamined, stats.translationsExamined);

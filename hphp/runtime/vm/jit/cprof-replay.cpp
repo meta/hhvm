@@ -24,6 +24,7 @@
 #include <folly/FileUtil.h>
 
 #include "hphp/runtime/vm/jit/cprof-checkpoint.h"
+#include "hphp/runtime/vm/jit/cprof-counter.h"
 #include "hphp/util/logger.h"
 #include "hphp/util/service-data.h"
 
@@ -34,19 +35,19 @@ namespace {
 // Cumulative guard outcomes; busy/abandoned replays are intentional skips.
 // Errors include acquisition, abandoned-checkpoint cleanup, and marker clearing.
 auto const s_replayAttempts =
-  ServiceData::createCounter("jit.cprof.replay.attempts");
+  ContProfCounter("jit.cprof.replay.attempts");
 auto const s_replayAcquired =
-  ServiceData::createCounter("jit.cprof.replay.acquired");
+  ContProfCounter("jit.cprof.replay.acquired");
 auto const s_replayBusy =
-  ServiceData::createCounter("jit.cprof.replay.busy");
+  ContProfCounter("jit.cprof.replay.busy");
 auto const s_replayAbandoned =
-  ServiceData::createCounter("jit.cprof.replay.abandoned");
+  ContProfCounter("jit.cprof.replay.abandoned");
 auto const s_replayFilesDeleted =
-  ServiceData::createCounter("jit.cprof.replay.files_deleted");
+  ContProfCounter("jit.cprof.replay.files_deleted");
 auto const s_replayGuardErrors =
-  ServiceData::createCounter("jit.cprof.replay.guard_errors");
+  ContProfCounter("jit.cprof.replay.guard_errors");
 auto const s_replayCompleted =
-  ServiceData::createCounter("jit.cprof.replay.completed");
+  ContProfCounter("jit.cprof.replay.completed");
 
 bool clearReplayMarker(int fd) noexcept {
   if (folly::ftruncateNoInt(fd, 0) != 0 || folly::fsyncNoInt(fd) != 0) {

@@ -41,6 +41,7 @@
 #include "hphp/runtime/vm/jit/cls-cns-profile.h"
 #include "hphp/runtime/vm/jit/coeffect-fun-param-profile.h"
 #include "hphp/runtime/vm/jit/cow-profile.h"
+#include "hphp/runtime/vm/jit/cprof-counter.h"
 #include "hphp/runtime/vm/jit/cprof-serde.h"
 #include "hphp/runtime/vm/jit/decref-profile.h"
 #include "hphp/runtime/vm/jit/incref-profile.h"
@@ -65,11 +66,11 @@ namespace {
 // optimizer used the profile or published code. Outcome totals cover normal
 // returns; an escaping exception can leave an attempt without an outcome.
 struct TargetProfileCounters {
-  ServiceData::ExportedCounter* captureAttempts;
-  ServiceData::ExportedCounter* captured;
-  ServiceData::ExportedCounter* prepareAttempts;
-  ServiceData::ExportedCounter* prepared;
-  ServiceData::ExportedCounter* installed;
+  ContProfCounter captureAttempts;
+  ContProfCounter captured;
+  ContProfCounter prepareAttempts;
+  ContProfCounter prepared;
+  ContProfCounter installed;
 };
 
 #define CPROF_TARGET_KINDS(X) \
@@ -88,11 +89,11 @@ struct TargetProfileCounters {
 
 #define X(kind, type, name) \
   TargetProfileCounters const s_##kind##Counters{ \
-    ServiceData::createCounter("jit.cprof.target." #name ".capture_attempts"), \
-    ServiceData::createCounter("jit.cprof.target." #name ".captured"), \
-    ServiceData::createCounter("jit.cprof.target." #name ".prepare_attempts"), \
-    ServiceData::createCounter("jit.cprof.target." #name ".prepared"), \
-    ServiceData::createCounter("jit.cprof.target." #name ".installed"), \
+    ContProfCounter("jit.cprof.target." #name ".capture_attempts"), \
+    ContProfCounter("jit.cprof.target." #name ".captured"), \
+    ContProfCounter("jit.cprof.target." #name ".prepare_attempts"), \
+    ContProfCounter("jit.cprof.target." #name ".prepared"), \
+    ContProfCounter("jit.cprof.target." #name ".installed"), \
   };
 CPROF_TARGET_KINDS(X)
 #undef X
@@ -118,30 +119,30 @@ const TargetProfileCounters* targetCounters(ContProfTargetProfileKind kind) {
 }
 #undef CPROF_TARGET_KINDS
 
-auto const s_captureAttempts = ServiceData::createCounter(
+auto const s_captureAttempts = ContProfCounter(
   "jit.cprof.target.capture.attempts");
-auto const s_captured = ServiceData::createCounter(
+auto const s_captured = ContProfCounter(
   "jit.cprof.target.capture.captured");
 // One first-match reason per failed snapshot attempt.
-auto const s_captureInvalidOffset = ServiceData::createCounter(
+auto const s_captureInvalidOffset = ContProfCounter(
   "jit.cprof.target.capture.skipped.invalid_offset");
-auto const s_captureUnsupportedKind = ServiceData::createCounter(
+auto const s_captureUnsupportedKind = ContProfCounter(
   "jit.cprof.target.capture.skipped.unsupported_kind");
-auto const s_captureEmpty = ServiceData::createCounter(
+auto const s_captureEmpty = ContProfCounter(
   "jit.cprof.target.capture.skipped.empty");
-auto const s_captureInvalidFuncKey = ServiceData::createCounter(
+auto const s_captureInvalidFuncKey = ContProfCounter(
   "jit.cprof.target.capture.skipped.invalid_func_key");
 // No unique method: includes empty, BaseMeth, InterfaceMeth and invalid states.
-auto const s_captureNonUniqueMethod = ServiceData::createCounter(
+auto const s_captureNonUniqueMethod = ContProfCounter(
   "jit.cprof.target.capture.skipped.non_unique_method");
-auto const s_captureUnsupportedMethod = ServiceData::createCounter(
+auto const s_captureUnsupportedMethod = ContProfCounter(
   "jit.cprof.target.capture.skipped.unsupported_method");
-auto const s_captureAllocationFailure = ServiceData::createCounter(
+auto const s_captureAllocationFailure = ContProfCounter(
   "jit.cprof.target.capture.skipped.allocation_failure");
 
-auto const s_prepareAttempts = ServiceData::createCounter(
+auto const s_prepareAttempts = ContProfCounter(
   "jit.cprof.target.prepare.attempts");
-auto const s_prepared = ServiceData::createCounter(
+auto const s_prepared = ContProfCounter(
   "jit.cprof.target.prepare.prepared");
 
 // One first-match reason per failed preparation, even for a CallTarget profile
@@ -153,35 +154,35 @@ enum class PrepareRejection {
   UnresolvedOrStale,
   ResolveException,
 };
-ServiceData::ExportedCounter* const s_prepareRejections[] = {
-  ServiceData::createCounter("jit.cprof.target.prepare.skipped.invalid_payload"),
-  ServiceData::createCounter(
+ContProfCounter const s_prepareRejections[] = {
+  ContProfCounter("jit.cprof.target.prepare.skipped.invalid_payload"),
+  ContProfCounter(
     "jit.cprof.target.prepare.skipped.unsupported_method"),
-  ServiceData::createCounter("jit.cprof.target.prepare.skipped.missing_unit"),
-  ServiceData::createCounter(
+  ContProfCounter("jit.cprof.target.prepare.skipped.missing_unit"),
+  ContProfCounter(
     "jit.cprof.target.prepare.skipped.unresolved_or_stale"),
-  ServiceData::createCounter(
+  ContProfCounter(
     "jit.cprof.target.prepare.skipped.resolve_exception"),
 };
 
 // Successful method preparations with a saved receiver, partitioned into
 // restored UniqueClass and fallback to UniqueMeth (not discarded profiles).
-auto const s_receiverRestored = ServiceData::createCounter(
+auto const s_receiverRestored = ContProfCounter(
   "jit.cprof.target.meth.receiver_restored");
-auto const s_receiverUnavailable = ServiceData::createCounter(
+auto const s_receiverUnavailable = ContProfCounter(
   "jit.cprof.target.meth.receiver_unavailable");
-auto const s_receiverChangedDispatch = ServiceData::createCounter(
+auto const s_receiverChangedDispatch = ContProfCounter(
   "jit.cprof.target.meth.receiver_changed_dispatch");
 // Captures that retain the method but cannot encode its unique receiver hint.
-auto const s_receiverNotCaptured = ServiceData::createCounter(
+auto const s_receiverNotCaptured = ContProfCounter(
   "jit.cprof.target.meth.receiver_not_captured");
 
-auto const s_installAttempts = ServiceData::createCounter(
+auto const s_installAttempts = ContProfCounter(
   "jit.cprof.target.install.attempts");
-auto const s_installed = ServiceData::createCounter(
+auto const s_installed = ContProfCounter(
   "jit.cprof.target.install.installed");
 // False returns from installation (allocation or payload decoding failure).
-auto const s_installFailures = ServiceData::createCounter(
+auto const s_installFailures = ContProfCounter(
   "jit.cprof.target.install.failures");
 
 // Buffer-backed adapters for the profile's existing serialize/deserialize.

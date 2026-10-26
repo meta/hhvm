@@ -30,6 +30,7 @@
 #include "hphp/runtime/vm/func.h"
 #include "hphp/runtime/vm/hhbc.h"
 #include "hphp/runtime/vm/jit/cprof-checkpoint.h"
+#include "hphp/runtime/vm/jit/cprof-counter.h"
 #include "hphp/runtime/vm/jit/mcgen-translate.h"
 #include "hphp/runtime/vm/jit/switch-profile.h"
 #include "hphp/runtime/vm/srckey.h"
@@ -45,56 +46,56 @@ constexpr size_t kMaxDecodedRecords = 200'000;
 // Cumulative work across directory reads, including repeated startup attempts.
 // A successfully decoded file can still exceed the directory's record budget.
 auto const s_filesDiscovered =
-  ServiceData::createCounter("jit.cprof.reader.files_discovered");
+  ContProfCounter("jit.cprof.reader.files_discovered");
 auto const s_filesLimited =
-  ServiceData::createCounter("jit.cprof.reader.files_limited");
+  ContProfCounter("jit.cprof.reader.files_limited");
 auto const s_filesAttempted =
-  ServiceData::createCounter("jit.cprof.reader.files_attempted");
+  ContProfCounter("jit.cprof.reader.files_attempted");
 auto const s_filesRead =
-  ServiceData::createCounter("jit.cprof.reader.files_read");
+  ContProfCounter("jit.cprof.reader.files_read");
 auto const s_filesRejected =
-  ServiceData::createCounter("jit.cprof.reader.files_rejected");
+  ContProfCounter("jit.cprof.reader.files_rejected");
 auto const s_recordLimitHits =
-  ServiceData::createCounter("jit.cprof.reader.record_limit_hits");
+  ContProfCounter("jit.cprof.reader.record_limit_hits");
 auto const s_filesUnreadRecordLimit =
-  ServiceData::createCounter("jit.cprof.reader.files_unread_record_limit");
+  ContProfCounter("jit.cprof.reader.files_unread_record_limit");
 auto const s_recordsDecoded =
-  ServiceData::createCounter("jit.cprof.reader.records_decoded");
+  ContProfCounter("jit.cprof.reader.records_decoded");
 auto const s_recordsLimited =
-  ServiceData::createCounter("jit.cprof.reader.records_limited");
+  ContProfCounter("jit.cprof.reader.records_limited");
 auto const s_recordsUnique =
-  ServiceData::createCounter("jit.cprof.reader.records_unique");
+  ContProfCounter("jit.cprof.reader.records_unique");
 auto const s_recordsDeduplicated =
-  ServiceData::createCounter("jit.cprof.reader.records_deduplicated");
+  ContProfCounter("jit.cprof.reader.records_deduplicated");
 auto const s_directoryOpenFailures =
-  ServiceData::createCounter("jit.cprof.reader.directory_open_failures");
+  ContProfCounter("jit.cprof.reader.directory_open_failures");
 auto const s_directoryIterationFailures =
-  ServiceData::createCounter("jit.cprof.reader.directory_iteration_failures");
+  ContProfCounter("jit.cprof.reader.directory_iteration_failures");
 auto const s_directoryEntryLimit =
-  ServiceData::createCounter("jit.cprof.reader.directory_entry_limit");
+  ContProfCounter("jit.cprof.reader.directory_entry_limit");
 auto const s_fileMetadataFailures =
-  ServiceData::createCounter("jit.cprof.reader.file_metadata_failures");
+  ContProfCounter("jit.cprof.reader.file_metadata_failures");
 
 // Exactly the first rejection per compatibility check; these count records,
 // not individual translations, guards, postconditions, or CFG edges.
 auto const s_invalidRecord =
-  ServiceData::createCounter("jit.cprof.startup.rejected.invalid_record");
+  ContProfCounter("jit.cprof.startup.rejected.invalid_record");
 auto const s_keyMismatch =
-  ServiceData::createCounter("jit.cprof.startup.rejected.key_mismatch");
+  ContProfCounter("jit.cprof.startup.rejected.key_mismatch");
 auto const s_invalidStart =
-  ServiceData::createCounter("jit.cprof.startup.rejected.invalid_start");
+  ContProfCounter("jit.cprof.startup.rejected.invalid_start");
 auto const s_unknownStackOffset =
-  ServiceData::createCounter("jit.cprof.startup.rejected.unknown_stack_offset");
+  ContProfCounter("jit.cprof.startup.rejected.unknown_stack_offset");
 auto const s_nonzeroStackOffset =
-  ServiceData::createCounter("jit.cprof.startup.rejected.nonzero_stack_offset");
+  ContProfCounter("jit.cprof.startup.rejected.nonzero_stack_offset");
 auto const s_invalidRegion =
-  ServiceData::createCounter("jit.cprof.startup.rejected.invalid_region");
+  ContProfCounter("jit.cprof.startup.rejected.invalid_region");
 auto const s_invalidGuards =
-  ServiceData::createCounter("jit.cprof.startup.rejected.invalid_guards");
+  ContProfCounter("jit.cprof.startup.rejected.invalid_guards");
 auto const s_invalidPostconditions =
-  ServiceData::createCounter("jit.cprof.startup.rejected.invalid_postconditions");
+  ContProfCounter("jit.cprof.startup.rejected.invalid_postconditions");
 auto const s_invalidEdges =
-  ServiceData::createCounter("jit.cprof.startup.rejected.invalid_edges");
+  ContProfCounter("jit.cprof.startup.rejected.invalid_edges");
 
 struct CheckpointFile {
   std::string filename;

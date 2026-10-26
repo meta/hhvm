@@ -370,7 +370,7 @@ TEST_F(ContProfCallTargetTest, RoundTripsCountsAndUntrackedProbability) {
   std::map<std::string, int64_t> countersBefore;
   for (auto const suffix : {"captured", "prepared", "installed"}) {
     auto const key = std::string{"jit.cprof.target.call_target."} + suffix;
-    countersBefore.emplace(key, ServiceData::exportCounterByKey(key).value_or(-1));
+    countersBefore.emplace(key, ServiceData::exportCounterByKey(key).value_or(0));
   }
   constexpr auto transId = TransID{2'600'000};
   auto const name = callTargetProfileKey();
@@ -423,7 +423,7 @@ TEST_F(ContProfCallTargetTest, RoundTripsCountsAndUntrackedProbability) {
     }
   }
   for (auto const& [key, before] : countersBefore) {
-    EXPECT_EQ(before + 2, ServiceData::exportCounterByKey(key).value_or(-1));
+    EXPECT_EQ(before + 2, ServiceData::exportCounterByKey(key).value_or(0));
   }
 }
 
@@ -455,13 +455,13 @@ TEST_F(ContProfCallTargetTest, RejectsUnavailableOrStaleRequiredTargets) {
     auto unavailable = m_units;
     unavailable.erase(key->resolutionUnitPath);
     auto const missingBefore = ServiceData::exportCounterByKey(
-      "jit.cprof.target.prepare.skipped.missing_unit").value_or(-1);
+      "jit.cprof.target.prepare.skipped.missing_unit").value_or(0);
     EXPECT_FALSE(prepareContProfTargetProfile(*snapshot, unavailable));
     EXPECT_EQ(missingBefore + 1, ServiceData::exportCounterByKey(
-      "jit.cprof.target.prepare.skipped.missing_unit").value_or(-1));
+      "jit.cprof.target.prepare.skipped.missing_unit").value_or(0));
     EXPECT_FALSE(prepareContProfTargetProfile(*snapshot));
     EXPECT_EQ(missingBefore + 2, ServiceData::exportCounterByKey(
-      "jit.cprof.target.prepare.skipped.missing_unit").value_or(-1));
+      "jit.cprof.target.prepare.skipped.missing_unit").value_or(0));
 
     auto replacement = makeCallTargetTestUnit(missing, true);
     ASSERT_NE(nullptr, replacement);
@@ -474,10 +474,10 @@ TEST_F(ContProfCallTargetTest, RejectsUnavailableOrStaleRequiredTargets) {
     ASSERT_TRUE(replacementKey);
     ASSERT_NE(key->bytecodeUnitHash, replacementKey->bytecodeUnitHash);
     auto const staleBefore = ServiceData::exportCounterByKey(
-      "jit.cprof.target.prepare.skipped.unresolved_or_stale").value_or(-1);
+      "jit.cprof.target.prepare.skipped.unresolved_or_stale").value_or(0);
     EXPECT_FALSE(prepareContProfTargetProfile(*snapshot, m_units));
     EXPECT_EQ(staleBefore + 1, ServiceData::exportCounterByKey(
-      "jit.cprof.target.prepare.skipped.unresolved_or_stale").value_or(-1));
+      "jit.cprof.target.prepare.skipped.unresolved_or_stale").value_or(0));
   }
 }
 
@@ -849,22 +849,22 @@ TEST_F(ContProfMethReceiverTest, RestoresReceiverAcrossUnrelatedBytecodeChange) 
   auto unavailable = m_units;
   unavailable.erase(kMethReceiverUnitPath);
   auto const fallbackBefore = ServiceData::exportCounterByKey(
-    "jit.cprof.target.meth.receiver_unavailable").value_or(-1);
+    "jit.cprof.target.meth.receiver_unavailable").value_or(0);
   auto const preparedBefore = ServiceData::exportCounterByKey(
-    "jit.cprof.target.meth.prepared").value_or(-1);
+    "jit.cprof.target.meth.prepared").value_or(0);
   auto const missingBefore = ServiceData::exportCounterByKey(
-    "jit.cprof.target.prepare.skipped.missing_unit").value_or(-1);
+    "jit.cprof.target.prepare.skipped.missing_unit").value_or(0);
   auto const withoutReceiver = prepareContProfTargetProfile(*profile, unavailable);
   ASSERT_TRUE(withoutReceiver);
   ASSERT_NE(nullptr, withoutReceiver->meth);
   EXPECT_EQ(nullptr, withoutReceiver->meth->uniqueClass());
   EXPECT_EQ(m_method, withoutReceiver->meth->uniqueMeth());
   EXPECT_EQ(fallbackBefore + 1, ServiceData::exportCounterByKey(
-    "jit.cprof.target.meth.receiver_unavailable").value_or(-1));
+    "jit.cprof.target.meth.receiver_unavailable").value_or(0));
   EXPECT_EQ(preparedBefore + 1, ServiceData::exportCounterByKey(
-    "jit.cprof.target.meth.prepared").value_or(-1));
+    "jit.cprof.target.meth.prepared").value_or(0));
   EXPECT_EQ(missingBefore, ServiceData::exportCounterByKey(
-    "jit.cprof.target.prepare.skipped.missing_unit").value_or(-1));
+    "jit.cprof.target.prepare.skipped.missing_unit").value_or(0));
 
   auto const oldReceiverHash = m_receiver->bcSha1();
   auto changedHhas = std::string{kMethReceiverHhas};

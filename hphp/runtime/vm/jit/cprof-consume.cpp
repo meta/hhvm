@@ -37,6 +37,7 @@
 #include "hphp/runtime/vm/func.h"
 #include "hphp/runtime/vm/jit/cprof-checkpoint.h"
 #include "hphp/runtime/vm/jit/cprof-controller.h"
+#include "hphp/runtime/vm/jit/cprof-counter.h"
 #include "hphp/runtime/vm/jit/cprof-key.h"
 #include "hphp/runtime/vm/jit/cprof-reader.h"
 #include "hphp/runtime/vm/jit/cprof-replay.h"
@@ -105,100 +106,100 @@ StartupEligibility contProfStartupEligibility() {
 
 // Snapshots of the most recent startup that reached each stage.
 auto const s_startupPreparedFuncs =
-  ServiceData::createCounter("jit.cprof.startup.prepared_funcs");
+  ContProfCounter("jit.cprof.startup.prepared_funcs");
 auto const s_startupPublishedFuncs =
-  ServiceData::createCounter("jit.cprof.startup.published_funcs");
+  ContProfCounter("jit.cprof.startup.published_funcs");
 // Prepared functions withheld from import for ordinary profiling. Selection
 // does not guarantee execution, profiling-budget headroom, or a fresh capture.
 auto const s_refreshSelected =
-  ServiceData::createCounter("jit.cprof.startup.refresh_selected");
+  ContProfCounter("jit.cprof.startup.refresh_selected");
 // Configuration eligibility, not whether replay is currently running. The
 // replay guard or reader can still prevent an eligible startup from importing.
 auto const s_startupActive =
-  ServiceData::createCounter("jit.cprof.startup.active");
+  ContProfCounter("jit.cprof.startup.active");
 // The event totals below are cumulative. Inactive reasons are first-match and
 // counted only at startup, never by calls to the public eligibility predicate.
 auto const s_startupAttempts =
-  ServiceData::createCounter("jit.cprof.startup.attempts");
+  ContProfCounter("jit.cprof.startup.attempts");
 auto const s_startupInactive =
-  ServiceData::createCounter("jit.cprof.startup.inactive");
-ServiceData::ExportedCounter* const s_startupInactiveReasons[] = {
-  nullptr, // StartupEligibility::Active
-  ServiceData::createCounter("jit.cprof.startup.inactive.not_server_mode"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.not_repo_authoritative"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.zero_max_functions"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.empty_directory"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.jit_disabled"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.pgo_disabled"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.retranslate_all_enabled"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.jumpstart_enabled"),
-  ServiceData::createCounter("jit.cprof.startup.inactive.debugger_attached"),
+  ContProfCounter("jit.cprof.startup.inactive");
+ContProfCounter const s_startupInactiveReasons[] = {
+  ContProfCounter{nullptr}, // StartupEligibility::Active
+  ContProfCounter("jit.cprof.startup.inactive.not_server_mode"),
+  ContProfCounter("jit.cprof.startup.inactive.not_repo_authoritative"),
+  ContProfCounter("jit.cprof.startup.inactive.zero_max_functions"),
+  ContProfCounter("jit.cprof.startup.inactive.empty_directory"),
+  ContProfCounter("jit.cprof.startup.inactive.jit_disabled"),
+  ContProfCounter("jit.cprof.startup.inactive.pgo_disabled"),
+  ContProfCounter("jit.cprof.startup.inactive.retranslate_all_enabled"),
+  ContProfCounter("jit.cprof.startup.inactive.jumpstart_enabled"),
+  ContProfCounter("jit.cprof.startup.inactive.debugger_attached"),
 };
 auto const s_startupErrors =
-  ServiceData::createCounter("jit.cprof.startup.errors");
+  ContProfCounter("jit.cprof.startup.errors");
 auto const s_startupProfDataUnavailable =
-  ServiceData::createCounter("jit.cprof.startup.prof_data_unavailable");
+  ContProfCounter("jit.cprof.startup.prof_data_unavailable");
 // Deduplicated unit paths per load call, including target-profile dependencies.
 auto const s_unitsRequested =
-  ServiceData::createCounter("jit.cprof.startup.units_requested");
+  ContProfCounter("jit.cprof.startup.units_requested");
 auto const s_unitsReady =
-  ServiceData::createCounter("jit.cprof.startup.units_ready");
+  ContProfCounter("jit.cprof.startup.units_ready");
 auto const s_unitLoadFailures =
-  ServiceData::createCounter("jit.cprof.startup.unit_load_failures");
+  ContProfCounter("jit.cprof.startup.unit_load_failures");
 auto const s_unitMergeFailures =
-  ServiceData::createCounter("jit.cprof.startup.unit_merge_failures");
+  ContProfCounter("jit.cprof.startup.unit_merge_failures");
 // Records are examined in hotness order. Each rejected record has one reason;
 // records_incompatible also has a detailed first-failure counter in the reader.
 auto const s_recordsExamined =
-  ServiceData::createCounter("jit.cprof.startup.records_examined");
+  ContProfCounter("jit.cprof.startup.records_examined");
 auto const s_closureContextRecords =
-  ServiceData::createCounter("jit.cprof.startup.rejected.closure_context");
+  ContProfCounter("jit.cprof.startup.rejected.closure_context");
 auto const s_missingUnitRecords =
-  ServiceData::createCounter("jit.cprof.startup.rejected.missing_unit");
+  ContProfCounter("jit.cprof.startup.rejected.missing_unit");
 auto const s_unresolvedRecords =
-  ServiceData::createCounter("jit.cprof.startup.rejected.unresolved_or_stale");
+  ContProfCounter("jit.cprof.startup.rejected.unresolved_or_stale");
 auto const s_resolveExceptions =
-  ServiceData::createCounter("jit.cprof.startup.rejected.resolve_exception");
+  ContProfCounter("jit.cprof.startup.rejected.resolve_exception");
 auto const s_incompatibleRecords =
-  ServiceData::createCounter("jit.cprof.startup.records_incompatible");
+  ContProfCounter("jit.cprof.startup.records_incompatible");
 // Records not examined after the preparation cap, not known-compatible drops.
 auto const s_limitUnexamined =
-  ServiceData::createCounter("jit.cprof.startup.limit_unexamined");
+  ContProfCounter("jit.cprof.startup.limit_unexamined");
 // Prepared translations can belong to functions later skipped during import.
 auto const s_translationsPrepared =
-  ServiceData::createCounter("jit.cprof.startup.translations_prepared");
+  ContProfCounter("jit.cprof.startup.translations_prepared");
 auto const s_translationsImported =
-  ServiceData::createCounter("jit.cprof.startup.translations_imported");
+  ContProfCounter("jit.cprof.startup.translations_imported");
 auto const s_installedFuncs =
-  ServiceData::createCounter("jit.cprof.startup.installed_funcs");
+  ContProfCounter("jit.cprof.startup.installed_funcs");
 // Every normally returned install attempt is installed or has one skip reason.
 auto const s_installAttempts =
-  ServiceData::createCounter("jit.cprof.startup.install_attempts");
+  ContProfCounter("jit.cprof.startup.install_attempts");
 auto const s_installSkippedLease =
-  ServiceData::createCounter("jit.cprof.startup.install_skipped.lease");
+  ContProfCounter("jit.cprof.startup.install_skipped.lease");
 auto const s_installSkippedUnavailable =
-  ServiceData::createCounter("jit.cprof.startup.install_skipped.unavailable");
+  ContProfCounter("jit.cprof.startup.install_skipped.unavailable");
 auto const s_installSkippedTouched =
-  ServiceData::createCounter("jit.cprof.startup.install_skipped.already_touched");
+  ContProfCounter("jit.cprof.startup.install_skipped.already_touched");
 auto const s_installSkippedCounter =
-  ServiceData::createCounter("jit.cprof.startup.install_skipped.counter_default");
+  ContProfCounter("jit.cprof.startup.install_skipped.counter_default");
 auto const s_installSkippedSrcRec =
-  ServiceData::createCounter("jit.cprof.startup.install_skipped.src_rec");
+  ContProfCounter("jit.cprof.startup.install_skipped.src_rec");
 // Optimize attempts include pre-optimization skips. No-code counts completed
 // optimizations with no translation at any imported start, not thrown failures.
 auto const s_optimizeAttempts =
-  ServiceData::createCounter("jit.cprof.startup.optimize_attempts");
+  ContProfCounter("jit.cprof.startup.optimize_attempts");
 auto const s_optimizeSkippedLease =
-  ServiceData::createCounter("jit.cprof.startup.optimize_skipped.lease");
+  ContProfCounter("jit.cprof.startup.optimize_skipped.lease");
 auto const s_optimizeSkippedUnavailable =
-  ServiceData::createCounter("jit.cprof.startup.optimize_skipped.unavailable");
+  ContProfCounter("jit.cprof.startup.optimize_skipped.unavailable");
 auto const s_optimizeSkippedProfileState =
-  ServiceData::createCounter("jit.cprof.startup.optimize_skipped.profile_state");
+  ContProfCounter("jit.cprof.startup.optimize_skipped.profile_state");
 auto const s_optimizeNoCode =
-  ServiceData::createCounter("jit.cprof.startup.optimize_no_code");
+  ContProfCounter("jit.cprof.startup.optimize_no_code");
 // Prepared profile entries erased across translations, not distinct call sites.
 auto const s_methConflicts =
-  ServiceData::createCounter("jit.cprof.target.meth.method_conflicts");
+  ContProfCounter("jit.cprof.target.meth.method_conflicts");
 
 struct LoadedUnits {
   size_t pathsRequested{0};
@@ -663,6 +664,9 @@ std::vector<const ContProfStartupCandidate*> installContProfStartupCandidates(
 }
 
 void consumeContProfAtStartup() noexcept {
+  if (!Cfg::Jit::ContProfStartupMaxFunctions &&
+      !s_startupActive.initialized()) return;
+
   auto const eligibility = contProfStartupEligibility();
   auto const active = eligibility == StartupEligibility::Active;
   s_startupActive->setValue(active);

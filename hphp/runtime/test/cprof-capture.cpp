@@ -1014,10 +1014,9 @@ TEST_F(ContProfCaptureTest, CountsOnlyEnabledCaptureOpportunities) {
   auto const attempts = ServiceData::exportCounterByKey(
     "jit.cprof.capture.attempts"
   );
-  ASSERT_TRUE(opportunities);
-  ASSERT_TRUE(asyncOpportunities);
-  ASSERT_TRUE(inactive);
-  ASSERT_TRUE(attempts);
+  auto const opportunitiesBefore = opportunities.value_or(0);
+  auto const asyncOpportunitiesBefore = asyncOpportunities.value_or(0);
+  auto const inactiveBefore = inactive.value_or(0);
 
   maybeCaptureContProfProfile(profData, *func(), true /* async */);
   EXPECT_EQ(opportunities, ServiceData::exportCounterByKey(
@@ -1033,25 +1032,25 @@ TEST_F(ContProfCaptureTest, CountsOnlyEnabledCaptureOpportunities) {
   Cfg::Jit::ContProfCaptureEnabled = true;
   ASSERT_FALSE(contProfActive());
   maybeCaptureContProfProfile(profData, *func());
-  EXPECT_EQ(*opportunities + 1, ServiceData::exportCounterByKey(
+  EXPECT_EQ(opportunitiesBefore + 1, ServiceData::exportCounterByKey(
     "jit.cprof.capture.opportunities"
-  ).value_or(-1));
-  EXPECT_EQ(*inactive + 1, ServiceData::exportCounterByKey(
+  ).value_or(0));
+  EXPECT_EQ(inactiveBefore + 1, ServiceData::exportCounterByKey(
     "jit.cprof.capture.skipped_inactive"
-  ).value_or(-1));
+  ).value_or(0));
   EXPECT_EQ(asyncOpportunities, ServiceData::exportCounterByKey(
     "jit.cprof.capture.async_opportunities"
   ));
   maybeCaptureContProfProfile(profData, *func(), true /* async */);
-  EXPECT_EQ(*opportunities + 2, ServiceData::exportCounterByKey(
+  EXPECT_EQ(opportunitiesBefore + 2, ServiceData::exportCounterByKey(
     "jit.cprof.capture.opportunities"
-  ).value_or(-1));
-  EXPECT_EQ(*asyncOpportunities + 1, ServiceData::exportCounterByKey(
+  ).value_or(0));
+  EXPECT_EQ(asyncOpportunitiesBefore + 1, ServiceData::exportCounterByKey(
     "jit.cprof.capture.async_opportunities"
-  ).value_or(-1));
-  EXPECT_EQ(*inactive + 2, ServiceData::exportCounterByKey(
+  ).value_or(0));
+  EXPECT_EQ(inactiveBefore + 2, ServiceData::exportCounterByKey(
     "jit.cprof.capture.skipped_inactive"
-  ).value_or(-1));
+  ).value_or(0));
   EXPECT_EQ(attempts, ServiceData::exportCounterByKey(
     "jit.cprof.capture.attempts"
   ));
@@ -1062,27 +1061,27 @@ TEST_F(ContProfCaptureTest, StoresFirstRecordAndFinalizesTargetProfilesOnce) {
   auto const counters = [] {
     return std::array{
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.attempts").value_or(-1),
+        "jit.cprof.capture.attempts").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.snapshot_successes").value_or(-1),
+        "jit.cprof.capture.snapshot_successes").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.snapshot_failures").value_or(-1),
+        "jit.cprof.capture.snapshot_failures").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.stored_records").value_or(-1),
+        "jit.cprof.capture.stored_records").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.duplicates").value_or(-1),
+        "jit.cprof.capture.duplicates").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.translations_examined").value_or(-1),
+        "jit.cprof.capture.translations_examined").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.translations_eligible").value_or(-1),
+        "jit.cprof.capture.translations_eligible").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.translations_retained").value_or(-1),
+        "jit.cprof.capture.translations_retained").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.translations_start_deduplicated").value_or(-1),
+        "jit.cprof.capture.translations_start_deduplicated").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.rejected.nonzero_stack_offset").value_or(-1),
+        "jit.cprof.capture.rejected.nonzero_stack_offset").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.records").value_or(-1),
+        "jit.cprof.capture.records").value_or(0),
     };
   };
   auto const countersBefore = counters();
@@ -1090,12 +1089,10 @@ TEST_F(ContProfCaptureTest, StoresFirstRecordAndFinalizesTargetProfilesOnce) {
   EXPECT_EQ(before.size(), countersBefore.back());
   auto const missingProfiles = ServiceData::exportCounterByKey(
     "jit.cprof.capture.rejected.no_profile_translations"
-  );
+  ).value_or(0);
   auto const unexpectedBlocks = ServiceData::exportCounterByKey(
     "jit.cprof.capture.rejected.unexpected_block"
-  );
-  ASSERT_TRUE(missingProfiles);
-  ASSERT_TRUE(unexpectedBlocks);
+  ).value_or(0);
 
   ProfData profData;
   profData.resetCounters(100);
@@ -1269,23 +1266,23 @@ TEST_F(ContProfCaptureTest, StoresFirstRecordAndFinalizesTargetProfilesOnce) {
     EXPECT_EQ(countersBefore[i] + deltas[i], countersAfter[i]);
   }
   EXPECT_EQ(records.size(), countersAfter.back());
-  EXPECT_EQ(*missingProfiles + 1, ServiceData::exportCounterByKey(
+  EXPECT_EQ(missingProfiles + 1, ServiceData::exportCounterByKey(
     "jit.cprof.capture.rejected.no_profile_translations"
-  ).value_or(-1));
-  EXPECT_EQ(*unexpectedBlocks + 4, ServiceData::exportCounterByKey(
+  ).value_or(0));
+  EXPECT_EQ(unexpectedBlocks + 4, ServiceData::exportCounterByKey(
     "jit.cprof.capture.rejected.unexpected_block"
-  ).value_or(-1));
+  ).value_or(0));
 }
 
 TEST_F(ContProfCaptureTest, ReplacesRetainedRecordAndRewritesCheckpoint) {
   auto const counters = [] {
     return std::array{
       ServiceData::exportCounterByKey(
-        "jit.cprof.startup.retained_records").value_or(-1),
+        "jit.cprof.startup.retained_records").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.replaced_records").value_or(-1),
+        "jit.cprof.capture.replaced_records").value_or(0),
       ServiceData::exportCounterByKey(
-        "jit.cprof.capture.stored_records").value_or(-1),
+        "jit.cprof.capture.stored_records").value_or(0),
     };
   };
   auto expectedCounters = counters();
@@ -1344,7 +1341,7 @@ TEST_F(ContProfCaptureTest, ReplacesRetainedRecordAndRewritesCheckpoint) {
   auto const writes = [] {
     return ServiceData::exportCounterByKey(
       "jit.cprof.checkpoint.write_successes"
-    ).value_or(-1);
+    ).value_or(0);
   };
   auto const writesBefore = writes();
   ASSERT_GE(writesBefore, 0);

@@ -218,8 +218,7 @@ TEST(ContProfCheckpoint, AtomicallyReplacesFile) {
   auto const path = temp.path().native() + "/checkpoint.cprof";
   auto const failures = ServiceData::exportCounterByKey(
     "jit.cprof.checkpoint.write_failures"
-  );
-  ASSERT_TRUE(failures);
+  ).value_or(0);
 
   std::vector<ContProfProfileRecord> const first{
     makeRecord("alpha", 1, 7),
@@ -231,7 +230,7 @@ TEST(ContProfCheckpoint, AtomicallyReplacesFile) {
   EXPECT_FALSE(writeContProfCheckpointFile(path, {}));
   expectCheckpointRecords(path, first);
   expectCheckpointCounters(path, first.size());
-  EXPECT_EQ(*failures + 1, ServiceData::exportCounterByKey(
+  EXPECT_EQ(failures + 1, ServiceData::exportCounterByKey(
     "jit.cprof.checkpoint.write_failures"
   ).value_or(-1));
 
@@ -243,7 +242,7 @@ TEST(ContProfCheckpoint, AtomicallyReplacesFile) {
     temp.path().native() + "/missing/checkpoint.cprof", replacement
   ));
   expectCheckpointCounters(path, first.size());
-  EXPECT_EQ(*failures + 2, ServiceData::exportCounterByKey(
+  EXPECT_EQ(failures + 2, ServiceData::exportCounterByKey(
     "jit.cprof.checkpoint.write_failures"
   ).value_or(-1));
   std::vector<std::string> const unitPaths{"src/dependency.php"};
@@ -253,7 +252,7 @@ TEST(ContProfCheckpoint, AtomicallyReplacesFile) {
   EXPECT_EQ(replacement, decoded->records);
   EXPECT_EQ(unitPaths, decoded->unitPaths);
   expectCheckpointCounters(path, replacement.size());
-  EXPECT_EQ(*failures + 2, ServiceData::exportCounterByKey(
+  EXPECT_EQ(failures + 2, ServiceData::exportCounterByKey(
     "jit.cprof.checkpoint.write_failures"
   ).value_or(-1));
 }
@@ -468,8 +467,7 @@ TEST(ContProfCheckpoint, ActivatesOnlyWhileWriterIsRunning) {
   folly::test::TemporaryDirectory temp{"cont-prof-checkpoint-activation"};
 
   auto const writerCounters = [] {
-    ServiceData::CounterMap counters;
-    ServiceData::exportSelectedCountersByKeys(counters, {
+    std::vector<std::string> const keys{
       "jit.cprof.writer.active",
       "jit.cprof.writer.start_attempts",
       "jit.cprof.writer.start_failures",
@@ -482,7 +480,11 @@ TEST(ContProfCheckpoint, ActivatesOnlyWhileWriterIsRunning) {
       "jit.cprof.writer.invalid_directory",
       "jit.cprof.writer.thread_start_failure",
       "jit.cprof.writer.unexpected_stop",
-    });
+    };
+    ServiceData::CounterMap counters;
+    for (auto const& key : keys) {
+      counters.emplace(key, ServiceData::exportCounterByKey(key).value_or(0));
+    }
     return counters;
   };
   auto expectedCounters = writerCounters();
@@ -513,6 +515,7 @@ TEST(ContProfCheckpoint, ActivatesOnlyWhileWriterIsRunning) {
   startContProfCheckpointWriter();
   EXPECT_FALSE(contProfActive());
   EXPECT_FALSE(contProfActive());
+  EXPECT_EQ(0, ServiceData::exportCounterByKey("jit.cprof.writer.active").value_or(-1));
   EXPECT_EQ(expectedCounters, writerCounters());
 
   Cfg::Server::Mode = true;
@@ -576,6 +579,7 @@ TEST(ContProfCheckpoint, ActivatesOnlyWhileWriterIsRunning) {
   expectedCounters["jit.cprof.writer.active"] = 0;
   stopContProfCheckpointWriter();
   EXPECT_FALSE(contProfActive());
+  EXPECT_EQ(0, ServiceData::exportCounterByKey("jit.cprof.writer.active").value_or(-1));
   EXPECT_EQ(expectedCounters, writerCounters());
 
   stopContProfCheckpointWriter();

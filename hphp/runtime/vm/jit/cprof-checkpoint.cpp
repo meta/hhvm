@@ -45,6 +45,7 @@
 #include "hphp/runtime/base/init-fini-node.h"
 #include "hphp/runtime/base/program-functions.h"
 #include "hphp/runtime/vm/jit/cprof-controller.h"
+#include "hphp/runtime/vm/jit/cprof-counter.h"
 #include "hphp/runtime/vm/jit/cprof-key.h"
 #include "hphp/runtime/vm/jit/cprof-serde.h"
 #include "hphp/runtime/vm/jit/prof-data.h"
@@ -86,68 +87,68 @@ constexpr size_t kMaxCheckpointBytes = 256U << 20;
 constexpr EncodedRecordCount kMaxCheckpointRecords = 100'000;
 
 auto const s_checkpointRecords =
-  ServiceData::createCounter("jit.cprof.checkpoint.records");
+  ContProfCounter("jit.cprof.checkpoint.records");
 auto const s_checkpointBytes =
-  ServiceData::createCounter("jit.cprof.checkpoint.bytes");
+  ContProfCounter("jit.cprof.checkpoint.bytes");
 auto const s_checkpointWriteFailures =
-  ServiceData::createCounter("jit.cprof.checkpoint.write_failures");
+  ContProfCounter("jit.cprof.checkpoint.write_failures");
 auto const s_checkpointWriteSuccesses =
-  ServiceData::createCounter("jit.cprof.checkpoint.write_successes");
+  ContProfCounter("jit.cprof.checkpoint.write_successes");
 // Cumulative record omissions across file-write attempts, not distinct funcs.
 auto const s_checkpointRecordLimitSkips =
-  ServiceData::createCounter("jit.cprof.checkpoint.record_limit_skips");
+  ContProfCounter("jit.cprof.checkpoint.record_limit_skips");
 auto const s_checkpointInvalidRecordSkips =
-  ServiceData::createCounter("jit.cprof.checkpoint.invalid_record_skips");
+  ContProfCounter("jit.cprof.checkpoint.invalid_record_skips");
 auto const s_checkpointByteLimitSkips =
-  ServiceData::createCounter("jit.cprof.checkpoint.byte_limit_skips");
+  ContProfCounter("jit.cprof.checkpoint.byte_limit_skips");
 auto const s_checkpointFilesPruned =
-  ServiceData::createCounter("jit.cprof.checkpoint.files_pruned");
+  ContProfCounter("jit.cprof.checkpoint.files_pruned");
 auto const s_checkpointPruneFailures =
-  ServiceData::createCounter("jit.cprof.checkpoint.prune_failures");
+  ContProfCounter("jit.cprof.checkpoint.prune_failures");
 
 auto const s_fileIoFailures =
-  ServiceData::createCounter("jit.cprof.reader.file_io_failures");
+  ContProfCounter("jit.cprof.reader.file_io_failures");
 auto const s_filesOversized =
-  ServiceData::createCounter("jit.cprof.reader.files_oversized");
+  ContProfCounter("jit.cprof.reader.files_oversized");
 // Includes schema mismatches: the checkpoint decoder rejects the whole file.
 auto const s_filesInvalid =
-  ServiceData::createCounter("jit.cprof.reader.files_invalid");
+  ContProfCounter("jit.cprof.reader.files_invalid");
 
 // Start attempts include eligibility exclusions, but exclude calls with an
 // already-joinable writer. Failures count invalid directories, thread creation
 // failures, and worker failures before the Starting -> Running transition.
 auto const s_writerStartAttempts =
-  ServiceData::createCounter("jit.cprof.writer.start_attempts");
+  ContProfCounter("jit.cprof.writer.start_attempts");
 auto const s_writerStartFailures =
-  ServiceData::createCounter("jit.cprof.writer.start_failures");
+  ContProfCounter("jit.cprof.writer.start_failures");
 
 // Count every scheduled/final flush, including those skipped for an empty cache.
 auto const s_writerCheckpointAttempts =
-  ServiceData::createCounter("jit.cprof.writer.checkpoint_attempts");
+  ContProfCounter("jit.cprof.writer.checkpoint_attempts");
 auto const s_writerEmptyCheckpointSkips =
-  ServiceData::createCounter("jit.cprof.writer.empty_checkpoint_skips");
+  ContProfCounter("jit.cprof.writer.empty_checkpoint_skips");
 auto const s_writerCheckpointExceptions =
-  ServiceData::createCounter("jit.cprof.writer.checkpoint_exceptions");
+  ContProfCounter("jit.cprof.writer.checkpoint_exceptions");
 
 // Eligibility reasons are first-match exclusions counted only by start(),
 // never by the per-function contProfActive() checks.
 auto const s_writerNotServerMode =
-  ServiceData::createCounter("jit.cprof.writer.not_server_mode");
+  ContProfCounter("jit.cprof.writer.not_server_mode");
 auto const s_writerCaptureDisabled =
-  ServiceData::createCounter("jit.cprof.writer.capture_disabled");
+  ContProfCounter("jit.cprof.writer.capture_disabled");
 auto const s_writerZeroInterval =
-  ServiceData::createCounter("jit.cprof.writer.zero_interval");
+  ContProfCounter("jit.cprof.writer.zero_interval");
 auto const s_writerDeserializedProfData =
-  ServiceData::createCounter("jit.cprof.writer.deserialized_prof_data");
+  ContProfCounter("jit.cprof.writer.deserialized_prof_data");
 
 // These identify actual startup failures or an exception escaping the worker's
 // main loop, not recoverable errors within a checkpoint attempt.
 auto const s_writerInvalidDirectory =
-  ServiceData::createCounter("jit.cprof.writer.invalid_directory");
+  ContProfCounter("jit.cprof.writer.invalid_directory");
 auto const s_writerThreadStartFailure =
-  ServiceData::createCounter("jit.cprof.writer.thread_start_failure");
+  ContProfCounter("jit.cprof.writer.thread_start_failure");
 auto const s_writerUnexpectedStop =
-  ServiceData::createCounter("jit.cprof.writer.unexpected_stop");
+  ContProfCounter("jit.cprof.writer.unexpected_stop");
 
 struct Writer {
   explicit Writer(size_t maxBytes) : m_maxBytes{maxBytes} {}
@@ -598,6 +599,8 @@ struct ContProfCheckpointWriter {
 
   void start() {
     if (m_thread.joinable()) return;
+    if (!Cfg::Jit::ContProfCaptureEnabled &&
+        !s_writerStartAttempts.initialized()) return;
 
     s_writerStartAttempts->increment();
     switch (contProfCaptureEligibility()) {
@@ -775,6 +778,7 @@ ContProfCheckpointWriter& contProfCheckpointWriter() {
 // start() could overwrite the worker's zero after an early worker exit.
 ServiceData::CounterCallback s_writerActive{
   [](ServiceData::CounterMap& counters) {
+    if (!s_writerStartAttempts.initialized()) return;
     counters.emplace(
       "jit.cprof.writer.active", contProfCheckpointWriter().running()
     );
