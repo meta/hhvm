@@ -1894,17 +1894,24 @@ struct FaultDefinition {
   // If count is non-zero this fault will automatically expire after it has
   // been hit count times.
   3: i64 count;
+  // injectFault applies the first behavior that is set, in this order:
+  // block, blockWithCancel, kill, unblock, then the delay and error fields.
+  // Fields for later behaviors are ignored.
+  //
   // If block is true the fault will block until explicitly unblocked later.
-  // delayMilliseconds and errorMessage will be ignored if block is true
   4: bool block;
   5: i64 delayMilliseconds;
   6: optional string errorType;
   7: optional string errorMessage;
   // If kill is true the fault will exit the process ungracefully.
-  // block, delay, and errorMessage will be ignored if kill is true.
   8: bool kill;
   // If blockWithCancel is true the fault will block until the request is cancelled or times out.
   9: bool blockWithCancel;
+  // If both unblock fields are set, hitting this fault releases matching
+  // blocked checks instead of applying the delay and error fields. Setting
+  // only one of them is rejected with EINVAL.
+  10: optional string unblockKeyClass;
+  11: optional string unblockKeyValueRegex;
 }
 
 struct RemoveFaultArg {
