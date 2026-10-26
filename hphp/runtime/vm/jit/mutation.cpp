@@ -881,11 +881,13 @@ bool reflowTypes(IRUnit& unit) {
   auto const rpoBlocks = rpoSortCfg(unit);
   auto const ids = numberBlocks(unit, rpoBlocks);
   auto const endRPOId = safe_cast<RPOId>(rpoBlocks.size());
+  jit::fast_map<SSATmp*, Type> phiUpperBounds;
 
   for (auto const block : rpoBlocks) {
     auto const inst = &block->front();
     if (inst->is(DefLabel)) {
       for (auto const dst : inst->dsts()) {
+        phiUpperBounds.emplace(dst, dst->type());
         dst->setType(TBottom);
       }
     }
@@ -942,7 +944,13 @@ bool reflowTypes(IRUnit& unit) {
         auto const taken = jmp->taken();
         auto dsts = taken->front().dsts();
         for (auto i = 0; i < n; ++i) {
-          auto const type = srcs[i]->type() | dsts[i]->type();
+          auto type = srcs[i]->type() | dsts[i]->type();
+          auto const upperBound = phiUpperBounds.at(dsts[i]);
+          if (upperBound < type &&
+              srcs[i]->type() <= upperBound &&
+              dsts[i]->type() <= upperBound) {
+            type = upperBound;
+          }
           if (type == dsts[i]->type()) continue;
           FTRACE(5, "reflowTypes: widening phi {} to {} (at rpo: {})\n",
                  dsts[i]->toString(), type.toString(), ids[taken]);
