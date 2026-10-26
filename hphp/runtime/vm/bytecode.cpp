@@ -5730,6 +5730,33 @@ tcDispatchPost(PC pc, JitResumeAddr retAddr) {
 OPCODES
 #undef O
 
+// Clang lays out internal functions in order of first reference, so this
+// table, referenced before the dispatch tables, places these bodies first and
+// contiguously; the remaining bodies follow in opcode order. The order is C3
+// (hfsort) clustering of the opcode-to-opcode transitions recovered from the
+// computed-goto dispatchImpl in the production aarch64 BOLT profile.
+#define TC_DISPATCH_HOT_OPCODES(X)                                            \
+  X(SetM) X(PopC) X(AssertRATL) X(AssertRATStk) X(PushL) X(CGetQuietL)        \
+  X(PopL) X(RetC) X(BaseH) X(Null) X(UnsetL) X(Dup) X(IterGetValue)           \
+  X(FCallFuncD) X(BaseC) X(BareThis) X(NullUninit) X(FCallObjMethodD)         \
+  X(CreateCl) X(LazyClass) X(NewPair) X(AddElemC) X(String)                   \
+  X(FCallClsMethodD) X(Int) X(Dict) X(Same) X(Eq) X(False) X(BaseL) X(QueryM) \
+  X(NewObjD) X(SetL) X(IsTypeC) X(JmpZ) X(JmpNZ) X(IterNext) X(CastString)    \
+  X(CastInt) X(True) X(InstanceOfD) X(NewStructDict) X(Vec)                   \
+  X(FCallClsMethodSD) X(Jmp) X(Double) X(FCallCtor) X(CastDouble) X(Await)    \
+  X(NewVec) X(WHResult) X(CGetL2) X(Mul) X(IterGetKey) X(Dim) X(Lt) X(Add)    \
+  X(IterSetValue) X(Idx) X(CastBool) X(IncDecL) X(NSame) X(IterInit)          \
+  X(MemoGetEager) X(ClsCnsD) X(MemoGet) X(Sub) X(Enter) X(RetCSuspended)      \
+  X(SetOpL) X(MemoSet) X(FCallFunc)
+
+[[gnu::used]] const TCDispatchFn tcDispatchHotLayout[] = {
+#define X(name) &tcDispatchBody_##name,
+  TC_DISPATCH_HOT_OPCODES(X)
+#undef X
+};
+
+#undef TC_DISPATCH_HOT_OPCODES
+
 const TCDispatchTable tcDispatchDirectTable{{
 #define O(name, imm, push, pop, flags) \
   &tcDispatchBody_##name,
