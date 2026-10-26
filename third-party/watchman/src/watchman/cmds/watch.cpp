@@ -177,7 +177,6 @@ static bool find_file_in_dir_tree(
     }
     current_dir = parent;
   }
-  return false;
 }
 
 bool find_project_root(

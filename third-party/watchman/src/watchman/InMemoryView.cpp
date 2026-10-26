@@ -348,8 +348,6 @@ const watchman_dir* ViewDatabase::resolveDir(const w_string& dir_name) const {
     // Skip to the next component for the next iteration
     dir_component = sep + 1;
   }
-
-  return nullptr;
 }
 
 watchman_file* ViewDatabase::getOrCreateChildFile(

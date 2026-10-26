@@ -185,8 +185,6 @@ bool PduBuffer::decodePduInfo(
       return false;
     }
   }
-
-  return true;
 }
 
 std::optional<json_ref> PduBuffer::readBserPdu(

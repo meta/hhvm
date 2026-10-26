@@ -841,7 +841,6 @@ class EdenView final : public QueryableView {
     } catch (const folly::FutureTimeout& ex) {
       throw std::system_error(ETIMEDOUT, std::generic_category(), ex.what());
     }
-    return {};
   }
 
   folly::SemiFuture<CookieSync::SyncResult> sync(

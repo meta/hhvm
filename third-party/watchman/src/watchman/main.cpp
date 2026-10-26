@@ -891,7 +891,6 @@ static int inner_main(int argc, char** argv) {
 
   if (flags.foreground) {
     run_service_in_foreground();
-    return 0;
   }
 
   w_set_thread_name("cli");

@@ -386,7 +386,6 @@ w_getopt(const OptDesc* opts_2, int* argcp, char*** argvp) {
         /* unknown option */
         fprintf(stderr, "Unknown or invalid option! %s\n", argv[optind - 1]);
         usage(opts_2, stderr);
-        return daemon_argv;
 
       default:
         if (res == 0) {
