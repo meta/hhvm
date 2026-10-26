@@ -226,7 +226,7 @@ let visitor ~(selection : Pos.t) =
         let name = Local_id.get_name lid in
         let def_needs_grouping =
           match rhs with
-          | (_, _, (Binop _ | Pipe _)) -> true
+          | (_, _, (Binop _ | Pipe _ | Eif _)) -> true
           | _ -> false
         in
         let rhs_acc = self#on_expr env rhs in

@@ -1,0 +1,45 @@
+Code actions available:
+------------------------------------------
+Inline variable $x (CodeActionKind: "refactor") SELECTED
+
+JSON for selected code action:
+------------------------------------------
+{
+  "title": "Inline variable $x",
+  "kind": "refactor",
+  "diagnostics": [],
+  "edit": {
+    "changes": {
+      "FILE.php": [
+        {
+          "range": {
+            "start": { "line": 3, "character": 0 },
+            "end": { "line": 4, "character": 0 }
+          },
+          "newText": ""
+        },
+        {
+          "range": {
+            "start": { "line": 4, "character": 25 },
+            "end": { "line": 4, "character": 27 }
+          },
+          "newText": "($value ?: true)"
+        }
+      ]
+    }
+  }
+}
+
+Applied edit for code action:
+------------------------------------------
+<?hh
+
+function result(bool $value): bool {
+  return !/*range-start*/($value ?: true)/*range-end*/;
+}
+
+<<__EntryPoint>>
+function main(): void {
+  var_dump(result(true), result(false));
+}
+
