@@ -1099,6 +1099,8 @@ enum DataFetchOrigin {
   NOWHERE = 0,
   ANYWHERE = 1,
   MEMORY_CACHE = 2,
+  // EdenFS has no on-disk object store of its own; nothing is served from
+  // this origin. The value is reserved so the later ones stay stable.
   DISK_CACHE = 4,
   LOCAL_BACKING_STORE = 8,
   REMOTE_BACKING_STORE = 16,
@@ -3183,29 +3185,6 @@ service EdenService extends fb303_core.BaseService {
   GetFetchedFilesResult stopRecordingBackingStoreFetch() throws (
     1: EdenError ex,
   );
-
-  /**
-   * Column by column, clears and compacts the LocalStore. All columns are
-   * compacted, but only columns that contain ephemeral data are cleared.
-   *
-   * Even though the behavior of this method is identical to
-   * debugClearLocalStoreCaches followed by debugCompactLocalStorage(), it is
-   * separate so it can clear and compact each column in order to minimize the
-   * risk of running out of disk space. Since RocksDB is a write-ahead logging
-   * database, clearing a column increases its disk usage until it's compacted.
-   */
-  void clearAndCompactLocalStore() throws (1: EdenError ex);
-
-  /**
-   * Clears all data from the LocalStore that can be populated from the upstream
-   * backing store.
-   */
-  void debugClearLocalStoreCaches() throws (1: EdenError ex);
-
-  /**
-   * Asks RocksDB to perform a compaction.
-   */
-  void debugCompactLocalStorage() throws (1: EdenError ex);
 
   /**
    * Requests EdenFS to drop all pending backing store fetches.
