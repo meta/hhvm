@@ -700,9 +700,9 @@ let too_long_to_run ~grow ~total_seeds ~allow_long_run =
      to tell an afternoon apart from a week, not to predict a runtime. *)
   let seconds_per_seed =
     if grow then
-      4.2
+      0.5
     else
-      0.12
+      0.03
   in
   (* Past this the caller is told rather than left to find out. Two hours still
      clears measuring a whole class hierarchy, and refuses growing one. *)
@@ -712,8 +712,8 @@ let too_long_to_run ~grow ~total_seeds ~allow_long_run =
     None
   else
     (* Big enough to read a rate off, small enough to come back while the
-       caller is still waiting. Growth costs 35x what measuring does, so the
-       two differ. *)
+       caller is still waiting. Growth costs about 17x what measuring does, so
+       the two differ. *)
     let sample =
       if grow then
         400
