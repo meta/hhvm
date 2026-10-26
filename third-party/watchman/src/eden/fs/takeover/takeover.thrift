@@ -18,10 +18,11 @@ typedef i64 ui64
 
 // A list of takeover data serialization versions that the client supports
 struct TakeoverVersionQuery {
-  // The set of versions supported by the client. This is on the way out.
+  // The set of versions supported by the client. Only version 7 is accepted;
+  // the field is kept so that a peer that predates capability matching can
+  // report the mismatch.
   1: set<i32> versions;
-  // The set of capabilities supported by the client. This will be the longer
-  // term scheme that we use.
+  // The set of capabilities supported by the client.
   2: ui64 capabilities;
   // The client asks the server to cancel the Thrift requests it is serving
   // instead of refusing the takeover while one of them has run for long.
@@ -82,17 +83,6 @@ struct SerializedMountInfo {
   6: SerializedInodeMap inodeMap;
 
   7: TakeoverMountProtocol mountProtocol = TakeoverMountProtocol.UNKNOWN;
-}
-
-// TODO(T110300475): remove after SerializedTakeoverResult becomes stable. Should be
-// removable in March 2022.
-// Deprecated only old versions of EdenFS will send takeover data using this
-// struct. All new versions should use SerializedTakeoverResult. This is because
-// SerializedTakeoverData does not allow us to send non mount specific data in
-// the non error case.
-union SerializedTakeoverData {
-  1: list<SerializedMountInfo> mounts;
-  2: string errorReason;
 }
 
 enum FileDescriptorType {
