@@ -16,4 +16,4 @@ depgraph_reader = { path = "../../cargo/depgraph_reader" }
 memmap2 = "0.9.11"
 rayon = "1.11.0"
 vint64 = "1.0.1"
-zstd = { version = "0.14.0", features = ["experimental", "zstdmt"] }
+zstd = { version = "0.14.3", features = ["experimental", "zstdmt"] }
