@@ -14,13 +14,22 @@
    +----------------------------------------------------------------------+
 */
 
+#include <array>
+#include <unistd.h>
+
 #include <folly/portability/GTest.h>
 
 #include "hphp/runtime/base/array-init.h"
 #include "hphp/runtime/base/bespoke/logging-array.h"
+#include "hphp/runtime/base/bespoke/logging-profile.h"
 #include "hphp/runtime/base/static-string-table.h"
+#include "hphp/runtime/base/type-structure.h"
 #include "hphp/runtime/base/typed-value.h"
 #include "hphp/runtime/base/vanilla-dict-defs.h"
+#include "hphp/runtime/vm/treadmill.h"
+#include "hphp/util/configs/eval.h"
+#include "hphp/util/configs/jit.h"
+#include "hphp/util/configs/repo.h"
 
 namespace HPHP {
 
@@ -83,6 +92,116 @@ TEST(LoggingArray, SharedAllocGeometryMatchesRelease) {
               bespoke::LoggingArray::SharedAllocExtra(hasApcTv));
     EXPECT_EQ(lad->heapSize(), sizeof(bespoke::LoggingArray));
   }
+}
+
+namespace {
+
+enum class LoggingMutation { Set, Remove, Pop, TypeStructure };
+
+void checkLoggingMutation(ArrayData* cached, LoggingMutation op,
+                          bool profiling) {
+  auto arr = Array(cached);
+  auto expected = make_dict_array("kind", int64_t(TypeStructure::Kind::T_int));
+  switch (op) {
+    case LoggingMutation::Set:
+      arr.set(StaticString("nullable"), make_tv<KindOfBoolean>(true));
+      expected.set(StaticString("nullable"), make_tv<KindOfBoolean>(true));
+      break;
+    case LoggingMutation::Remove:
+      arr.remove(StaticString("kind"));
+      expected.remove(StaticString("kind"));
+      break;
+    case LoggingMutation::Pop:
+      EXPECT_EQ(arr.pop().toInt64(), int64_t(TypeStructure::Kind::T_int));
+      expected.pop();
+      break;
+    case LoggingMutation::TypeStructure: {
+      auto input = make_dict_array(
+        "kind", int64_t(TypeStructure::Kind::T_shape),
+        "fields", make_dict_array("field", make_dict_array(
+          "value", arr, "optional_shape_field", true)));
+      input.setEvalScalar();
+      ASSERT_EQ(input[StaticString("fields")].toArray()
+                      [StaticString("field")].toArray()
+                      [StaticString("value")].toArray().get(), cached);
+      auto persistent = false;
+      auto resolved = TypeStructure::resolve(
+        input.get(), nullptr, nullptr, nullptr, persistent);
+      EXPECT_TRUE(persistent);
+      arr = resolved[StaticString("fields")].toArray()
+                    [StaticString("field")].toArray();
+      expected.set(StaticString("optional_shape_field"),
+                   make_tv<KindOfBoolean>(true));
+      break;
+    }
+  }
+  EXPECT_TRUE(arr->same(expected.get()));
+  ASSERT_FALSE(arr->isVanilla());
+  auto const ko = bespoke::LoggingArray::As(arr.get())->keyOrder;
+  if (profiling) {
+    EXPECT_TRUE(ko.valid());
+  } else {
+    // Pointer equality does not read the profiling-only backing storage.
+    EXPECT_TRUE(ko == bespoke::KeyOrder::MakeInvalid());
+  }
+  auto original = make_dict_array("kind", int64_t(TypeStructure::Kind::T_int));
+  EXPECT_TRUE(cached->same(original.get()));
+}
+
+void checkLoggingProfileTransition() {
+  Cfg::Eval::BespokeArrayLikeMode = 2;
+  Cfg::Repo::Authoritative = true;
+  Cfg::Jit::PGO = true;
+  Cfg::Jit::RetranslateAllRequest = 1;
+  Cfg::Jit::RetranslateAllSeconds = 1;
+  Cfg::Eval::ExportLoggingArrayDataPath.clear();
+  bespoke::setLoggingEnabled(true);
+
+  auto const profile = bespoke::getLoggingProfile(bespoke::APCKey{
+    size_t(makeStaticString("logging-key-order-transition")->hash())});
+  ASSERT_NE(profile, nullptr);
+  auto primitive = make_dict_array("kind", int64_t(TypeStructure::Kind::T_int));
+  primitive.setEvalScalar();
+  std::array<ArrayData*, 2> cached{
+    bespoke::LoggingArray::MakeStatic(primitive.get(), profile),
+    bespoke::LoggingArray::MakeShared(primitive.get(), profile, false)
+  };
+  std::array<LoggingMutation, 4> ops{
+    LoggingMutation::Set, LoggingMutation::Remove,
+    LoggingMutation::Pop, LoggingMutation::TypeStructure
+  };
+  for (auto const ad : cached) {
+    for (auto const op : ops) checkLoggingMutation(ad, op, true);
+  }
+  if (testing::Test::HasFailure()) _exit(11);
+
+  bespoke::selectBespokeLayouts();
+  ASSERT_EQ(profile->data, nullptr);
+  for (auto const ad : cached) {
+    for (auto const op : ops) checkLoggingMutation(ad, op, false);
+  }
+  // Stop on tracking failures before reclaiming backing storage.
+  if (testing::Test::HasFailure()) _exit(12);
+
+  auto reclaimed = false;
+  Treadmill::enqueue([&] { reclaimed = true; });
+  Treadmill::finishRequest();
+  ASSERT_TRUE(reclaimed);
+  Treadmill::startRequest(Treadmill::SessionKind::UnitTests);
+  for (auto const ad : cached) {
+    for (auto const op : ops) checkLoggingMutation(ad, op, false);
+  }
+  _exit(testing::Test::HasFailure() ? 1 : 0);
+}
+
+}
+
+TEST(LoggingArray, KeyOrderExpiresAfterLayoutSelection) {
+  // Layout selection and profiling shutdown are process-wide and monotonic.
+  auto const style = testing::FLAGS_gtest_death_test_style;
+  testing::FLAGS_gtest_death_test_style = "threadsafe";
+  EXPECT_EXIT(checkLoggingProfileTransition(), testing::ExitedWithCode(0), "");
+  testing::FLAGS_gtest_death_test_style = style;
 }
 
 }

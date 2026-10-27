@@ -55,6 +55,10 @@ constexpr LayoutIndex kLayoutIndex = {kLoggingLayoutByte << 8};
 
 std::atomic<bool> g_emitLoggingArrays = false;
 
+bool isProfiling() {
+  return g_emitLoggingArrays.load(std::memory_order_acquire);
+}
+
 // The bespoke kind for a vanilla kind.
 HeaderKind getBespokeKind(ArrayData::ArrayKind kind) {
   assertx(!(kind & ArrayData::kBespokeKindMask));
@@ -676,7 +680,8 @@ ArrayData* LoggingArray::SetIntMove(LoggingArray* lad, int64_t k, TypedValue v) 
 }
 ArrayData* LoggingArray::SetStrMove(LoggingArray* lad, StringData* k, TypedValue v) {
   auto const ms = lad->entryTypes.with(make_tv<KindOfString>(k), v);
-  auto const ko = lad->keyOrder.insert(k);
+  auto const ko = isProfiling() ? lad->keyOrder.insert(k)
+                                : KeyOrder::MakeInvalid();
   logEvent(lad, ms, ko, ArrayOp::SetStr, k, v);
   return mutateMove(lad, ms, ko,
                     [&](ArrayData* w) { return w->setMove(k, v); });
@@ -686,7 +691,8 @@ ArrayData* LoggingArray::RemoveIntMove(LoggingArray* lad, int64_t k) {
   return mutateMove(lad, lad->entryTypes, lad->keyOrder, [&](ArrayData* w) { return w->removeMove(k); });
 }
 ArrayData* LoggingArray::RemoveStrMove(LoggingArray* lad, const StringData* k) {
-  auto const ko = lad->keyOrder.remove(k);
+  auto const ko = isProfiling() ? lad->keyOrder.remove(k)
+                                : KeyOrder::MakeInvalid();
   logEvent(lad, ko, ArrayOp::RemoveStr, k);
   return mutateMove(lad, lad->entryTypes, ko,
                 [&](ArrayData* w) { return w->removeMove(k); });
@@ -702,7 +708,8 @@ ArrayData* LoggingArray::AppendMove(LoggingArray* lad, TypedValue v) {
                     [&](ArrayData* w) { return w->appendMove(v); });
 }
 ArrayData* LoggingArray::PopMove(LoggingArray* lad, Variant& ret) {
-  auto const ko = lad->keyOrder.pop();
+  auto const ko = isProfiling() ? lad->keyOrder.pop()
+                                : KeyOrder::MakeInvalid();
   logEvent(lad, ko, ArrayOp::Pop);
   return mutateMove(lad, lad->entryTypes, ko,
                     [&](ArrayData* w) { return w->popMove(ret); });
