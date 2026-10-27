@@ -160,11 +160,6 @@ void cgStContArState(IRLS& env, const IRInstruction* inst) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void cgLdContField(IRLS& env, const IRInstruction* inst) {
-  loadTV(vmain(env), inst->dst(), dstLoc(env, inst, 0),
-         srcLoc(env, inst, 0).reg()[inst->src(1)->intVal()]);
-}
-
 void cgLdContActRec(IRLS& env, const IRInstruction* inst) {
   auto const dst = dstLoc(env, inst, 0).reg();
   auto const cont = srcLoc(env, inst, 0).reg();

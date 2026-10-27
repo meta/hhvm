@@ -143,7 +143,6 @@ bool canDCE(const IRInstruction& inst) {
   case LdLocAddr:
   case LdRDSAddr:
   case LdMem:
-  case LdContField:
   case LdClsInitElem:
   case LdIterPos:
   case LdIterEnd:

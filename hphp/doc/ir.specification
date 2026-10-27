@@ -889,11 +889,6 @@ To string conversions:
   Load the TypedValue from the specified RDS handle. Must load the aux bits if
   `includeAux` is true.
 
-| LdContField<T>, DParam(Cell), S(Obj) C(Int), NF
-
-  Loads a property from the object referenced by S0 at the offset given by S1
-  and puts the value in D. S0 must be a Generator.
-
 | LdClsInitElem<idx>, D(Cell), S(PtrToClsInit), NF
 
   Load the cell at index `idx` from the class init vector at S0 into D0.
