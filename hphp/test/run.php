@@ -332,14 +332,29 @@ function read_opts_file(?string $file, ?string $input_dir = null): string {
   return process_opts(file_get_contents($file), dirname($file), $input_dir);
 }
 
-// Keys understood in a `.config` file, both per-test (`<test>.config`) and as
-// suite-wide defaults (`config.config`).
-const keyset<string> TEST_CONFIG_KEYS = keyset['opts', 'hphp_opts', 'norepo'];
+// Keys understood in a `.config` file.
+const keyset<string> TEST_CONFIG_KEYS = keyset[
+  // Blocks of command-line options.
+  'opts', 'hphp_opts', 'hhbbc_opts', 'sbcc_opts',
+  // Booleans, written as `key = true` or `key = false`.
+  'norepo', 'noserver', 'nowebserver', 'nomultireq', 'nodumphhas',
+  'nojitserialize', 'nobespoke', 'onlyrepo', 'onlyjumpstart', 'onlyfacebook',
+  'skip_persistent', 'no_remote', 'uses_loopback', 'serial', 'verify',
+  // Free-form values.
+  'env', 'clisrv_env', 'exit_code',
+];
 
-// The keys above holding a boolean, written as `key = true` or `key = false`,
-// rather than a block of command-line options. These describe a single test,
-// so they are rejected in a directory-level `config.config`.
-const keyset<string> TEST_CONFIG_FLAG_KEYS = keyset['norepo'];
+// Keys that may also appear in a directory-level `config.config`, supplying a
+// default for every test in the suite. Everything else describes a single test
+// and is rejected there.
+const keyset<string> TEST_CONFIG_SUITE_KEYS = keyset['opts', 'hphp_opts'];
+
+// Keys holding a boolean rather than a value.
+const keyset<string> TEST_CONFIG_FLAG_KEYS = keyset[
+  'norepo', 'noserver', 'nowebserver', 'nomultireq', 'nodumphhas',
+  'nojitserialize', 'nobespoke', 'onlyrepo', 'onlyjumpstart', 'onlyfacebook',
+  'skip_persistent', 'no_remote', 'uses_loopback', 'serial', 'verify',
+];
 
 // Parse a `.config` file, which replaces the per-key sidecar option files.
 // Each entry is `key = value`, where the value is either the remainder of the
@@ -401,13 +416,12 @@ function parse_config_file(string $file): dict<string, string> {
       );
     }
     $value = rtrim($matches[2]);
-    if (C\contains_key(TEST_CONFIG_FLAG_KEYS, $key)) {
-      if ($is_dir_config) {
-        error("$file:$lineno: '$key' applies to a single test, not a suite");
-      }
-      if ($value !== 'true' && $value !== 'false') {
-        error("$file:$lineno: '$key' must be 'true' or 'false', got '$value'");
-      }
+    if ($is_dir_config && !C\contains_key(TEST_CONFIG_SUITE_KEYS, $key)) {
+      error("$file:$lineno: '$key' applies to a single test, not a suite");
+    }
+    if (C\contains_key(TEST_CONFIG_FLAG_KEYS, $key) &&
+        $value !== 'true' && $value !== 'false') {
+      error("$file:$lineno: '$key' must be 'true' or 'false', got '$value'");
     }
     $config[$key] = $value;
   }
@@ -432,6 +446,11 @@ function read_test_config(string $test): dict<string, string> {
 // Read a boolean entry (see TEST_CONFIG_FLAG_KEYS) from `<test>.config`.
 function read_test_flag(string $test, string $key): bool {
   return idx(read_test_config($test), $key) === 'true';
+}
+
+// Read a free-form entry from `<test>.config`, null when the test omits it.
+function read_test_value(string $test, string $key): ?string {
+  return idx(read_test_config($test), $key);
 }
 
 // Suite-wide default for $key: the nearest enclosing `config.config` that
@@ -463,8 +482,8 @@ function read_dir_opts(
 // directory because thousands of tests share a handful of config files.
 <<__Memoize>>
 function validate_dir_config(string $dir): void {
-  foreach (TEST_CONFIG_KEYS as $key) {
-    if (!C\contains_key(TEST_CONFIG_FLAG_KEYS, $key)) read_dir_opts($dir, $key);
+  foreach (TEST_CONFIG_SUITE_KEYS as $key) {
+    read_dir_opts($dir, $key);
   }
 }
 
@@ -489,15 +508,15 @@ function get_test_env(
   string $test,
   dict<string, mixed> $env,
 ): dict<string, mixed> {
-  $extra_env = find_test_ext($test, 'env');
+  $extra_env = read_test_value($test, 'env');
   if ($options->cli_server) {
-    $extra_env = find_test_ext($test, 'clisrv_env') ?? $extra_env;
+    $extra_env = read_test_value($test, 'clisrv_env') ?? $extra_env;
   }
 
   if ($extra_env is nonnull) {
-    $lines = file($extra_env, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-      $line = str_replace('__DIR__', realpath(dirname($extra_env)), $line);
+    foreach (explode("\n", $extra_env) as $line) {
+      if (trim($line) === '') continue;
+      $line = str_replace('__DIR__', realpath(dirname($test)), $line);
       $i = strpos($line, '=');
       if ($i) {
         $key = substr($line, 0, $i);
@@ -848,7 +867,7 @@ function serial_only_tests(vec<string> $tests): vec<string> {
   $serial_tests = vec(array_filter(
     $tests,
     function($test) {
-      return file_exists($test . '.serial');
+      return read_test_flag($test, 'serial');
     }
   ));
   return $serial_tests;
@@ -1188,10 +1207,7 @@ function sbcc_mode_setup_impl(Options $options, string $test): (string, bool) {
     copy($file_list_src, $file_list);
 
     // Read optional builder opts.
-    $sbcc_opts = '';
-    if (is_file("$test.sbcc_opts")) {
-      $sbcc_opts = trim(file_get_contents("$test.sbcc_opts"));
-    }
+    $sbcc_opts = trim(read_test_opts($test, 'sbcc_opts', null, false));
 
     // Build the .sbcc artifact.
     // The builder must use the same config values that affect
@@ -1415,7 +1431,7 @@ function hhvm_cmd_impl(
 
 function repo_separate(Options $options, string $test): bool {
   return $options->repo_separate &&
-         !file_exists($test . ".hhbbc_opts");
+         !C\contains_key(read_test_config($test), 'hhbbc_opts');
 }
 
 // Return the command and the env to run it in.
@@ -1469,7 +1485,7 @@ function hhvm_cmd(
 
   $cmd = "";
 
-  if (file_exists($test.'.verify')) {
+  if (read_test_flag($test, 'verify')) {
     $cmd .= " -m verify";
   }
 
@@ -1671,7 +1687,7 @@ function hhbbc_cmd(Options $options, string $test): string {
     '--parallel-num-threads=' . ($options->repo_threads ?? 1),
     '--parallel-final-threads=' . ($options->repo_threads ?? 1),
     '--extern-worker-working-dir=' . $working_dir,
-    read_opts_file("$test.hhbbc_opts"),
+    read_test_opts($test, 'hhbbc_opts', null, false),
     "-o \"$working_dir/hhvm.hhbbc\" \"$working_dir/hhvm.hhbc\"",
   ]);
 }
@@ -2980,7 +2996,7 @@ function is_onlyfacebook_dir(string $dir): bool {
 // A test is fbcode-only when it carries a "$test.onlyfacebook" marker, or when
 // any directory between it and hphp/test carries an "onlyfacebook" marker.
 function is_onlyfacebook_test(string $test): bool {
-  if (file_exists($test.'.onlyfacebook')) return true;
+  if (read_test_flag($test, 'onlyfacebook')) return true;
   return is_onlyfacebook_dir(realpath(dirname($test)));
 }
 
@@ -3006,23 +3022,21 @@ function should_skip_test_simple(
   }
 
   if ($options->hhbbc2 || $options->hhas_round_trip) {
-    $no_hhas_tag = 'nodumphhas';
-    if (file_exists("$test.$no_hhas_tag") ||
-        file_exists(dirname($test).'/'.$no_hhas_tag)) {
+    if (read_test_flag($test, 'nodumphhas') ||
+        file_exists(dirname($test).'/nodumphhas')) {
       return 'skip-nodumphhas';
     }
-    if (file_exists($test . ".verify")) {
+    if (read_test_flag($test, 'verify')) {
       return 'skip-verify';
     }
   }
 
   if (has_multi_request_mode($options) || $options->server) {
-    if (file_exists($test . ".verify")) {
+    if (read_test_flag($test, 'verify')) {
       return 'skip-verify';
     }
-    $no_multireq_tag = "nomultireq";
-    if (file_exists("$test.$no_multireq_tag") ||
-        file_exists(dirname($test).'/'.$no_multireq_tag)) {
+    if (read_test_flag($test, 'nomultireq') ||
+        file_exists(dirname($test).'/nomultireq')) {
       return 'skip-multi-req';
     }
     if (!Str\is_empty(find_debug_config($test, 'hphpd.ini'))) {
@@ -3030,51 +3044,50 @@ function should_skip_test_simple(
     }
   }
 
-  $no_bespoke_tag = "nobespoke";
-  if ($options->bespoke &&
-      file_exists("$test.$no_bespoke_tag")) {
+  if ($options->bespoke && read_test_flag($test, 'nobespoke')) {
       // Skip due to changes in array identity
       return 'skip-bespoke';
   }
 
-  if ($options->persistent &&
-      file_exists("$test.skip-persistent")) {
+  if ($options->persistent && read_test_flag($test, 'skip_persistent')) {
     return 'skip-persistent';
   }
 
-  $no_jitserialize_tag = "nojitserialize";
   if ($options->jit_serialize is nonnull &&
-      file_exists("$test.$no_jitserialize_tag")) {
+      read_test_flag($test, 'nojitserialize')) {
     return 'skip-jit-serialize';
   }
 
   if ((!$options->repo || $options->jit_serialize is null
        || (int)$options->jit_serialize < 1)
-      && file_exists($test.'.onlyjumpstart')) {
+      && read_test_flag($test, 'onlyjumpstart')) {
     return 'skip-onlyjumpstart';
   }
 
-  if (!$options->repo && file_exists($test.'.onlyrepo')) {
+  if (!$options->repo && read_test_flag($test, 'onlyrepo')) {
     return 'skip-onlyrepo';
   }
 
   if ($options->repo) {
     if (read_test_flag($test, 'norepo')) return 'skip-norepo';
-    if (file_exists($test.'.verify')) return 'skip-verify';
+    if (read_test_flag($test, 'verify')) return 'skip-verify';
     if (!Str\is_empty(find_debug_config($test, 'hphpd.ini'))) return 'skip-debugger';
   }
 
   if ($options->only_remote_executable &&
-      (file_exists("$test.no_remote") || file_exists("$test.uses_loopback"))) {
+      (read_test_flag($test, 'no_remote') ||
+       read_test_flag($test, 'uses_loopback'))) {
     return 'skip-only_running_remote_executable_tests_not_requiring_loopback';
   }
 
   if ($options->only_remote_executable_with_loopback &&
-      (file_exists("$test.no_remote") || !file_exists("$test.uses_loopback"))) {
+      (read_test_flag($test, 'no_remote') ||
+       !read_test_flag($test, 'uses_loopback'))) {
     return 'skip-only_running_remote_executable_tests_requiring_loopback';
   }
 
-  if ($options->only_non_remote_executable && !file_exists("$test.no_remote")) {
+  if ($options->only_non_remote_executable &&
+      !read_test_flag($test, 'no_remote')) {
     return 'skip-only_running_NON_remote_executable_tests';
   }
 
@@ -3758,16 +3771,15 @@ const string HHAS_EXT = '.hhas';
 
 function can_run_server_test(string $test, Options $options): bool {
   // explicitly disabled
-  if (is_file("$test.noserver") ||
-      (is_file("$test.nowebserver") && $options->server)) {
+  if (read_test_flag($test, 'noserver') ||
+      (read_test_flag($test, 'nowebserver') && $options->server)) {
     return false;
   }
 
-  if (is_file("$test.env") && $options->server) {
-    return false;
-  }
-
-  if (is_file("$test.clisrv_env") && $options->server) {
+  $config = read_test_config($test);
+  if ($options->server &&
+      (C\contains_key($config, 'env') ||
+       C\contains_key($config, 'clisrv_env'))) {
     return false;
   }
 
@@ -3779,7 +3791,8 @@ function can_run_server_test(string $test, Options $options): bool {
   }
 
   // we can't run repo only tests in server modes
-  if (is_file("$test.onlyrepo") || is_file("$test.onlyjumpstart")) {
+  if (read_test_flag($test, 'onlyrepo') ||
+      read_test_flag($test, 'onlyjumpstart')) {
     return false;
   }
 
@@ -3828,9 +3841,9 @@ function run_config_cli(
   bool $assert_verify = false
 ): ?string {
   $exit_codes = $assert_verify ? keyset[255, 127] : keyset[0, 1];
-  $file = $test.'.exit_code';
-  if (file_exists($file)) {
-    $exit_codes = keyset[(int)trim(file_get_contents($file))];
+  $expected = read_test_value($test, 'exit_code');
+  if ($expected is nonnull) {
+    $exit_codes = keyset[(int)trim($expected)];
   }
   list($output, $success) = exec_with_timeout($cmd, $cmd_env, $exit_codes);
   if (!$success) {

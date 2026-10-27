@@ -1,1 +1,0 @@
-# Blank hhbbc_opts file to prevent this test from running in repo-separate mode (the assertion in hhbbc_assert triggers during initial assembly only)

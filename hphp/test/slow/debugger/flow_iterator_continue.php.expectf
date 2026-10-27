@@ -148,10 +148,8 @@ string(16) "current() called"
 string(16) "current() called"
 string(16) "current() called"
 string(16) "current() called"
-string(16) "current() called"
 Program %s/flow_iterator_continue.php exited normally.
 run
-string(16) "current() called"
 string(16) "current() called"
 string(16) "current() called"
 string(16) "current() called"

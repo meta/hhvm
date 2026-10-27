@@ -41,10 +41,8 @@ These are the allowed extensions:
 * `.php.out` - When you run the test, the output will be stored here.
 * `.php.config` - Runtime and compiler options for the test. Holds the `opts` and `hphp_opts` entries; see "The `.php.config` File" below.
 * `.php.cli_args` - Command line arguments to the test file (e.g., `$argv` options).
-* `.php.serial` - The test will always be put in the serial bucket to be run sequentially with other serial tests so as to avoid any timing problems or collisions.
 * `.php.diff or hhas.diff` - The diff for .expect tests.
 * `.hhas` - HipHop Assembly.
-* `.php.noserver` - Don't run the test in server mode.
 * `.php.hhconfig` - A blank or syntactically valid Hack typechecker configuration file if you want the test to be able to be run in typechecker mode.
 * `inc.php` - Use this extension for `require` or `include` files if you are going to have a typechecker test that uses them. For now, make sure they are in the same directory as the test. They will be copied along with the core test files when the test runner is executing.
 
@@ -79,14 +77,39 @@ norepo = true
 
 Lines whose first non-space character is `;` or `#` are comments.
 
-The recognized keys are:
+Option blocks:
 
 * `opts` - Runtime options to pass to hhvm.
 * `hphp_opts` - Options passed to hphp when generating a bytecode repo.
-* `norepo` - `true` skips the test in repo-authoritative mode, which performs a
-  whole-program build. Written as `norepo = true`; `true` and `false` are the
-  only accepted values. Unlike the two above it describes a single test, so it
-  is rejected in a directory-level `config.config`.
+* `hhbbc_opts` - Options passed to hhbbc. Setting it at all also opts the test
+  out of the separate-repo build.
+* `sbcc_opts` - Options passed to the SBCC artifact builder.
+
+Booleans, written as `key = true` or `key = false`:
+
+* `norepo` - skip in repo-authoritative mode (a whole-program build).
+* `onlyrepo` / `onlyjumpstart` - run *only* in repo / jumpstart mode.
+* `noserver` / `nowebserver` - skip in server / webserver mode.
+* `nomultireq` - skip in multi-request and server modes.
+* `nodumphhas` - skip when dumping HHAS (`--hhbbc2`, hhas round-trip).
+* `nojitserialize` - skip under `--jit-serialize`.
+* `nobespoke` - skip under `--bespoke`.
+* `skip_persistent` - skip under `--persistent`.
+* `onlyfacebook` - only run in an fbcode build.
+* `no_remote` - cannot run in a remote-execution environment.
+* `uses_loopback` - needs loopback networking.
+* `serial` - run in the serial bucket, never in parallel.
+* `verify` - run under `-m verify`.
+
+Values:
+
+* `env` / `clisrv_env` - `NAME=value` lines added to the test's environment;
+  `clisrv_env` replaces `env` in CLI-server mode. `__DIR__` expands to the
+  test's directory. A bare name with no `=` unsets that variable.
+* `exit_code` - the exit status the test is expected to produce.
+
+Only `opts` and `hphp_opts` may appear in a directory-level `config.config`;
+the rest describe a single test and are rejected there.
 
 An entry with an empty value is still meaningful: as with the old sidecar
 files, a test that sets `opts` at all is excluded from server mode.
