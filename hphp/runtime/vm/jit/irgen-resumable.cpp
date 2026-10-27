@@ -755,7 +755,7 @@ void emitCreateCont(IRGS& env) {
   auto const contAR =
     gen(env,
         LdContActRec,
-        IsAsyncData(curFunc(env)->isAsync()),
+        IsAsyncData::fromEnvFunc(env),
         cont);
 
   suspendHook(env, [&] {
@@ -822,8 +822,7 @@ void emitContCheck(IRGS& env, ContCheckOp subop) {
   assertx(curClass(env)->classof(AsyncGenerator::classof()) ||
           curClass(env)->classof(Generator::classof()));
   auto const cont = ldThis(env);
-  auto const state = gen(env, LdContState,
-    IsAsyncData(curClass(env)->classof(AsyncGenerator::classof())), cont);
+  auto const state = gen(env, LdContState, IsAsyncData::fromEnvClass(env), cont);
 
   // These asserts make sure that the startedCheck work.
   static_assert(uint8_t(BaseGenerator::State::Created) == 0, "used below");
@@ -840,8 +839,7 @@ void emitContValid(IRGS& env) {
   assertx(curClass(env)->classof(AsyncGenerator::classof()) ||
           curClass(env)->classof(Generator::classof()));
   auto const cont = ldThis(env);
-  auto const state = gen(env, LdContState,
-    IsAsyncData(curClass(env)->classof(AsyncGenerator::classof())), cont);
+  auto const state = gen(env, LdContState, IsAsyncData::fromEnvClass(env), cont);
   push(env, gen(env, NeqInt, state, cns(env, BaseGenerator::State::Done)));
 }
 

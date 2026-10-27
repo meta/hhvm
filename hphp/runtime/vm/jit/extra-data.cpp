@@ -22,6 +22,8 @@
 #include <fmt/format.h>
 
 #include "hphp/runtime/base/bespoke/logging-profile.h"
+#include "hphp/runtime/ext/asio/ext_async-generator.h"
+#include "hphp/runtime/vm/jit/irgen-internal.h"
 #include "hphp/runtime/vm/jit/ssa-tmp.h"
 #include "hphp/util/text-util.h"
 
@@ -77,6 +79,14 @@ size_t LoggingProfileData::stableHash() const {
 size_t SinkProfileData::stableHash() const {
   if (!profile) return 0;
   return profile->key.first ^ SrcKey::StableHasher()(profile->key.second);
+}
+
+IsAsyncData IsAsyncData::fromEnvClass(const irgen::IRGS& env) {
+  return IsAsyncData(irgen::curClass(env)->classof(AsyncGenerator::classof()));
+}
+
+IsAsyncData IsAsyncData::fromEnvFunc(const irgen::IRGS& env) {
+  return IsAsyncData(irgen::curFunc(env)->isAsync());
 }
 
 //////////////////////////////////////////////////////////////////////

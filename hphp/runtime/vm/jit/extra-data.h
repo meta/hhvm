@@ -46,6 +46,8 @@
 
 namespace HPHP::jit {
 
+namespace irgen { struct IRGS; }
+
 //////////////////////////////////////////////////////////////////////
 
 /*
@@ -940,6 +942,9 @@ struct IRSPRelOffsetData : IRExtraData {
 
 struct IsAsyncData : IRExtraData {
   explicit IsAsyncData(bool isAsync) : isAsync(isAsync) {}
+
+  static IsAsyncData fromEnvClass(const irgen::IRGS& env);
+  static IsAsyncData fromEnvFunc(const irgen::IRGS& env);
 
   std::string show() const { return folly::to<std::string>(isAsync); }
   bool equals(IsAsyncData d) const { return isAsync == d.isAsync; }
