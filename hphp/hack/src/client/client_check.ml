@@ -83,6 +83,7 @@ let output_isolation_result
               ("total_isolatable_files", `Int result.total_isolatable_files);
               ("total_clusters", `Int result.total_clusters);
               ("total_truncated", `Int result.total_truncated);
+              ("total_refused", `Int result.total_refused);
               ("largest_cluster", `Int result.largest_cluster);
             ] );
       ]
@@ -125,7 +126,11 @@ let output_isolation_result
           "Found %d isolatable without growing, covering %d files (largest: %d).\n"
           result.total_clusters
           result.total_isolatable_files
-          result.largest_cluster
+          result.largest_cluster;
+      if result.total_refused > 0 then
+        Printf.printf
+          "Not in any cluster: %s (what depends on a file is over the limit, or the file declares nothing).\n"
+          (Utils.print_count result.total_refused "starting file")
   end
 
 let parse_name_or_member_id ~name_only_action ~name_and_member_action name =

@@ -23,6 +23,12 @@ let print_endlinef fmt = Printf.ksprintf Stdio.print_endline fmt
 
 let prerr_endlinef fmt = Printf.ksprintf Stdio.prerr_endline fmt
 
+let print_count n noun =
+  if n = 1 then
+    spf "1 %s" noun
+  else
+    spf "%d %ss" n noun
+
 let pp_large_list ?(pp_sep = None) ?(max_items = 5) pp_elt fmt xs =
   let list_len = List.length xs in
   if list_len <= max_items then

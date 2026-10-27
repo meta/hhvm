@@ -23,6 +23,10 @@ val print_endlinef : ('a, unit, string, unit) format4 -> 'a
 
 val prerr_endlinef : ('a, unit, string, unit) format4 -> 'a
 
+(** [print_count n noun] is [n] and [noun], with the noun plural unless [n] is
+    1: "1 file", "3 files". *)
+val print_count : int -> string -> string
+
 val pp_large_list :
   ?pp_sep:(Format.formatter -> unit -> unit) option ->
   ?max_items:int ->

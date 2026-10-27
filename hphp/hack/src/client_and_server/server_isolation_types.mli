@@ -37,6 +37,10 @@ type result = {
   total_clusters: int;
   total_truncated: int;
       (** A count, because the clusters themselves never come back here. *)
+  total_refused: int;
+      (** Starting files left out of the clusters because no set could be found
+          for them: what depends on them is over the limit, or they declare
+          nothing. Only the default mode counts them. *)
   largest_cluster: int;
 }
 

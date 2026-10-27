@@ -24,6 +24,7 @@ type result = {
   total_isolatable_files: int;
   total_clusters: int;
   total_truncated: int;
+  total_refused: int;
   largest_cluster: int;
 }
 

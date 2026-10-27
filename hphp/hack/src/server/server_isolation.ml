@@ -313,6 +313,9 @@ type run = {
           claimed one of their files. Counted here rather than in growth: growth
           reports each cluster it grew, and whether two of them overlap is only
           knowable once they are collected. *)
+  refused_seeds: int ref;
+      (** Starting files that got no cluster because [closure_of_seed] found
+          none for them. *)
   truncated_clusters: int ref;
       (** Clusters the cap refused a candidate they would otherwise have taken.
           They stopped short of closing, so they are prefixes of packages rather
@@ -442,7 +445,10 @@ let measure_seeds r seeds ~total_seeds =
   let measure_one_seed seed =
     let size = closure_of_seed r seed in
     incr done_count;
-    if Option.is_some size then incr fitted_count;
+    if Option.is_some size then
+      incr fitted_count
+    else
+      incr r.refused_seeds;
     report_if_due ();
     size
   in
@@ -659,6 +665,7 @@ let make_run options genv env sink =
     max_cluster_size;
     batch_size;
     overlapping_clusters = ref 0;
+    refused_seeds = ref 0;
     truncated_clusters = ref 0;
   }
 
@@ -673,6 +680,7 @@ let refused ~grow ~total_seeds message =
       total_isolatable_files = 0;
       total_clusters = 0;
       total_truncated = 0;
+      total_refused = 0;
       largest_cluster = 0;
     }
 
@@ -689,6 +697,7 @@ let result r ~grow ~movability ~total_seeds ~sizes =
       total_isolatable_files = List.fold sizes ~init:0 ~f:( + );
       total_clusters = List.length sizes;
       total_truncated = !(r.truncated_clusters);
+      total_refused = !(r.refused_seeds);
       largest_cluster = List.fold sizes ~init:0 ~f:Int.max;
     }
 
