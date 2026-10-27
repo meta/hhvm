@@ -843,9 +843,32 @@ void emitContValid(IRGS& env) {
   push(env, gen(env, NeqInt, state, cns(env, BaseGenerator::State::Done)));
 }
 
-void emitContKey(IRGS& env) { PUNT(ContKey); }
+void emitContKey(IRGS& env) {
+  assertx(curClass(env));
+  assertx(curClass(env)->classof(Generator::classof()));
+
+  auto const cont = ldThis(env);
+  auto const state = gen(env, LdContState, IsAsyncData(false), cont);
+  gen(env, JmpZero, makeExitSlow(env), state);
+
+  auto const value = gen(env, LdContKey, TInitCell, cont);
+  pushIncRef(env, value);
+}
+
+void emitContCurrent(IRGS& env) {
+  assertx(curClass(env));
+  assertx(curClass(env)->classof(Generator::classof()));
+
+  auto const cont = ldThis(env);
+
+  auto const state = gen(env, LdContState, IsAsyncData(false), cont);
+  gen(env, JmpZero, makeExitSlow(env), state);
+
+  auto const value = gen(env, LdContValue, TInitCell, cont);
+  pushIncRef(env, value);
+}
+
 void emitContRaise(IRGS& env) { PUNT(ContRaise); }
-void emitContCurrent(IRGS& env) { PUNT(ContCurrent); }
 
 //////////////////////////////////////////////////////////////////////
 

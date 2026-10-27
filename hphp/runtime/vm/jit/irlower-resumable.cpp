@@ -125,6 +125,18 @@ void cgLdContState(IRLS& env, const IRInstruction* inst) {
   v << loadzbq{cont[stateOff], dst};
 }
 
+void cgLdContKey(IRLS& env, const IRInstruction* inst) {
+  auto const cont = srcLoc(env, inst, 0).reg();
+  auto const keyOff = GENDATAOFF(m_key) - Generator::objectOff();
+  loadTV(vmain(env), inst->dst(), dstLoc(env, inst, 0), cont[keyOff]);
+}
+
+void cgLdContValue(IRLS& env, const IRInstruction* inst) {
+  auto const cont = srcLoc(env, inst, 0).reg();
+  auto const valueOff = GENDATAOFF(m_value) - Generator::objectOff();
+  loadTV(vmain(env), inst->dst(), dstLoc(env, inst, 0), cont[valueOff]);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void cgStContArState(IRLS& env, const IRInstruction* inst) {

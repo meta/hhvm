@@ -761,6 +761,8 @@ bool opcodeMayRaise(Opcode opc) {
   case LdContActRec:
   case LdContArKey:
   case LdContArValue:
+  case LdContKey:
+  case LdContValue:
   case LdContResumeAddr:
   case LdContState:
   case LdEnumClassLabelName:

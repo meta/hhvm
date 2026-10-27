@@ -216,6 +216,8 @@ bool canDCE(const IRInstruction& inst) {
   case LdContArValue:
   case LdContArKey:
   case LdContState:
+  case LdContValue:
+  case LdContKey:
   case LdWHState:
   case LdWHResult:
   case LdWHNotDone:

@@ -1806,6 +1806,8 @@ MemEffects memory_effects_impl(const IRInstruction& inst) {
   case LdContActRec:
   case LdContArKey:
   case LdContArValue:
+  case LdContKey:
+  case LdContValue:
   case LdContResumeAddr:
   case LdContState:
   case StContArKey:

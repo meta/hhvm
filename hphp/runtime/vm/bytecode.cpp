@@ -4930,12 +4930,7 @@ OPTBLD_INLINE void iopContKey() {
 OPTBLD_INLINE void iopContCurrent() {
   Generator* cont = this_generator(vmfp());
   cont->startedCheck();
-
-  if(cont->getState() == BaseGenerator::State::Done) {
-    vmStack().pushNull();
-  } else {
-    tvDup(cont->m_value, *vmStack().allocC());
-  }
+  tvDup(cont->m_value, *vmStack().allocC());
 }
 
 template <bool lowPri>

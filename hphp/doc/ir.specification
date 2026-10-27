@@ -2631,6 +2631,10 @@ ReqBindJmp and CallFuncEntry.
 
   Change the state of the Generator object which has frame pointer S0.
 
+| LdContValue, DParam(InitCell), S(Obj), NF
+
+  Loads 'value' from the Generator object which is S0.
+
 | LdContArValue, DParam(InitCell), S(FramePtr), NF
 
   Loads 'value' from the Generator object ActRec of which is S0.
@@ -2639,6 +2643,10 @@ ReqBindJmp and CallFuncEntry.
 
   Stores 'value' into the Generator object ActRec of which is S0. S1 is the
   new value.
+
+| LdContKey, DParam(InitCell), S(Obj), NF
+
+  Loads 'key' from the Generator object which is S0.
 
 | LdContArKey, DParam(InitCell), S(FramePtr), NF
 
