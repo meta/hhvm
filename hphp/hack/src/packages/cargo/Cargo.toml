@@ -15,7 +15,7 @@ anyhow = "1.0.104"
 hack_name = { path = "../../utils/hack_name/cargo" }
 hash = { path = "../../utils/hash" }
 serde = { version = "1.0.229", features = ["derive", "rc"] }
-toml = { version = "1.1.6", features = ["preserve_order"] }
+toml = { version = "1.1.8", features = ["preserve_order"] }
 
 [dev-dependencies]
 regex = "1.13.1"
