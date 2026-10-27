@@ -146,7 +146,7 @@ guard variable for HPHP::lmdb::LmdbObjectMap<MDB_env>::get()::map
 guard variable for HPHP::lmdb::LmdbObjectMap<MDB_txn>::get()::map
 
 # JIT translation-cache per-thread state (sibling to jit::tc::tl_is_jitting).
-HPHP::jit::tc::tl_liveStreak
+HPHP::jit::tc::(anonymous namespace)::tl_liveStreak
 HPHP::jit::tc::tl_threadIsFull
 
 # sbcc cache per-thread "am I inside a request" flag for request-scoped stats.

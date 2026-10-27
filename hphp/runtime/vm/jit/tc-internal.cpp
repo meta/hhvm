@@ -63,7 +63,8 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
-#include <deque>
+#include <cstring>
+#include <type_traits>
 
 TRACE_SET_MOD(mcg)
 
@@ -71,8 +72,6 @@ namespace HPHP::jit::tc {
 
 __thread bool tl_is_jitting = false;
 __thread bool tl_threadIsFull = false;
-
-static thread_local std::deque<FuncId> tl_liveStreak;
 
 CodeCache* g_code{nullptr};
 CodeCacheViews* g_views{nullptr};
@@ -134,6 +133,38 @@ struct CodeReuseBlock {
     return CodeCache::View(*main, *cold, *frozen, src.data(), false, src.isOwned());
   }
 };
+
+class LiveStreak {
+ public:
+  size_t size() const { return m_size; }
+
+  bool contains(FuncId::Int id) const {
+    auto const end = m_ids + m_size;
+    return std::find(m_ids, end, id) != end;
+  }
+
+  void clear() { m_size = 0; }
+
+  void add(FuncId::Int id) {
+    if (Cfg::Jit::LiveStreakMaxSize == 0) return;
+    if (m_size < Cfg::Jit::LiveStreakMaxSize) {
+      m_ids[m_size++] = id;
+      return;
+    }
+    // Drop the oldest id
+    std::memmove(m_ids, m_ids + 1, (m_size - 1) * sizeof(FuncId::Int));
+    m_ids[m_size - 1] = id;
+  }
+
+ private:
+  uint8_t m_size;
+  FuncId::Int m_ids[UINT8_MAX];
+};
+
+static_assert(std::is_same_v<decltype(Cfg::Jit::LiveStreakMaxSize), uint8_t>);
+static_assert(std::is_trivial_v<LiveStreak>);
+
+__thread LiveStreak tl_liveStreak;
 
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -267,10 +298,8 @@ TranslationResult::Scope shouldTranslateNoSizeLimit(SrcKey sk, TransKind kind,
     }
   }
 
-  auto const funcId = func->getFuncId();
-  auto const inStreak = isLive && std::find(
-      tl_liveStreak.begin(), tl_liveStreak.end(), funcId
-  ) != tl_liveStreak.end();
+  auto const funcId = func->getFuncId().toInt();
+  auto const inStreak = isLive && tl_liveStreak.contains(funcId);
 
   auto const softMaxTransTime = Cfg::Jit::SoftMaxRequestTranslationTime;
   if (softMaxTransTime >= 0 &&
@@ -306,8 +335,7 @@ TranslationResult::Scope shouldTranslateNoSizeLimit(SrcKey sk, TransKind kind,
   }
 
   if (isLive && !inStreak) {
-    if (tl_liveStreak.size() >= Cfg::Jit::LiveStreakMaxSize) tl_liveStreak.pop_front();
-    tl_liveStreak.push_back(funcId);
+    tl_liveStreak.add(funcId);
   }
   return TranslationResult::Scope::Success;
 }
