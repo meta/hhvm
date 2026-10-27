@@ -497,11 +497,11 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 # CodeCache (Eval.Jit)
 
 - uint32_t CodeCache.ASize = 60 << 20, UNKNOWN
-- uint32_t CodeCache.AColdSize = 24 << 20, UNKNOWN
-- uint32_t CodeCache.AFrozenSize = 40 << 20, UNKNOWN
-- uint32_t CodeCache.AMaxUsage = 0, UNKNOWN, nobind
-- uint32_t CodeCache.AColdMaxUsage = 0, UNKNOWN, nobind
-- uint32_t CodeCache.AFrozenMaxUsage = 0, UNKNOWN, nobind
+
+  Target size for code.main used to decide when the JIT is warmed up. The TC
+  is allocated as one dynamically partitioned region, so this does not size
+  any section.
+
 - uint32_t CodeCache.GlobalDataSize, UNKNOWN
 - bool CodeCache.MapTCHuge, UNKNOWN, lookuppath(Eval.MapTCHuge)
 - uint32_t CodeCache.TCNumHugeHotMB = 64, UNKNOWN, lookuppath(Eval.TCNumHugeHotMB)

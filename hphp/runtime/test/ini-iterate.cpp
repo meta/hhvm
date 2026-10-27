@@ -20,7 +20,7 @@ TEST(IniSetting, ini_iterate) {
     "hhvm.ip_block_map[1][ip][allow][0] = 127.10.10.10\n"
     "hhvm.ip_block_map[1][ip][deny][0] = 255.255.255.255\n"
     "hhvm.server.apc.ttl_limit = 1000\n"
-    "hhvm.jit_a_cold_size = 22222222\n";
+    "hhvm.jit_a_size = 22222222\n";
 
   IniSettingMap ini;
   Config::ParseIniString(inistr, ini);
@@ -47,7 +47,7 @@ TEST(IniSetting, ini_iterate) {
   EXPECT_EQ(2, value.toArray().size());
 
   // Check some runtime options
-  EXPECT_EQ(22222222, Cfg::CodeCache::AColdSize);
+  EXPECT_EQ(22222222, Cfg::CodeCache::ASize);
 }
 
 }

@@ -707,16 +707,13 @@ The [hacker's guide](https://github.com/facebook/hhvm/blob/master/hphp/doc/hacke
 
 ### JIT Translation Cache Size
 
-The translation cache stores the JIT'd code. It's split into several sections depending on how often the code is (or is expected to be) executed. The sum of all the bits has to be less than 2GB.
+The translation cache stores the JIT'd code. It is allocated as a single region, under 2GB, that is partitioned between the main, cold and frozen sections on demand, so the individual sections have no configured size.
 
 | Setting | Type | Default | Description
 |---------|------|---------|------------
-| `hhvm.jit_a_size` | `int` | `62914560` (60 MB) | Size in bytes of main translation cache.
-| `hhvm.jit_a_cold_size` | `int` | `25165824` (24 MB) | Size of cold code cache. Code that is unlikely to be executed is deemed cold. (Recommended: 0.5x `hhvm.jit_a_size`).
-| `hhvm.jit_a_frozen_size` | `int` | `41943040` (40 MB) | Size of extremely cold code cache. Code that is almost never executed, or executed once and then freed up, is deemed frozen. (Recommended: 1x `hhvm.jit_a_size`).
+| `hhvm.jit_a_size` | `int` | `62914560` (60 MB) | Target size of the main section, used to decide when the JIT is warmed up. Does not size the translation cache.
 | `hhvm.jit_a_hot_size` | `int` | `0` | Size of hot code cache. (Enabled only in [RepoAuthoritative mode](/hhvm/advanced-usage/repo-authoritative) when `hhvm.repo.authoritative` is `true`).
 | `hhvm.jit_a_prof_size` | `int` | `67108864` (64 MB) | Size of profiling code cache. (Recommended: 1x `hhvm.jit_a_size`).
-| `hhvm.jit_a_max_usage` | `int` | `62914560` (60 MB) | Maximum amount of code to generate. (Recommended: 1x `hhvm.jit_a_size`).
 | `hhvm.jit_global_data_size` | `int` | `15728640` (15 MB) | Size of the global data cache.
 | `hhvm.tc_num_huge_cold_mb` | `int` | `4` | The number of megabytes of cold regions to hold in the translation cache.
 | `hhvm.tc_num_huge_hot_mb` | `int` | `16` | The number of megabytes of hot regions to hold in the tranlsation cache.

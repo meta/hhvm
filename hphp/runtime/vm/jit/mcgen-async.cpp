@@ -373,9 +373,6 @@ InitFiniNode s_logJitStats([]{
   ent.setInt("frozen_used_bytes", tc::code().frozenUsed());
   ent.setInt("data_used_bytes", tc::code().dataUsed());
 
-  ent.setInt("main_max_bytes", Cfg::CodeCache::AMaxUsage);
-  ent.setInt("cold_max_bytes", Cfg::CodeCache::AColdMaxUsage);
-  ent.setInt("frozen_max_bytes", Cfg::CodeCache::AFrozenMaxUsage);
   ent.setInt("data_max_bytes", Cfg::CodeCache::GlobalDataSize);
 
   ent.setInt("request_index", requestCount());
