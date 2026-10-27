@@ -262,10 +262,11 @@ static bool HHVM_METHOD(Collator, sortWithSortKeys, Variant& arr) {
     // Check for index buffer overflow
     if ((sortIndexPos + 1) > sortIndexLength) {
       sortIndexLength += DEF_SORT_KEYS_INDX_BUF_INCREMENT;
-      sortIndex = (collator_sort_key_index_t*)req::realloc_untyped(
+      sortIndex = static_cast<collator_sort_key_index_t*>(req::realloc(
         sortIndex,
-        sortIndexLength * sizeof(collator_sort_key_index_t)
-      );
+        sortIndexLength * sizeof(collator_sort_key_index_t),
+        type_scan::getIndexForMalloc<collator_sort_key_index_t>()
+      ));
       if (!sortIndex) {
         throw Exception("Out of memory");
       }
