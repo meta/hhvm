@@ -181,7 +181,7 @@ void QueryRenderer<StringType>::escapeAndAppend(
       auto old_size = dest->size();
       dest->resize(old_size + 2 * value.size() + 1);
       auto* start = &(*dest)[old_size];
-      auto actual = conn->escapeString(start, value.data(), value.size());
+      auto actual = conn->escapeString(start, value.data(), value.size(), '"');
       dest->resize(old_size + actual);
       break;
   }

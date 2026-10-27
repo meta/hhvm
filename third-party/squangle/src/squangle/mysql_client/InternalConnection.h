@@ -137,10 +137,13 @@ class InternalConnection {
 
   virtual unsigned int warningCount() const = 0;
 
-  std::string escapeString(std::string_view unescaped) const;
+  // `quote` is the character the caller wraps the escaped value in. It only
+  // matters under the NO_BACKSLASH_ESCAPES sql_mode, where quotes are escaped
+  // by doubling them instead of with a backslash.
+  std::string escapeString(std::string_view unescaped, char quote = '\'') const;
 
-  virtual size_t escapeString(char* out, const char* src, size_t length)
-      const = 0;
+  virtual size_t
+  escapeString(char* out, const char* src, size_t length, char quote) const = 0;
 
   virtual std::function<void()> getCloseFunction() {
     return nullptr;

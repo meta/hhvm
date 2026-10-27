@@ -10,10 +10,13 @@
 
 namespace facebook::common::mysql_client {
 
-std::string InternalConnection::escapeString(std::string_view unescaped) const {
+std::string InternalConnection::escapeString(
+    std::string_view unescaped,
+    char quote) const {
   std::string escaped;
   escaped.resize((2 * unescaped.size()) + 1);
-  auto size = escapeString(escaped.data(), unescaped.data(), unescaped.size());
+  auto size =
+      escapeString(escaped.data(), unescaped.data(), unescaped.size(), quote);
   escaped.resize(size);
   return escaped;
 }

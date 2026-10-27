@@ -111,18 +111,22 @@ unsigned int MysqlConnection::warningCount() const {
   return mysql_warning_count(mysql_);
 }
 
-size_t MysqlConnection::escapeString(char* ptr, const char* src, size_t length)
-    const {
+size_t MysqlConnection::escapeString(
+    char* ptr,
+    const char* src,
+    size_t length,
+    char quote) const {
   CHECK_THROW(mysql_ != nullptr, db::InvalidConnectionException);
 
-  auto ret = mysql_real_escape_string(mysql_, ptr, src, length);
+  auto ret = mysql_real_escape_string_quote(mysql_, ptr, src, length, quote);
   VLOG(4) << fmt::format(
-      "mysql_real_escape_string({}, {}, {:.60} ({}), {}) returned {}",
+      "mysql_real_escape_string_quote({}, {}, {:.60} ({}), {}, {}) returned {}",
       (void*)mysql_,
       (void*)ptr,
       src ? src : "(null)",
       src,
       length,
+      quote,
       ret);
   return ret;
 }

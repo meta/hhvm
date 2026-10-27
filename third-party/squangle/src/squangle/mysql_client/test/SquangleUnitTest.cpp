@@ -2085,8 +2085,9 @@ namespace {
 class EscapingMockConnection : public MockInternalConnection {
  public:
   using MockInternalConnection::MockInternalConnection;
-  size_t escapeString(char* out, const char* src, size_t length)
+  size_t escapeString(char* out, const char* src, size_t length, char quote)
       const override {
+    EXPECT_EQ(quote, '"');
     size_t n = 0;
     for (size_t i = 0; i < length; ++i) {
       if (src[i] == '\'') {

@@ -186,9 +186,12 @@ class ConnectionHolder : public InternalConnection {
     return internalConn_->warningCount();
   }
 
-  [[nodiscard]] size_t escapeString(char* out, const char* src, size_t length)
-      const override {
-    return internalConn_->escapeString(out, src, length);
+  [[nodiscard]] size_t escapeString(
+      char* out,
+      const char* src,
+      size_t length,
+      char quote) const override {
+    return internalConn_->escapeString(out, src, length, quote);
   }
 
   std::function<void()> getCloseFunction() override {

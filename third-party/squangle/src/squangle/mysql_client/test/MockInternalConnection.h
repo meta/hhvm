@@ -145,7 +145,7 @@ class MockInternalConnection : public InternalConnection {
     return 0;
   }
 
-  size_t escapeString(char* out, const char* src, size_t length)
+  size_t escapeString(char* out, const char* src, size_t length, char /*quote*/)
       const override {
     // Simple escaping: just copy the string
     // A real implementation would escape special characters

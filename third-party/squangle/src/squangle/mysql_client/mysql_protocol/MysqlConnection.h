@@ -91,8 +91,11 @@ class MysqlConnection : public InternalConnection {
 
   [[nodiscard]] unsigned int warningCount() const override;
 
-  [[nodiscard]] size_t escapeString(char* out, const char* src, size_t length)
-      const override;
+  [[nodiscard]] size_t escapeString(
+      char* out,
+      const char* src,
+      size_t length,
+      char quote) const override;
 
   std::function<void()> getCloseFunction() override;
 

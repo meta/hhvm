@@ -286,8 +286,9 @@ class Connection {
   // Checks if `client_flag` is set for SSL.
   [[nodiscard]] bool isSSL() const;
 
-  // Escape the provided string using mysql_real_escape_string(). You almost
-  // certainly don't want to use this - look at the Query class instead.
+  // Escape the provided string using mysql_real_escape_string_quote() with a
+  // single quote. You almost certainly don't want to use this - look at the
+  // Query class instead.
   //
   // This is provided so that non-Facebook users of the HHVM extension have
   // a familiar API.
