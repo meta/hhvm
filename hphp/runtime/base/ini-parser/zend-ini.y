@@ -18,6 +18,9 @@
 
 #define YYERROR_VERBOSE
 #define YYSTYPE std::string
+// The C skeleton cannot relocate std::string stacks with memcpy.
+// Keep the fixed initial stack and report exhaustion if it fills.
+#define yyoverflow(...) YYNOMEM
 
 #include <boost/algorithm/string/predicate.hpp>
 
