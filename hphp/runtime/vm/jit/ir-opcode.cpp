@@ -574,7 +574,6 @@ bool opcodeMayRaise(Opcode opc) {
   case ContArIncIdx:
   case ContArIncKey:
   case ContArUpdateIdx:
-  case ContValid:
   case ConvBoolToDbl:
   case ConvBoolToInt:
   case ConvDblToBool:

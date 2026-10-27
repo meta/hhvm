@@ -403,8 +403,10 @@ SSATmp* emitGeneratorThis(IRGS& env, const Func* f, SSATmp* prologueCtx) {
   return cond(
     env,
     [&] (Block* taken) {
-      auto const valid = gen(env, ContValid, IsAsyncData(isAsync), genObj);
-      gen(env, JmpZero, taken, valid);
+      auto const state = gen(env, LdContState, IsAsyncData(isAsync), genObj);
+      auto const done =
+        gen(env, EqInt, state, cns(env, BaseGenerator::State::Done));
+      gen(env, JmpNZero, taken, done);
     },
     [&] {
       auto const genFp  = gen(env, LdContActRec, IsAsyncData(isAsync), genObj);

@@ -127,19 +127,6 @@ void cgLdContState(IRLS& env, const IRInstruction* inst) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void cgContValid(IRLS& env, const IRInstruction* inst) {
-  auto const dst = dstLoc(env, inst, 0).reg();
-  auto const cont = srcLoc(env, inst, 0).reg();
-  auto const isAsync = inst->extra<IsAsyncData>()->isAsync;
-  auto& v = vmain(env);
-
-  // Return true if generator state is not Done.
-  auto const sf = v.makeReg();
-  auto const stateOff = BaseGenerator::stateOff() - genOffset(isAsync);
-  v << cmpbim{int8_t(BaseGenerator::State::Done), cont[stateOff], sf};
-  v << setcc{CC_NE, sf, dst};
-}
-
 void cgStContArState(IRLS& env, const IRInstruction* inst) {
   auto const fp = srcLoc(env, inst, 0).reg();
   auto& v = vmain(env);

@@ -3382,7 +3382,6 @@ X(NewCol,                       NewColData);
 X(NewColFromArray,              NewColData);
 X(CheckSurpriseFlagsEnter,      CheckHandleSurpriseEnterData);
 X(HandleSurpriseEnter,          CheckHandleSurpriseEnterData);
-X(ContValid,                    IsAsyncData);
 X(LdContResumeAddr,             IsAsyncData);
 X(LdContState,                  IsAsyncData);
 X(LdContActRec,                 IsAsyncData);

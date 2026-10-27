@@ -575,7 +575,6 @@ bool canDCE(const IRInstruction& inst) {
   case AFWHPrepareChild:
   case StArResumeAddr:
   case ContEnter:
-  case ContValid:
   case ContArIncKey:
   case ContArIncIdx:
   case ContArUpdateIdx:

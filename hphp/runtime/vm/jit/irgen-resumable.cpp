@@ -840,8 +840,9 @@ void emitContValid(IRGS& env) {
   assertx(curClass(env)->classof(AsyncGenerator::classof()) ||
           curClass(env)->classof(Generator::classof()));
   auto const cont = ldThis(env);
-  push(env, gen(env, ContValid,
-    IsAsyncData(curClass(env)->classof(AsyncGenerator::classof())), cont));
+  auto const state = gen(env, LdContState,
+    IsAsyncData(curClass(env)->classof(AsyncGenerator::classof())), cont);
+  push(env, gen(env, NeqInt, state, cns(env, BaseGenerator::State::Done)));
 }
 
 void emitContKey(IRGS& env) { PUNT(ContKey); }

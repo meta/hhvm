@@ -2602,10 +2602,6 @@ ReqBindJmp and CallFuncEntry.
 
   Load the state of the generator in S0.
 
-| ContValid, D(Bool), S(Obj), NF
-
-  Return true if a generator is not done, false otherwise.
-
 | ContArIncKey, ND, S(FramePtr), NF
 
   Special-case key update for generator, ActRec of which is S0, which
