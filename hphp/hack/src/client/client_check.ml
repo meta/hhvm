@@ -94,16 +94,17 @@ let output_isolation_result
     | (Some reason, _) -> Printf.printf "Did not run: %s\n" reason
     | (None, Some Movable) ->
       Printf.printf
-        "Movable: %d files, nothing outside references in.\n"
-        result.total_isolatable_files
+        "Movable: %s, nothing outside references in.\n"
+        (Utils.print_count result.total_isolatable_files "file")
     | (None, Some (Blocked blockers)) ->
-      (match blockers with
-      | [_] -> Printf.printf "Blocked: 1 file references in.\n"
-      | _ ->
-        Printf.printf "Blocked: %d files reference in.\n" (List.length blockers));
+      Printf.printf
+        "Blocked: referenced from %s outside.\n"
+        (Utils.print_count (List.length blockers) "file");
       List.iter blockers ~f:(Printf.printf "  %s\n")
     | (None, None) ->
-      Printf.printf "Started from %d files.\n" result.total_seeds;
+      Printf.printf
+        "Started from %s.\n"
+        (Utils.print_count result.total_seeds "file");
       (* Both modes report sets of files called clusters, and they mean different
          things, so the line a person reads has to say which. *)
       if result.grown then begin
@@ -123,10 +124,10 @@ let output_isolation_result
             result.total_truncated
       end else
         Printf.printf
-          "Found %d isolatable without growing, covering %d files (largest: %d).\n"
-          result.total_clusters
-          result.total_isolatable_files
-          result.largest_cluster;
+          "Found %s without growing, covering %s in all; the largest has %s.\n"
+          (Utils.print_count result.total_clusters "isolatable cluster")
+          (Utils.print_count result.total_isolatable_files "file")
+          (Utils.print_count result.largest_cluster "file");
       if result.total_refused > 0 then
         Printf.printf
           "Not in any cluster: %s (what depends on a file is over the limit, or the file declares nothing).\n"

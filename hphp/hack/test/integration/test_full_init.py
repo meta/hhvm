@@ -257,7 +257,7 @@ class TestFreshInit(common_tests.CommonTests):
         lines = output.splitlines()
 
         self.assertEqual(2, len(lines))
-        header_match = re.fullmatch(r"Started from (\d+) files\.", lines[0])
+        header_match = re.fullmatch(r"Started from (\d+) files?\.", lines[0])
         if header_match is None:
             self.fail(f"Unexpected command header: {lines[0]}")
         if (
@@ -404,7 +404,7 @@ class TestFreshInit(common_tests.CommonTests):
         )
         lines = output.splitlines()
         self.assertEqual(2, len(lines))
-        header_match = re.fullmatch(r"Started from (\d+) files\.", lines[0])
+        header_match = re.fullmatch(r"Started from (\d+) files?\.", lines[0])
         if header_match is None:
             self.fail(f"Unexpected command header: {lines[0]}")
 

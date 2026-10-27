@@ -43,13 +43,15 @@ let output
     | None ->
       if result.isolatable then
         Printf.printf
-          "Isolatable: no package boundary violated, over the %d files checked.\n"
-          result.files_checked
+          "Isolatable: no package boundary violated, over the %s checked.\n"
+          (Utils.print_count result.files_checked "file")
       else
         Printf.printf
-          "Not isolatable: %d package violation(s), from %d files checked.\n"
-          (List.length result.violations)
-          result.files_checked;
+          "Not isolatable: %s, from %s checked.\n"
+          (Utils.print_count
+             (List.length result.violations)
+             "package violation")
+          (Utils.print_count result.files_checked "file");
       List.iter result.violations ~f:(fun v ->
           Printf.printf "  %s:%d  %s\n" v.referrer v.line v.message);
       if not (List.is_empty result.unknown_files) then begin
