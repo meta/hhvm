@@ -58,6 +58,8 @@
 #include "hphp/util/service-data.h"
 #include "hphp/util/trace.h"
 
+#include <folly/container/Array.h>
+
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -181,6 +183,15 @@ uint8_t adjustedLiveThreshold() {
   return s_cached.load(std::memory_order_relaxed);
 }
 
+static double liveStreakScale(size_t streakSize) {
+  static_assert(
+    std::is_same_v<decltype(Cfg::Jit::LiveStreakMaxSize), uint8_t>);
+  static const auto scales = folly::make_array_with<256>([](size_t i) {
+    return std::pow(Cfg::Jit::LiveStreakRatio, i);
+  });
+  return scales[std::min(streakSize, scales.size() - 1)];
+}
+
 TranslationResult::Scope shouldTranslateNoSizeLimit(SrcKey sk, TransKind kind,
                                                     bool noTheshold) {
   // If we've hit Eval.JitGlobalTranslationLimit, then we stop translating.
@@ -285,7 +296,8 @@ TranslationResult::Scope shouldTranslateNoSizeLimit(SrcKey sk, TransKind kind,
     auto const baseThreshold = isLive ? adjustedLiveThreshold()
                                       : Cfg::Jit::ProfileThreshold;
     auto const funcThreshold = inStreak ? 0 : isLive
-        ? static_cast<uint8_t>(baseThreshold * std::pow(Cfg::Jit::LiveStreakRatio, tl_liveStreak.size()))
+        ? static_cast<uint8_t>(
+              baseThreshold * liveStreakScale(tl_liveStreak.size()))
         : baseThreshold;
     if (func->incJitReqCount() < funcThreshold) {
       tl_liveStreak.clear();
