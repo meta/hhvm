@@ -1405,7 +1405,7 @@ OptString preg_get_error_message_if_invalid(const OptString& pattern) {
   if (!error_message) {
     error_message = makeStaticString("Failed to process regex for unknown reason");
   }
-  return OptString { error_message };
+  return OptString::attach(error_message);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
