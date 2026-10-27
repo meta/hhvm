@@ -71,21 +71,10 @@ let load_saved_state_exn
       failwith str
   in
   let (old_errors : saved_state_errors) =
-    if not (Sys.file_exists errors_path) then
-      (* TODO(T282083944) We should not treat the errors file as optional. *)
-      Relative_path.Set.empty
-    else
-      Marshal.from_channel (In_channel.create ~binary:true errors_path)
+    Marshal.from_channel (In_channel.create ~binary:true errors_path)
   in
   let (old_warnings : Warnings_saved_state.t) =
-    if not (Sys.file_exists warning_hashes_path) then (
-      (* TODO(T282083944) We should not treat the warnings file as optional. *)
-      Hh_logger.warn
-        "Was expecting warning saved state file at %s but file does not exists."
-        warning_hashes_path;
-      Warnings_saved_state.empty
-    ) else
-      Warnings_saved_state.read_from_disk warning_hashes_path
+    Warnings_saved_state.read_from_disk warning_hashes_path
   in
   (old_naming_table, { old_errors; old_warnings })
 
