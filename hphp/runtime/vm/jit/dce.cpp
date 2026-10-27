@@ -215,6 +215,7 @@ bool canDCE(const IRInstruction& inst) {
   case LdContActRec:
   case LdContArValue:
   case LdContArKey:
+  case LdContState:
   case LdWHState:
   case LdWHResult:
   case LdWHNotDone:
@@ -574,7 +575,6 @@ bool canDCE(const IRInstruction& inst) {
   case AFWHPrepareChild:
   case StArResumeAddr:
   case ContEnter:
-  case ContCheckNext:
   case ContValid:
   case ContArIncKey:
   case ContArIncIdx:

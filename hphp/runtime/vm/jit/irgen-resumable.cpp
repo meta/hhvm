@@ -822,10 +822,17 @@ void emitContCheck(IRGS& env, ContCheckOp subop) {
   assertx(curClass(env)->classof(AsyncGenerator::classof()) ||
           curClass(env)->classof(Generator::classof()));
   auto const cont = ldThis(env);
-  auto const checkStarted = subop == ContCheckOp::CheckStarted;
-  gen(env, ContCheckNext,
-    IsAsyncData(curClass(env)->classof(AsyncGenerator::classof())),
-    makeExitSlow(env), cont, cns(env, checkStarted));
+  auto const state = gen(env, LdContState,
+    IsAsyncData(curClass(env)->classof(AsyncGenerator::classof())), cont);
+
+  // These asserts make sure that the startedCheck work.
+  static_assert(uint8_t(BaseGenerator::State::Created) == 0, "used below");
+  static_assert(uint8_t(BaseGenerator::State::Started) == 1, "used below");
+
+  auto const cmp = subop == ContCheckOp::CheckStarted
+    ? gen(env, NeqInt, state, cns(env, BaseGenerator::State::Started))
+    : gen(env, GtInt, state, cns(env, BaseGenerator::State::Started));
+  gen(env, JmpNZero, makeExitSlow(env), cmp);
 }
 
 void emitContValid(IRGS& env) {

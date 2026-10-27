@@ -115,23 +115,14 @@ void cgContEnter(IRLS& env, const IRInstruction* inst) {
   }
 }
 
-void cgContCheckNext(IRLS& env, const IRInstruction* inst) {
+void cgLdContState(IRLS& env, const IRInstruction* inst) {
+  auto const dst = dstLoc(env, inst, 0).reg();
   auto const cont = srcLoc(env, inst, 0).reg();
-  auto const checkStarted = inst->src(1)->boolVal();
   auto const isAsync = inst->extra<IsAsyncData>()->isAsync;
   auto& v = vmain(env);
 
-  auto const sf = v.makeReg();
-
-  // These asserts make sure that the startedCheck work.
-  static_assert(uint8_t(BaseGenerator::State::Created) == 0, "used below");
-  static_assert(uint8_t(BaseGenerator::State::Started) == 1, "used below");
-
-  // Take exit if state != 1 (checkStarted) or if state > 1 (!checkStarted).
-  auto const cc = checkStarted ? CC_NE : CC_A;
   auto const stateOff = BaseGenerator::stateOff() - genOffset(isAsync);
-  v << cmpbim{int8_t(BaseGenerator::State::Started), cont[stateOff], sf};
-  v << jcc{cc, sf, {label(env, inst->next()), label(env, inst->taken())}};
+  v << loadzbq{cont[stateOff], dst};
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1754,7 +1754,6 @@ MemEffects memory_effects_impl(const IRInstruction& inst) {
   case IncCallCounter:
   case IncStatCounter:
   case IncStat:
-  case ContCheckNext:
   case CountVec:
   case CountDict:
   case CountKeyset:
@@ -1809,6 +1808,7 @@ MemEffects memory_effects_impl(const IRInstruction& inst) {
   case LdContArKey:
   case LdContArValue:
   case LdContResumeAddr:
+  case LdContState:
   case StContArKey:
   case StContArValue:
   case StContArState:

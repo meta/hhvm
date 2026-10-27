@@ -574,7 +574,6 @@ bool opcodeMayRaise(Opcode opc) {
   case ContArIncIdx:
   case ContArIncKey:
   case ContArUpdateIdx:
-  case ContCheckNext:
   case ContValid:
   case ConvBoolToDbl:
   case ConvBoolToInt:
@@ -764,6 +763,7 @@ bool opcodeMayRaise(Opcode opc) {
   case LdContArKey:
   case LdContArValue:
   case LdContResumeAddr:
+  case LdContState:
   case LdEnumClassLabelName:
   case LdFrameCls:
   case LdFrameThis:

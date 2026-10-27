@@ -2598,11 +2598,9 @@ ReqBindJmp and CallFuncEntry.
   the yield statement. The `callBCOffset' will be stored to the m_callOff
   field of the ActRec in the generator.
 
-| ContCheckNext, ND, S(Obj) C(Bool), B
+| LdContState, D(Int), S(Obj), NF
 
-  Check whether the generator S0 can be iterated. If the generator is already
-  running or finished, or it was not started yet and the S1 check-started flag
-  is set, the branch B is taken.
+  Load the state of the generator in S0.
 
 | ContValid, D(Bool), S(Obj), NF
 
