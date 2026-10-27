@@ -14201,9 +14201,11 @@ end = struct
             in
             Option.iter ~f:(Typing_error_utils.add_typing_error ~env) ty_err_opt;
             (match cc_abstract with
-            | CCAbstract _ ->
+            | CCAbstract has_default ->
+              (* A default resolves at runtime even when `static` is abstract *)
               if
-                (not cc_synthesized)
+                (not has_default)
+                && (not cc_synthesized)
                 && TCO.needs_concrete_abstract_class_const_check
                      (Env.get_tcopt env)
               then

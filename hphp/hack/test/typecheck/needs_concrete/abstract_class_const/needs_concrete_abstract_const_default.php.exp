@@ -1,0 +1,19 @@
+error: Typing[4529] Dangerous access of abstract member `Base::NO_DEFAULT`; it may be abstract and `static` might refer to an abstract class here. Consider adding the `__NeedsConcrete` attribute to the containing method. [1]
+-> Declaration is here [2]
+
+needs_concrete_abstract_const_default.php:22:20
+ 9 | abstract class Base implements IHasDefault {
+10 |   abstract const string KIND = 'unknown';
+11 |   abstract const int NO_DEFAULT;
+   |                      ^^^^^^^^^^ [2]
+12 | 
+13 |   public static function kind(): string {
+   :
+20 | 
+21 |   public static function noDefault(): int {
+22 |     return static::NO_DEFAULT; // error
+   |                    ^^^^^^^^^^ [1]
+23 |   }
+24 | }
+
+1 error found
