@@ -334,7 +334,12 @@ function read_opts_file(?string $file, ?string $input_dir = null): string {
 
 // Keys understood in a `.config` file, both per-test (`<test>.config`) and as
 // suite-wide defaults (`config.config`).
-const keyset<string> TEST_CONFIG_KEYS = keyset['opts', 'hphp_opts'];
+const keyset<string> TEST_CONFIG_KEYS = keyset['opts', 'hphp_opts', 'norepo'];
+
+// The keys above holding a boolean, written as `key = true` or `key = false`,
+// rather than a block of command-line options. These describe a single test,
+// so they are rejected in a directory-level `config.config`.
+const keyset<string> TEST_CONFIG_FLAG_KEYS = keyset['norepo'];
 
 // Parse a `.config` file, which replaces the per-key sidecar option files.
 // Each entry is `key = value`, where the value is either the remainder of the
@@ -344,6 +349,7 @@ const keyset<string> TEST_CONFIG_KEYS = keyset['opts', 'hphp_opts'];
 //   hphp_opts =
 //     --inputs=__DIR__/a.inc
 //     --inputs=__DIR__/b.inc
+//   norepo = true
 //
 // Lines whose first non-space character is `;` or `#` are comments.
 <<__Memoize>>
@@ -351,6 +357,7 @@ function parse_config_file(string $file): dict<string, string> {
   // A directory-level `config.config` supersedes the `config.<key>` sidecar
   // files that still exist alongside it.
   $prefix = substr($file, 0, strlen($file) - strlen('.config'));
+  $is_dir_config = basename($file) === 'config.config';
 
   $config = dict[];
   $key = null;
@@ -393,7 +400,16 @@ function parse_config_file(string $file): dict<string, string> {
         "remove one of them"
       );
     }
-    $config[$key] = rtrim($matches[2]);
+    $value = rtrim($matches[2]);
+    if (C\contains_key(TEST_CONFIG_FLAG_KEYS, $key)) {
+      if ($is_dir_config) {
+        error("$file:$lineno: '$key' applies to a single test, not a suite");
+      }
+      if ($value !== 'true' && $value !== 'false') {
+        error("$file:$lineno: '$key' must be 'true' or 'false', got '$value'");
+      }
+    }
+    $config[$key] = $value;
   }
   return $config;
 }
@@ -411,6 +427,11 @@ function read_test_config(string $test): dict<string, string> {
   }
   $file = "$test.config";
   return is_file($file) ? parse_config_file($file) : dict[];
+}
+
+// Read a boolean entry (see TEST_CONFIG_FLAG_KEYS) from `<test>.config`.
+function read_test_flag(string $test, string $key): bool {
+  return idx(read_test_config($test), $key) === 'true';
 }
 
 // Suite-wide default for $key: the nearest enclosing `config.config` that
@@ -435,6 +456,16 @@ function read_dir_opts(
     );
   }
   return read_opts_file(find_file_for_dir($dir, "config.$key"), $input_dir);
+}
+
+// Force the `config.config` lookups a worker will do later, so a malformed
+// suite-wide file is reported during test collection instead. Memoized per
+// directory because thousands of tests share a handful of config files.
+<<__Memoize>>
+function validate_dir_config(string $dir): void {
+  foreach (TEST_CONFIG_KEYS as $key) {
+    if (!C\contains_key(TEST_CONFIG_FLAG_KEYS, $key)) read_dir_opts($dir, $key);
+  }
 }
 
 // Read an option block for $test from `<test>.config`. When $dir_fallback is
@@ -961,6 +992,7 @@ function find_tests(
   // from inside a worker, where it would look like an ordinary test failure.
   foreach ($tests as $test) {
     read_test_config($test);
+    validate_dir_config(dirname($test));
   }
   return $tests;
 }
@@ -3027,7 +3059,7 @@ function should_skip_test_simple(
   }
 
   if ($options->repo) {
-    if (file_exists($test.'.norepo')) return 'skip-norepo';
+    if (read_test_flag($test, 'norepo')) return 'skip-norepo';
     if (file_exists($test.'.verify')) return 'skip-verify';
     if (!Str\is_empty(find_debug_config($test, 'hphpd.ini'))) return 'skip-debugger';
   }

@@ -1,3 +1,0 @@
-RepoAuthoritative mode rewriting of "*_exists('non_existent'
-[,<optional>])" to false is not sound if <optional> is truthy and
-invoking the autoloader would have side effects.

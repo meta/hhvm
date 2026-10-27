@@ -3,9 +3,9 @@ vec(8) {
   string(15) ".hhvmconfig.hdf"
   string(12) "onlyfacebook"
   string(11) "readdir.php"
+  string(18) "readdir.php.config"
   string(18) "readdir.php.expect"
   string(21) "readdir.php.no_remote"
-  string(18) "readdir.php.norepo"
   string(28) "nested_files/placeholder.txt"
   string(46) "nested_files/nested_two/second_placeholder.txt"
 }
