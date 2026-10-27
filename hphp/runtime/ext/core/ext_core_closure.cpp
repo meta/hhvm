@@ -191,7 +191,6 @@ ObjectData* createClosureRepoAuth(Class* cls) {
   auto const size = sizeof(ClosureHdr) + ObjectData::sizeForNProps(nProps);
   auto hdr = new (tl_heap->objMalloc(size)) ClosureHdr(size);
   auto obj = new (hdr + 1) c_Closure(cls);
-  obj->props()->init(nProps);
   assertx(obj->props()->checkInvariants(nProps));
   assertx(obj->hasExactlyOneRef());
   return obj;

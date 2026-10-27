@@ -278,8 +278,6 @@ struct UnalignedTVLayout :
     return offset / sizeof(UnalignedTypedValue);
   }
 
-  void init(index_t) {}
-
   static void setInvariantsAfterGrow(char *, size_t, size_t) {
     return;
   }

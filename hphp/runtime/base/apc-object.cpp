@@ -279,7 +279,6 @@ Object APCObject::createObject(bool pure) const {
   // property (e.g. a nested object's __wakeup), so heap inspectors such as
   // objprof may see this object before it is fully initialized. Mark every
   // slot Uninit up front so they never read the raw allocation.
-  objProp->init(numProps);
   auto range = objProp->range(0, numProps);
   for (auto slot = range.begin(); slot != range.end(); ++slot) {
     type(tv_lval{slot}) = KindOfUninit;
@@ -325,7 +324,6 @@ Object APCObject::createObjectLazy(bool pure) const {
   auto const apcProp = persistentProps();
   auto const objProp = obj->props();
 
-  objProp->init(numProps);
   auto const range = objProp->range(0, numProps);
   auto it = range.begin();
 

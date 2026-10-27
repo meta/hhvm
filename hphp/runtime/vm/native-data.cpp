@@ -174,8 +174,6 @@ ObjectData* nativeDataInstanceCopyCtor(ObjectData* src, Class* cls,
       HeaderKind::NativeObject);
   assertx(obj->hasExactlyOneRef());
 
-  obj->props()->init(cls->numDeclProperties());
-
   if (UNLIKELY(cls->hasMemoSlots())) {
     auto cur = reinterpret_cast<MemoSlot*>(
         reinterpret_cast<char*>(node) + sizeof(NativeNode));

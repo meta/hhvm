@@ -804,7 +804,6 @@ ObjectData* ObjectData::clone() {
   }
 
   auto const cloneProps = clone->props();
-  cloneProps->init(m_cls->numDeclProperties());
   for (auto slot = Slot{0}; slot < nProps; slot++) {
     auto index = m_cls->propSlotToIndex(slot);
     auto const prop = props()->at(index);
@@ -1016,7 +1015,6 @@ void deepInitHelper(ObjectProps* props,
                     const Class::PropInitVec* initVec,
                     size_t nProps) {
   auto initIter = initVec->cbegin();
-  props->init(nProps);
   props->foreach(nProps, [&](tv_lval lval){
     auto entry = *initIter++;
     tvCopy(entry.val.tv(), lval);
