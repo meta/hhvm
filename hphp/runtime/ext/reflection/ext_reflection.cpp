@@ -963,7 +963,7 @@ static Array get_function_param_info(const Func* func) {
       for (auto const& attr : fpi.userAttributes) {
         userAttrs.set(StrNR{attr.first}, attr.second);
       }
-      param.set(s_attributes, make_array_like_tv(userAttrs.create()));
+      param.set(s_attributes, userAttrs.toArray());
     }
     ai.append(VarNR(param).tv());
   }
@@ -1796,7 +1796,8 @@ static Array orderedConstantsHelper(const Class* cls, Fn filterFn) {
     }
   }
 
-  auto ret = st.create()->toDict(false /*copy*/);
+  auto const keys = st.toArray();
+  auto ret = keys.get()->toDict(false /*copy*/);
   assertx(ret->size() <= numConsts);
   return Array::attach(std::move(ret));
 }
@@ -2745,7 +2746,7 @@ Array get_class_info(const OptString& name) {
         arr.set(interface->nameStr(), make_tv<KindOfInt64>(1));
       }
     }
-    ret.set(s_interfaces, make_array_like_tv(arr.create()));
+    ret.set(s_interfaces, arr.toArray());
   }
 
   // traits
@@ -2755,7 +2756,7 @@ Array get_class_info(const OptString& name) {
     for (auto const& traitName : traits) {
       arr.set(StrNR(traitName), make_tv<KindOfInt64>(1));
     }
-    ret.set(s_traits, make_array_like_tv(arr.create()));
+    ret.set(s_traits, arr.toArray());
   }
 
   // attributes
@@ -2883,7 +2884,7 @@ Array get_class_info(const OptString& name) {
       }
     }
 
-    ret.set(s_constants, make_array_like_tv(arr.create()));
+    ret.set(s_constants, arr.toArray());
   }
 
   { // source info
@@ -2901,7 +2902,7 @@ Array get_class_info(const OptString& name) {
     for (auto const& attr : attrs) {
       arr.set(StrNR(attr.first), attr.second);
     }
-    ret.set(s_attributes, make_array_like_tv(arr.create()));
+    ret.set(s_attributes, arr.toArray());
   }
 
   return ret;
