@@ -309,7 +309,6 @@ TEST(COUNTERS, tc_space) {
 TEST(COUNTERS, build_age) {
     RuntimeOption::BuildId = "4-1234-9876-20230731081921";
     const auto begin = std::time(nullptr);
-    EXPECT_EQ(getVal("admin.build.job"), 1234);
     EXPECT_EQ(getVal("admin.build.rev"), 9876);
 
     bool error = false;

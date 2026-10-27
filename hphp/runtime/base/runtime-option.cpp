@@ -1720,7 +1720,6 @@ ServiceData::CounterCallback s_build_info([](ServiceData::CounterMap& counters) 
   // ignore-job-rev-timestamp
   folly::split('-', RuntimeOption::BuildId, pieces, true);
 
-  counters.emplace("admin.build.job", folly::to<int64_t>(pieces.at(1)));
   counters.emplace("admin.build.rev", folly::to<int64_t>(pieces.at(2)));
 
   std::tm t{};
