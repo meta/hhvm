@@ -1,6 +1,0 @@
--vHttp.SlowQueryThreshold=0
--vEval.JitASize=15728640
--vEval.JitGlobalDataSize=2097152
--vResourceLimit.SerializationSizeLimit=134217728
--vEnvVariables.HPHP_INTERPRETER="1"
--vServerVariables.TFBENV="16777216"

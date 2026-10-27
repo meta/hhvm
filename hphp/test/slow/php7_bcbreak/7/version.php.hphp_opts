@@ -1,2 +1,0 @@
--d hhvm.php7.builtins=1 -d hhvm.php7.all=0
---inputs=__DIR__/../5/version.php

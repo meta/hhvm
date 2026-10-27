@@ -1,3 +1,0 @@
--vRuntime.Eval.ActiveDeployment="prod"
---inputs=__DIR__/hard/member/hard.inc.php
---inputs=__DIR__/absent/member/absent.inc.php

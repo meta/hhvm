@@ -1,3 +1,0 @@
--vRuntime.Eval.ActiveDeployment="my-prod"
--vRuntime.Eval.PackagesTomlFileName="PACKAGES_v2.toml"
-

@@ -1,3 +1,0 @@
---inputs=__DIR__/test_base.inc
---inputs=__DIR__/../../util/server_tests.inc
---inputs=__DIR__/../../fastcgi/Adoy/Client.php

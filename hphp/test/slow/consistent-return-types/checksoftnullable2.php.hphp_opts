@@ -1,2 +1,0 @@
---inputs=__DIR__/checksoftnullable.inc
--vRuntime.Eval.EnforceOverriddenReturnTypes=2

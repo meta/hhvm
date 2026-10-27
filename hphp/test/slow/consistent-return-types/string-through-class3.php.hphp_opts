@@ -1,3 +1,0 @@
---inputs=__DIR__/string-through-class.inc
--vRuntime.Eval.ClassTypeLevel=1
--vRuntime.Eval.EnforceOverriddenReturnTypes=1

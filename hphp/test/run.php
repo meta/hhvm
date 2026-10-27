@@ -290,17 +290,16 @@ function bin_root(): string {
   return hphp_home() . hhvm_binary_routes()["cmake"];
 }
 
-function read_opts_file(?string $file, ?string $input_dir = null): string {
-  if ($file is null || !file_exists($file)) {
-    return "";
-  }
-  $fp = fopen($file, "r");
-  invariant($fp is resource, "%s", __METHOD__);
-
+function process_opts(
+  string $opts,
+  string $dir,
+  ?string $input_dir = null,
+): string {
   $contents = "";
-  for ($line = fgets($fp); $line; $line = fgets($fp)) {
-    // Compress out white space.
-    $line = preg_replace('/\s+/', ' ', $line);
+  foreach (explode("\n", $opts) as $line) {
+    // Compress out white space. The trailing space stands in for the newline
+    // that separated this line from the next, keeping the options apart.
+    $line = preg_replace('/\s+/', ' ', $line . "\n");
 
     // Discard simple line oriented ; and # comments to end of line
     // Comments at end of line (after payload) are not allowed.
@@ -311,7 +310,7 @@ function read_opts_file(?string $file, ?string $input_dir = null): string {
     // If input_dir is set, strip it from the expansion of DIR unless
     // the option is -c, which is not affected by --input-dir
     if ($input_dir != null && strpos($line, '-c ') == false) {
-      $line = str_replace('__DIR__', realpath(dirname($file)), $line);
+      $line = str_replace('__DIR__', realpath($dir), $line);
       if (strpos($line, $input_dir.'/') != false) {
         $line = str_replace($input_dir.'/', '', $line);
       } else {
@@ -319,12 +318,139 @@ function read_opts_file(?string $file, ?string $input_dir = null): string {
         $line = str_replace($input_dir, '/', $line);
       }
     } else {
-      $line = str_replace('__DIR__', dirname($file), $line);
+      $line = str_replace('__DIR__', $dir, $line);
     }
     $contents .= $line;
   }
-  fclose($fp);
   return $contents;
+}
+
+function read_opts_file(?string $file, ?string $input_dir = null): string {
+  if ($file is null || !file_exists($file)) {
+    return "";
+  }
+  return process_opts(file_get_contents($file), dirname($file), $input_dir);
+}
+
+// Keys understood in a `.config` file, both per-test (`<test>.config`) and as
+// suite-wide defaults (`config.config`).
+const keyset<string> TEST_CONFIG_KEYS = keyset['opts', 'hphp_opts'];
+
+// Parse a `.config` file, which replaces the per-key sidecar option files.
+// Each entry is `key = value`, where the value is either the remainder of the
+// line or a block of following indented lines:
+//
+//   opts = -vEval.Foo=1
+//   hphp_opts =
+//     --inputs=__DIR__/a.inc
+//     --inputs=__DIR__/b.inc
+//
+// Lines whose first non-space character is `;` or `#` are comments.
+<<__Memoize>>
+function parse_config_file(string $file): dict<string, string> {
+  // A directory-level `config.config` supersedes the `config.<key>` sidecar
+  // files that still exist alongside it.
+  $prefix = substr($file, 0, strlen($file) - strlen('.config'));
+
+  $config = dict[];
+  $key = null;
+  $lineno = 0;
+  foreach (explode("\n", file_get_contents($file)) as $line) {
+    $lineno++;
+    $trimmed = trim($line);
+    if ($trimmed === '' || $trimmed[0] === ';' || $trimmed[0] === '#') continue;
+
+    if ($line[0] === ' ' || $line[0] === "\t") {
+      if ($key is null) {
+        error("$file:$lineno: indented line before any 'key = value' line");
+      }
+      $config[$key] =
+        $config[$key] === '' ? $trimmed : $config[$key]."\n".$trimmed;
+      continue;
+    }
+
+    $matches = vec[];
+    if (preg_match_with_matches(
+          '/^([A-Za-z_][A-Za-z0-9_]*) *= *(.*)$/',
+          $trimmed,
+          inout $matches,
+        ) !== 1) {
+      error("$file:$lineno: expected 'key = value', got '$trimmed'");
+    }
+    $key = $matches[1];
+    if (!C\contains_key(TEST_CONFIG_KEYS, $key)) {
+      error(
+        "$file:$lineno: unknown key '$key', expected one of ".
+        implode(', ', vec(TEST_CONFIG_KEYS))
+      );
+    }
+    if (C\contains_key($config, $key)) {
+      error("$file:$lineno: duplicate key '$key'");
+    }
+    if (is_file("$prefix.$key")) {
+      error(
+        "$file:$lineno: '$key' is set here and in $prefix.$key; ".
+        "remove one of them"
+      );
+    }
+    $config[$key] = rtrim($matches[2]);
+  }
+  return $config;
+}
+
+<<__Memoize>>
+function read_test_config(string $test): dict<string, string> {
+  // The per-test sidecar files are gone; refuse to silently ignore a stale one.
+  foreach (TEST_CONFIG_KEYS as $key) {
+    if (is_file("$test.$key")) {
+      error(
+        "$test.$key is no longer read; move its contents into a '$key' ".
+        "entry in $test.config"
+      );
+    }
+  }
+  $file = "$test.config";
+  return is_file($file) ? parse_config_file($file) : dict[];
+}
+
+// Suite-wide default for $key: the nearest enclosing `config.config` that
+// defines it, else the legacy `config.<key>` file. The search is per-key so a
+// nested `config.config` setting only `opts` does not hide an `hphp_opts`
+// inherited from further up, matching how the sidecar files were looked up.
+function read_dir_opts(
+  string $dir,
+  string $key,
+  ?string $input_dir = null,
+): string {
+  $file = find_file_for_dir(
+    $dir,
+    'config.config',
+    $f ==> C\contains_key(parse_config_file($f), $key),
+  );
+  if ($file is nonnull) {
+    return process_opts(
+      parse_config_file($file)[$key],
+      dirname($file),
+      $input_dir,
+    );
+  }
+  return read_opts_file(find_file_for_dir($dir, "config.$key"), $input_dir);
+}
+
+// Read an option block for $test from `<test>.config`. When $dir_fallback is
+// set, a test that doesn't set $key falls back to the suite-wide default from
+// the enclosing directories.
+function read_test_opts(
+  string $test,
+  string $key,
+  ?string $input_dir = null,
+  bool $dir_fallback = true,
+): string {
+  $config = read_test_config($test);
+  if (C\contains_key($config, $key)) {
+    return process_opts($config[$key], dirname($test), $input_dir);
+  }
+  return $dir_fallback ? read_dir_opts(dirname($test), $key, $input_dir) : "";
 }
 
 function get_test_env(
@@ -831,6 +957,11 @@ function find_tests(
       return preg_match($include, $test) === 1;
     }));
   }
+  // Parse up front so a malformed .config file is reported here rather than
+  // from inside a worker, where it would look like an ordinary test failure.
+  foreach ($tests as $test) {
+    read_test_config($test);
+  }
   return $tests;
 }
 
@@ -864,7 +995,13 @@ function find_test_ext(
   return find_file_for_dir(dirname($test), "{$configName}.{$ext}");
 }
 
-function find_file_for_dir(string $dir, string $name): ?string {
+// Find $name in $dir or the nearest enclosing directory. $accept lets a caller
+// keep searching upwards past a file that exists but isn't the one it wants.
+function find_file_for_dir(
+  string $dir,
+  string $name,
+  ?(function(string): bool) $accept = null,
+): ?string {
   // Handle the case where the $dir might come in as '.' because you
   // are running the test runner on a file from the same directory as
   // the test e.g., './mytest.php'. dirname() will give you the '.' when
@@ -874,7 +1011,7 @@ function find_file_for_dir(string $dir, string $name): ?string {
   $depth = count(explode('/', realpath($dir))) - 1;
   for (; $dir !== '/' && is_dir($dir) && $depth !== 0; $depth--) {
     $file = "$dir/$name";
-    if (is_file($file)) {
+    if (is_file($file) && ($accept is null || $accept($file))) {
       return $file;
     }
     if ($dir === '.' || substr($dir, -2) === '..') {
@@ -884,7 +1021,7 @@ function find_file_for_dir(string $dir, string $name): ?string {
     }
   }
   $file = test_dir().'/'.$name;
-  if (file_exists($file)) {
+  if (file_exists($file) && ($accept is null || $accept($file))) {
     return $file;
   }
   return null;
@@ -1027,26 +1164,19 @@ function sbcc_mode_setup_impl(Options $options, string $test): (string, bool) {
     // Build the .sbcc artifact.
     // The builder must use the same config values that affect
     // mangleUnitSha1() (CONFIGS_FOR_UNITCACHEFLAGS). Pass the same -v
-    // flags that hhvm_cmd_impl adds to runtime, plus any config.opts
+    // flags that hhvm_cmd_impl adds to runtime, plus the suite-wide opts
     // from the test directory tree.
     $config_v_flags = vec[
       '-v', 'Eval.EnableIntrinsicsExtension=true',
       '-v', 'Eval.FoldLazyClassKeys=false',
     ];
-    // Also pass config.opts flags (e.g. -vEval.AllowHhas=true).
+    // Also pass the suite-wide opts (e.g. -vEval.AllowHhas=true).
     // These are in "-vName=Value" format — convert to "-v Name=Value".
-    $config_opts_file = find_file_for_dir(dirname($test), 'config.opts');
-    if ($config_opts_file is nonnull) {
-      $opts_content = trim(file_get_contents($config_opts_file));
-      foreach (explode("\n", $opts_content) as $line) {
-        $line = trim($line);
-        if ($line === '') continue;
-        // Convert -vName=Value to -v Name=Value
-        $m = vec[];
-        if (preg_match_with_matches('/^-v\s*(.+)$/', $line, inout $m) === 1) {
-          $config_v_flags[] = '-v';
-          $config_v_flags[] = $m[1];
-        }
+    foreach (preg_split('/\s+/', read_dir_opts(dirname($test), 'opts')) as $opt) {
+      $m = vec[];
+      if (preg_match_with_matches('/^-v(.+)$/', $opt, inout $m) === 1) {
+        $config_v_flags[] = '-v';
+        $config_v_flags[] = $m[1];
       }
     }
 
@@ -1271,10 +1401,8 @@ function hhvm_cmd(
        ? '-c ' . $test . $hdf_suffix
        : "";
 
-  $config_opts = read_opts_file(
-    find_file_for_dir(dirname($test), 'config.opts')
-  );
-  $file_opts = read_opts_file("{$test}.opts");
+  $config_opts = read_dir_opts(dirname($test), 'opts');
+  $file_opts = read_test_opts($test, 'opts', null, false);
 
   $input_dir = find_set_input_dir(dirname($test));
   if ($input_dir is nonnull) {
@@ -1456,9 +1584,7 @@ function hphp_cmd(Options $options, string $test): string {
     }
   }
 
-  $config_hphp_opts = read_opts_file(
-    find_file_for_dir(dirname($test), 'config.hphp_opts')
-  );
+  $config_hphp_opts = read_dir_opts(dirname($test), 'hphp_opts');
 
   $input_dir = find_set_input_dir(dirname($test));
   if ($input_dir is nonnull) {
@@ -1495,7 +1621,7 @@ function hphp_cmd(Options $options, string $test): string {
     $config_hphp_opts,
     $extra_args,
     $compiler_args,
-    read_opts_file(find_test_ext($test, 'hphp_opts'), $input_dir),
+    read_test_opts($test, 'hphp_opts', $input_dir),
   ]);
 }
 
@@ -3614,7 +3740,8 @@ function can_run_server_test(string $test, Options $options): bool {
   }
 
   // has its own config
-  if (is_file("$test.opts") || is_file("$test.ini") ||
+  if (C\contains_key(read_test_config($test), 'opts') ||
+      is_file("$test.ini") ||
       is_file("$test.use.for.ini.migration.testing.only.hdf")) {
     return false;
   }

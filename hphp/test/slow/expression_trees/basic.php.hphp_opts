@@ -1,2 +1,0 @@
--vRuntime.Hack.Lang.AllowUnstableFeatures=1
---inputs=__DIR__/../../../hack/test/expr_tree.php

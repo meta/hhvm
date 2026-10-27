@@ -1,3 +1,0 @@
--vRuntime.Eval.PackagesTomlFileName="PACKAGES.toml"
--vRuntime.Eval.ActiveDeployment="prod"
---dir=__DIR__

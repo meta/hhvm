@@ -1,5 +1,5 @@
 <?hh
-// test_feature overridden to Preview via .opts
+// test_feature overridden to Preview via .config
 <<file:__EnableUnstableFeatures('test_feature')>>
 <<__EntryPoint>>
 function main(): void {

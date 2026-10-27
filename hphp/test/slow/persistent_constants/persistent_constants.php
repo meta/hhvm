@@ -4,7 +4,7 @@
 // constants with a concrete value are promoted to persistent RDS in
 // Constant::def, while dynamic constants (whose value is computed by running
 // Hack, so their stored value is KindOfUninit) are left non-persistent. Both
-// must still resolve to the same values. See the .opts file. A debug (dbgo)
+// must still resolve to the same values. See the .config file. A debug (dbgo)
 // build additionally checks the RDS handle-mode invariants in Constant::def via
 // assertx, so a mis-promoted constant would crash rather than silently pass.
 

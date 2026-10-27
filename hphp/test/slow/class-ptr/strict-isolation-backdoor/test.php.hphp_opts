@@ -1,3 +1,0 @@
---dir=__DIR__
--vRuntime.Eval.PackagesTomlFileName="PACKAGES.toml"
--vRuntime.Eval.DynamicallyReferencedNoticeSampleRate=1

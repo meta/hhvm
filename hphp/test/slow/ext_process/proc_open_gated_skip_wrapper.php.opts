@@ -1,4 +1,0 @@
--vServer.AllowExec=true
--vEval.AllowUngatedExec=false
--vEval.ProcOpenGatedSkipCallers.*='FlibSL\PHP\proc_open'
--vEval.ProcOpenGatedApprovedCallers.*='test_gated_skip_wrapper'

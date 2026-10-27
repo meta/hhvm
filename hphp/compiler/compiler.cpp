@@ -1679,8 +1679,8 @@ bool process(CompilerOptions &po) {
         auto& rpath = rpaths[i];
         auto it = parsedFiles->find(rpath.native());
         if (it == parsedFiles->end()) {
-          // If you see this error in a test case, add a line to to test.php.hphp_opts:
-          // --inputs=hphp/path/to/file.inc
+          // If you see this error in a test case, add a line to the hphp_opts
+          // block in test.php.config: --inputs=hphp/path/to/file.inc
           Package::ParseMeta bad;
           bad.m_abort = fmt::format("Unknown include file: {}\n", rpath.native());
           parseMetas.emplace_back(std::move(bad));
@@ -1727,8 +1727,8 @@ bool process(CompilerOptions &po) {
       auto& rpath = rpaths[i];
       auto it = parsedFiles->find(rpath);
       if (it == parsedFiles->end()) {
-        // If you see this error in a test case, add a line to to test.php.hphp_opts:
-        // --inputs=hphp/path/to/file.inc
+        // If you see this error in a test case, add a line to the hphp_opts
+        // block in test.php.config: --inputs=hphp/path/to/file.inc
         Package::ParseMeta bad;
         bad.m_abort = fmt::format("Unknown include file: {}", rpath.native());
         parseMetas.emplace_back(std::move(bad));

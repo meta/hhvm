@@ -1,4 +1,0 @@
--vEval.EnableAsyncJIT=true
--vEval.AsyncJitWaitForTranslate=true
--vEval.AsyncJitWorkerThreads=1
--vEval.ForceAllPersistent=true

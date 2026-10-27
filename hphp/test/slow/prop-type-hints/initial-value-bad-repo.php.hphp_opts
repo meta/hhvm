@@ -1,3 +1,0 @@
--vCheckPropTypeHints=1
---inputs=__DIR__/initial-value-bad-repo-classes.inc
---inputs=__DIR__/redefine1.inc

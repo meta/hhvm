@@ -1,3 +1,0 @@
---inputs=__DIR__/class-through-string.inc
--vRuntime.Eval.ClassStringHintNoticesSampleRate=0
--vRuntime.Eval.EnforceOverriddenReturnTypes=2

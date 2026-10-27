@@ -1,3 +1,0 @@
--vServer.AllowExec=true
--vEval.AllowUngatedExec=false
--vEval.ProcOpenGatedApprovedCallers.*='GatedProcessLauncher::launchEcho'

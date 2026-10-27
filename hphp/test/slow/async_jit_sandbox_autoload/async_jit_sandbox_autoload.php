@@ -5,7 +5,7 @@
 // Runs with the async JIT enabled (Eval.EnableAsyncJIT) plus the new
 // Eval.AsyncJitWaitForTranslate flag, so each translation is produced off the
 // request thread and then waited on and run as though async JITing were
-// disabled. Eval.ForceAllPersistent is also enabled. See the .opts file.
+// disabled. Eval.ForceAllPersistent is also enabled. See the .config file.
 //
 // The symbols exercised below each live in a separate file. This file does NOT
 // include them -- they are located through the native autoloader / facts, which

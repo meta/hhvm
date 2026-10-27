@@ -1,1 +1,0 @@
--vRuntime.Eval.ForbidDynamicCallsToFunc=1 -vRuntime.Eval.ForbidDynamicCallsToInstMeth=1 -vRuntime.Eval.ForbidDynamicCallsToClsMeth=1 -d hhvm.php7.all=0

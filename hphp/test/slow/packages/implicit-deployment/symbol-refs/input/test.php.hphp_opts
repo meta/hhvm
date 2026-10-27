@@ -1,4 +1,0 @@
--vRuntime.Eval.ActiveDeployment="prod"
--vForceEnableSymbolRefs=true
---dir=__DIR__
---exclude-dir=__DIR__/absent

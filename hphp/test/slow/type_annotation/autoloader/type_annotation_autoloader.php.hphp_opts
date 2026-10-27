@@ -1,5 +1,0 @@
---inputs=__DIR__/type_annotation_autoloader-1.inc -d hhvm.php7.all=0
---inputs=__DIR__/type_annotation_autoloader-2.inc -d hhvm.php7.all=0
---inputs=__DIR__/type_annotation_autoloader-3.inc -d hhvm.php7.all=0
---inputs=__DIR__/type_annotation_autoloader-4.inc -d hhvm.php7.all=0
---inputs=__DIR__/type_annotation_autoloader-main.inc

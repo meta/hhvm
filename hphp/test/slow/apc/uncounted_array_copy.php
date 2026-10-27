@@ -9,7 +9,7 @@ function makeNonStatic($n) :mixed{
 }
 
 
-// Runs twice with Treadmill in between (see .opts)
+// Runs twice with Treadmill in between (see .config)
 <<__EntryPoint>>
 function main_uncounted_array_copy() :mixed{
 if (apc_exists('minefield')) {

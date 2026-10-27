@@ -1,1 +1,0 @@
--vRuntime.Eval.ForbidDynamicCallsToFunc=2 -vRuntime.Eval.ForbidDynamicCallsToClsMeth=2

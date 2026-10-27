@@ -1,5 +1,0 @@
---inputs=__DIR__/autoload-enum-hint-1.inc
---inputs=__DIR__/autoload-enum-hint-2.inc
---inputs=__DIR__/autoload-enum-hint-3.inc
---inputs=__DIR__/autoload-enum-hint-4.inc
--d hhvm.php7.all=0

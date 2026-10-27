@@ -1,1 +1,0 @@
--vMail.SendmailPath='cat > "$TMPDIR/mailBasic.out"'

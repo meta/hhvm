@@ -1,3 +1,0 @@
--vServer.AllowExec=true
--vEval.AllowUngatedExec=false
--vEval.ProcOpenGatedApprovedCallers.*='test_gated_with_ungated_disabled'

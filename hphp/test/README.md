@@ -39,10 +39,9 @@ These are the allowed extensions:
 * `.php.expect` - The exact string expected output.
 * `.php.expectf` - The exact string expected output with formatting characters.
 * `.php.out` - When you run the test, the output will be stored here.
-* `.php.opts` - Runtime options to pass to hhvm.
+* `.php.config` - Runtime and compiler options for the test. Holds the `opts` and `hphp_opts` entries; see "The `.php.config` File" below.
 * `.php.cli_args` - Command line arguments to the test file (e.g., `$argv` options).
 * `.php.serial` - The test will always be put in the serial bucket to be run sequentially with other serial tests so as to avoid any timing problems or collisions.
-* `.php.hphp_opts` - Options passed to hphp when generating a bytecode repo.
 * `.php.diff or hhas.diff` - The diff for .expect tests.
 * `.hhas` - HipHop Assembly.
 * `.php.norepo` – If this file is present, then the test is not run in repo-authoritative mode. Repo-authoritative mode performs a whole-program build.
@@ -62,6 +61,41 @@ NOTE: If you are using a `.php.type-errors` file, then all the files suffixes li
 
 NOTE: You can have both a `.php.[hhvm].expect[f]` and a
 `.php.typechecker.expect[f]`.
+
+## The `.php.config` File
+
+A test's options live in a single `.php.config` file. Each entry is
+`key = value`, where the value is either the rest of the line or a block of
+following indented lines:
+
+```
+; Runtime options, given on a single line.
+opts = --count=2 -vEval.EnableArgsInBacktraces=true
+; Compiler options, given as an indented block, one per line.
+hphp_opts =
+  --inputs=__DIR__/helper_a.inc
+  --inputs=__DIR__/helper_b.inc
+```
+
+Lines whose first non-space character is `;` or `#` are comments.
+
+The recognized keys are:
+
+* `opts` - Runtime options to pass to hhvm.
+* `hphp_opts` - Options passed to hphp when generating a bytecode repo.
+
+An entry with an empty value is still meaningful: as with the old sidecar
+files, a test that sets `opts` at all is excluded from server mode.
+
+The per-test `.php.opts` and `.php.hphp_opts` sidecar files these entries
+replaced are no longer read at all. Leaving one next to a test is an error
+rather than a silent no-op, so a stale file gets noticed.
+
+Suite-wide defaults live in a per-directory `config.config` file using the
+same format. A test's own `.php.config` overrides the directory default for
+whichever keys it sets. The lookup is per-key and walks up the directory tree,
+so a nested `config.config` that only sets `opts` still inherits `hphp_opts`
+from further up.
 
 Any suite can have a `config.hdf` file in it that will be used. If one isn't
 present, then the parent suite it checked recursively until we use

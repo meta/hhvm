@@ -1,5 +1,0 @@
--vEval.NoticeOnBuiltinDynamicCalls=1
--vEval.ForbidDynamicCallsToFunc=1
--vEval.ForbidDynamicCallsToInstMeth=1
--vEval.ForbidDynamicCallsToClsMeth=1
--vEval.ForbidDynamicConstructs=1

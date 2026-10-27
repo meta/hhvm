@@ -11,7 +11,7 @@
 // there an explicitly passed null was replaced by the default; here the default
 // never arrives.
 //
-// The .opts is what makes this reproducible.  The bug is in f0's optimized
+// The .config is what makes this reproducible.  The bug is in f0's optimized
 // prologue, and the JIT only builds one when it cannot bind the call directly;
 // JitEnableRenameFunction forces that.  Without it a trace shows TransProfile
 // and TransOptimize body translations and zero prologues of any kind, and the

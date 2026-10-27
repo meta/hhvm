@@ -1,3 +1,0 @@
--vRuntime.Eval.ActiveDeployment="one"
---dir=__DIR__
---exclude-pattern=__tests__/.*

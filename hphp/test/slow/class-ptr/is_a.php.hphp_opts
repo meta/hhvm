@@ -1,2 +1,0 @@
-# TODO(T168044199) turn this flag back on
--vRuntime.Eval.ClassStringHintNoticesSampleRate=0

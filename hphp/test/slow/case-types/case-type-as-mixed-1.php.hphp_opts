@@ -1,2 +1,0 @@
---inputs=__DIR__/test.inc
--vRuntime.Eval.TreatCaseTypesAsMixed=true

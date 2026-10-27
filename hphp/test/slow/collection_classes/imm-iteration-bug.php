@@ -1,6 +1,6 @@
 <?hh
 // This test is sensitive to what gets jitted vs. what gets interpreted.
-// The .opts file for this test sets JitGlobalTranslationLimit in a way
+// The .config file for this test sets JitGlobalTranslationLimit in a way
 // such that the second foreach loop's IterInit instruction gets jitted
 // but its IterNext instruction gets interpreted.
 function main() :mixed{

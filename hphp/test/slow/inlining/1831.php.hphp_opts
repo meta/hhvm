@@ -1,2 +1,0 @@
--d hhvm.php7.all=0
---inputs=__DIR__/1831.inc

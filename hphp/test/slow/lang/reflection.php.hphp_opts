@@ -1,3 +1,0 @@
--d hhvm.php7.all=0
--vRuntime.Eval.CoeffectEnforcementLevels.zoned=0
---inputs=__DIR__/reflection.inc

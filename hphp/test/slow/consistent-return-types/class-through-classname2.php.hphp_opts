@@ -1,2 +1,0 @@
---inputs=__DIR__/class-through-classname.inc
--vRuntime.Eval.EnforceOverriddenReturnTypes=1

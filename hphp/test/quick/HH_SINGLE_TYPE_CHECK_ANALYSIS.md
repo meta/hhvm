@@ -12,7 +12,7 @@ files.
 Each file was checked independently using the repository-built
 `hh_single_type_check` target in `@//mode/dev-nosan-lg`. There is no `.hhconfig`
 or `HH_FLAGS` file governing this directory; `hphp_config.ini` and the test
-sidecar `.opts` files configure HHVM execution rather than the Hack typechecker.
+`.config` files configure HHVM execution rather than the Hack typechecker.
 
 ## Summary
 

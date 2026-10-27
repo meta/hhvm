@@ -1,7 +1,0 @@
--vServer.HighPriorityEndPoints.0="test.php"
--vServer.HighPriorityEndPoints.1="index.php"
--vServer.AllowedDirectories.0="/foo/bar"
--vServer.AllowedDirectories.1="/baz/quux"
--vStaticFile.Extensions.0=".txt"
--vStaticFile.Extensions.1=".doc"
--vServer.ForbiddenFileExtensions.*=".bat"

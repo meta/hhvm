@@ -1,3 +1,0 @@
--vRuntime.Eval.ActiveDeployment="my-intern"
---dir=__DIR__
---report-files-in-build=/dev/stdout

@@ -1,1 +1,0 @@
--vRuntime.Hack.Lang.DisallowNonAnnotatedMemoize=true -vRuntime.Hack.Lang.TreatNonAnnotatedMemoizeAsKBIC=true --inputs=__DIR__/implicit.inc

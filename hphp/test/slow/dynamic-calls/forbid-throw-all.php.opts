@@ -1,5 +1,0 @@
--vEval.ForbidDynamicCallsToFunc=3
--vEval.ForbidDynamicCallsToInstMeth=3
--vEval.ForbidDynamicCallsToClsMeth=3
--vEval.ForbidDynamicConstructs=3
--vEval.CoeffectEnforcementLevels.zoned=0

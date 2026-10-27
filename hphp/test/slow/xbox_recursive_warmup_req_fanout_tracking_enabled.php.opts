@@ -1,4 +1,0 @@
--d hhvm.log.level=Verbose
--vServer.TrackRequestFanout=true
--vServer.RequestFanoutLimit=3
--vServer.ThreadCount=1

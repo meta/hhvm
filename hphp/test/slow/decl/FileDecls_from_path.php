@@ -7,7 +7,7 @@ function main(): void {
 
   // === FileDecls should succeed parsing this text
   /* Parsing in a loop to trigger extractor logic
-   * Override config.opts to include -vExt.Decl.EnableExternExtractor=true
+   * Override config.config to include -vExt.Decl.EnableExternExtractor=true
    * to test Memcache extractor
   */
   $filepath = __DIR__.'/FileDecls_testcontent.txt';

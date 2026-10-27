@@ -1,2 +1,0 @@
--vServer.AllowExec=false
--vEval.ProcOpenGatedApprovedCallers.*='test_allow_exec_disabled'

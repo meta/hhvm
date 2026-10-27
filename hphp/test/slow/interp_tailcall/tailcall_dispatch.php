@@ -1,7 +1,7 @@
 <?hh
 // Regression coverage for the tail-call (musttail) interpreter dispatcher.
 //
-// The .opts file forces -vEval.InterpTailCallDispatch=1 -vEval.Jit=0, so this
+// The .config file forces -vEval.InterpTailCallDispatch=1 -vEval.Jit=0, so this
 // test always runs through dispatchTailCall() (when the toolchain supports
 // musttail; otherwise the flag is a harmless no-op and the computed-goto path
 // runs, still producing identical output). Eval.InterpTailCallDispatch defaults
