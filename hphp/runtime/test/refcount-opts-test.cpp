@@ -994,7 +994,8 @@ TEST(RefcountOpts, MergePendingDecrefsByAffectedSet) {
  *                     newVec(1)
  *                      DecRef a
  *
- * All b/c values may alias a. Pending reductions need not exceed its bound.
+ * The type-based may-alias sets include a, but its upper bound is one and
+ * each NZ operand has at least two references before its decrement.
  */
 TEST(RefcountOpts, SaturatePendingDecrefs) {
   PhiEnv env;
@@ -1014,11 +1015,70 @@ TEST(RefcountOpts, SaturatePendingDecrefs) {
 
   optimizeRefcounts(env.unit);
 
-  // Keep the releasing DecRef. The aliases may consume all known references;
-  // saturating the pending count at the lower bound must not invent any.
-  // The TODO below concerns analysis state size, not a different opcode.
+  // Keep the releasing DecRef: a retains its single reference throughout.
+  // TODO: Exclude a from the NZ operands' aliases using their disjoint bounds,
+  // preserving a's lower bound without recording pending reductions for it.
+  // This test's final opcode is unchanged by that improvement; the next test
+  // checks a cancellation which needs the resulting non-alias fact.
   // TODO: Saturate pending reductions once the effective lower bound is zero.
   EXPECT_EQ(DecRef, release->op());
+}
+
+/*
+ *                   a = newVec(n), b: CountedVec
+ *                           DecRefNZ b
+ *                               |
+ *                              Jmp
+ *                               |
+ *                            IncRef a
+ *                               |
+ *                              Jmp
+ *                               |
+ *                           DecRefNZ b
+ *                            DecRef a
+ *
+ * For n = 1, a's [1,1] range is disjoint from b's [2,infinity] range at
+ * the first NZ. Both values remain live, so they still cannot alias after
+ * IncRef a makes their ranges overlap. For n = 2, b may alias a throughout.
+ */
+TEST(RefcountOpts, ExcludeAliasesWithDisjointRefcountBounds) {
+  for (auto const refs : {1, 2}) {
+    SCOPED_TRACE(refs);
+    IRUnit unit{test_context};
+    BCContext const bcctx{BCMarker::Dummy(), 0};
+    auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+    auto const original = unit.gen(Conjure, bcctx, TStaticVec);
+    auto const a = unit.gen(CopyArray, bcctx, original->dst());
+    auto const b = unit.gen(Conjure, bcctx, TCountedVec);
+    unit.entry()->push_back({fp, original, a, b});
+    auto const extra = refs == 2 ? unit.gen(IncRef, bcctx, a->dst()) : nullptr;
+    if (extra) unit.entry()->push_back(extra);
+    auto const first = unit.gen(DecRefNZ, bcctx, DecRefData{}, b->dst());
+    auto const body = unit.defBlock();
+    unit.entry()->push_back({first, unit.gen(Jmp, bcctx, body)});
+    auto const inc = unit.gen(IncRef, bcctx, a->dst());
+    auto const exit = unit.defBlock();
+    body->push_back({inc, unit.gen(Jmp, bcctx, exit)});
+    auto const second = unit.gen(DecRefNZ, bcctx, DecRefData{}, b->dst());
+    auto const dec = unit.gen(DecRef, bcctx, DecRefData{}, a->dst());
+    exit->push_back({second, dec, unit.gen(Unreachable, bcctx, ASSERT_REASON)});
+
+    optimizeRefcounts(unit);
+
+    // For n = 1, cancel inc/dec while keeping both NZ decrements: neither
+    // touches a. The first NZ proves a != b before a's increment.
+    // For n = 2 and a == b, counts are 2 -> 1 -> 2 -> 1 -> 0. Removing the
+    // pair while leaving the second NZ would omit the final release. Keep
+    // the pair, or cancel it and change the second NZ to a releasing DecRef.
+    // TODO: Infer a != b from the disjoint bounds for n = 1 and retain it
+    // across IncRef a, allowing cancellation without weakening either NZ.
+    if (extra) EXPECT_EQ(IncRef, extra->op());
+    EXPECT_EQ(DecRefNZ, first->op());
+    EXPECT_EQ(IncRef, inc->op());
+    EXPECT_EQ(DecRefNZ, second->op());
+    EXPECT_EQ(DecRef, dec->op());
+    EXPECT_TRUE(checkCfg(unit));
+  }
 }
 
 /*
@@ -1358,6 +1418,251 @@ TEST(RefcountOpts, TransferPhiMemorySupport) {
   // reference whose support was moved to p. After clearing the local and
   // consuming the reload, only the extra reference remains for p.
   EXPECT_EQ(DecRef, release->op());
+}
+
+/*
+ *       a = LdLoc 0                 b = LdLoc 1; c = LdLoc 0
+ *          (a, a)                          (b, c)
+ *                  \                    /
+ *                    (p, q) = phi
+ *                       IncRef q
+ *                          |
+ *                         Jmp
+ *                          |
+ *                DecRefNZ (LdLoc 2)
+ *                       DecRef q
+ *
+ * Only q has local 0 on every incoming edge. Vary column order and traversal
+ * order: p must not take the left edge's memory credit away from q.
+ */
+TEST(RefcountOpts, SharePhiMemorySupportAcrossColumns) {
+  for (auto const reverse : {false, true}) {
+    for (auto const first : {false, true}) {
+      SCOPED_TRACE(::testing::Message() << "reverse=" << reverse
+                   << " first=" << first);
+      PhiEnv env{reverse};
+      auto const fp = env.unit.entry()->front().dst();
+      auto const other = env.unit.gen(LdLoc, env.bcctx, TCountedVec,
+                                       LocalId{2}, fp);
+      env.unit.entry()->insert(env.unit.entry()->backIter(), other);
+      auto const a = env.unit.gen(LdLoc, env.bcctx, TCountedVec, LocalId{0}, fp);
+      auto const b = env.unit.gen(LdLoc, env.bcctx, TCountedVec, LocalId{1}, fp);
+      auto const c = env.unit.gen(LdLoc, env.bcctx, TCountedVec, LocalId{0}, fp);
+      env.left->push_back({a,
+        env.unit.gen(Jmp, env.bcctx, env.join, a->dst(), a->dst())});
+      env.right->push_back({b, c,
+        env.unit.gen(Jmp, env.bcctx, env.join,
+                     first ? c->dst() : b->dst(),
+                     first ? b->dst() : c->dst())});
+      auto const phi = env.unit.defLabel(2, env.join, env.bcctx);
+      retypeDests(phi, &env.unit);
+      auto const q = phi->dst(first ? 0 : 1);
+      auto const inc = env.unit.gen(IncRef, env.bcctx, q);
+      auto const body = env.unit.defBlock();
+      env.join->push_back({inc, env.unit.gen(Jmp, env.bcctx, body)});
+      auto const otherDec = env.unit.gen(DecRefNZ, env.bcctx, DecRefData{},
+                                         other->dst());
+      auto const dec = env.unit.gen(DecRef, env.bcctx, DecRefData{}, q);
+      body->push_back({otherDec, dec});
+      env.finish(body);
+
+      optimizeRefcounts(env.unit);
+
+      // Cancel q's pair in either column. Local 0 supplies independent credit
+      // from local 2, even when their values alias. Its support must survive
+      // the phi merge instead of becoming unsupported credit spent by otherDec.
+      // TODO: Preserve local 0 support when q is not the first phi column.
+      EXPECT_EQ(first ? Nop : IncRef, inc->op());
+      EXPECT_EQ(first ? Nop : DecRef, dec->op());
+      EXPECT_EQ(DecRefNZ, otherDec->op());
+      EXPECT_TRUE(checkCfg(env.unit));
+    }
+  }
+}
+
+/*
+ *               a = LdLoc 0; b = LdLoc 1
+ *                        Jmp(a, a)
+ *                            |
+ *                   +--> (p, q) = phi
+ *                   |       /     \
+ *                   |   continue  exit
+ *                   +--Jmp(q, p)   |
+ *                               IncRef q
+ *                                  |
+ *                                 Jmp
+ *                                  |
+ *                              DecRefNZ b
+ *                               DecRef q
+ *
+ * Both phis can use the same local credit across an arbitrary number of swaps.
+ * No owner is selected until a reference-count operation uses that credit.
+ */
+TEST(RefcountOpts, ShareSupportAcrossSwappingLoopPhis) {
+  IRUnit unit{test_context};
+  BCContext const bcctx{BCMarker::Dummy(), 0};
+  auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+  auto const a = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
+  auto const b = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{1}, fp->dst());
+  auto const loop = unit.defBlock();
+  auto const body = unit.defBlock();
+  auto const exit = unit.defBlock();
+  auto const tail = unit.defBlock();
+  unit.entry()->push_back({fp, a, b,
+    unit.gen(Jmp, bcctx, loop, a->dst(), a->dst())});
+  auto const phi = unit.defLabel(2, loop, bcctx);
+  retypeDests(phi, &unit);
+  auto const cond = unit.gen(Conjure, bcctx, TBool);
+  auto const branch = unit.gen(JmpZero, bcctx, exit, cond->dst());
+  branch->setNext(body);
+  loop->push_back({cond, branch});
+  body->push_back(unit.gen(Jmp, bcctx, loop, phi->dst(1), phi->dst(0)));
+  retypeDests(phi, &unit);
+  auto const inc = unit.gen(IncRef, bcctx, phi->dst(1));
+  exit->push_back({inc, unit.gen(Jmp, bcctx, tail)});
+  auto const otherDec = unit.gen(DecRefNZ, bcctx, DecRefData{}, b->dst());
+  auto const dec = unit.gen(DecRef, bcctx, DecRefData{}, phi->dst(1));
+  tail->push_back({otherDec, dec, unit.gen(Unreachable, bcctx, ASSERT_REASON)});
+
+  optimizeRefcounts(unit);
+
+  // The fixed point retains local 0 for both phis, so cancel q's pair. Swapping
+  // names must neither duplicate the reference nor alternate ownership forever.
+  // TODO: Retain shared support across the swap instead of losing both names.
+  EXPECT_EQ(IncRef, inc->op());
+  EXPECT_EQ(DecRef, dec->op());
+  EXPECT_EQ(DecRefNZ, otherDec->op());
+  EXPECT_TRUE(checkCfg(unit));
+}
+
+/*
+ *       a = LdLoc 0                    b = LdLoc 0
+ *         IncRef a                      IncRef b
+ *      CheckArrayCOW a               CheckArrayCOW b
+ *       /         \                   /         \
+ *     copy    unique: exit           copy    unique: exit
+ *       |                             |
+ *   DecRefNZ a                    DecRefNZ b
+ *          (a, a)                       (b, b)
+ *                  \                   /
+ *                      (p, q) = phi
+ *                  [DecRefNZ other]
+ *                       DecRefNZ p
+ *                           |
+ *                          Jmp
+ *                           |
+ *                        IncRef q
+ *
+ * The COW observations preserve the incoming increments. After the first
+ * decrements, p and q share the local's remaining credit. Consuming it through
+ * p reduces q's bound to zero, but p's NZ decrement proves a reference remains.
+ */
+TEST(RefcountOpts, UseClaimantCreditForDecIncPRE) {
+  for (auto const pending : {false, true}) {
+    SCOPED_TRACE(pending);
+    PhiEnv env;
+    auto const fp = env.unit.entry()->front().dst();
+    auto const other = env.unit.gen(Conjure, env.bcctx, TCountedVec);
+    env.unit.entry()->insert(env.unit.entry()->backIter(), other);
+    std::vector<IRInstruction*> increments;
+    std::vector<IRInstruction*> decrements;
+    for (auto const block : {env.left, env.right}) {
+      auto const load = env.unit.gen(LdLoc, env.bcctx, TCountedVec,
+                                      LocalId{0}, fp);
+      auto const inc = env.unit.gen(IncRef, env.bcctx, load->dst());
+      auto const copy = env.unit.defBlock();
+      auto const unique = env.unit.defBlock();
+      auto const after = env.unit.defBlock();
+      auto const cow = env.unit.gen(CheckArrayCOW, env.bcctx, copy, load->dst());
+      cow->setNext(unique);
+      block->push_back({load, inc, cow});
+      copy->push_back(env.unit.gen(Jmp, env.bcctx, after));
+      env.finish(unique);
+      auto const dec = env.unit.gen(DecRefNZ, env.bcctx, DecRefData{}, load->dst());
+      after->push_back({dec, env.unit.gen(Jmp, env.bcctx, env.join,
+                                          load->dst(), load->dst())});
+      increments.push_back(inc);
+      decrements.push_back(dec);
+    }
+    auto const phi = env.unit.defLabel(2, env.join, env.bcctx);
+    retypeDests(phi, &env.unit);
+    if (pending) {
+      env.join->push_back(env.unit.gen(DecRefNZ, env.bcctx, DecRefData{},
+                                       other->dst()));
+    }
+    auto const consume = env.unit.gen(DecRefNZ, env.bcctx, DecRefData{},
+                                       phi->dst(0));
+    auto const exit = env.unit.defBlock();
+    env.join->push_back({consume, env.unit.gen(Jmp, env.bcctx, exit)});
+    auto const restore = env.unit.gen(IncRef, env.bcctx, phi->dst(1));
+    exit->push_back(restore);
+    env.finish(exit);
+
+    optimizeRefcounts(env.unit);
+
+    // Without pending reductions, cancel the incoming decrements against
+    // IncRef q. Keeping those references across DecRefNZ p is safe, and its
+    // post-decrement bound satisfies q's requirement when p and q alias.
+    // With an earlier pending reduction, keep its unconditional requirement:
+    // the current claimant's credit cannot discharge that older obligation.
+    for (auto const inc : increments) EXPECT_EQ(IncRef, inc->op());
+    for (auto const dec : decrements) {
+      EXPECT_EQ(pending ? DecRefNZ : Nop, dec->op());
+    }
+    EXPECT_EQ(DecRefNZ, consume->op());
+    EXPECT_EQ(pending ? IncRef : Nop, restore->op());
+    EXPECT_TRUE(checkCfg(env.unit));
+  }
+}
+
+/*
+ *            a = LdLoc 0; b = LdLoc 0
+ *                     IncRef a
+ *                   StLoc 0, null
+ *                        |
+ *                       Jmp
+ *                        |
+ *                    DecRef[NZ] b
+ *                     CountVec a
+ *                      DecRef a
+ *
+ * Clearing the local transfers its ownership to b; a's increment owns the
+ * other reference. Both names must not independently spend the local's credit.
+ * Also clear the local before IncRef a, while both sets still share support.
+ */
+TEST(RefcountOpts, ConsumeSharedMemorySupportOnce) {
+  for (auto const clearFirst : {false, true}) {
+    for (auto const nz : {false, true}) {
+      SCOPED_TRACE(::testing::Message() << "clearFirst=" << clearFirst
+                   << " nz=" << nz);
+      IRUnit unit{test_context};
+      BCContext const bcctx{BCMarker::Dummy(), 0};
+      auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+      auto const a = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
+      auto const b = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
+      auto const inc = unit.gen(IncRef, bcctx, a->dst());
+      auto const body = unit.defBlock();
+      auto const clear = unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(),
+                                    unit.cns(TInitNull));
+      unit.entry()->push_back({fp, a, b, clearFirst ? clear : inc,
+        clearFirst ? inc : clear, unit.gen(Jmp, bcctx, body)});
+      auto const first = unit.gen(nz ? DecRefNZ : DecRef, bcctx, DecRefData{},
+                                   b->dst());
+      auto const last = unit.gen(DecRef, bcctx, DecRefData{}, a->dst());
+      body->push_back({first, unit.gen(CountVec, bcctx, a->dst()), last,
+        unit.gen(Unreachable, bcctx, ASSERT_REASON)});
+
+      optimizeRefcounts(unit);
+
+      // Keep the final decrement releasing. If the first decrement remains,
+      // IncRef a must also remain, or CountVec a can access a freed array.
+      // TODO: Recognize the identical loads and cancel IncRef a against the
+      // first decrement of b, preserving the final releasing DecRef a.
+      EXPECT_EQ(IncRef, inc->op());
+      EXPECT_EQ(nz ? DecRefNZ : DecRef, first->op());
+      EXPECT_EQ(DecRef, last->op());
+    }
+  }
 }
 
 /*
@@ -2640,6 +2945,70 @@ TEST(RefcountOpts, PreserveUpperBoundAcrossReleasingDecref) {
   EXPECT_EQ(DecRef, dec->op());
   EXPECT_EQ(CheckArrayCOW, cow->op());
   EXPECT_TRUE(checkCfg(env.unit));
+}
+
+/*
+ *    a: CountedVec or CountedStr (Conjure or LdMem &c[0]), b: releaseType
+ *                                  |
+ *                               IncRef a
+ *                                  |
+ *                                 Jmp
+ *                                  |
+ *                               DecRef b
+ *                       CountVec a / LdStrLen a
+ *                               DecRef a
+ *
+ * Vary b between uncounted values, strings, and containers. Vary a between
+ * untracked reference credit and support from a heap location. The use of a
+ * requires its reference to survive b's release, including when a is b itself
+ * or a counted child of b. The jump keeps delay_decrefs from moving b's release.
+ */
+TEST(RefcountOpts, PreserveReferencesAcrossLeafDecref) {
+  for (auto const releaseType : {TInitNull, TStaticVec, TCountedStr,
+                                 TCountedStr | TStaticVec,
+                                 TCountedVec, TCountedDict, TCountedKeyset}) {
+    for (auto const string : {false, true}) {
+      for (auto const heap : {false, true}) {
+        SCOPED_TRACE(::testing::Message() << "releaseType=" << releaseType.toString()
+                     << " string=" << string << " heap=" << heap);
+        IRUnit unit{test_context};
+        BCContext const bcctx{BCMarker::Dummy(), 0};
+        auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+        auto const aType = string ? TCountedStr : TCountedVec;
+        unit.entry()->push_back(fp);
+        auto const a = [&] {
+          if (!heap) return unit.gen(Conjure, bcctx, aType);
+          auto const c = unit.gen(Conjure, bcctx, TCountedVec);
+          auto const address = unit.gen(LdVecElemAddr, bcctx,
+                                        c->dst(), unit.cns(0), c->dst());
+          unit.entry()->push_back({c, address});
+          return unit.gen(LdMem, bcctx, aType, address->dst());
+        }();
+        auto const b = unit.gen(Conjure, bcctx, releaseType);
+        auto const inc = unit.gen(IncRef, bcctx, a->dst());
+        auto const body = unit.defBlock();
+        unit.entry()->push_back({a, b, inc, unit.gen(Jmp, bcctx, body)});
+        auto const release = unit.gen(DecRef, bcctx, DecRefData{}, b->dst());
+        auto const dec = unit.gen(DecRef, bcctx, DecRefData{}, a->dst());
+        body->push_back({release,
+          unit.gen(string ? LdStrLen : CountVec, bcctx, a->dst()), dec,
+          unit.gen(Unreachable, bcctx, ASSERT_REASON)});
+
+        optimizeRefcounts(unit);
+
+        // Cancel a's pair across uncounted decrements and, for vectors, string
+        // releases. Neither can consume a reference to a. Keep the pair when b
+        // can be a itself or contain it, so a stays live for the intervening use.
+        // TODO: Preserve vector credit across keyset releases, which can only
+        // decrement strings.
+        auto const uncounted = releaseType == TInitNull || releaseType == TStaticVec;
+        EXPECT_EQ(uncounted ? Nop : DecRef, release->op());
+        // TODO: Skip nested release effects for strings.
+        EXPECT_EQ(uncounted ? Nop : IncRef, inc->op());
+        EXPECT_EQ(uncounted ? Nop : DecRef, dec->op());
+      }
+    }
+  }
 }
 
 /*
