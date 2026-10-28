@@ -659,9 +659,8 @@ struct ASetInfo {
   int32_t unsupported_refs{0};
 
   /*
-   * Deferred reductions of this set's lower bound from unbalanced decrefs of
-   * may-alias sets. The effective bound is
-   * max(lower_bound - pending_reductions, 0).
+   * Deferred reductions of this set's lower bound from decrefs of may-alias
+   * sets. The effective bound is max(lower_bound - pending_reductions, 0).
    * Pending reductions can exceed the lower bound. kInfReferences represents
    * an unbounded number of pending reductions; an infinite lower bound has none.
    */
@@ -1727,12 +1726,17 @@ void reduce_lower_bound(Env& /*env*/, RCState& state, uint32_t asetID) {
   }
 }
 
+void add_pending_reduction(RCState& state, ASetID asetID) {
+  auto& aset = state.asets[asetID];
+  if (!aset.pending_reductions) ++state.num_pending_requirements;
+  if (aset.pending_reductions < kInfReferences) ++aset.pending_reductions;
+}
+
 void add_unbalanced_decref(Env& env, RCState& state, ASetID asetID) {
   for (auto id : env.asets[asetID].may_alias) {
     auto& aset = state.asets[id];
     if (aset.lower_bound == kInfReferences) continue;
-    if (!aset.pending_reductions) ++state.num_pending_requirements;
-    if (aset.pending_reductions < kInfReferences) ++aset.pending_reductions;
+    add_pending_reduction(state, id);
   }
 }
 
@@ -1904,19 +1908,23 @@ void may_decref(Env& env, RCState& state, ASetID asetID, PreAdder add_node) {
 
   if (balanced) {
     /*
-     * The intention here is to reduce just the assumed reference of may-alias sets by 1
-     * However, we don't distinguish which of the unsupported references are assumed
-     * Therefore, we conservatively decrease the unsupported reference by 1
+     * If we removed a supported reference from `asetID`, remove only
+     * an unsupported reference (if any) from each may alias set, since the
+     * support is exclusive to each alias set.
+     *
+     * Defer lower bound reduction the same way add_unbalanced_decref() does it.
      */
     FTRACE(4, "    adding balanced decref: {}\n", asetID);
     if (!state.has_unsupported_refs) return;
     for (auto may_id : env.asets[asetID].may_alias) {
       auto& may_aset = state.asets[may_id];
       if (!may_aset.unsupported_refs) continue;
-      may_aset.lower_bound -= 1;
+
       may_aset.unsupported_refs -= 1;
-      FTRACE(5, "    dropping unsupported ref for {}: {}({})\n",
-             may_id, may_aset.lower_bound, may_aset.unsupported_refs);
+      add_pending_reduction(state, may_id);
+      FTRACE(5, "    deferring balanced decref for {}: {}({}), pending {}\n",
+             may_id, may_aset.lower_bound, may_aset.unsupported_refs,
+             may_aset.pending_reductions);
     }
   } else {
     FTRACE(4, "    adding unbalanced decref: {}\n", asetID);

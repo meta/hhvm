@@ -146,15 +146,13 @@ TEST(RefcountOpts, RetainPayloadAcrossOwnerRelease) {
 
   optimizeRefcounts(unit);
 
-  // FIXME[CRASH]: PRE cancels both increments against the final decrement
-  // and inserts one replacement increment on the object branch, after the
-  // owner's release may already have freed value.
-  EXPECT_EQ(Nop, retain->op());
+  // Retain value before releasing its owner. Only the later increment can
+  // be cancelled against the final decrement.
+  EXPECT_EQ(IncRef, retain->op());
   EXPECT_EQ(DecRef, release->op());
   EXPECT_EQ(Nop, inc->op());
   EXPECT_EQ(Nop, dec->op());
-  EXPECT_EQ(IncRef, counted->front().op());
-  EXPECT_EQ(value->dst(), counted->front().src(0));
+  EXPECT_EQ(Nop, counted->front().op());
   EXPECT_TRUE(checkCfg(unit));
 }
 
@@ -207,14 +205,13 @@ TEST(RefcountOpts, RetainPayloadAcrossOwnerReleaseWithPhi) {
 
   optimizeRefcounts(unit);
 
-  // FIXME[CRASH]: The uncounted phi input's infinite bound enables PRE to
-  // cancel the retain across the owner's release, just as in the NZ case.
-  EXPECT_EQ(Nop, retain->op());
+  // Keep the retain before releasing the owner. The phi's bound permits
+  // cancellation of only the later increment and decrement.
+  EXPECT_EQ(IncRef, retain->op());
   EXPECT_EQ(DecRef, release->op());
   EXPECT_EQ(Nop, inc->op());
   EXPECT_EQ(Nop, dec->op());
-  EXPECT_EQ(IncRef, counted->front().op());
-  EXPECT_EQ(value->dst(), counted->front().src(0));
+  EXPECT_EQ(Nop, counted->front().op());
   EXPECT_TRUE(checkCfg(unit));
 }
 
@@ -392,12 +389,11 @@ TEST(RefcountOpts, RetainPayloadAfterPendingLoad) {
 
     // With extra credit, the retain can cancel against the final decrement.
     // Otherwise owner releases the payload before the replacement increment.
-    // FIXME[CRASH]: Keep the early retain when extra is false.
-    EXPECT_EQ(Nop, retain->op());
+    EXPECT_EQ(extra ? Nop : IncRef, retain->op());
     EXPECT_EQ(DecRef, release->op());
     EXPECT_EQ(Nop, inc->op());
     EXPECT_EQ(Nop, dec->op());
-    EXPECT_EQ(IncRef, counted->front().op());
+    EXPECT_EQ(extra ? IncRef : Nop, counted->front().op());
     EXPECT_TRUE(checkCfg(unit));
   }
 }
@@ -1614,12 +1610,14 @@ TEST(RefcountOpts, UseClaimantCreditForDecIncPRE) {
     // post-decrement bound satisfies q's requirement when p and q alias.
     // With an earlier pending reduction, keep its unconditional requirement:
     // the current claimant's credit cannot discharge that older obligation.
+    // TODO: Recover cancellation when pending is false. Deferring p's
+    // balanced decrement now also blocks that previously valid optimization.
     for (auto const inc : increments) EXPECT_EQ(IncRef, inc->op());
     for (auto const dec : decrements) {
-      EXPECT_EQ(pending ? DecRefNZ : Nop, dec->op());
+      EXPECT_EQ(DecRefNZ, dec->op());
     }
     EXPECT_EQ(DecRefNZ, consume->op());
-    EXPECT_EQ(pending ? IncRef : Nop, restore->op());
+    EXPECT_EQ(IncRef, restore->op());
     EXPECT_TRUE(checkCfg(env.unit));
   }
 }
