@@ -155,3 +155,8 @@ HPHP::(anonymous namespace)::s_in_request
 # When "alternate" mode is enabled we just need a simple value to make sure this
 # consistently flips between calls per-thread.
 HPHP::dispatchImpl()::tailCall
+
+# phptaoclient SafePatch scratch struct: filled and copied into the carbon
+# request synchronously, so it never carries state across a context switch.
+HPHP::TaoRequestControllerHPHP::getSafePatch(HPHP::ArrayIter const&)::safePatch
+guard variable for HPHP::TaoRequestControllerHPHP::getSafePatch(HPHP::ArrayIter const&)::safePatch
