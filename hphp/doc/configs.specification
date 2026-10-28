@@ -502,7 +502,6 @@ The format can be found in hphp/tools/configs/generate_configs.rs
   is allocated as one dynamically partitioned region, so this does not size
   any section.
 
-- uint32_t CodeCache.GlobalDataSize, UNKNOWN
 - bool CodeCache.MapTCHuge, UNKNOWN, lookuppath(Eval.MapTCHuge)
 - uint32_t CodeCache.TCNumHugeHotMB = 64, UNKNOWN, lookuppath(Eval.TCNumHugeHotMB)
 - uint32_t CodeCache.TCNumHugeMainMB = 16, UNKNOWN, lookuppath(Eval.TCNumHugeMainMB)

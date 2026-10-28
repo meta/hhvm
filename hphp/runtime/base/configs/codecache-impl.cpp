@@ -16,14 +16,9 @@
 
 #include "hphp/runtime/base/configs/codecache-loader.h"
 
-#include "hphp/util/configs/codecache.h"
 #include "hphp/util/configs/server.h"
 
 namespace HPHP::Cfg {
-
-uint32_t CodeCacheLoader::GlobalDataSizeDefault() {
-  return Cfg::CodeCache::ASize / 64;
-}
 
 bool CodeCacheLoader::MapTCHugeDefault() {
   return Cfg::Server::Mode;

@@ -35,7 +35,6 @@
 #include "hphp/util/alloc.h"
 #include "hphp/util/data-block.h"
 #include "hphp/util/build-info.h"
-#include "hphp/util/configs/codecache.h"
 #include "hphp/util/configs/eval.h"
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/job-queue.h"
@@ -372,8 +371,6 @@ InitFiniNode s_logJitStats([]{
   ent.setInt("cold_used_bytes", tc::code().coldUsed());
   ent.setInt("frozen_used_bytes", tc::code().frozenUsed());
   ent.setInt("data_used_bytes", tc::code().dataUsed());
-
-  ent.setInt("data_max_bytes", Cfg::CodeCache::GlobalDataSize);
 
   ent.setInt("request_index", requestCount());
   ent.setInt("reached_limit", tc::canTranslate() ? 0 : 1);
