@@ -327,3 +327,5 @@ let permits_bypassing_visibility t =
 
 let tests_bypass_visibility_static_properties t =
   t.Global_options.tco_tests_bypass_visibility_static_properties
+
+let implicit_throw_points t = t.Global_options.tco_implicit_throw_points

@@ -320,6 +320,8 @@ type t = {
   tco_disallow_specialized_function_refs: bool;
   tco_permits_bypassing_visibility: string list;
   tco_tests_bypass_visibility_static_properties: bool;
+  tco_implicit_throw_points: bool;
+      (** Treat `yield`, `clone` and `list()` destructuring as points that may throw when merging try/catch environments. *)
 }
 [@@deriving eq, show]
 
@@ -439,6 +441,7 @@ val set :
   ?tco_disallow_specialized_function_refs:bool ->
   ?tco_permits_bypassing_visibility:string list ->
   ?tco_tests_bypass_visibility_static_properties:bool ->
+  ?tco_implicit_throw_points:bool ->
   t ->
   t
 

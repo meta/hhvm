@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<afed1a8afc358473f9172dd1c1a114ba>>
+// @generated SignedSource<<64fabfae1e0183833ad6a7468eb5b9e2>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -430,4 +430,6 @@ pub struct GlobalOptions {
     pub tco_disallow_specialized_function_refs: bool,
     pub tco_permits_bypassing_visibility: Vec<String>,
     pub tco_tests_bypass_visibility_static_properties: bool,
+    /// Treat `yield`, `clone` and `list()` destructuring as points that may throw when merging try/catch environments.
+    pub tco_implicit_throw_points: bool,
 }

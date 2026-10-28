@@ -161,6 +161,7 @@ impl Default for GlobalOptions {
             tco_disallow_specialized_function_refs: false,
             tco_permits_bypassing_visibility: Default::default(),
             tco_tests_bypass_visibility_static_properties: false,
+            tco_implicit_throw_points: false,
             tco_repo_stdlib_path: None,
         }
     }

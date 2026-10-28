@@ -656,6 +656,8 @@ impl HhConfig {
                 "tests_bypass_visibility_static_properties",
                 default.tco_tests_bypass_visibility_static_properties,
             )?,
+            tco_implicit_throw_points: hhconfig
+                .get_bool_or("implicit_throw_points", default.tco_implicit_throw_points)?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

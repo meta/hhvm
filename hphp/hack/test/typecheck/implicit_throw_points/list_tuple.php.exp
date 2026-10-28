@@ -1,0 +1,151 @@
+error: Typing[4104] Invalid assignment [1]
+-> Too few positional arguments (required 2 but got 1) [2]
+-> Definition is here [3]
+
+list_tuple.php:70:5
+64 | 
+65 | // Optional and variadic elements may be absent, so these still throw.
+66 | function list_tuple_optional((int, optional int) $t): int {
+   |                              ^^^^^^^^^^^^^^^^^^^ [3]
+67 |   $x = 0;
+68 |   try {
+69 |     $x = 'foo';
+70 |     list($_a, $_b) = $t;
+   |     ^^^^^^^^^^^^^^^^^^^ [1]
+   |     ^^^^^^^^^^^^^^ [2]
+71 |     $x = 1;
+72 |   } catch (Exception $_) {
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+list_tuple.php:73:12
+64 | 
+65 | // Optional and variadic elements may be absent, so these still throw.
+66 | function list_tuple_optional((int, optional int) $t): int {
+   |                                                       ^^^ [2]
+67 |   $x = 0;
+68 |   try {
+69 |     $x = 'foo';
+   |          ^^^^^ [3]
+70 |     list($_a, $_b) = $t;
+71 |     $x = 1;
+72 |   } catch (Exception $_) {
+73 |     return $x;
+   |            ^^ [1]
+74 |   }
+75 |   return $x;
+
+error: Typing[4104] Invalid assignment [1]
+-> Too few positional arguments (required 2 but got 0) [2]
+-> Definition is here [3]
+
+list_tuple.php:82:5
+76 | }
+77 | 
+78 | function list_tuple_variadic((int...) $t): int {
+   |                              ^^^^^^^^ [3]
+79 |   $x = 0;
+80 |   try {
+81 |     $x = 'foo';
+82 |     list($_a, $_b) = $t;
+   |     ^^^^^^^^^^^^^^^^^^^ [1]
+   |     ^^^^^^^^^^^^^^ [2]
+83 |     $x = 1;
+84 |   } catch (Exception $_) {
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+list_tuple.php:85:12
+76 | }
+77 | 
+78 | function list_tuple_variadic((int...) $t): int {
+   |                                            ^^^ [2]
+79 |   $x = 0;
+80 |   try {
+81 |     $x = 'foo';
+   |          ^^^^^ [3]
+82 |     list($_a, $_b) = $t;
+83 |     $x = 1;
+84 |   } catch (Exception $_) {
+85 |     return $x;
+   |            ^^ [1]
+86 |   }
+87 |   return $x;
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+list_tuple.php:108:17
+ 96 | }
+ 97 | 
+ 98 | function takes_int(int $_): void {}
+    |                    ^^^ [2]
+ 99 | 
+100 | async function list_tuple_lambda_param(vec<(int, string)> $v): Awaitable<void> {
+101 |   await map_async($v, async $t ==> {
+102 |     $x = 0;
+103 |     try {
+104 |       $x = 'foo';
+    |            ^^^^^ [3]
+105 |       list($_a, $_b) = $t;
+106 |       $x = 1;
+107 |     } catch (Exception $_) {
+108 |       takes_int($x);
+    |                 ^^ [1]
+109 |     }
+110 |   });
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+list_tuple.php:127:17
+ 96 | }
+ 97 | 
+ 98 | function takes_int(int $_): void {}
+    |                    ^^^ [2]
+ 99 | 
+100 | async function list_tuple_lambda_param(vec<(int, string)> $v): Awaitable<void> {
+    :
+121 |     $x = 0;
+122 |     try {
+123 |       $x = 'foo';
+    |            ^^^^^ [3]
+124 |       list($_a, $_b) = $t;
+125 |       $x = 1;
+126 |     } catch (Exception $_) {
+127 |       takes_int($x);
+    |                 ^^ [1]
+128 |     }
+129 |     return vec[1];
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+list_tuple.php:149:19
+ 96 | }
+ 97 | 
+ 98 | function takes_int(int $_): void {}
+    |                    ^^^ [2]
+ 99 | 
+100 | async function list_tuple_lambda_param(vec<(int, string)> $v): Awaitable<void> {
+    :
+143 |       $x = 0;
+144 |       try {
+145 |         $x = 'foo';
+    |              ^^^^^ [3]
+146 |         list($_a, $_b) = $t;
+147 |         $x = 1;
+148 |       } catch (Exception $_) {
+149 |         takes_int($x);
+    |                   ^^ [1]
+150 |       }
+151 |     },
+
+7 errors found

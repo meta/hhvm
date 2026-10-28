@@ -657,6 +657,8 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.tests_bypass_visibility_static_properties
          config)
+    ?tco_implicit_throw_points:
+      (bool_opt Config_keys.Hhconfig.implicit_throw_points config)
     options
 
 let warn_on_did_you_mean
