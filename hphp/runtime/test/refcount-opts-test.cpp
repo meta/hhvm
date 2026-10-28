@@ -103,6 +103,232 @@ TEST(RefcountOpts, PreserveInfiniteUpperBoundAfterDecref) {
 }
 
 /*
+ *       owner = LdLoc 0; StLoc 0, null
+ *       value: Obj|Int, borrowed from owner
+ *                    IncRef value
+ *                    DecRef owner
+ *               CheckType<Obj> value
+ *                  /             \
+ *           IncRef obj           (nothing)
+ *                  \             /
+ *                   DecRefNZ value
+ *                   StLoc 1, value
+ *
+ * owner may hold value's only reference. Its release must not precede the
+ * increment retaining value, even though their types also permit aliasing.
+ * The final NZ is valid: objects take another reference and integers are
+ * uncounted.
+ */
+TEST(RefcountOpts, RetainPayloadAcrossOwnerRelease) {
+  IRUnit unit{test_context};
+  BCContext const bcctx{BCMarker::Dummy(), 0};
+  auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+  auto const owner = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
+  auto const value = unit.gen(Conjure, bcctx, TObj | TInt);
+  auto const clearOwner =
+    unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(), unit.cns(TInitNull));
+  auto const retain = unit.gen(IncRef, bcctx, value->dst());
+  auto const release = unit.gen(DecRef, bcctx, DecRefData{}, owner->dst());
+  auto const counted = unit.defBlock();
+  auto const join = unit.defBlock();
+  auto const check = unit.gen(CheckType, bcctx, TObj, join, value->dst());
+  check->setNext(counted);
+  unit.entry()->push_back({
+    fp, owner, value, clearOwner, retain, release, check
+  });
+  auto const inc = unit.gen(IncRef, bcctx, check->dst());
+  counted->push_back({inc, unit.gen(Jmp, bcctx, join)});
+  auto const dec = unit.gen(DecRefNZ, bcctx, DecRefData{}, value->dst());
+  join->push_back({
+    dec, unit.gen(StLoc, bcctx, LocalId{1}, fp->dst(), value->dst()),
+    unit.gen(Unreachable, bcctx, ASSERT_REASON)
+  });
+
+  optimizeRefcounts(unit);
+
+  // FIXME[CRASH]: PRE cancels both increments against the final decrement
+  // and inserts one replacement increment on the object branch, after the
+  // owner's release may already have freed value.
+  EXPECT_EQ(Nop, retain->op());
+  EXPECT_EQ(DecRef, release->op());
+  EXPECT_EQ(Nop, inc->op());
+  EXPECT_EQ(Nop, dec->op());
+  EXPECT_EQ(IncRef, counted->front().op());
+  EXPECT_EQ(value->dst(), counted->front().src(0));
+  EXPECT_TRUE(checkCfg(unit));
+}
+
+/*
+ *       owner = LdLoc 0; StLoc 0, null
+ *       value: Obj|Int, borrowed from owner
+ *                    IncRef value
+ *                    DecRef owner
+ *               CheckType<Obj> value
+ *                  /             \
+ *           obj: Obj             int: Int
+ *           IncRef obj           (nothing)
+ *                  \             /
+ *                   p = phi(obj, int)
+ *                       DecRef p
+ *                       StLoc 1, p
+ *
+ * The phi joins the two refinements of value, as refineTmps would do. Unlike
+ * the NZ case above, this decrement relies on the merged reference bound.
+ */
+TEST(RefcountOpts, RetainPayloadAcrossOwnerReleaseWithPhi) {
+  IRUnit unit{test_context};
+  BCContext const bcctx{BCMarker::Dummy(), 0};
+  auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+  auto const owner = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
+  auto const value = unit.gen(Conjure, bcctx, TObj | TInt);
+  auto const clearOwner =
+    unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(), unit.cns(TInitNull));
+  auto const retain = unit.gen(IncRef, bcctx, value->dst());
+  auto const release = unit.gen(DecRef, bcctx, DecRefData{}, owner->dst());
+  auto const counted = unit.defBlock();
+  auto const uncounted = unit.defBlock();
+  auto const join = unit.defBlock();
+  auto const check = unit.gen(CheckType, bcctx, TObj, uncounted, value->dst());
+  check->setNext(counted);
+  unit.entry()->push_back({
+    fp, owner, value, clearOwner, retain, release, check
+  });
+  auto const inc = unit.gen(IncRef, bcctx, check->dst());
+  counted->push_back({inc, unit.gen(Jmp, bcctx, join, check->dst())});
+  auto const integer = unit.gen(AssertType, bcctx, TInt, value->dst());
+  uncounted->push_back({integer, unit.gen(Jmp, bcctx, join, integer->dst())});
+  auto const label = unit.defLabel(1, join, bcctx);
+  retypeDests(label, &unit);
+  auto const dec = unit.gen(DecRef, bcctx, DecRefData{}, label->dst(0));
+  join->push_back({
+    dec, unit.gen(StLoc, bcctx, LocalId{1}, fp->dst(), label->dst(0)),
+    unit.gen(Unreachable, bcctx, ASSERT_REASON)
+  });
+
+  optimizeRefcounts(unit);
+
+  // FIXME[CRASH]: The uncounted phi input's infinite bound enables PRE to
+  // cancel the retain across the owner's release, just as in the NZ case.
+  EXPECT_EQ(Nop, retain->op());
+  EXPECT_EQ(DecRef, release->op());
+  EXPECT_EQ(Nop, inc->op());
+  EXPECT_EQ(Nop, dec->op());
+  EXPECT_EQ(IncRef, counted->front().op());
+  EXPECT_EQ(value->dst(), counted->front().src(0));
+  EXPECT_TRUE(checkCfg(unit));
+}
+
+/*
+ *       a: Obj, unknown refcount
+ *       b = LdLoc 0; StLoc 0, null
+ *                 IncRef a
+ *                    |
+ *                   Jmp
+ *                    |
+ *                DecRefNZ b
+ *                DecRefNZ a
+ *
+ * b's decrement is balanced. The final NZ guarantee permits cancellation
+ * even if a == b; an eager requirement at b's decrement would block it.
+ */
+TEST(RefcountOpts, CancelAcrossBalancedDecref) {
+  IRUnit unit{test_context};
+  BCContext const bcctx{BCMarker::Dummy(), 0};
+  auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+  auto const a = unit.gen(Conjure, bcctx, TObj);
+  auto const b = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
+  auto const inc = unit.gen(IncRef, bcctx, a->dst());
+  auto const body = unit.defBlock();
+  unit.entry()->push_back({
+    fp, a, b,
+    unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(), unit.cns(TInitNull)),
+    inc, unit.gen(Jmp, bcctx, body)
+  });
+  auto const dec = unit.gen(DecRefNZ, bcctx, DecRefData{}, a->dst());
+  body->push_back({
+    unit.gen(DecRefNZ, bcctx, DecRefData{}, b->dst()), dec,
+    unit.gen(Unreachable, bcctx, ASSERT_REASON)
+  });
+
+  optimizeRefcounts(unit);
+
+  // b's balanced decrement must not prevent cancellation of a's pair.
+  EXPECT_EQ(Nop, inc->op());
+  EXPECT_EQ(Nop, dec->op());
+  EXPECT_TRUE(checkCfg(unit));
+}
+
+/*
+ *                  a = LdLoc 0
+ *                  b = LdLoc 0
+ *              value = LdLoc 1: Obj|Int
+ *           StLoc 0, null; StLoc 1, null
+ *           owner = LdLoc 2; StLoc 2, null
+ *             p: unknown property address
+ *                    DecRefNZ b
+ *                    StMem p, a
+ *                    IncRef value
+ *                    DecRef owner
+ *               CheckType<Obj> value
+ *                  /             \
+ *              object           integer
+ *           IncRef value        (nothing)
+ *                  \             /
+ *                   DecRefNZ value
+ *                   StLoc 3, value
+ *
+ * a, b, and value may alias, with two initial references in locals 0 and 1.
+ * b's decrement consumes local 0's reference. The store can move local 1's
+ * surviving reference into owner's property. The retain must precede owner's
+ * release even though a's unsupported credit was consumed by DecRefNZ b.
+ */
+TEST(RefcountOpts, RetainPayloadAfterUnknownStore) {
+  IRUnit unit{test_context};
+  BCContext const bcctx{BCMarker::Dummy(), 0};
+  auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+  auto const a = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
+  auto const b = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
+  auto const value =
+    unit.gen(LdLoc, bcctx, TObj | TInt, LocalId{1}, fp->dst());
+  auto const clearA =
+    unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(), unit.cns(TInitNull));
+  auto const clearValue =
+    unit.gen(StLoc, bcctx, LocalId{1}, fp->dst(), unit.cns(TInitNull));
+  auto const owner = unit.gen(LdLoc, bcctx, TObj, LocalId{2}, fp->dst());
+  auto const clearOwner =
+    unit.gen(StLoc, bcctx, LocalId{2}, fp->dst(), unit.cns(TInitNull));
+  auto const ptr = unit.gen(Conjure, bcctx, TLvalToProp);
+  auto const drop = unit.gen(DecRefNZ, bcctx, DecRefData{}, b->dst());
+  auto const store = unit.gen(StMem, bcctx, ptr->dst(), a->dst());
+  auto const retain = unit.gen(IncRef, bcctx, value->dst());
+  auto const release = unit.gen(DecRef, bcctx, DecRefData{}, owner->dst());
+  auto const counted = unit.defBlock();
+  auto const join = unit.defBlock();
+  auto const check = unit.gen(CheckType, bcctx, TObj, join, value->dst());
+  check->setNext(counted);
+  unit.entry()->push_back({
+    fp, a, b, value, clearA, clearValue, owner, clearOwner, ptr,
+    drop, store, retain, release, check
+  });
+  auto const inc = unit.gen(IncRef, bcctx, check->dst());
+  counted->push_back({inc, unit.gen(Jmp, bcctx, join)});
+  auto const dec = unit.gen(DecRefNZ, bcctx, DecRefData{}, value->dst());
+  join->push_back({
+    dec, unit.gen(StLoc, bcctx, LocalId{3}, fp->dst(), value->dst()),
+    unit.gen(Unreachable, bcctx, ASSERT_REASON)
+  });
+
+  optimizeRefcounts(unit);
+
+  EXPECT_EQ(IncRef, retain->op());
+  EXPECT_EQ(DecRef, release->op());
+  EXPECT_EQ(Nop, inc->op());
+  EXPECT_EQ(Nop, dec->op());
+  EXPECT_EQ(Nop, counted->front().op());
+  EXPECT_TRUE(checkCfg(unit));
+}
+
+/*
  *                     a = newVec(3)
  *                       Jmp(false)
  *                            |
