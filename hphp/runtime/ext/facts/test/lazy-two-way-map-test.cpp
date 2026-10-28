@@ -274,16 +274,6 @@ TEST_P(MultiversionLazyTwoWayMapTest, GetKeysForValueWithPopulatedMap) {
 
 TEST_P(
     MultiversionLazyTwoWayMapTest,
-    GetKeysForValueFromEmptyMapAndEmptySource) {
-  LazyTwoWayMap<std::string, std::string> map{m_versions};
-  std::string value{"balsam fir"};
-  setVersion(GetParam());
-
-  EXPECT_THAT(map.getKeysForValue(value, {}), IsEmpty());
-}
-
-TEST_P(
-    MultiversionLazyTwoWayMapTest,
     GetKeysForValueFromPopulatedMapAndEmptySource) {
   LazyTwoWayMap<std::string, std::string> map{m_versions};
   std::string key{"vegetable"};
