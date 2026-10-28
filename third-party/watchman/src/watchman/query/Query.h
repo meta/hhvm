@@ -45,6 +45,13 @@ struct Query {
   CaseSensitivity case_sensitive = CaseSensitivity::CaseInSensitive;
   bool fail_if_no_saved_state = false;
   bool empty_on_fresh_instance = false;
+  /**
+   * If set, the EdenFS watcher counts only changes this query can return
+   * (inside relative_root and not ignored) toward
+   * `eden_file_count_threshold_for_fresh_instance`. Changes elsewhere in the
+   * mount then no longer turn a `since` query into a fresh instance.
+   */
+  bool scope_fresh_instance_threshold = false;
   bool omit_changed_files = false;
   bool dedup_results = false;
   uint32_t bench_iterations = 0;

@@ -355,3 +355,27 @@ of metadata to answer these queries.
 This behavior is only enabled if the query specifies the
 `empty_on_fresh_instance` option or when this config is set to `0`. Default to
 `10000`.
+
+By default every change in the mount counts toward the threshold, including
+changes the query would filter out. A query that sets
+`scope_fresh_instance_threshold` to `true` counts only changes inside its
+`relative_root` that are not ignored (`ignore_dirs`, or deep paths under
+`ignore_vcs`). A client watching one directory of a large repository then gets
+the changed files it asked for, not a fresh instance, when many files change
+elsewhere in the repository. Because out-of-scope changes then no longer end the
+query early, such a client should keep the clock each query returns, even when
+it returns no files; otherwise every query re-reads the same changes. Clients can
+check for the `scope_fresh_instance_threshold` capability; older versions ignore
+the field.
+
+### eden_scoped_fresh_instance_scan_limit
+
+This is specific to the EdenFS watcher
+
+Bounds the work of a `scope_fresh_instance_threshold` query that also sets
+`empty_on_fresh_instance` (and while `eden_file_count_threshold_for_fresh_instance`
+is non-zero): once more than this many changes, inside or outside the query's
+scope, have been read from EdenFS, the query returns a _fresh instance_. The
+count is of streamed entries, so a path reported again by each of several
+checkouts in the range counts each time. Defaults to 10 times
+`eden_file_count_threshold_for_fresh_instance`.

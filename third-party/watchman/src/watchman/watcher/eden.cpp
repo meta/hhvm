@@ -595,6 +595,25 @@ static std::string escapeGlobSpecialChars(w_string_piece str) {
   return result;
 }
 
+/** Returns true if `name` (relative to `relative_root` under the watched root)
+ * is ignored or outside the query's relative_root, i.e. the query can never
+ * return it. */
+bool isOutsideQueryScope(
+    QueryContext* ctx,
+    w_string_piece relative_root,
+    w_string_piece name) {
+  w_string full =
+      w_string::pathCat({ctx->root->root_path, relative_root, name});
+
+  if (!ctx->fileMatchesRelativeRoot(full)) {
+    // Not in the desired area, so filter it out
+    return true;
+  }
+
+  return ctx->root->ignore.isIgnored(
+      full.data(), static_cast<uint32_t>(full.size()));
+}
+
 /** filter out paths that are ignored or that are not part of the
  * relative_root restriction in a query.
  * Ideally we'd pass this information into eden so that it doesn't
@@ -611,17 +630,8 @@ void filterOutPaths(
       std::remove_if(
           files.begin(),
           files.end(),
-          [ctx, relative_root](const NameAndDType& item) {
-            w_string full;
-            full = w_string::pathCat(
-                {ctx->root->root_path, relative_root, item.name});
-
-            if (!ctx->fileMatchesRelativeRoot(full)) {
-              // Not in the desired area, so filter it out
-              return true;
-            }
-
-            return ctx->root->ignore.isIgnored(full.data(), full.size());
+          [ctx, &relative_root](const NameAndDType& item) {
+            return isOutsideQueryScope(ctx, relative_root, item.name);
           }),
       files.end());
 }
@@ -764,6 +774,9 @@ class EdenView final : public QueryableView {
         thresholdForFreshInstance_(config.getInt(
             "eden_file_count_threshold_for_fresh_instance",
             10000)),
+        scopedFreshInstanceScanLimit_(config.getInt(
+            "eden_scoped_fresh_instance_scan_limit",
+            10 * static_cast<int64_t>(thresholdForFreshInstance_))),
         enableGlobUpperBounds_(
             config.getBool("eden_enable_glob_upper_bounds", true)) {}
 
@@ -1297,6 +1310,10 @@ class EdenView final : public QueryableView {
     std::unordered_map<std::string, int> byFile;
     std::unordered_map<std::string, EdenDtype> dtypes;
     bool freshInstance = false;
+    const bool countOnlyQueryScope = ctx->query->scope_fresh_instance_threshold;
+    const bool enforceThreshold =
+        thresholdForFreshInstance_ != 0 && ctx->query->empty_on_fresh_instance;
+    size_t streamedCount = 0;
 
     std::move(stream).subscribeInline(
         [&](folly::Try<ChangedFileResult>&& changeTry) mutable {
@@ -1317,6 +1334,27 @@ class EdenView final : public QueryableView {
 
           const auto& change = changeTry.value();
           auto& name = *change.name();
+
+          if (countOnlyQueryScope) {
+            // Out-of-scope changes no longer count toward the threshold, so
+            // bound the total scan separately.
+            if (enforceThreshold &&
+                ++streamedCount > scopedFreshInstanceScanLimit_) {
+              freshInstance = true;
+              std::string logMessage = fmt::format(
+                  "Scanned change amount {} exceeded scan limit {}",
+                  streamedCount,
+                  scopedFreshInstanceScanLimit_);
+              log(ERR, logMessage, "\n");
+              ctx->freshInstanceCause = std::move(logMessage);
+              return false;
+            }
+            // filterOutPaths() drops these later anyway; dropping them here
+            // keeps them out of the thresholdForFreshInstance_ count.
+            if (isOutsideQueryScope(ctx, "", name)) {
+              return true;
+            }
+          }
 
           // Changes needs to be deduplicated so a file that was added and then
           // removed is reported as MODIFIED.
@@ -1448,6 +1486,7 @@ class EdenView final : public QueryableView {
   folly::SharedPromise<folly::Unit> subscribeReadyPromise_;
   bool splitGlobPattern_;
   unsigned int thresholdForFreshInstance_;
+  size_t scopedFreshInstanceScanLimit_;
   bool enableGlobUpperBounds_;
 };
 

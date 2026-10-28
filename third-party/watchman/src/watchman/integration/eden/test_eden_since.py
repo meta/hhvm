@@ -16,12 +16,15 @@ from watchman.integration.lib import WatchmanEdenTestCase
 
 
 def populate(
-    repo, threshold: Optional[int] = None, extra_files: Optional[List[str]] = None
+    repo,
+    threshold: Optional[int] = None,
+    extra_files: Optional[List[str]] = None,
+    ignore_dirs: Optional[List[str]] = None,
 ) -> None:
     # We ignore ".hg" here just so some of the tests that list files don't have to
     # explicitly filter out the contents of this directory.  However, in most situations
     # the .hg directory normally should not be ignored.
-    config: Dict[str, Any] = {"ignore_dirs": [".hg"]}
+    config: Dict[str, Any] = {"ignore_dirs": [".hg"] + (ignore_dirs or [])}
     config["eden_use_streaming_since"] = True
     if threshold:
         config["eden_file_count_threshold_for_fresh_instance"] = threshold
@@ -353,6 +356,127 @@ class TestEdenSince(WatchmanEdenTestCase.WatchmanEdenTestCase):
         res = do_query(clock)
         self.assertFalse(res["is_fresh_instance"])
         self.assertQueryRepsonseEqual(["hello"], res["files"])
+
+    def test_eden_since_threshold_scoped_to_relative_root(self) -> None:
+        root = self.makeEdenMount(lambda repo: populate(repo, 50))
+
+        res = self.watchmanCommand("watch", root)
+        self.assertEqual("eden", res["watcher"])
+
+        def do_query(clock, scoped: bool):
+            return self.watchmanCommand(
+                "query",
+                root,
+                {
+                    "expression": ["type", "f"],
+                    "relative_root": "adir",
+                    "empty_on_fresh_instance": True,
+                    "scope_fresh_instance_threshold": scoped,
+                    "fields": ["name"],
+                    "since": clock,
+                },
+            )
+
+        clock = self.watchmanCommand("clock", root)["clock"]
+
+        # More changes than the threshold, all outside the relative_root.
+        os.mkdir(os.path.join(root, "churn"))
+        for i in range(100):
+            self.touchRelative(root, "churn", str(i))
+
+        res = do_query(clock, scoped=False)
+        self.assertTrue(res["is_fresh_instance"])
+        self.assertFileListsEqual([], res["files"])
+
+        res = do_query(clock, scoped=True)
+        self.assertFalse(res["is_fresh_instance"])
+        self.assertFileListsEqual([], res["files"])
+        clock = res["clock"]
+
+        self.touchRelative(root, "adir", "file")
+        res = do_query(clock, scoped=True)
+        self.assertFalse(res["is_fresh_instance"])
+        self.assertFileListsEqual(["file"], res["files"])
+        clock = res["clock"]
+
+        # More changes than the threshold inside the relative_root still
+        # produce a fresh instance.
+        os.mkdir(os.path.join(root, "adir", "many"))
+        for i in range(100):
+            self.touchRelative(root, "adir", "many", str(i))
+
+        res = do_query(clock, scoped=True)
+        self.assertTrue(res["is_fresh_instance"])
+        self.assertFileListsEqual([], res["files"])
+
+    def _since_query(self, root, clock, scoped: bool, relative_root=None):
+        query = {
+            "expression": ["type", "f"],
+            "empty_on_fresh_instance": True,
+            "scope_fresh_instance_threshold": scoped,
+            "fields": ["name"],
+            "since": clock,
+        }
+        if relative_root:
+            query["relative_root"] = relative_root
+        return self.watchmanCommand("query", root, query)
+
+    def test_eden_since_scoped_threshold_across_commits(self) -> None:
+        root = self.makeEdenMount(
+            lambda repo: populate(
+                repo, 50, extra_files=[f"bigdir/{i}" for i in range(100)]
+            )
+        )
+        repo = self.repoForPath(root)
+        self.watchmanCommand("watch", root)
+
+        shutil.rmtree(os.path.join(root, "bigdir"))
+        repo.hg("addremove")
+        repo.commit("removal commit.")
+        clock = self.watchmanCommand("clock", root)["clock"]
+
+        # Checking out the parent commit restores 100 files outside adir.
+        repo.hg("prev")
+
+        res = self._since_query(root, clock, scoped=False, relative_root="adir")
+        self.assertTrue(res["is_fresh_instance"])
+
+        res = self._since_query(root, clock, scoped=True, relative_root="adir")
+        self.assertFalse(res["is_fresh_instance"])
+        self.assertFileListsEqual([], res["files"])
+
+    def test_eden_since_scoped_threshold_skips_ignored_dirs(self) -> None:
+        root = self.makeEdenMount(
+            lambda repo: populate(repo, 50, ignore_dirs=["ignored"])
+        )
+        self.watchmanCommand("watch", root)
+        clock = self.watchmanCommand("clock", root)["clock"]
+
+        os.mkdir(os.path.join(root, "ignored"))
+        for i in range(100):
+            self.touchRelative(root, "ignored", str(i))
+        self.touchRelative(root, "adir", "file")
+
+        res = self._since_query(root, clock, scoped=False)
+        self.assertTrue(res["is_fresh_instance"])
+
+        res = self._since_query(root, clock, scoped=True)
+        self.assertFalse(res["is_fresh_instance"])
+        self.assertFileListsEqual(["adir/file"], res["files"])
+
+    def test_eden_since_scoped_threshold_scan_limit(self) -> None:
+        # With threshold 50, the default scan limit is 500 streamed changes.
+        root = self.makeEdenMount(lambda repo: populate(repo, 50))
+        self.watchmanCommand("watch", root)
+        clock = self.watchmanCommand("clock", root)["clock"]
+
+        os.mkdir(os.path.join(root, "churn"))
+        for i in range(600):
+            self.touchRelative(root, "churn", str(i))
+
+        res = self._since_query(root, clock, scoped=True, relative_root="adir")
+        self.assertTrue(res["is_fresh_instance"])
+        self.assertFileListsEqual([], res["files"])
 
     def test_eden_since_dotfiles_change(self) -> None:
         root = self.makeEdenMount(

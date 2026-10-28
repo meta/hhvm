@@ -231,6 +231,13 @@ void parse_empty_on_fresh_instance(Query* res, const json_ref& query) {
       parse_bool_param(query, "empty_on_fresh_instance", false);
 }
 
+W_CAP_REG("scope_fresh_instance_threshold")
+
+void parse_scope_fresh_instance_threshold(Query* res, const json_ref& query) {
+  res->scope_fresh_instance_threshold =
+      parse_bool_param(query, "scope_fresh_instance_threshold", false);
+}
+
 void parse_always_include_directories(Query* res, const json_ref& query) {
   res->alwaysIncludeDirectories =
       parse_bool_param(query, "always_include_directories", false);
@@ -276,6 +283,7 @@ std::shared_ptr<Query> parseQuery(
   parse_lock_timeout(res, query);
   parse_relative_root(root, res, query);
   parse_empty_on_fresh_instance(res, query);
+  parse_scope_fresh_instance_threshold(res, query);
   parse_fail_if_no_saved_state(res, query);
   parse_omit_changed_files(res, query);
   parse_always_include_directories(res, query);

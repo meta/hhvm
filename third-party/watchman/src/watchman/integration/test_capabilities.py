@@ -183,6 +183,7 @@ class TestCapabilities(WatchmanTestCase.WatchmanTestCase):
             "scm-git",
             "scm-hg",
             "scm-since",
+            "scope_fresh_instance_threshold",
             "suffix-set",
             "term-allof",
             "term-anyof",
