@@ -81,12 +81,14 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^ [4]
 81 |     ?'like' => bool,
    |     ^^^^^^^^^^^^^^^^ [4]
-82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
-83 |   ) = shape(
+82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
+83 |     ?'splat_elem_types' => vec<mixed>
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
+84 |   ) = shape(
    |   ^ [4]
-84 |     ?'nullable' => bool,
-85 |     'kind' => TypeStructureKind,
+85 |     ?'nullable' => bool,
+86 |     'kind' => TypeStructureKind,
 
 error: Typing[4475] Invalid case type declaration. More than one variant of `DictData` could contain values with the same runtime tag [1]
 -> This is the type `mixed`, which includes **dicts** [2]
@@ -213,12 +215,14 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^ [4]
 81 |     ?'like' => bool,
    |     ^^^^^^^^^^^^^^^^ [4]
-82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
-83 |   ) = shape(
+82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
+83 |     ?'splat_elem_types' => vec<mixed>
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
+84 |   ) = shape(
    |   ^ [4]
-84 |     ?'nullable' => bool,
-85 |     'kind' => TypeStructureKind,
+85 |     ?'nullable' => bool,
+86 |     'kind' => TypeStructureKind,
 
 error: Typing[4475] Invalid case type declaration. More than one variant of `DictData` could contain values with the same runtime tag [1]
 -> This is the type `nonnull`, which includes **dicts** [2]
@@ -346,12 +350,14 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^ [3]
 81 |     ?'like' => bool,
    |     ^^^^^^^^^^^^^^^^ [3]
-82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
-83 |   ) = shape(
+82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+83 |     ?'splat_elem_types' => vec<mixed>
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+84 |   ) = shape(
    |   ^ [3]
-84 |     ?'nullable' => bool,
-85 |     'kind' => TypeStructureKind,
+85 |     ?'nullable' => bool,
+86 |     'kind' => TypeStructureKind,
 
 error: Typing[4475] Invalid case type declaration. More than one variant of `DictData` could contain values with the same runtime tag [1]
 -> This is the type `TypeStructure<int>`, which includes **shapes** because shapes are dicts at runtime [2]
@@ -422,12 +428,14 @@ typestructure.hhi:60:31
    |     ^^^^^^^^^^^^^^^^^ [3]
 81 |     ?'like' => bool,
    |     ^^^^^^^^^^^^^^^^ [3]
-82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
-83 |   ) = shape(
+82 |     ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+83 |     ?'splat_elem_types' => vec<mixed>
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+84 |   ) = shape(
    |   ^ [3]
-84 |     ?'nullable' => bool,
-85 |     'kind' => TypeStructureKind,
+85 |     ?'nullable' => bool,
+86 |     'kind' => TypeStructureKind,
 
 error: Typing[4475] Invalid case type declaration. More than one variant of `DictData` could contain values with the same runtime tag [1]
 -> This is the type `shape()`, which includes **shapes** because shapes are dicts at runtime [2]

@@ -8,12 +8,12 @@ type_structure2.php:6:3
     |   ^^^^^^^^^^^^^^^^^^^^^^^^ [1]
   7 | }
 
-typestructure.hhi:123:12
-121 |    * returns the shape associated with the type constant.
-122 |    */
-123 |   function type_structure(
+typestructure.hhi:126:12
+124 |    * returns the shape associated with the type constant.
+125 |    */
+126 |   function type_structure(
     |            ^^^^^^^^^^^^^^ [2]
-124 |     mixed $cls_or_obj,
-125 |     string $cns_name,
+127 |     mixed $cls_or_obj,
+128 |     string $cns_name,
 
 1 error found

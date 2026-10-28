@@ -79,7 +79,8 @@ namespace HH {
     ?'alias' => string,
     ?'exact' => bool,
     ?'like' => bool,
-    ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
+    ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>,
+    ?'splat_elem_types' => vec<mixed>
   ) = shape(
     ?'nullable' => bool,
     'kind' => TypeStructureKind,
@@ -99,7 +100,7 @@ namespace HH {
     ?'generic_types' => varray<mixed>,
     ?'root_name' => string,
     ?'access_list' => varray<string>,
-    // for shapes
+    // for simple shapes
     ?'fields' => darray<arraykey, mixed>,
     ?'allows_unknown_fields' => bool,
     ?'is_cls_cns' => bool,
@@ -114,7 +115,9 @@ namespace HH {
     // if the type is a like-type
     ?'like' => bool,
     // if the type is a with-refinement e.g. class C with { type T = int; }
-    ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>
+    ?'with_refinements' => dict<string, shape('is_ctx' => bool, ?'equals' => mixed, ?'as' => vec<mixed>, ?'super' => vec<mixed>)>,
+    // for shape splats
+    ?'splat_elem_types' => vec<mixed>
   );
 
   /*
