@@ -164,6 +164,8 @@ module Hhconfig : sig
 
   val needs_concrete_abstract_class_const_check : string
 
+  val needs_concrete_require_extends_class_const_check : string
+
   val package_allow_enforceable_enum_violations : string
 
   val package_allow_all_tconst_violations : string

@@ -634,6 +634,10 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.needs_concrete_abstract_class_const_check
          config)
+    ?needs_concrete_require_extends_class_const_check:
+      (bool_opt
+         Config_keys.Hhconfig.needs_concrete_require_extends_class_const_check
+         config)
     ?strict_consistent_construct:
       (bool_opt Config_keys.Hhconfig.strict_consistent_construct config)
     ?allow_class_string_cast:

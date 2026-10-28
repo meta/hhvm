@@ -296,6 +296,9 @@ let needs_concrete_class_function_pointer_check t =
 let needs_concrete_abstract_class_const_check t =
   t.Global_options.needs_concrete_abstract_class_const_check
 
+let needs_concrete_require_extends_class_const_check t =
+  t.Global_options.needs_concrete_require_extends_class_const_check
+
 let strict_consistent_construct t = t.Global_options.strict_consistent_construct
 
 let allow_class_string_cast t = t.Global_options.allow_class_string_cast

@@ -200,6 +200,7 @@ type t = {
   needs_concrete_class_call_check: int;
   needs_concrete_class_function_pointer_check: int option;
   needs_concrete_abstract_class_const_check: bool;
+  needs_concrete_require_extends_class_const_check: bool;
   strict_consistent_construct: bool;
   allow_class_string_cast: bool;
   class_pointer_ban_class_array_key: bool;
@@ -320,6 +321,7 @@ let default =
     needs_concrete_class_call_check = 0;
     needs_concrete_class_function_pointer_check = None;
     needs_concrete_abstract_class_const_check = false;
+    needs_concrete_require_extends_class_const_check = false;
     strict_consistent_construct = false;
     allow_class_string_cast = true;
     class_pointer_ban_class_array_key = false;
@@ -437,6 +439,7 @@ let set
     ?needs_concrete_class_call_check
     ?needs_concrete_class_function_pointer_check
     ?needs_concrete_abstract_class_const_check
+    ?needs_concrete_require_extends_class_const_check
     ?strict_consistent_construct
     ?allow_class_string_cast
     ?class_pointer_ban_class_array_key
@@ -758,6 +761,10 @@ let set
       setting
         needs_concrete_abstract_class_const_check
         options.needs_concrete_abstract_class_const_check;
+    needs_concrete_require_extends_class_const_check =
+      setting
+        needs_concrete_require_extends_class_const_check
+        options.needs_concrete_require_extends_class_const_check;
     strict_consistent_construct =
       setting strict_consistent_construct options.strict_consistent_construct;
     allow_class_string_cast =

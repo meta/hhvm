@@ -182,6 +182,9 @@ module Hhconfig = struct
   let needs_concrete_abstract_class_const_check =
     key "needs_concrete_abstract_class_const_check"
 
+  let needs_concrete_require_extends_class_const_check =
+    key "needs_concrete_require_extends_class_const_check"
+
   let package_allow_enforceable_enum_violations =
     key "package_allow_enforceable_enum_violations"
 

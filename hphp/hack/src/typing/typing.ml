@@ -14202,12 +14202,17 @@ end = struct
             Option.iter ~f:(Typing_error_utils.add_typing_error ~env) ty_err_opt;
             (match cc_abstract with
             | CCAbstract has_default ->
-              (* A default resolves at runtime even when `static` is abstract *)
+              (* A default resolves at runtime even when `static` is abstract.
+                 A type constant's synthesized constant is checked by
+                 [Typing_needs_concrete.check_abstract_tconst_via_static] *)
               if
                 (not has_default)
-                && (not cc_synthesized)
                 && TCO.needs_concrete_abstract_class_const_check
                      (Env.get_tcopt env)
+                && ((not cc_synthesized)
+                   || TCO.needs_concrete_require_extends_class_const_check
+                        (Env.get_tcopt env)
+                      && Option.is_none (Env.get_typeconst env class_ mid))
               then
                 Typing_needs_concrete.check_abstract_access_via_static
                   env
