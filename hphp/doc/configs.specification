@@ -615,15 +615,17 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 
 - bool Eval.TimeoutsUseWallTime = true, UNKNOWN
 
-- bool Eval.InterpTailCallDispatch = false, UNKNOWN
+- std::string Eval.InterpTailCallDispatch = "false", UNKNOWN, private|postprocess
 
-  When true (and the compiler supports a guaranteed tail call, i.e. Clang's
-  [[clang::musttail]] or GCC 15's [[gnu::musttail]]), the bytecode interpreter
-  dispatches each opcode by tail-calling the next opcode's handler instead of
-  using the computed-goto loop in dispatchImpl(). Each step reuses a single
-  native stack frame. This is a pure performance/codegen change with identical
-  semantics; set it back to false to fall back to the computed-goto interpreter.
-  Has no effect when the toolchain lacks musttail support.
+  Selects the bytecode interpreter when the compiler supports guaranteed tail
+  calls (Clang's [[clang::musttail]] or GCC 15's [[gnu::musttail]]):
+  - false (or 0): use the computed-goto loop in dispatchImpl().
+  - true (or 1): tail-call each opcode's handler, reusing a native stack frame.
+  - alternate: switch between the two interpreters on each dispatchImpl() entry.
+    Each thread starts with the tail-call interpreter and maintains its own
+    sequence across requests, independently of other threads.
+  The interpreters have identical semantics. Alternate mode exercises both
+  during native PGO training and tests.
 
 - bool Eval.RecordCodeCoverage = false, UNKNOWN
 

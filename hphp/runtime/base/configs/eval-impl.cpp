@@ -14,20 +14,48 @@
    +----------------------------------------------------------------------+
 */
 
+#include "hphp/runtime/base/configs/configs.h"
 #include "hphp/runtime/base/configs/eval-loader.h"
 
 #include "hphp/util/arch.h"
+#include "hphp/util/assertions.h"
 #include "hphp/util/build-info.h"
 #include "hphp/util/compilation-flags.h"
 #include "hphp/util/configs/eval.h"
 #include "hphp/util/configs/repo.h"
 #include "hphp/util/configs/server.h"
+#include "hphp/util/logger.h"
 #include "hphp/util/numa.h"
 #include "hphp/util/process-cpu.h"
 #include "hphp/util/ptr.h"
 #include "hphp/util/roar.h"
 
 namespace HPHP::Cfg {
+
+InterpDispatchMode interpDispatchMode = InterpDispatchMode::ComputedGoto;
+
+namespace {
+InterpDispatchMode parseInterpDispatchMode(std::string& val) {
+  if (val == "alternate") return InterpDispatchMode::Alternate;
+  if (val == "true" || val == "1") {
+    val = "true";
+    return InterpDispatchMode::TailCall;
+  }
+  if (val == "false" || val == "0") {
+    val = "false";
+    return InterpDispatchMode::ComputedGoto;
+  }
+  assertx(false);
+  Logger::FWarning(
+    "Unknown Eval.InterpTailCallDispatch value '{}': using false", val);
+  val = "false";
+  return InterpDispatchMode::ComputedGoto;
+}
+}
+
+void EvalLoader::InterpTailCallDispatchPostProcess(std::string& val) {
+  interpDispatchMode = parseInterpDispatchMode(val);
+}
 
 void EvalLoader::CheckSymLinkPostProcess(bool& val) {
   if (Cfg::Eval::RecordCodeCoverage) {

@@ -151,3 +151,7 @@ HPHP::jit::tc::tl_threadIsFull
 
 # sbcc cache per-thread "am I inside a request" flag for request-scoped stats.
 HPHP::(anonymous namespace)::s_in_request
+
+# When "alternate" mode is enabled we just need a simple value to make sure this
+# consistently flips between calls per-thread.
+HPHP::dispatchImpl()::tailCall

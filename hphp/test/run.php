@@ -1329,6 +1329,9 @@ function hhvm_cmd_impl(
       // configuration) we turn this flag off by default.
       '-vEval.EnableArgsInBacktraces=false',
       '-vEval.EnableIntrinsicsExtension=true',
+      // Exercise both computed-goto and tail-callig interpreter by switching
+      // between them. Should happen deterministically per-thread.
+      '-vEval.InterpTailCallDispatch=alternate',
       '-vEval.HHIRInliningIgnoreHints=false',
       '-vEval.HHIRAlwaysInterpIgnoreHint=false',
       '-vEval.FoldLazyClassKeys=false',

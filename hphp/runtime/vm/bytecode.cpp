@@ -46,6 +46,7 @@
 #include "hphp/runtime/base/array-provenance.h"
 #include "hphp/runtime/base/bespoke-array.h"
 #include "hphp/runtime/base/code-coverage.h"
+#include "hphp/runtime/base/configs/configs.h"
 #include "hphp/runtime/base/collections.h"
 #include "hphp/runtime/base/container-functions.h"
 #include "hphp/runtime/base/execution-context.h"
@@ -5808,7 +5809,16 @@ JitResumeAddr dispatchImpl() {
   bool collectCoverage = checkCoverage();
 
 #if HHVM_HAS_MUSTTAIL
-  if (Cfg::Eval::InterpTailCallDispatch) {
+  auto const mode = Cfg::interpDispatchMode;
+  auto useTailCall = mode == Cfg::InterpDispatchMode::TailCall;
+  if (mode == Cfg::InterpDispatchMode::Alternate) {
+    static thread_local bool tailCall = false;
+    useTailCall = tailCall = !tailCall;
+  }
+  FTRACE(1, "dispatch: selected {} interpreter (alternate={})\n",
+         useTailCall ? "tail-call" : "computed-goto",
+         mode == Cfg::InterpDispatchMode::Alternate);
+  if (useTailCall) {
     return dispatchTailCall(collectCoverage);
   }
 #endif

@@ -1,8 +1,0 @@
-arith=3602
-concat=aabbcc len=6
-vec=1,2,3 dict_z=10 keyset=3
-closure=20
-box=17 inout=123 varargs=10
-dowhile=10 coalesce=42 isbox=yes cast=78
-exc=ok0,fin0,caught:boom,fin1
-switch=zero,one,two,zero,one,two

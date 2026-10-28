@@ -40,6 +40,14 @@ struct ParserFlags;
 
 namespace Cfg {
 
+enum class InterpDispatchMode : uint8_t {
+  ComputedGoto,
+  TailCall,
+  Alternate,
+};
+
+extern InterpDispatchMode interpDispatchMode;
+
 void Load(const IniSettingMap& ini, const Hdf& config);
 void LoadForCompiler(const IniSettingMap& ini, const Hdf& config);
 void LoadFromGlobalData(const RepoGlobalData& gd);
