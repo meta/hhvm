@@ -687,6 +687,10 @@ struct ASetInfo {
   ALocBits memory_support;
 };
 
+int32_t effective_lower_bound(const ASetInfo& aset) {
+  return std::max(aset.lower_bound - aset.pending_reductions, 0);
+}
+
 // State structure for rc_analyze.
 struct RCState {
   bool initialized{false};
@@ -1739,7 +1743,7 @@ bool apply_pending_reductions(RCState& state, ASetID asetID) {
   --state.num_pending_requirements;
   FTRACE(4, "    pending reductions for {}: {}\n",
          asetID, aset.pending_reductions);
-  aset.lower_bound = std::max(aset.lower_bound - aset.pending_reductions, 0);
+  aset.lower_bound = effective_lower_bound(aset);
   aset.unsupported_refs = std::min(aset.unsupported_refs, aset.lower_bound);
   aset.pending_reductions = 0;
   return true;
@@ -1892,7 +1896,7 @@ void may_decref(Env& env, RCState& state, ASetID asetID, PreAdder add_node) {
   // Nothing to decref, the value is TUncounted.
   if (aset.lower_bound == kInfReferences) return;
 
-  auto const balanced = aset.lower_bound > aset.unsupported_refs;
+  auto const balanced = effective_lower_bound(aset) > aset.unsupported_refs;
   reduce_lower_bound(env, state, asetID);
   add_node(asetID, NReq{1});
   FTRACE(3, "    {} lb: {}({})\n",
@@ -1950,7 +1954,7 @@ bool reduce_support_bit(Env& env,
   if (current_set == -1) return true;
   FTRACE(3, "      {} removing support\n", current_set);
   auto& aset = state.asets[current_set];
-  if (aset.lower_bound == aset.unsupported_refs) {
+  if (effective_lower_bound(aset) <= aset.unsupported_refs) {
     // If decrefs can actually occur here, we should have killed the
     // unsupported refs first.
     assertx(!may_decref || !aset.unsupported_refs);
@@ -2082,7 +2086,7 @@ void create_store_support(Env& env, RCState& state, AliasClass dst, SSATmp* tmp,
       return;
     }
 
-    if (aset.lower_bound == aset.unsupported_refs) {
+    if (effective_lower_bound(aset) <= aset.unsupported_refs) {
       FTRACE(3, "    {} causing unsupport_all\n", asetID);
       unsupport_all(env, state);
       return;
@@ -2553,7 +2557,7 @@ void rc_analyze_inst(Env& env,
             // Add an assumed reference
             aset.lower_bound = aset.unsupported_refs = 1;
             state.has_unsupported_refs = true;
-          } else if (aset.lower_bound > aset.unsupported_refs) {
+          } else if (effective_lower_bound(aset) > aset.unsupported_refs) {
             aset.unsupported_refs++;
             state.has_unsupported_refs = true;
           }
@@ -2984,8 +2988,7 @@ void pre_local_transfer(PreEnv& penv, bool incDec, Block* blk) {
           continue;
         }
         if (state.asets[id].lower_bound >= 2) {
-          auto const lb = state.asets[id].lower_bound -
-                          state.asets[id].pending_reductions;
+          auto const lb = effective_lower_bound(state.asets[id]);
           if (lb >= 2) {
             FTRACE(2, "    ** decnz:  {}\n", inst);
             if (inst.is(DecReleaseCheck)) {
