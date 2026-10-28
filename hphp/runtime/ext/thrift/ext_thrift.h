@@ -391,8 +391,8 @@ struct TClientSink : SystemLib::ClassLoader<"TClientSink"> {
     cancel();
   }
 
-  void init(apache::thrift::detail::ClientSinkBridge::Ptr sinkBridge) {
-    sinkBridge_ = std::move(sinkBridge);
+  void init(apache::thrift::detail::ClientSinkBridge::ClientPtr sinkBridge) {
+    sinkBridge_.reset(sinkBridge.release());
   }
 
   void endSink() {
@@ -458,7 +458,7 @@ struct TClientSink : SystemLib::ClassLoader<"TClientSink"> {
   }
 
  public:
-  apache::thrift::detail::ClientSinkBridge::Ptr sinkBridge_;
+  apache::thrift::detail::ClientSinkBridge::ClientReleasePtr sinkBridge_;
 };
 } // namespace thrift
 
