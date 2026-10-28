@@ -33,8 +33,7 @@
            scc_type = (Rwitness_from_decl ([7:3-6]), Tany);
            scc_refs = [((Typing_defs.From "\\Foo"), "class")];
            scc_value = None; scc_is_shape_key = false;
-           scc_const_value = (Typing_defs.Const_value.CVClassPointer "\\Foo")
-           }
+           scc_const_value = Typing_defs.Const_value.CVAbsent }
           ];
         sc_typeconsts = []; sc_props = []; sc_sprops = [];
         sc_constructor = None; sc_static_methods = []; sc_methods = [];

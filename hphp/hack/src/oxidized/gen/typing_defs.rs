@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<5bb7336428d106c13bbf0c9f59c0d26e>>
+// @generated SignedSource<<2d5e342ea798349641dcc71ff7102f1c>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -231,10 +231,8 @@ pub enum ClassConstKind {
 /// OCaml's 63-bit `int`; literals outside that range (including `i64::MIN`)
 /// use `CVLargeInt`, which stores the canonical decimal as a string so it
 /// marshals without truncation and every spelling of one value compares equal.
-/// `CVNameof` and `CVClassPointer` are kept distinct so `nameof C` (a
-/// string) and `C::class` (a class pointer) never coincide. `CVLabel` means
-/// the value is a string equal to the member's own name (`FOO = 'FOO'`),
-/// recorded without storing the string.
+/// `CVLabel` means the value is a string equal to the member's own name
+/// (`FOO = 'FOO'`), recorded without storing the string.
 /// `CVAbsent` represents an unrecorded or unrepresentable value inline, so
 /// the recorded value needs no `option` wrapper.
 #[derive(
@@ -261,7 +259,6 @@ pub enum ConstValue {
     CVString(String),
     /// Class name with legacy XHP mangling already applied.
     CVNameof(String),
-    CVClassPointer(String),
     CVLabel,
     CVAbsent,
     CVConstAccess(String, String),

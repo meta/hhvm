@@ -1,4 +1,4 @@
-error: Typing[4520] `UsesOptedOut` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `UsesOptedOut` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> it uses `OptedOutBase`, which cannot be checked for duplicate values [2]
 
 enum_alias_opted_out.php:13:6
@@ -15,7 +15,7 @@ enum_alias_opted_out.php:13:6
 14 |   use OptedOutBase; // OA = 1, OB = 2 -- unverified because OptedOutBase opted out
 15 |   UO = 3;
 
-error: Typing[4520] `AliasOfUsesOptedOut` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `AliasOfUsesOptedOut` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `T` cannot be checked [2]
 -> `U` cannot be checked [3]
 

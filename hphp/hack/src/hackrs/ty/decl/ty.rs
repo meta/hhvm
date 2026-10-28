@@ -673,9 +673,7 @@ pub enum ClassConstFrom {
 /// class-constant values used as shape keys. `CVInt` holds values that fit
 /// OCaml's 63-bit `int`; literals outside that range (including `i64::MIN`) use
 /// `CVLargeInt`, which stores the literal's source text verbatim (not
-/// canonicalized) so it marshals without truncation. `CVNameof` and
-/// `CVClassPointer` are kept distinct so that `nameof C` (a string) and
-/// `C::class` (a class pointer) never coincide.
+/// canonicalized) so it marshals without truncation.
 #[derive(Clone, Debug, Eq, EqModuloPos, Hash, PartialEq, Serialize, Deserialize)]
 #[derive(ToOcamlRep, FromOcamlRep)]
 pub enum ConstValue {
@@ -684,7 +682,6 @@ pub enum ConstValue {
     CVString(String),
     /// Class name with legacy XHP mangling already applied.
     CVNameof(String),
-    CVClassPointer(String),
     CVLabel,
     CVAbsent,
     CVConstAccess(String, String),

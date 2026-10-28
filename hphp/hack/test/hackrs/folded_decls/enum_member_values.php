@@ -2,7 +2,7 @@
 // Folded decls record a value (cc_value) on each enum member whose
 // initializer is checkable: int (incl. +/- literals; ints outside OCaml's
 // 63-bit `int`, including i64::MIN, use the CVLargeInt slow path), string,
-// nameof and ::class. Computed initializers record nothing.
+// and nameof. Class pointers and computed initializers record nothing.
 
 final class C {}
 

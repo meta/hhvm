@@ -328,7 +328,6 @@ impl From<o::typing_defs::ConstValue> for ty::ConstValue {
             O::CVLargeInt(s) => Self::CVLargeInt(s),
             O::CVString(s) => Self::CVString(s),
             O::CVNameof(s) => Self::CVNameof(s),
-            O::CVClassPointer(s) => Self::CVClassPointer(s),
             O::CVLabel => Self::CVLabel,
             O::CVAbsent => Self::CVAbsent,
             O::CVConstAccess(e, m) => Self::CVConstAccess(e, m),

@@ -318,7 +318,6 @@ impl ToOxidized for ConstValue {
             Self::CVLargeInt(s) => O::CVLargeInt(s),
             Self::CVString(s) => O::CVString(s),
             Self::CVNameof(s) => O::CVNameof(s),
-            Self::CVClassPointer(s) => O::CVClassPointer(s),
             Self::CVLabel => O::CVLabel,
             Self::CVAbsent => O::CVAbsent,
             Self::CVConstAccess(e, m) => O::CVConstAccess(e, m),

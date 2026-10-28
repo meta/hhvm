@@ -1,4 +1,4 @@
-error: Typing[4520] `DcUser` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `DcUser` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> it uses `DcBase`, which cannot be checked for duplicate values [2]
 
 enum_dup_downward_closure.php:18:6
@@ -16,7 +16,7 @@ enum_dup_downward_closure.php:18:6
 19 |   use DcBase;
 20 |   C = 1;
 
-error: Typing[4520] `DcComputedBase` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `DcComputedBase` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `E` cannot be checked [2]
 
 enum_dup_downward_closure.php:31:6
@@ -48,7 +48,7 @@ enum_dup_downward_closure.php:49:6
 52 | }
 53 | 
 
-error: Typing[4520] `DcUsesTwoOptedOut` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `DcUsesTwoOptedOut` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> it uses `DcOptOutA`, which cannot be checked for duplicate values [2]
 -> it uses `DcOptOutB`, which cannot be checked for duplicate values [3]
 

@@ -3663,7 +3663,7 @@ end = struct
       lazy
         ( pos,
           Printf.sprintf
-            "%s cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum."
+            "%s cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum."
             (Render.strip_ns name |> Markdown_lite.md_codify) )
     and reasons =
       lazy

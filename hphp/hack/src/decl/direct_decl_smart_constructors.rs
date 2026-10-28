@@ -1439,7 +1439,7 @@ impl<'o, 't> DirectDeclSmartConstructors<'o, 't> {
     }
 
     /// For a class-constant initializer, returns its recorded value when it is a
-    /// recordable kind (int, string, nameof, ::class, or a constant reference),
+    /// recordable kind (int, string, nameof, or a constant reference),
     /// and None for arithmetic and other unsupported expressions.
     fn const_value(&self, value: &Node) -> Option<ConstValue> {
         match value {
@@ -1451,14 +1451,7 @@ impl<'o, 't> DirectDeclSmartConstructors<'o, 't> {
                 String::from_utf8(s.to_vec()).ok().map(ConstValue::CVString)
             }
             Node::Expr(box aast::Expr(_, _, expr_)) => match expr_ {
-                // `nameof C` (a string) and `C::class` (a class pointer) are kept
-                // as distinct variants so they never compare equal.
-                aast::Expr_::ClassConst(box (
-                    aast::ClassId(_, _, aast::ClassId_::CI(Id(_, class_name))),
-                    (_, const_name),
-                )) if const_name == "class" => {
-                    Some(ConstValue::CVClassPointer(mangle(class_name.clone())))
-                }
+                aast::Expr_::ClassConst(box (_, (_, const_name))) if const_name == "class" => None,
                 // `C::A` (accessing another constant): record the accessed class
                 // and constant so callers can resolve the reference through decl.
                 aast::Expr_::ClassConst(box (

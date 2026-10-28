@@ -229,9 +229,7 @@ FoldedClass {
                 ),
             ],
             is_shape_key: false,
-            value: CVClassPointer(
-                "\\C",
-            ),
+            value: CVAbsent,
         },
         "Computed": ClassConst {
             is_synthesized: false,

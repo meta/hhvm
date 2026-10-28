@@ -1,4 +1,4 @@
-error: Typing[4520] `EnumConstRef` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `EnumConstRef` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `A` cannot be checked [2]
 
 enum_uncheckable_values.php:13:6
@@ -11,7 +11,7 @@ enum_uncheckable_values.php:13:6
 15 |   B = 2;
 16 | }
 
-error: Typing[4520] `EnumArith` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `EnumArith` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `X` cannot be checked [2]
 
 enum_uncheckable_values.php:19:6
@@ -24,7 +24,7 @@ enum_uncheckable_values.php:19:6
 21 |   Y = 3;
 22 | }
 
-error: Typing[4520] `EnumManyComputed` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `EnumManyComputed` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `P` cannot be checked [2]
 -> `Q` cannot be checked [3]
 
@@ -40,7 +40,7 @@ enum_uncheckable_values.php:25:6
 28 | }
 29 | 
 
-error: Typing[4520] `EnumManyUncheckable` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `EnumManyUncheckable` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `R1` cannot be checked [2]
 -> `R2` cannot be checked [3]
 -> `R3` cannot be checked [4]
@@ -66,7 +66,7 @@ enum_uncheckable_values.php:45:6
 51 |   R6 = 6 + 6; // uncheckable
 52 |   R7 = 7 + 7; // uncheckable
 
-error: Typing[4520] `EnumConcatClassConst` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `EnumConcatClassConst` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `PREFIXED` cannot be checked [2]
 
 enum_uncheckable_values.php:63:6
@@ -79,7 +79,7 @@ enum_uncheckable_values.php:63:6
 65 |   LITERAL = 'plain';
 66 | }
 
-error: Typing[4520] `EnumConcatSelfConst` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `EnumConcatSelfConst` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `DERIVED` cannot be checked [2]
 
 enum_uncheckable_values.php:70:6

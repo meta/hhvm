@@ -139,10 +139,8 @@ module Const_value = struct
       OCaml's 63-bit `int`; literals outside that range (including `i64::MIN`)
       use `CVLargeInt`, which stores the canonical decimal as a string so it
       marshals without truncation and every spelling of one value compares equal.
-      `CVNameof` and `CVClassPointer` are kept distinct so `nameof C` (a
-      string) and `C::class` (a class pointer) never coincide. `CVLabel` means
-      the value is a string equal to the member's own name (`FOO = 'FOO'`),
-      recorded without storing the string.
+      `CVLabel` means the value is a string equal to the member's own name
+      (`FOO = 'FOO'`), recorded without storing the string.
       `CVAbsent` represents an unrecorded or unrepresentable value inline, so
       the recorded value needs no `option` wrapper. *)
   type t =
@@ -151,7 +149,6 @@ module Const_value = struct
     | CVString of string
     | CVNameof of string
         (** Class name with legacy XHP mangling already applied. *)
-    | CVClassPointer of string
     | CVLabel
     | CVAbsent
     | CVConstAccess of string * string
@@ -182,7 +179,6 @@ module Const_value = struct
         "\"" ^ s ^ "\""
     | CVLabel -> "\"" ^ member_name ^ "\""
     | CVNameof s -> "nameof " ^ s
-    | CVClassPointer s -> s ^ "::class"
     | CVConstAccess (cls, member) -> cls ^ "::" ^ member
     | CVAbsent -> "<absent>"
 
@@ -198,7 +194,6 @@ module Const_value = struct
     | CVString value -> Some (SKVString value)
     | CVLabel -> Some (SKVString member_name)
     | CVNameof value -> Some (SKVString (Utils.strip_ns value))
-    | CVClassPointer _
     | CVAbsent
     | CVConstAccess _ ->
       None

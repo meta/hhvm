@@ -14,7 +14,7 @@ enum_alias_dirty_base.php:8:6
 11 | }
 12 | 
 
-error: Typing[4520] `AliasOfDirty` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `AliasOfDirty` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `M` cannot be checked [2]
 -> `N` cannot be checked [3]
 
@@ -30,7 +30,7 @@ enum_alias_dirty_base.php:13:6
 16 | }
 17 | 
 
-error: Typing[4520] `AliasOfClass` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `AliasOfClass` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `W` cannot be checked [2]
 
 enum_alias_dirty_base.php:23:6
@@ -62,7 +62,7 @@ enum_alias_dirty_base.php:34:6
 37 | }
 38 | 
 
-error: Typing[4520] `AliasOfBaseHasUse` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `AliasOfBaseHasUse` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `R` cannot be checked [2]
 -> `S` cannot be checked [3]
 
@@ -78,7 +78,7 @@ enum_alias_dirty_base.php:39:6
 42 | }
 43 | 
 
-error: Typing[4520] `PartlyUncheckableBase` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `PartlyUncheckableBase` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `PC` cannot be checked [2]
 
 enum_alias_dirty_base.php:48:6
@@ -93,7 +93,7 @@ enum_alias_dirty_base.php:48:6
 52 | }
 53 | 
 
-error: Typing[4520] `AliasOfUncheckablePart` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `AliasOfUncheckablePart` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `BA` cannot be checked [2]
 -> `BB` cannot be checked [3]
 
@@ -125,7 +125,7 @@ enum_alias_dirty_base.php:63:6
 66 | }
 67 | 
 
-error: Typing[4520] `AliasOfLabelDup` cannot be statically checked for duplicate values. Member values must be int or string literals, `nameof`, or `::class` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+error: Typing[4520] `AliasOfLabelDup` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `LX` cannot be checked [2]
 -> `LY` cannot be checked [3]
 
