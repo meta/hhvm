@@ -284,6 +284,36 @@ let init_null () : t =
   let g () = S_set.empty in
   init_mock ~get_changes_async:f ~get_changes_sync:g
 
+(** Whether [root] is on an Eden mount, decided the way [Edenfs_watcher] decides
+    it: the nearest ancestor that is a repository root (it has a [.hg] or a
+    [.git]) has an [.eden/socket]. *)
+let on_eden_mount (root : Path.t) : bool =
+  let exists dir name =
+    Sys_utils.file_exists (Stdlib.Filename.concat (Path.to_string dir) name)
+  in
+  let rec repo_root dir =
+    if exists dir ".hg" || exists dir ".git" then
+      Some dir
+    else
+      let parent = Path.parent dir in
+      if Path.equal parent dir then
+        None
+      else
+        repo_root parent
+  in
+  match repo_root root with
+  | Some dir -> exists dir (Stdlib.Filename.concat ".eden" "socket")
+  | None -> false
+
+let uses_watchman_on_eden_mount (t : t) : bool =
+  match t with
+  | Watchman { root; _ } -> on_eden_mount root
+  | EdenfsFileWatcher _
+  | Dfind _
+  | IndexOnly _
+  | MockChanges _ ->
+    false
+
 let wait_until_ready (t : t) : unit =
   match t with
   | Dfind { ready; dfind; _ } ->

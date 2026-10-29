@@ -32,6 +32,14 @@ val init :
 
 val init_null : unit -> t
 
+(** Whether this server watches an Eden mount through Watchman. Watchman does
+    not report a renamed directory on EdenFS (T118370264, T137602532): the server
+    never learns of the files that moved. [Edenfs_watcher] handles it, and on an
+    Eden checkout it is the watcher the server is meant to use. The server falls
+    back to Watchman when it cannot start [Edenfs_watcher], even with
+    [edenfs_file_watcher_enabled] set. Off Eden, Watchman sees the move. *)
+val uses_watchman_on_eden_mount : t -> bool
+
 val init_mock :
   get_changes_async:(unit -> changes) -> get_changes_sync:(unit -> S_set.t) -> t
 

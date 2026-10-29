@@ -534,6 +534,37 @@ class TestFreshInit(common_tests.CommonTests):
         self.assertEqual(input_error_exit_code, retcode, stdout)
         self.assertIsNotNone(json.loads(stdout)["refused"])
 
+    def test_isolation_move_to_is_not_refused_for_watchman_off_eden(self) -> None:
+        """Watchman reports a moved directory off Eden, so only the Eden case is
+        refused (see the Eden watcher tests)."""
+        repo_dir = self.test_driver.repo_dir
+        with open(os.path.join(repo_dir, ".watchmanconfig"), "w") as f:
+            f.write("{}")
+        with open(os.path.join(repo_dir, "hh.conf"), "a") as f:
+            f.write("use_watchman = true\nwatchman_subscribe_v2 = true\n")
+        os.mkdir(os.path.join(repo_dir, "to_move"))
+        with open(os.path.join(repo_dir, "to_move", "a.php"), "w") as f:
+            f.write("<?hh\nfunction a(): void {}\n")
+
+        self.test_driver.start_hh_server()
+        stdout, _, retcode = self.test_driver.run_check(
+            options=[
+                "--isolation",
+                "--isolation-seed-dir",
+                "to_move",
+                "--isolation-move-to",
+                "move_dest",
+                "--json",
+            ],
+        )
+
+        self.assertEqual(0, retcode, stdout)
+        self.assertTrue(json.loads(stdout)["moved"], stdout)
+        self.assertTrue(
+            os.path.isfile(os.path.join(repo_dir, "move_dest", "to_move", "a.php"))
+        )
+        self.assertFalse(os.path.exists(os.path.join(repo_dir, "to_move")))
+
     def test_remove_dead_fixmes(self) -> None:
         with open(os.path.join(self.test_driver.repo_dir, "foo_4.php"), "w") as f:
             f.write(

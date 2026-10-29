@@ -844,6 +844,24 @@ let query r options =
       in
       result r ~grow ~movability ~total_seeds ~sizes)
 
+(** A move needs the server to learn of the renamed directory from its file
+    watcher, and Watchman does not report it on an Eden mount. The question is
+    refused up front there, since otherwise the client moves the directory, waits
+    for a change the server never sees, and undoes the move. It checks the
+    watcher in use and not [edenfs_file_watcher_enabled], because the server
+    falls back to Watchman when it cannot start the EdenFS one. *)
+let watcher_refusal mode notifier =
+  match mode with
+  | Server_isolation_types.Move_to _
+    when Server_notifier.uses_watchman_on_eden_mount notifier ->
+    Some
+      "the server is watching this Eden checkout with Watchman, which does not report a moved directory to it. Stop it with `hh stop` and run this again with `--config edenfs_file_watcher_enabled=true`."
+  | Server_isolation_types.Move_to _
+  | Server_isolation_types.Check_movability
+  | Server_isolation_types.Measure
+  | Server_isolation_types.Grow ->
+    None
+
 let go
     (options : Server_isolation_types.options)
     (genv : Server_env.genv)
@@ -871,6 +889,14 @@ let go
          those heaps are non-evictable and would outlive the query. *)
       Utils.try_finally ~f:sink.close ~finally:reset_caches)
     ~f:(fun () ->
-      let r = make_run options genv env sink in
-      reset_caches ();
-      query r options)
+      match watcher_refusal mode genv.Server_env.notifier with
+      | Some message ->
+        Hh_logger.log "[isolation] refused: %s" message;
+        refused
+          ~grow:(Server_isolation_types.is_grow mode)
+          ~total_seeds:0
+          message
+      | None ->
+        let r = make_run options genv env sink in
+        reset_caches ();
+        query r options)

@@ -246,6 +246,33 @@ class EdenfsWatcherInitDiagnosisTests(TestCase[EdenfsWatcherInitDiagnosisTestDri
             server_log,
         )
 
+    def test_a_move_is_not_refused_when_the_server_fell_back_to_dfind(self) -> None:
+        """The setting is true but the repo is not on Eden, so the server uses
+        dfind, which does report the moved directory."""
+        driver = self.test_driver
+        source = Path(driver.repo_dir, "to_move")
+        source.mkdir()
+        (source / "a.php").write_text("<?hh\nfunction a(): void {}\n")
+
+        driver.start_hh_server()
+        stdout, _, exit_code = driver.run_check(
+            options=[
+                "--isolation",
+                "--isolation-seed-dir",
+                "to_move",
+                "--isolation-move-to",
+                "move_dest",
+                "--json",
+            ],
+        )
+
+        self.assertEqual(exit_code, 0, stdout)
+        self.assertTrue(json.loads(stdout)["moved"], stdout)
+        self.assertTrue(
+            Path(driver.repo_dir, "move_dest", "to_move", "a.php").is_file()
+        )
+        self.assertFalse(source.exists())
+
 
 class EdenfsWatcherTestDriver(EdenTestDriver):
     @classmethod
@@ -1855,8 +1882,8 @@ class ClientConnectionDeferralTest(TestCase[EdenfsWatcherTestDriver]):
 class IsolationMoveToTests(TestCase[EdenfsWatcherTestDriver]):
     """Runs `--isolation-move-to` against an Eden-backed repo.
 
-    The EdenFS file watcher reports a renamed directory to the server as
-    changes to the files under it.
+    Watchman does not report a renamed directory on an Eden mount, so the server
+    needs the EdenFS file watcher, which reports the files under it.
     """
 
     @classmethod
@@ -1970,3 +1997,64 @@ class IsolationMoveToTests(TestCase[EdenfsWatcherTestDriver]):
         self.assertTrue(result["baseline_restored"])
         self.assertTrue(self.exists("undo_a/mover/user.php"))
         self.assertFalse(self.exists("undo_b"))
+
+
+class EdenfsWatcherWatchmanTestDriver(EdenfsWatcherTestDriver):
+    """An Eden-backed repo whose server uses Watchman, not Edenfs_watcher."""
+
+    @classmethod
+    def prepare_initial_commit(cls, output_folder: str) -> list[str]:
+        with open(os.path.join(output_folder, ".watchmanconfig"), "w") as f:
+            f.write("{}")
+        with open(os.path.join(output_folder, "hh.conf"), "w") as f:
+            f.write(
+                "min_log_level = Debug\n"
+                "use_watchman = true\n"
+                "watchman_subscribe_v2 = true\n"
+                "edenfs_file_watcher_enabled = false\n"
+            )
+        return EdenTestDriver.prepare_initial_commit(output_folder) + [
+            "hh.conf",
+            ".watchmanconfig",
+        ]
+
+    def tearDown(self) -> None:
+        # Not EdenfsWatcherTestDriver.tearDown: it asserts that Edenfs_watcher ran.
+        assertServerNotCrashed(self)
+        self.stop_hh_server(retries=3)
+        EdenTestDriver.tearDown(self)
+
+
+class IsolationMoveToWatchmanTests(TestCase[EdenfsWatcherWatchmanTestDriver]):
+    """Watchman does not report a renamed directory on an Eden mount
+    (T118370264), so `--isolation-move-to` is refused there before anything moves.
+    """
+
+    @classmethod
+    def get_test_driver(cls) -> EdenfsWatcherWatchmanTestDriver:
+        return EdenfsWatcherWatchmanTestDriver()
+
+    def test_a_move_is_refused_on_eden_with_watchman(self) -> None:
+        repo_dir = Path(self.test_driver.repo_dir)
+        (repo_dir / "to_move").mkdir()
+        (repo_dir / "to_move" / "a.php").write_text("<?hh\nfunction a(): void {}\n")
+
+        self.test_driver.start_hh_server()
+        stdout, _, exit_code = self.test_driver.run_check(
+            options=[
+                "--isolation",
+                "--isolation-seed-dir",
+                "to_move",
+                "--isolation-move-to",
+                "move_dest",
+                "--json",
+            ],
+        )
+
+        input_error_exit_code = 10
+        self.assertEqual(exit_code, input_error_exit_code, stdout)
+        result = json.loads(stdout)
+        self.assertFalse(result["moved"])
+        self.assertIn("watching this Eden checkout with Watchman", result["refused"])
+        self.assertTrue((repo_dir / "to_move" / "a.php").is_file())
+        self.assertFalse((repo_dir / "move_dest").exists())
