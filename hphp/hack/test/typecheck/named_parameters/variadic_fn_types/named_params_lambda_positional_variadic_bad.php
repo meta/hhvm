@@ -22,17 +22,19 @@ function test(): void {
     expect_string($values[0]); // Error
     expect_int($flag); // Error
   };
-  $_ = (named int..., named string $label) ==> {
-    expect_int($label); // Error
-  };
-  $_ = (int $first, named bool..., named string $label) ==> {
-    expect_string($first); // Error
-    expect_int($label); // Error
-  };
-  $_ = (int ...$values, named float..., named string $label) ==> {
-    expect_string($values[0]); // Error
-    expect_int($label); // Error
-  };
+  // TODO(T289877278): Restore these as diagnostic-recovery tests for rejected
+  // non-final named variadic parameters (D123578097).
+  // $_ = (named int..., named string $label) ==> {
+  //   expect_int($label); // Error
+  // };
+  // $_ = (int $first, named bool..., named string $label) ==> {
+  //   expect_string($first); // Error
+  //   expect_int($label); // Error
+  // };
+  // $_ = (int ...$values, named float..., named string $label) ==> {
+  //   expect_string($values[0]); // Error
+  //   expect_int($label); // Error
+  // };
 }
 
 function take_variadic(
@@ -70,5 +72,3 @@ function test_inferred(): void {
     expect_int($flag); // Error
   });
 }
-//
-//

@@ -62,3 +62,4 @@ function immediately_called_named_collector_body_mistype_rejects(): void {
     wants_string($optional);
   })(1, extra = "s");
 }
+//

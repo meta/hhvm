@@ -2087,14 +2087,10 @@ end = struct
       else
         Ok ()
     and variadic_err =
-      let positional_variadic_of ft =
-        if Typing_defs.ft_has_positional_variadic ft then
-          List.last (Typing_defs.ft_params_without_named_variadic ft)
-        else
-          None
+      let ft_sub_variadic = Typing_defs.ft_positional_variadic_param ft_sub in
+      let ft_super_variadic =
+        Typing_defs.ft_positional_variadic_param ft_super
       in
-      let ft_sub_variadic = positional_variadic_of ft_sub in
-      let ft_super_variadic = positional_variadic_of ft_super in
 
       match (ft_sub_variadic, ft_super_variadic) with
       | (Some { fp_name = None; _ }, Some { fp_name = Some _; _ }) ->

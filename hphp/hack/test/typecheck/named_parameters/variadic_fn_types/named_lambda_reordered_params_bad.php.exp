@@ -335,6 +335,32 @@ error: Typing[4110] Invalid argument [1]
 -> Expected `int` [2]
 -> But got `string` [3]
 
+named_lambda_reordered_params_bad.php:49:15
+ 6 | ): void {}
+ 7 | 
+ 8 | function wants_int(int $x): void {}
+   |                    ^^^ [2]
+ 9 | function wants_string(string $x): void {}
+10 | 
+   :
+37 | 
+38 | function take_both_collectors_fn(
+39 |   (function(int, string, named bool $flag, named int...): void) $_,
+   |                  ^^^^^^ [3]
+40 | ): void {}
+41 | 
+   :
+47 |   take_both_collectors_fn((...$rest, named $flag, named int...) ==> {
+48 |     wants_int_vec($rest);
+49 |     wants_int($flag);
+   |               ^^^^^ [1]
+50 |   });
+51 |   take_both_variadic_collectors_fn((...$rest, named $flag, named int...) ==> {
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
 named_lambda_reordered_params_bad.php:51:36
 41 | 
 42 | function take_both_variadic_collectors_fn(
@@ -383,6 +409,32 @@ named_lambda_reordered_params_bad.php:51:36
 55 | }
 56 | 
 
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+named_lambda_reordered_params_bad.php:53:15
+ 6 | ): void {}
+ 7 | 
+ 8 | function wants_int(int $x): void {}
+   |                    ^^^ [2]
+ 9 | function wants_string(string $x): void {}
+10 | 
+   :
+41 | 
+42 | function take_both_variadic_collectors_fn(
+43 |   (function(int, string..., named bool $flag, named int...): void) $_,
+   |                  ^^^^^^ [3]
+44 | ): void {}
+45 | 
+   :
+51 |   take_both_variadic_collectors_fn((...$rest, named $flag, named int...) ==> {
+52 |     wants_int_vec($rest);
+53 |     wants_int($flag);
+   |               ^^^^^ [1]
+54 |   });
+55 | }
+
 error: Typing[4331] Wrong type hint [1]
 -> Expected `string` [2]
 -> But got `int` [3]
@@ -398,6 +450,7 @@ named_lambda_reordered_params_bad.php:60:15
 63 |   })(1, extra = "s");
    |                 ^^^ [2]
 64 | }
+65 | //
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `string` [2]
@@ -419,5 +472,6 @@ named_lambda_reordered_params_bad.php:61:18
 63 |   })(1, extra = "s");
    |      ^ [3]
 64 | }
+65 | //
 
-19 errors found
+21 errors found

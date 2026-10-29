@@ -1,32 +1,68 @@
-error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+error: Typing[4110] Invalid argument [1]
+-> Expected `string` [2]
+-> But got `int` [1]
+->   from this definition (variadic argument) [3]
 
-named_params_lambda_positional_variadic_bad.php:25:9
-23 |     expect_int($flag); // Error
-24 |   };
-25 |   $_ = (named int..., named string $label) ==> {
-   |         ^^^^^^^^^^^^ [1]
-26 |     expect_int($label); // Error
-27 |   };
+named_params_lambda_positional_variadic_bad.php:14:19
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function expect_string(string $_): void {}
+   |                        ^^^^^^ [2]
+ 7 | 
+ 8 | function expect_int(int $_): void {}
+   :
+11 | 
+12 | function test(): void {
+13 |   $_ = (int ...$values, named string...) ==> {
+   |                ^^^^^^^ [3]
+14 |     expect_string($values[0]); // Error
+   |                   ^^^^^^^^^^ [1]
+15 |   };
+16 |   $_ = (int ...$values, named string $label) ==> {
 
-error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+error: Typing[4110] Invalid argument [1]
+-> Expected `string` [2]
+-> But got `int` [1]
+->   from this definition (variadic argument) [3]
 
-named_params_lambda_positional_variadic_bad.php:28:21
-26 |     expect_int($label); // Error
-27 |   };
-28 |   $_ = (int $first, named bool..., named string $label) ==> {
-   |                     ^^^^^^^^^^^^^ [1]
-29 |     expect_string($first); // Error
-30 |     expect_int($label); // Error
+named_params_lambda_positional_variadic_bad.php:17:19
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function expect_string(string $_): void {}
+   |                        ^^^^^^ [2]
+ 7 | 
+ 8 | function expect_int(int $_): void {}
+   :
+14 |     expect_string($values[0]); // Error
+15 |   };
+16 |   $_ = (int ...$values, named string $label) ==> {
+   |                ^^^^^^^ [3]
+17 |     expect_string($values[0]); // Error
+   |                   ^^^^^^^^^^ [1]
+18 |     expect_int($label); // Error
+19 |   };
 
-error: Parsing[1002] A variadic `named` parameter may only appear at the end of a parameter list. [1]
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
 
-named_params_lambda_positional_variadic_bad.php:32:25
-30 |     expect_int($label); // Error
-31 |   };
-32 |   $_ = (int ...$values, named float..., named string $label) ==> {
-   |                         ^^^^^^^^^^^^^^ [1]
-33 |     expect_string($values[0]); // Error
-34 |     expect_int($label); // Error
+named_params_lambda_positional_variadic_bad.php:18:16
+ 6 | function expect_string(string $_): void {}
+ 7 | 
+ 8 | function expect_int(int $_): void {}
+   |                     ^^^ [2]
+ 9 | 
+10 | function expect_bool(bool $_): void {}
+   :
+14 |     expect_string($values[0]); // Error
+15 |   };
+16 |   $_ = (int ...$values, named string $label) ==> {
+   |                               ^^^^^^ [3]
+17 |     expect_string($values[0]); // Error
+18 |     expect_int($label); // Error
+   |                ^^^^^^ [1]
+19 |   };
+20 |   $_ = (named string $label, int ...$values, named bool $flag, named float...) ==> {
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `int` [2]
@@ -51,7 +87,7 @@ named_params_lambda_positional_variadic_bad.php:21:16
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `string` [2]
--> But got `float` [1]
+-> But got `int` [1]
 ->   from this definition (variadic argument) [3]
 
 named_params_lambda_positional_variadic_bad.php:22:19
@@ -65,7 +101,7 @@ named_params_lambda_positional_variadic_bad.php:22:19
 18 |     expect_int($label); // Error
 19 |   };
 20 |   $_ = (named string $label, int ...$values, named bool $flag, named float...) ==> {
-   |                                                                           ^^^ [3]
+   |                                     ^^^^^^^ [3]
 21 |     expect_int($label); // Error
 22 |     expect_string($values[0]); // Error
    |                   ^^^^^^^^^^ [1]
@@ -73,31 +109,10 @@ named_params_lambda_positional_variadic_bad.php:22:19
 24 |   };
 
 error: Typing[4110] Invalid argument [1]
--> Expected `string` [2]
--> But got `int` [3]
-
-named_params_lambda_positional_variadic_bad.php:29:19
- 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
- 5 | 
- 6 | function expect_string(string $_): void {}
-   |                        ^^^^^^ [2]
- 7 | 
- 8 | function expect_int(int $_): void {}
-   :
-26 |     expect_int($label); // Error
-27 |   };
-28 |   $_ = (int $first, named bool..., named string $label) ==> {
-   |         ^^^ [3]
-29 |     expect_string($first); // Error
-   |                   ^^^^^^ [1]
-30 |     expect_int($label); // Error
-31 |   };
-
-error: Typing[4110] Invalid argument [1]
 -> Expected `int` [2]
--> But got `bool` (variadic argument) [3]
+-> But got `bool` [3]
 
-named_params_lambda_positional_variadic_bad.php:30:16
+named_params_lambda_positional_variadic_bad.php:23:16
  6 | function expect_string(string $_): void {}
  7 | 
  8 | function expect_int(int $_): void {}
@@ -105,22 +120,23 @@ named_params_lambda_positional_variadic_bad.php:30:16
  9 | 
 10 | function expect_bool(bool $_): void {}
    :
-26 |     expect_int($label); // Error
-27 |   };
-28 |   $_ = (int $first, named bool..., named string $label) ==> {
-   |                               ^^^ [3]
-29 |     expect_string($first); // Error
-30 |     expect_int($label); // Error
-   |                ^^^^^^ [1]
-31 |   };
-32 |   $_ = (int ...$values, named float..., named string $label) ==> {
+18 |     expect_int($label); // Error
+19 |   };
+20 |   $_ = (named string $label, int ...$values, named bool $flag, named float...) ==> {
+   |                                                    ^^^^ [3]
+21 |     expect_int($label); // Error
+22 |     expect_string($values[0]); // Error
+23 |     expect_int($flag); // Error
+   |                ^^^^^ [1]
+24 |   };
+25 |   // TODO(T289877278): Restore these as diagnostic-recovery tests for rejected
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `string` [2]
--> But got `bool` [1]
-->   from this definition (variadic argument) [3]
+-> But got `int` [1]
+->   from this definition [3]
 
-named_params_lambda_positional_variadic_bad.php:52:19
+named_params_lambda_positional_variadic_bad.php:54:19
  4 | <<file: __EnableUnstableFeatures('named_parameters')>>
  5 | 
  6 | function expect_string(string $_): void {}
@@ -128,97 +144,52 @@ named_params_lambda_positional_variadic_bad.php:52:19
  7 | 
  8 | function expect_int(int $_): void {}
    :
-49 | 
-50 | function test_inferred(): void {
-51 |   take_variadic((...$values, named $label, named bool...) ==> {
-   |                                                      ^^^ [3]
-52 |     expect_string($values[0]); // Error
-   |                   ^^^^^^^^^^ [1]
-53 |     expect_int($label); // Error
-54 |   });
-
-error: Typing[4043] Invalid argument [1]
--> Variadic arguments: `...`-style is not a subtype of `...$args` [1]
--> Because of this definition [2]
-
-named_params_lambda_positional_variadic_bad.php:55:25
-41 | 
-42 | function take_extra_positional(
-43 |   (function(int, int, int..., named bool $flag): void) $_,
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-44 | ): void {}
-45 | 
+39 | 
+40 | function take_variadic(
+41 |   (function(int..., named string $label, named bool...): void) $_,
+   |             ^^^ [3]
+42 | ): void {}
+43 | 
    :
-53 |     expect_int($label); // Error
-54 |   });
-55 |   take_extra_positional((...$values, named bool $flag) ==> {
-   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-56 |     expect_bool($values[0]); // Error
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-57 |     expect_int($flag); // Error
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-58 |   });
-   |   ^ [1]
-59 |   take_extra_positional((named bool $flag, ...$values) ==> {
-60 |     expect_bool($values[0]); // Error
+52 | function test_inferred(): void {
+53 |   take_variadic((...$values, named $label, named bool...) ==> {
+54 |     expect_string($values[0]); // Error
+   |                   ^^^^^^^^^^ [1]
+55 |     expect_int($label); // Error
+56 |   });
 
 error: Typing[4110] Invalid argument [1]
--> Expected `bool` [2]
--> But got `int` [3]
+-> Expected `int` [2]
+-> But got `string` [3]
 
-named_params_lambda_positional_variadic_bad.php:56:17
+named_params_lambda_positional_variadic_bad.php:55:16
+ 6 | function expect_string(string $_): void {}
+ 7 | 
  8 | function expect_int(int $_): void {}
+   |                     ^^^ [2]
  9 | 
 10 | function expect_bool(bool $_): void {}
-   |                      ^^^^ [2]
-11 | 
-12 | function test(): void {
    :
-41 | 
-42 | function take_extra_positional(
-43 |   (function(int, int, int..., named bool $flag): void) $_,
-   |                       ^^^ [3]
-44 | ): void {}
-45 | 
+39 | 
+40 | function take_variadic(
+41 |   (function(int..., named string $label, named bool...): void) $_,
+   |                           ^^^^^^ [3]
+42 | ): void {}
+43 | 
    :
-54 |   });
-55 |   take_extra_positional((...$values, named bool $flag) ==> {
-56 |     expect_bool($values[0]); // Error
-   |                 ^^^^^^^^^^ [1]
-57 |     expect_int($flag); // Error
-58 |   });
-
-error: Typing[4043] Invalid argument [1]
--> Variadic arguments: `...`-style is not a subtype of `...$args` [1]
--> Because of this definition [2]
-
-named_params_lambda_positional_variadic_bad.php:59:25
-41 | 
-42 | function take_extra_positional(
-43 |   (function(int, int, int..., named bool $flag): void) $_,
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-44 | ): void {}
-45 | 
-   :
-57 |     expect_int($flag); // Error
-58 |   });
-59 |   take_extra_positional((named bool $flag, ...$values) ==> {
-   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-60 |     expect_bool($values[0]); // Error
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-61 |     expect_int($flag); // Error
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-62 |   });
-   |   ^ [1]
-63 |   take_extra_positional((int $first, ...$rest, named bool $flag) ==> {
-64 |     expect_string($first); // Error
+53 |   take_variadic((...$values, named $label, named bool...) ==> {
+54 |     expect_string($values[0]); // Error
+55 |     expect_int($label); // Error
+   |                ^^^^^^ [1]
+56 |   });
+57 |   take_extra_positional((...$values, named bool $flag) ==> {
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `bool` [2]
 -> But got `int` [1]
 ->   from this definition [3]
 
-named_params_lambda_positional_variadic_bad.php:60:17
+named_params_lambda_positional_variadic_bad.php:58:17
  8 | function expect_int(int $_): void {}
  9 | 
 10 | function expect_bool(bool $_): void {}
@@ -226,25 +197,25 @@ named_params_lambda_positional_variadic_bad.php:60:17
 11 | 
 12 | function test(): void {
    :
-41 | 
-42 | function take_extra_positional(
-43 |   (function(int, int, int..., named bool $flag): void) $_,
-   |                       ^^^ [3]
-44 | ): void {}
-45 | 
+43 | 
+44 | function take_extra_positional(
+45 |   (function(int, int, int..., named bool $flag): void) $_,
+   |             ^^^ [3]
+46 | ): void {}
+47 | 
    :
-58 |   });
-59 |   take_extra_positional((named bool $flag, ...$values) ==> {
-60 |     expect_bool($values[0]); // Error
+56 |   });
+57 |   take_extra_positional((...$values, named bool $flag) ==> {
+58 |     expect_bool($values[0]); // Error
    |                 ^^^^^^^^^^ [1]
-61 |     expect_int($flag); // Error
-62 |   });
+59 |     expect_int($flag); // Error
+60 |   });
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `int` [2]
 -> But got `bool` [3]
 
-named_params_lambda_positional_variadic_bad.php:61:16
+named_params_lambda_positional_variadic_bad.php:59:16
  6 | function expect_string(string $_): void {}
  7 | 
  8 | function expect_int(int $_): void {}
@@ -252,42 +223,22 @@ named_params_lambda_positional_variadic_bad.php:61:16
  9 | 
 10 | function expect_bool(bool $_): void {}
    :
-57 |     expect_int($flag); // Error
-58 |   });
-59 |   take_extra_positional((named bool $flag, ...$values) ==> {
-   |                                ^^^^ [3]
-60 |     expect_bool($values[0]); // Error
-61 |     expect_int($flag); // Error
+55 |     expect_int($label); // Error
+56 |   });
+57 |   take_extra_positional((...$values, named bool $flag) ==> {
+   |                                            ^^^^ [3]
+58 |     expect_bool($values[0]); // Error
+59 |     expect_int($flag); // Error
    |                ^^^^^ [1]
-62 |   });
-63 |   take_extra_positional((int $first, ...$rest, named bool $flag) ==> {
-
-error: Typing[4110] Invalid argument [1]
--> Expected `string` [2]
--> But got `int` [3]
-
-named_params_lambda_positional_variadic_bad.php:64:19
- 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
- 5 | 
- 6 | function expect_string(string $_): void {}
-   |                        ^^^^^^ [2]
- 7 | 
- 8 | function expect_int(int $_): void {}
-   :
-61 |     expect_int($flag); // Error
-62 |   });
-63 |   take_extra_positional((int $first, ...$rest, named bool $flag) ==> {
-   |                          ^^^ [3]
-64 |     expect_string($first); // Error
-   |                   ^^^^^^ [1]
-65 |     expect_bool($rest[0]); // Error
-66 |     expect_int($flag); // Error
+60 |   });
+61 |   take_extra_positional((named bool $flag, ...$values) ==> {
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `bool` [2]
--> But got `int` [3]
+-> But got `int` [1]
+->   from this definition [3]
 
-named_params_lambda_positional_variadic_bad.php:69:17
+named_params_lambda_positional_variadic_bad.php:62:17
  8 | function expect_int(int $_): void {}
  9 | 
 10 | function expect_bool(bool $_): void {}
@@ -295,18 +246,160 @@ named_params_lambda_positional_variadic_bad.php:69:17
 11 | 
 12 | function test(): void {
    :
-45 | 
-46 | function take_fixed_positional(
-47 |   (function(int, int, int, named bool $flag): void) $_,
-   |                       ^^^ [3]
-48 | ): void {}
-49 | 
+43 | 
+44 | function take_extra_positional(
+45 |   (function(int, int, int..., named bool $flag): void) $_,
+   |                  ^^^ [3]
+46 | ): void {}
+47 | 
    :
-67 |   });
-68 |   take_fixed_positional((...$values, named bool $flag) ==> {
-69 |     expect_bool($values[0]); // Error
+60 |   });
+61 |   take_extra_positional((named bool $flag, ...$values) ==> {
+62 |     expect_bool($values[0]); // Error
    |                 ^^^^^^^^^^ [1]
-70 |     expect_int($flag); // Error
-71 |   });
+63 |     expect_int($flag); // Error
+64 |   });
 
-15 errors found
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `bool` [3]
+
+named_params_lambda_positional_variadic_bad.php:63:16
+ 6 | function expect_string(string $_): void {}
+ 7 | 
+ 8 | function expect_int(int $_): void {}
+   |                     ^^^ [2]
+ 9 | 
+10 | function expect_bool(bool $_): void {}
+   :
+59 |     expect_int($flag); // Error
+60 |   });
+61 |   take_extra_positional((named bool $flag, ...$values) ==> {
+   |                                ^^^^ [3]
+62 |     expect_bool($values[0]); // Error
+63 |     expect_int($flag); // Error
+   |                ^^^^^ [1]
+64 |   });
+65 |   take_extra_positional((int $first, ...$rest, named bool $flag) ==> {
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `string` [2]
+-> But got `int` [3]
+
+named_params_lambda_positional_variadic_bad.php:66:19
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function expect_string(string $_): void {}
+   |                        ^^^^^^ [2]
+ 7 | 
+ 8 | function expect_int(int $_): void {}
+   :
+63 |     expect_int($flag); // Error
+64 |   });
+65 |   take_extra_positional((int $first, ...$rest, named bool $flag) ==> {
+   |                          ^^^ [3]
+66 |     expect_string($first); // Error
+   |                   ^^^^^^ [1]
+67 |     expect_bool($rest[0]); // Error
+68 |     expect_int($flag); // Error
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `bool` [2]
+-> But got `int` [1]
+->   from this definition [3]
+
+named_params_lambda_positional_variadic_bad.php:67:17
+ 8 | function expect_int(int $_): void {}
+ 9 | 
+10 | function expect_bool(bool $_): void {}
+   |                      ^^^^ [2]
+11 | 
+12 | function test(): void {
+   :
+43 | 
+44 | function take_extra_positional(
+45 |   (function(int, int, int..., named bool $flag): void) $_,
+   |                  ^^^ [3]
+46 | ): void {}
+47 | 
+   :
+65 |   take_extra_positional((int $first, ...$rest, named bool $flag) ==> {
+66 |     expect_string($first); // Error
+67 |     expect_bool($rest[0]); // Error
+   |                 ^^^^^^^^ [1]
+68 |     expect_int($flag); // Error
+69 |   });
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `bool` [3]
+
+named_params_lambda_positional_variadic_bad.php:68:16
+ 6 | function expect_string(string $_): void {}
+ 7 | 
+ 8 | function expect_int(int $_): void {}
+   |                     ^^^ [2]
+ 9 | 
+10 | function expect_bool(bool $_): void {}
+   :
+63 |     expect_int($flag); // Error
+64 |   });
+65 |   take_extra_positional((int $first, ...$rest, named bool $flag) ==> {
+   |                                                      ^^^^ [3]
+66 |     expect_string($first); // Error
+67 |     expect_bool($rest[0]); // Error
+68 |     expect_int($flag); // Error
+   |                ^^^^^ [1]
+69 |   });
+70 |   take_fixed_positional((...$values, named bool $flag) ==> {
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `bool` [2]
+-> But got `int` [1]
+->   from this definition [3]
+
+named_params_lambda_positional_variadic_bad.php:71:17
+ 8 | function expect_int(int $_): void {}
+ 9 | 
+10 | function expect_bool(bool $_): void {}
+   |                      ^^^^ [2]
+11 | 
+12 | function test(): void {
+   :
+47 | 
+48 | function take_fixed_positional(
+49 |   (function(int, int, int, named bool $flag): void) $_,
+   |             ^^^ [3]
+50 | ): void {}
+51 | 
+   :
+69 |   });
+70 |   take_fixed_positional((...$values, named bool $flag) ==> {
+71 |     expect_bool($values[0]); // Error
+   |                 ^^^^^^^^^^ [1]
+72 |     expect_int($flag); // Error
+73 |   });
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `bool` [3]
+
+named_params_lambda_positional_variadic_bad.php:72:16
+ 6 | function expect_string(string $_): void {}
+ 7 | 
+ 8 | function expect_int(int $_): void {}
+   |                     ^^^ [2]
+ 9 | 
+10 | function expect_bool(bool $_): void {}
+   :
+68 |     expect_int($flag); // Error
+69 |   });
+70 |   take_fixed_positional((...$values, named bool $flag) ==> {
+   |                                            ^^^^ [3]
+71 |     expect_bool($values[0]); // Error
+72 |     expect_int($flag); // Error
+   |                ^^^^^ [1]
+73 |   });
+74 | }
+
+17 errors found

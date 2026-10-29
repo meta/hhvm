@@ -89,3 +89,4 @@ function non_tail_collector_with_fixed_expected_body_mistype_rejects(): void {
 }
 
 function wants_bool(bool $x): void {}
+//

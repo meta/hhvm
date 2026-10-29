@@ -566,6 +566,12 @@ let ft_params_without_named_variadic (ft : _ fun_type) : _ fun_param list =
 
 let ft_has_positional_variadic (ft : _ fun_type) : bool = get_ft_variadic ft
 
+let ft_positional_variadic_param (ft : _ fun_type) : _ fun_param option =
+  if ft_has_positional_variadic ft then
+    List.find (List.rev ft.ft_params) ~f:(Fn.non get_fp_is_named)
+  else
+    None
+
 (* The identifier for this *)
 let this = Local_id.make_scoped "$this"
 

@@ -379,6 +379,9 @@ val ft_params_without_named_variadic : 'a fun_type -> 'a fun_param list
 (** True iff [ft] has a positional (unnamed) variadic parameter. *)
 val ft_has_positional_variadic : 'a fun_type -> bool
 
+(** Returns the positional variadic parameter, if present. *)
+val ft_positional_variadic_param : 'a fun_type -> 'a fun_param option
+
 (* Number of required parameters. Does not include optional, variadic, or
  * type-splat parameters
  *)

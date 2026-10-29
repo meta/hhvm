@@ -39,17 +39,19 @@ function test(): void {
     hh_expect_equivalent<int>($first);
     hh_expect_equivalent<bool>($flag);
   };
-  $_ = (named int..., named string $label) ==> {
-    hh_expect_equivalent<string>($label);
-  };
-  $_ = (int $first, named bool..., named string $label) ==> {
-    hh_expect_equivalent<int>($first);
-    hh_expect_equivalent<string>($label);
-  };
-  $_ = (int ...$values, named float..., named string $label) ==> {
-    hh_expect_equivalent<vec<int>>($values);
-    hh_expect_equivalent<string>($label);
-  };
+  // TODO(T289877278): Restore these as diagnostic-recovery tests for rejected
+  // non-final named variadic parameters (D123578097).
+  // $_ = (named int..., named string $label) ==> {
+  //   hh_expect_equivalent<string>($label);
+  // };
+  // $_ = (int $first, named bool..., named string $label) ==> {
+  //   hh_expect_equivalent<int>($first);
+  //   hh_expect_equivalent<string>($label);
+  // };
+  // $_ = (int ...$values, named float..., named string $label) ==> {
+  //   hh_expect_equivalent<vec<int>>($values);
+  //   hh_expect_equivalent<string>($label);
+  // };
 }
 
 function take_variadic(
@@ -87,5 +89,3 @@ function test_inferred(): void {
     hh_expect_equivalent<bool>($flag);
   });
 }
-//
-//

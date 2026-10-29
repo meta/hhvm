@@ -45,32 +45,32 @@ named_params_variadic_position.php:58:14
 63 |     hh_expect_equivalent<vec<(int | string)>>($args);
 
 error: Typing[4452] hh_expect_equivalent type mismatch [1]
--> Expected `string` [2]
--> But got `int` [3]
+-> Expected `int` [2]
+-> But got `string` [3]
 
 named_params_variadic_position.php:59:5
 53 | }
 54 | 
 55 | function contextual((function(int, string, named bool $flag): void) $f): void {}
-   |                                    ^^^^^^ [2]
+   |                               ^^^ [2]
 56 | 
 57 | function aligned_capture(): void {
 58 |   contextual((...$args, named $flag) ==> {
 59 |     hh_expect_equivalent<vec<(int | string)>>($args);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-   |                               ^^^ [3]
+   |                                     ^^^^^^ [3]
 60 |     hh_expect_equivalent<bool>($flag);
 61 |   });
 
 error: Typing[4452] hh_expect_equivalent type mismatch [1]
 -> Expected `bool` [2]
--> But got `int` [3]
+-> But got `string` [3]
 
 named_params_variadic_position.php:60:5
 53 | }
 54 | 
 55 | function contextual((function(int, string, named bool $flag): void) $f): void {}
-   |                               ^^^ [3]
+   |                                    ^^^^^^ [3]
 56 | 
 57 | function aligned_capture(): void {
 58 |   contextual((...$args, named $flag) ==> {
@@ -84,13 +84,13 @@ named_params_variadic_position.php:60:5
 error: Typing[4110] Invalid argument [1]
 -> Expected `bool` [2]
 ->   via this generic `T` [3]
--> But got `int` [4]
+-> But got `string` [4]
 
 named_params_variadic_position.php:60:32
 53 | }
 54 | 
 55 | function contextual((function(int, string, named bool $flag): void) $f): void {}
-   |                               ^^^ [4]
+   |                                    ^^^^^^ [4]
 56 | 
 57 | function aligned_capture(): void {
 58 |   contextual((...$args, named $flag) ==> {
@@ -136,142 +136,23 @@ named_params_variadic_position.php:62:14
 67 | //
 
 error: Typing[4452] hh_expect_equivalent type mismatch [1]
--> Expected `(int | string)` [2]
--> But got `bool` [3]
-
-named_params_variadic_position.php:63:5
-60 |     hh_expect_equivalent<bool>($flag);
-61 |   });
-62 |   contextual((...$args, named bool $flag) ==> {
-   |                               ^^^^ [3]
-63 |     hh_expect_equivalent<vec<(int | string)>>($args);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-   |                              ^^^^^^^^^^^^^^ [2]
-64 |     hh_expect_equivalent<bool>($flag);
-65 |   });
-
-error: Typing[4452] hh_expect_equivalent type mismatch [1]
 -> Expected `int` [2]
--> But got `bool` [3]
+-> But got `string` [3]
 
 named_params_variadic_position.php:63:5
-60 |     hh_expect_equivalent<bool>($flag);
-61 |   });
-62 |   contextual((...$args, named bool $flag) ==> {
-   |                               ^^^^ [3]
-63 |     hh_expect_equivalent<vec<(int | string)>>($args);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-   |                               ^^^ [2]
-64 |     hh_expect_equivalent<bool>($flag);
-65 |   });
-
-error: Typing[4452] hh_expect_equivalent type mismatch [1]
--> Expected `string` [2]
--> But got `bool` [3]
-
-named_params_variadic_position.php:63:5
-60 |     hh_expect_equivalent<bool>($flag);
-61 |   });
-62 |   contextual((...$args, named bool $flag) ==> {
-   |                               ^^^^ [3]
-63 |     hh_expect_equivalent<vec<(int | string)>>($args);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-   |                                     ^^^^^^ [2]
-64 |     hh_expect_equivalent<bool>($flag);
-65 |   });
-
-error: Typing[4110] Invalid argument [1]
--> Expected `(int | string)` [2]
--> But got `bool` [3]
-
-named_params_variadic_position.php:63:47
-60 |     hh_expect_equivalent<bool>($flag);
-61 |   });
-62 |   contextual((...$args, named bool $flag) ==> {
-   |                               ^^^^ [3]
-63 |     hh_expect_equivalent<vec<(int | string)>>($args);
-   |                              ^^^^^^^^^^^^^^ [2]
-   |                                               ^^^^^ [1]
-64 |     hh_expect_equivalent<bool>($flag);
-65 |   });
-
-error: Typing[4110] Invalid argument [1]
--> Expected `int` [2]
--> But got `bool` [3]
-
-named_params_variadic_position.php:63:47
-60 |     hh_expect_equivalent<bool>($flag);
-61 |   });
-62 |   contextual((...$args, named bool $flag) ==> {
-   |                               ^^^^ [3]
-63 |     hh_expect_equivalent<vec<(int | string)>>($args);
-   |                               ^^^ [2]
-   |                                               ^^^^^ [1]
-64 |     hh_expect_equivalent<bool>($flag);
-65 |   });
-
-error: Typing[4110] Invalid argument [1]
--> Expected `string` [2]
--> But got `bool` [3]
-
-named_params_variadic_position.php:63:47
-60 |     hh_expect_equivalent<bool>($flag);
-61 |   });
-62 |   contextual((...$args, named bool $flag) ==> {
-   |                               ^^^^ [3]
-63 |     hh_expect_equivalent<vec<(int | string)>>($args);
-   |                                     ^^^^^^ [2]
-   |                                               ^^^^^ [1]
-64 |     hh_expect_equivalent<bool>($flag);
-65 |   });
-
-error: Typing[4452] hh_expect_equivalent type mismatch [1]
--> Expected `bool` [2]
--> But got `int` [3]
-
-named_params_variadic_position.php:64:5
 53 | }
 54 | 
 55 | function contextual((function(int, string, named bool $flag): void) $f): void {}
-   |                               ^^^ [3]
+   |                               ^^^ [2]
 56 | 
 57 | function aligned_capture(): void {
    :
+61 |   });
 62 |   contextual((...$args, named bool $flag) ==> {
 63 |     hh_expect_equivalent<vec<(int | string)>>($args);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+   |                                     ^^^^^^ [3]
 64 |     hh_expect_equivalent<bool>($flag);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-   |                          ^^^^ [2]
 65 |   });
-66 | }
 
-error: Typing[4110] Invalid argument [1]
--> Expected `bool` [2]
-->   via this generic `T` [3]
--> But got `int` [4]
-
-named_params_variadic_position.php:64:32
-53 | }
-54 | 
-55 | function contextual((function(int, string, named bool $flag): void) $f): void {}
-   |                               ^^^ [4]
-56 | 
-57 | function aligned_capture(): void {
-   :
-62 |   contextual((...$args, named bool $flag) ==> {
-63 |     hh_expect_equivalent<vec<(int | string)>>($args);
-64 |     hh_expect_equivalent<bool>($flag);
-   |                          ^^^^ [2]
-   |                                ^^^^^ [1]
-65 |   });
-66 | }
-
-hh_single_type_check_magic.hhi:5:108
- 3 | <<__NoAutoDynamic, __SupportDynamicType>> function hh_show<T>(<<__AcceptDisposable>> readonly T $val)[]:T {}
- 4 | <<__NoAutoDynamic, __SupportDynamicType>> function hh_expect<T>(<<__AcceptDisposable>> readonly T $val)[]:T {}
- 5 | <<__NoAutoDynamic, __SupportDynamicType>> function hh_expect_equivalent<T>(<<__AcceptDisposable>> readonly T $val)[]:T {}
-   |                                                                                                            ^ [3]
- 6 | <<__NoAutoDynamic>> function hh_show_env()[]:void {}
- 7 | <<__NoAutoDynamic>> function hh_log_level(string $key, int $level)[]:void {}
-
-14 errors found
+7 errors found

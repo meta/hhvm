@@ -11493,48 +11493,50 @@ end = struct
     (* Bind any quantifiers in the function type; these are unbound after typing the body *)
     let env = Env.add_generic_parameters_with_bounds env ft.ft_tparams in
     let env = Env.clear_params env in
-    let non_variadic_ft_params =
-      if get_ft_variadic ft then
-        List.drop_last_exn ft.ft_params
-      else
-        ft.ft_params
+    let (param_ft_params, extra_ft_params) =
+      List.split_n ft.ft_params (List.length f.f_params)
     in
-    let make_variadic_arg env varg tyl =
-      let remaining_types =
-        (* It's possible the variadic arg will capture the variadic
-         * parameter of the supplied arity (if arity is Fvariadic)
-         * and additional supplied params.
-         *
-         * For example in cases such as:
-         *  lambda1 = (int $a, string...$c) ==> {};
-         *  lambda1(1, "hello", ...$y); (where $y is a variadic string)
-         *  lambda1(1, "hello", "world");
-         * then ...$c will contain "hello" and everything in $y in the first
-         * example, and "hello" and "world" in the second example.
-         *
-         * To account for a mismatch in arity, we take the remaining supplied
-         * parameters and return a list of all their types. We'll use this
-         * to create a union type when creating the typed variadic arg.
-         *)
-        let remaining_params =
-          List.drop non_variadic_ft_params (List.length f.f_params - 1)
-        in
-        List.map ~f:(fun param -> param.fp_type) remaining_params
-      in
+    let param_ft_pairs = List.zip_exn f.f_params param_ft_params in
+    let is_positional_variadic param =
+      Aast_utils.is_param_variadic param && Option.is_none param.param_named
+    in
+    let non_variadic_ft_params =
+      List.filter_map param_ft_pairs ~f:(fun (param, fp) ->
+          if Aast_utils.is_param_variadic param then
+            None
+          else
+            Some fp)
+    in
+    (* A positional variadic can capture additional fixed parameters and the
+     * variadic parameter of the expected function type. For example, when
+     * (int $first, ...$rest, named bool $flag) ==> {} is supplied where
+     * (function(int, int, int..., named bool $flag): void) is expected,
+     * $rest captures both the second int and the remaining variadic ints.
+     * Its vector element type is the union of its own resolved type and
+     * these additional positional types. Named arguments do not enter it.
+     *)
+    let variadic_ft_types =
+      List.filter_map param_ft_pairs ~f:(fun (param, fp) ->
+          if is_positional_variadic param then
+            Some fp.fp_type
+          else
+            None)
+      @ List.filter_map extra_ft_params ~f:(fun fp ->
+            if Typing_defs_core.get_fp_is_named fp then
+              None
+            else
+              Some fp.fp_type)
+    in
+    let make_variadic_arg env varg =
       let r = Reason.var_param varg.param_pos in
-      let union = Tunion (tyl @ remaining_types) in
+      let union = Tunion variadic_ft_types in
       let (env, t_param) = closure_bind_variadic env varg (mk (r, union)) in
       (env, [t_param])
     in
     let (env, t_variadic_params) =
-      match
-        ( List.find f.f_params ~f:Aast_utils.is_param_variadic,
-          get_ft_variadic ft )
-      with
-      | (Some arg, true) ->
-        make_variadic_arg env arg [(List.last_exn ft.ft_params).fp_type]
-      | (Some arg, false) -> make_variadic_arg env arg []
-      | (_, _) -> (env, [])
+      match List.find f.f_params ~f:is_positional_variadic with
+      | Some arg -> make_variadic_arg env arg
+      | None -> (env, [])
     in
     let non_variadic_params =
       List.filter f.f_params ~f:(fun p -> not (Aast_utils.is_param_variadic p))

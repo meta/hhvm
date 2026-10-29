@@ -61,3 +61,4 @@ abstract class PositionalVariadicOverrideBase {
 class PositionalVariadicOverride extends PositionalVariadicOverrideBase {
   public function m(int ...$args, named string $name): void {}
 }
+//
