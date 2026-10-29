@@ -175,6 +175,7 @@ type t = {
   dump_tasts: string list;
   tco_autocomplete_mode: bool;
   tco_extended_reasons: extended_reasons_config option;
+  tco_enable_eqeqeq_refinement_filter: bool;
   tco_disable_physical_equality: bool;
   hack_warnings: int none_or_all_except;
   warnings_default_all: bool;
@@ -288,6 +289,7 @@ let default =
     dump_tasts = [];
     tco_autocomplete_mode = false;
     tco_extended_reasons = None;
+    tco_enable_eqeqeq_refinement_filter = false;
     tco_disable_physical_equality = false;
     hack_warnings = All_except [];
     warnings_default_all = false;
@@ -400,6 +402,7 @@ let set
     ?dump_tasts
     ?tco_autocomplete_mode
     ?tco_extended_reasons
+    ?tco_enable_eqeqeq_refinement_filter
     ?tco_disable_physical_equality
     ?hack_warnings
     ?warnings_default_all
@@ -663,6 +666,10 @@ let set
       setting tco_autocomplete_mode options.tco_autocomplete_mode;
     tco_extended_reasons =
       setting_opt tco_extended_reasons options.tco_extended_reasons;
+    tco_enable_eqeqeq_refinement_filter =
+      setting
+        tco_enable_eqeqeq_refinement_filter
+        options.tco_enable_eqeqeq_refinement_filter;
     tco_disable_physical_equality =
       setting
         tco_disable_physical_equality

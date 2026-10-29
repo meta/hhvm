@@ -1,1 +1,48 @@
-No errors
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_newtypes.php--uses.php:9:15
+ 5 | // every expect_c1 / ::m() below should be an error.
+ 6 | 
+ 7 | function sound_bounded_newtype(string $s, BoundedC $x): void {
+   |                                ^^^^^^ [3]
+ 8 |   if ($s === $x) {
+ 9 |     expect_c1($s);
+   |               ^^ [1]
+10 |   }
+11 | }
+
+sound_newtypes.php--defs.php:10:20
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | newtype BoundedC as class<C1> = class<C1>;
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_newtypes.php--uses.php:15:15
+11 | }
+12 | 
+13 | function sound_bounded_newtype_vec(vec<string> $v, BoundedVec $x): void {
+   |                                        ^^^^^^ [3]
+14 |   if ($v === $x) {
+15 |     expect_c1($v[0]);
+   |               ^^^^^ [1]
+16 |   }
+17 | }
+
+sound_newtypes.php--defs.php:10:20
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | newtype BoundedC as class<C1> = class<C1>;
+
+2 errors found

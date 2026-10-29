@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<a190827c57a079639ebc41a7645aaf11>>
+// @generated SignedSource<<37ae9f9f936c3b82d6fc0ffb9b22ad76>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -357,6 +357,8 @@ pub struct GlobalOptions {
     pub tco_autocomplete_mode: bool,
     /// Controls whether we retain the full path for reasons or only simple witnesses
     pub tco_extended_reasons: Option<ExtendedReasonsConfig>,
+    /// Filter the types used for strict equality intersection refinement.
+    pub tco_enable_eqeqeq_refinement_filter: bool,
     /// If set to true, this disables the use of physical equality in subtyping
     pub tco_disable_physical_equality: bool,
     /// turn on hack warnings

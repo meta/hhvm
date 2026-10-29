@@ -10,6 +10,9 @@
    the type (A & B) | C is represented as [[A; B]; [C]] *)
 type dnf_ty = Typing_defs.locl_ty list list
 
+val is_safe_for_strict_equality_refinement :
+  Typing_env_types.env -> Typing_defs.locl_ty -> Typing_env_types.env * bool
+
 module Uninstantiated_typing_logic : sig
   type subtype_prop
 

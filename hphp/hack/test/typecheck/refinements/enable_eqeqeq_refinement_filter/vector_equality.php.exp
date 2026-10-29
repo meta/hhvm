@@ -1,0 +1,17 @@
+error: Typing[4110] Invalid assignment [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+vector_equality.php:10:5
+ 6 | }
+ 7 | 
+ 8 | function bad(Vector<int> $vi, Vector<arraykey> $va): void {
+   |                     ^^^ [2]
+ 9 |   if ($vi === $va) {
+10 |     $vi[] = 'str';
+   |     ^^^^^^^^^^^^^ [1]
+   |             ^^^^^ [3]
+11 |   }
+12 | }
+
+1 error found

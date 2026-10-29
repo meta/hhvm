@@ -1,0 +1,32 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+->   via this generic `T` [3]
+->   via this generic `T` [4]
+-> But got `string` [1]
+
+box_factory_equality.php:25:16
+ 8 |   }
+ 9 | 
+10 |   public function set(T $t): void {
+   |                       ^ [4]
+11 |     $this->t = $t;
+12 |   }
+   :
+15 | class Factory {
+16 |   <<__Memoize>>
+17 |   public static function make<T>(): Box<T> {
+   |                                         ^ [3]
+18 |     return new Box();
+19 |   }
+20 | 
+21 |   public static function typed(): int {
+22 |     $bi = self::make<int>();
+   |                      ^^^ [2]
+23 |     $ba = self::make<arraykey>();
+24 |     if ($bi === $ba) {
+25 |       $bi->set('str');
+   |                ^^^^^ [1]
+26 |     }
+27 |     return $bi->get();
+
+1 error found

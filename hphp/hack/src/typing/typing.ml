@@ -2482,6 +2482,31 @@ let refine_for_equality pos env te ty =
     set_local env locl_ivar refined_ty
   | _ -> env
 
+let refine_for_strict_equality pos env te ty =
+  let (env, eligible) =
+    Typing_refinement.is_safe_for_strict_equality_refinement env ty
+  in
+  if not eligible then
+    env
+  else
+    let (env, locl) =
+      make_a_local_of ~include_this:true env (Tast.to_nast_expr te)
+    in
+    let var_type = fst3 te in
+    match locl with
+    | Some locl_ivar when not (is_dynamic var_type) ->
+      let (env, refined_ty) =
+        refine_and_simplify_intersection
+          env
+          pos
+          (Reason.equal pos)
+          (fst locl_ivar)
+          var_type
+          ty
+      in
+      set_local env locl_ivar refined_ty
+    | _ -> env
+
 let key_exists env tparamet pos shape field =
   let field = Tast.to_nast_expr field in
   refine_lvalue_type env shape ~refine:(fun env shape_ty ->
@@ -9130,8 +9155,14 @@ end = struct
           rhs = (rhs_ty, _, _) as rhs;
         }
       when tparamet ->
-      let env = refine_for_equality p env lhs rhs_ty in
-      let env = refine_for_equality p env rhs lhs_ty in
+      let refine =
+        if TCO.enable_eqeqeq_refinement_filter (Env.get_tcopt env) then
+          refine_for_strict_equality
+        else
+          refine_for_equality
+      in
+      let env = refine p env lhs rhs_ty in
+      let env = refine p env rhs lhs_ty in
       env
     | Aast.Binop
         { bop = (Ast_defs.Diff | Ast_defs.Diff2) as op; lhs = e1; rhs = e2 } ->

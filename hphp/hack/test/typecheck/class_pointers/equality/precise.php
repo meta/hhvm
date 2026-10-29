@@ -12,6 +12,7 @@ function expect_vc1(vec<class<C1>> $_): void {}
 
 // The local is a class pointer, so after the comparison it is a class<C1>:
 // none of the expect_c1 / ::m() below should be an error.
+// BAD: the filter rejects strict refinements here, so these cases lose precision.
 
 function precise_class(class<P> $c): void {
   if ($c === C1::class) {

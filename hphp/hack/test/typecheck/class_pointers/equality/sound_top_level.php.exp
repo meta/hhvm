@@ -1,8 +1,69 @@
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
--> But got `string` from this equality test [3]
-->   by the definition of `classname` from this equality test [3]
-->   by the definition of `typename` from this equality test [3]
+-> But got `string` [3]
+
+sound_top_level.php:28:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+23 | // every expect_c1 / ::m() below should be an error.
+24 | 
+25 | function sound_string_literal(string $s): void {
+   |                               ^^^^^^ [3]
+26 |   $c = C1::class;
+27 |   if ($s === $c) {
+28 |     expect_c1($s);
+   |               ^^ [1]
+29 |   }
+30 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:34:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+30 | }
+31 | 
+32 | function sound_string_var(string $s, class<C1> $c): void {
+   |                           ^^^^^^ [3]
+33 |   if ($s === $c) {
+34 |     expect_c1($s);
+   |               ^^ [1]
+35 |   }
+36 | }
+
+error: Typing[4482] It is no longer allowed to use a `classname<C1>` in this position. Please use a `class<C1>` instead. [1]
+-> Definition is here [2]
+
+sound_top_level.php:42:3
+36 | }
+37 | 
+38 | function sound_classname_guard(classname<C1> $cn, class<C1> $c): void {
+   |                                ^^^^^^^^^^^^^ [2]
+39 |   if ($cn !== $c) {
+40 |     return;
+41 |   }
+42 |   $cn::m();
+   |   ^^^ [1]
+43 | }
+44 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+->   by the definition of `classname` [4]
+->   by the definition of `typename` [5]
 
 sound_top_level.php:49:15
  8 | }
@@ -12,14 +73,165 @@ sound_top_level.php:49:15
 11 | 
 12 | enum E: string {
    :
-46 |   $cn = HH\class_to_classname(get_class($p));
 47 |   $c = C1::class;
 48 |   if ($cn === $c) {
-   |       ^^^^^^^^^^ [3]
 49 |     expect_c1($cn);
    |               ^^^ [1]
 50 |   }
 51 | }
+
+classname.hhi:64:72
+12 |    */
+13 |   <<__NoAutoDynamic>>
+14 |   newtype typename<+T> as string = string;
+   |                           ^^^^^^ [5]
+15 | 
+16 |   /**
+   :
+19 |    * package boundaries. */
+20 |   <<__NoAutoDynamic>>
+21 |   newtype classname<+T> as typename<T> = typename<T>;
+   |                            ^^^^^^^^^^^ [4]
+22 | 
+23 |   /**
+   :
+62 |    * to eliminate implicit coercions to strings e.g. `$mydict[$c]`
+63 |    */
+64 |   function class_to_classname<T>(readonly class_or_classname<T> $c)[]: classname<T>;
+   |                                                                        ^^^^^^^^^^^^ [3]
+65 | } // namespace HH
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `arraykey` [3]
+
+sound_top_level.php:55:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+51 | }
+52 | 
+53 | function sound_arraykey(arraykey $k, class<C1> $c): void {
+   |                         ^^^^^^^^ [3]
+54 |   if ($k === $c) {
+55 |     expect_c1($k);
+   |               ^^ [1]
+56 |   }
+57 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `?string` [3]
+
+sound_top_level.php:61:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+57 | }
+58 | 
+59 | function sound_nullable_string(?string $s, class<C1> $c): void {
+   |                                ^^^^^^^ [3]
+60 |   if ($s === $c) {
+61 |     expect_c1($s);
+   |               ^^ [1]
+62 |   }
+63 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `mixed` [3]
+
+sound_top_level.php:67:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+63 | }
+64 | 
+65 | function sound_mixed(mixed $m, class<C1> $c): void {
+   |                      ^^^^^ [3]
+66 |   if ($m === $c) {
+67 |     expect_c1($m);
+   |               ^^ [1]
+68 |   }
+69 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:73:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+69 | }
+70 | 
+71 | function sound_nullable_operand(string $s, ?class<C1> $c): void {
+   |                                 ^^^^^^ [3]
+72 |   if ($s === $c) {
+73 |     expect_c1($s);
+   |               ^^ [1]
+74 |   }
+75 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:79:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+75 | }
+76 | 
+77 | function sound_union_operand(string $s, (class<C1> | int) $c): void {
+   |                              ^^^^^^ [3]
+78 |   if ($s === $c) {
+79 |     expect_c1($s);
+   |               ^^ [1]
+80 |   }
+81 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:85:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+81 | }
+82 | 
+83 | function sound_reversed(string $s, class<C1> $c): void {
+   |                         ^^^^^^ [3]
+84 |   if ($c === $s) {
+85 |     expect_c1($s);
+   |               ^^ [1]
+86 |   }
+87 | }
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
@@ -43,4 +255,248 @@ sound_top_level.php:91:15
 92 |   }
 93 | }
 
-2 errors found
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:97:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+93 | }
+94 | 
+95 | function sound_conjunction(string $s, ?class<C1> $c): void {
+   |                            ^^^^^^ [3]
+96 |   if ($c !== null && $s === $c) {
+97 |     expect_c1($s);
+   |               ^^ [1]
+98 |   }
+99 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:103:13
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+ 99 | }
+100 | 
+101 | function sound_invariant(string $s, class<C1> $c): void {
+    |                          ^^^^^^ [3]
+102 |   invariant($s === $c, 'same');
+103 |   expect_c1($s);
+    |             ^^ [1]
+104 | }
+105 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:108:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+ 17 | }
+ 18 | class Holder {
+ 19 |   public string $s = '';
+    |          ^^^^^^ [3]
+ 20 | }
+ 21 | 
+    :
+106 | function sound_property(Holder $h, class<C1> $c): void {
+107 |   if ($h->s === $c) {
+108 |     expect_c1($h->s);
+    |               ^^^^^ [1]
+109 |   }
+110 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `T as arraykey` [3]
+
+sound_top_level.php:114:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+110 | }
+111 | 
+112 | function sound_generic_local<T as arraykey>(T $t, class<C1> $c): void {
+    |                                             ^ [3]
+113 |   if ($t === $c) {
+114 |     expect_c1($t);
+    |               ^^ [1]
+115 |   }
+116 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `arraykey` [3]
+->   by the definition of `T` [4]
+
+sound_top_level.php:114:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+110 | }
+111 | 
+112 | function sound_generic_local<T as arraykey>(T $t, class<C1> $c): void {
+    |                                   ^^^^^^^^ [4]
+    |                                             ^ [3]
+113 |   if ($t === $c) {
+114 |     expect_c1($t);
+    |               ^^ [1]
+115 |   }
+116 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `arraykey` [3]
+->   by the definition of `E` arising from an implicit `as arraykey` constraint on this type [3]
+
+sound_top_level.php:120:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+116 | }
+117 | 
+118 | function sound_enum_local(E $e, class<C1> $c): void {
+    |                           ^ [3]
+119 |   if ($e === $c) {
+120 |     expect_c1($e);
+    |               ^^ [1]
+121 |   }
+122 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `SoundTypeConstLocal::TS where \SoundTypeConstLocal::TS super this::TS, \SoundTypeConstLocal::TS as string` [3]
+
+sound_top_level.php:127:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+123 | 
+124 | abstract class SoundTypeConstLocal extends WithTypeConsts {
+125 |   public function f(this::TS $s, class<C1> $c): void {
+    |                     ^^^^^^^^ [3]
+126 |     if ($s === $c) {
+127 |       expect_c1($s);
+    |                 ^^ [1]
+128 |     }
+129 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:127:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+123 | 
+124 | abstract class SoundTypeConstLocal extends WithTypeConsts {
+125 |   public function f(this::TS $s, class<C1> $c): void {
+    |                     ^^^^^^^^ [3]
+126 |     if ($s === $c) {
+127 |       expect_c1($s);
+    |                 ^^ [1]
+128 |     }
+129 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `this::TS as SoundTypeConstLocal::TS` [3]
+
+sound_top_level.php:127:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+123 | 
+124 | abstract class SoundTypeConstLocal extends WithTypeConsts {
+125 |   public function f(this::TS $s, class<C1> $c): void {
+    |                     ^^^^^^^^ [3]
+126 |     if ($s === $c) {
+127 |       expect_c1($s);
+    |                 ^^ [1]
+128 |     }
+129 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+->   by the definition of `classname` [4]
+->   by the definition of `typename` [5]
+
+sound_top_level.php:134:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | enum E: string {
+    :
+130 | }
+131 | 
+132 | function sound_both_locals(classname<C1> $cn, class<C1> $c): void {
+    |                            ^^^^^^^^^^^^^ [3]
+133 |   if ($cn === $c) {
+134 |     expect_c1($cn);
+    |               ^^^ [1]
+135 |   }
+136 | }
+
+classname.hhi:21:28
+ 12 |    */
+ 13 |   <<__NoAutoDynamic>>
+ 14 |   newtype typename<+T> as string = string;
+    |                           ^^^^^^ [5]
+ 15 | 
+ 16 |   /**
+    :
+ 19 |    * package boundaries. */
+ 20 |   <<__NoAutoDynamic>>
+ 21 |   newtype classname<+T> as typename<T> = typename<T>;
+    |                            ^^^^^^^^^^^ [4]
+ 22 | 
+ 23 |   /**
+
+21 errors found

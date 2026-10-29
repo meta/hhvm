@@ -25,13 +25,13 @@ class Holder {
 function sound_string_literal(string $s): void {
   $c = C1::class;
   if ($s === $c) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
 function sound_string_var(string $s, class<C1> $c): void {
   if ($s === $c) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
@@ -39,7 +39,7 @@ function sound_classname_guard(classname<C1> $cn, class<C1> $c): void {
   if ($cn !== $c) {
     return;
   }
-  $cn::m(); // BAD: accepted, but the local can be a string here
+  $cn::m();
 }
 
 function sound_classname_inferred(P $p): void {
@@ -52,37 +52,37 @@ function sound_classname_inferred(P $p): void {
 
 function sound_arraykey(arraykey $k, class<C1> $c): void {
   if ($k === $c) {
-    expect_c1($k); // BAD: accepted, but the local can be a string here
+    expect_c1($k);
   }
 }
 
 function sound_nullable_string(?string $s, class<C1> $c): void {
   if ($s === $c) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
 function sound_mixed(mixed $m, class<C1> $c): void {
   if ($m === $c) {
-    expect_c1($m); // BAD: accepted, but the local can be a string here
+    expect_c1($m);
   }
 }
 
 function sound_nullable_operand(string $s, ?class<C1> $c): void {
   if ($s === $c) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
 function sound_union_operand(string $s, (class<C1> | int) $c): void {
   if ($s === $c) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
 function sound_reversed(string $s, class<C1> $c): void {
   if ($c === $s) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
@@ -94,43 +94,43 @@ function sound_loose(string $s, class<C1> $c): void {
 
 function sound_conjunction(string $s, ?class<C1> $c): void {
   if ($c !== null && $s === $c) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
 function sound_invariant(string $s, class<C1> $c): void {
   invariant($s === $c, 'same');
-  expect_c1($s); // BAD: accepted, but the local can be a string here
+  expect_c1($s);
 }
 
 function sound_property(Holder $h, class<C1> $c): void {
   if ($h->s === $c) {
-    expect_c1($h->s); // BAD: accepted, but the local can be a string here
+    expect_c1($h->s);
   }
 }
 
 function sound_generic_local<T as arraykey>(T $t, class<C1> $c): void {
   if ($t === $c) {
-    expect_c1($t); // BAD: accepted, but the local can be a string here
+    expect_c1($t);
   }
 }
 
 function sound_enum_local(E $e, class<C1> $c): void {
   if ($e === $c) {
-    expect_c1($e); // BAD: accepted, but the local can be a string here
+    expect_c1($e);
   }
 }
 
 abstract class SoundTypeConstLocal extends WithTypeConsts {
   public function f(this::TS $s, class<C1> $c): void {
     if ($s === $c) {
-      expect_c1($s); // BAD: accepted, but the local can be a string here
+      expect_c1($s);
     }
   }
 }
 
 function sound_both_locals(classname<C1> $cn, class<C1> $c): void {
   if ($cn === $c) {
-    expect_c1($cn); // BAD: accepted, but the local can be a string here
+    expect_c1($cn);
   }
 }

@@ -15,6 +15,121 @@ module Env = Typing_env
 module DataType = Typing_atomic_data_types
 module SN = Naming_special_names
 
+let rec is_safe_for_strict_equality_refinement_impl expansions env ty =
+  let all env tys =
+    let (env, safe) =
+      Common.List.map_env
+        env
+        tys
+        ~f:(is_safe_for_strict_equality_refinement_impl expansions)
+    in
+    (env, List.for_all safe ~f:Fn.id)
+  in
+  let (env, ty) = Env.expand_type env ty in
+  match get_node ty with
+  | Tnonnull -> (env, true)
+  | Tprim
+      ( Aast.Tnull | Aast.Tbool | Aast.Tint | Aast.Tfloat | Aast.Tnum
+      | Aast.Tresource | Aast.Tarraykey ) ->
+    (env, true)
+  | Tclass ((_, name), _, []) when String.equal name SN.Classes.cString ->
+    (env, true)
+  | Tclass ((_, name), _, tys)
+    when String.equal name SN.Collections.cVec
+         || String.equal name SN.Collections.cKeyset ->
+    all env tys
+  | Tclass ((_, name), _, [_; value])
+    when String.equal name SN.Collections.cDict ->
+    is_safe_for_strict_equality_refinement_impl expansions env value
+  | Tclass ((_, name), _, []) -> begin
+    match Env.get_class env name with
+    | Decl_entry.Found cls when List.is_empty (Cls.tparams cls) -> (env, true)
+    | _ -> (env, false)
+  end
+  | Tvec_or_dict (_, value) ->
+    is_safe_for_strict_equality_refinement_impl expansions env value
+  | Ttuple { t_required; t_optional; t_extra = Tvariadic ty } ->
+    all env ((ty :: t_required) @ t_optional)
+  | Tshape (Shape_simple { s_fields; s_unknown_value; _ }) ->
+    let tys =
+      TShapeMap.fold
+        (fun _ { sft_ty; _ } tys -> sft_ty :: tys)
+        s_fields
+        [s_unknown_value]
+    in
+    all env tys
+  | Toption ty -> is_safe_for_strict_equality_refinement_impl expansions env ty
+  | Tunion [] -> (env, true)
+  | Tunion tys
+  | Tintersection tys ->
+    let (env, tys) = Common.List.map_env env tys ~f:Env.expand_type in
+    let tys = List.filter tys ~f:(fun ty -> not (is_dynamic ty)) in
+    if List.is_empty tys then
+      (env, false)
+    else
+      all env tys
+  | Tnewtype (name, [ty], _) when String.equal name SN.Classes.cSupportDyn ->
+    is_safe_for_strict_equality_refinement_impl expansions env ty
+  | Tnewtype (name, _, _)
+    when S_set.mem name expansions
+         || String.equal name SN.Classes.cEnumClassLabel ->
+    (env, false)
+  | Tnewtype (name, [], _)
+    when Env.is_enum env name && not (Env.is_enum_class env name) -> begin
+    match Env.get_class env name with
+    | Decl_entry.Found cls -> begin
+      match Cls.enum_type cls with
+      | Some { te_base; _ } ->
+        let ((env, err), representation) =
+          Typing_utils.localize ~ety_env:empty_expand_env env te_base
+        in
+        if Option.is_some err then
+          (env, false)
+        else
+          is_safe_for_strict_equality_refinement_impl
+            (S_set.add name expansions)
+            env
+            representation
+      | None -> (env, false)
+    end
+    | _ -> (env, false)
+  end
+  | Tnewtype (name, tyargs, _) -> begin
+    match Env.get_typedef env name with
+    | Decl_entry.Found
+        {
+          td_type_assignment = SimpleTypeDef (_, representation);
+          td_tparams;
+          _;
+        }
+      when List.length td_tparams = List.length tyargs ->
+      let ety_env =
+        {
+          empty_expand_env with
+          substs = Decl_subst.make_locl td_tparams tyargs;
+        }
+      in
+      let ((env, err), representation) =
+        Typing_utils.localize ~ety_env env representation
+      in
+      if Option.is_some err then
+        (env, false)
+      else
+        is_safe_for_strict_equality_refinement_impl
+          (S_set.add name expansions)
+          env
+          representation
+    | _ -> (env, false)
+  end
+  | _ -> (env, false)
+
+let is_safe_for_strict_equality_refinement env ty =
+  let (env, unresolved) = Typing_utils.contains_unresolved_tyvars env ty in
+  if unresolved then
+    (env, false)
+  else
+    is_safe_for_strict_equality_refinement_impl S_set.empty env ty
+
 (* given [a..z] *)
 (* return [(a, [b..z]); (b, [a;c..z]); (c, [a..b;d..z]); ... (z, [b..z])] *)
 (* i.e. map each element in the input to a pair of that element and the other

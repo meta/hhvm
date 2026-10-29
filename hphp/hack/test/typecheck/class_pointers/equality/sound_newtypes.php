@@ -22,12 +22,12 @@ newtype BoundedVec as vec<class<C1>> = vec<class<C1>>;
 
 function sound_bounded_newtype(string $s, BoundedC $x): void {
   if ($s === $x) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s);
   }
 }
 
 function sound_bounded_newtype_vec(vec<string> $v, BoundedVec $x): void {
   if ($v === $x) {
-    expect_c1($v[0]); // BAD: accepted, but the local can be a string here
+    expect_c1($v[0]);
   }
 }

@@ -1,10 +1,51 @@
 error: Typing[4110] Invalid argument [1]
--> Expected `class<C1>` [2]
--> But got `string` from this equality test [3]
-->   by the definition of `classname` from this equality test [3]
-->   by the definition of `typename` from this equality test [3]
+-> Expected `C1` [2]
+-> But got `P` [3]
 
-precise.php:50:15
+precise.php:19:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                          ^^ [2]
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+12 | 
+   :
+15 | // BAD: the filter rejects strict refinements here, so these cases lose precision.
+16 | 
+17 | function precise_class(class<P> $c): void {
+   |                              ^ [3]
+18 |   if ($c === C1::class) {
+19 |     expect_c1($c);
+   |               ^^ [1]
+20 |     $c::m();
+21 |   }
+
+error: Typing[4090] No static method `m` in `P` [1]
+-> Did you mean `pm` instead? [2]
+-> Declaration of `P` is here [3]
+
+precise.php:20:9
+ 1 | <?hh
+ 2 | 
+ 3 | class P {
+   |       ^ [3]
+ 4 |   public static function pm(): void {}
+   |                          ^^ [2]
+ 5 | }
+ 6 | class C1 extends P {
+   :
+18 |   if ($c === C1::class) {
+19 |     expect_c1($c);
+20 |     $c::m();
+   |         ^ [1]
+21 |   }
+22 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `?class<<expr#2> as P>` [3]
+
+precise.php:26:15
  8 | }
  9 | 
 10 | function expect_c1(class<C1> $_): void {}
@@ -12,21 +53,109 @@ precise.php:50:15
 11 | function expect_vc1(vec<class<C1>> $_): void {}
 12 | 
    :
-47 | 
-48 | function precise_class_vs_classname(class<P> $c, classname<C1> $cn): void {
-49 |   if ($c === $cn) {
-   |       ^^^^^^^^^^ [3]
-50 |     expect_c1($c); // BAD: false positive, the local is a class pointer
+22 | }
+23 | 
+24 | function precise_nullable_class(?class<P> $c): void {
+   |                                 ^^^^^^^^^ [3]
+25 |   if ($c === C1::class) {
+26 |     expect_c1($c);
    |               ^^ [1]
-51 |   }
-52 | }
+27 |   }
+28 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+->   by the definition of `T` [4]
+
+precise.php:32:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                          ^^ [2]
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+12 | 
+   :
+28 | }
+29 | 
+30 | function precise_generic_class<T as P>(class<T> $c): void {
+   |                                     ^ [4]
+   |                                              ^ [3]
+31 |   if ($c === C1::class) {
+32 |     expect_c1($c);
+   |               ^^ [1]
+33 |   }
+34 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `T as P` [3]
+
+precise.php:32:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                          ^^ [2]
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+12 | 
+   :
+28 | }
+29 | 
+30 | function precise_generic_class<T as P>(class<T> $c): void {
+   |                                              ^ [3]
+31 |   if ($c === C1::class) {
+32 |     expect_c1($c);
+   |               ^^ [1]
+33 |   }
+34 | }
+
+error: Typing[4090] No static method `dm` in `PreciseStatic` [1]
+-> Did you mean `test` instead? [2]
+-> Declaration of `PreciseStatic` is here [3]
+
+precise.php:40:13
+34 | }
+35 | 
+36 | abstract class PreciseStatic {
+   |                ^^^^^^^^^^^^^ [3]
+37 |   public static function test(): void {
+   |                          ^^^^ [2]
+38 |     $cls = static::class;
+39 |     if ($cls === PreciseDerived::class) {
+40 |       $cls::dm();
+   |             ^^ [1]
+41 |     }
+42 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` from this equality test [3]
+->   by the definition of `classname` from this equality test [3]
+->   by the definition of `typename` from this equality test [3]
+
+precise.php:51:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+12 | 
+   :
+48 | 
+49 | function precise_class_vs_classname(class<P> $c, classname<C1> $cn): void {
+50 |   if ($c === $cn) {
+   |       ^^^^^^^^^^ [3]
+51 |     expect_c1($c); // BAD: false positive, the local is a class pointer
+   |               ^^ [1]
+52 |   }
+53 | }
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
 -> But got `nonnull` from this equality test [3]
 ->   by the definition of `HH\class_or_classname` from this equality test [3]
 
-precise.php:59:15
+precise.php:60:15
  8 | }
  9 | 
 10 | function expect_c1(class<C1> $_): void {}
@@ -34,14 +163,60 @@ precise.php:59:15
 11 | function expect_vc1(vec<class<C1>> $_): void {}
 12 | 
    :
-56 |   HH\class_or_classname<C1> $x,
-57 | ): void {
-58 |   if ($c === $x) {
+57 |   HH\class_or_classname<C1> $x,
+58 | ): void {
+59 |   if ($c === $x) {
    |       ^^^^^^^^^ [3]
-59 |     expect_c1($c); // BAD: false positive, the local is a class pointer
+60 |     expect_c1($c); // BAD: false positive, the local is a class pointer
    |               ^^ [1]
-60 |   }
-61 | }
+61 |   }
+62 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:66:16
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+   |                               ^^ [2]
+12 | 
+13 | // The local is a class pointer, so after the comparison it is a class<C1>:
+   :
+62 | }
+63 | 
+64 | function precise_vec(vec<class<P>> $v): void {
+   |                                ^ [3]
+65 |   if ($v === vec[C1::class]) {
+66 |     expect_vc1($v);
+   |                ^^ [1]
+67 |     foreach ($v as $c) {
+68 |       expect_c1($c);
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:68:17
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                          ^^ [2]
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+12 | 
+   :
+62 | }
+63 | 
+64 | function precise_vec(vec<class<P>> $v): void {
+   |                                ^ [3]
+65 |   if ($v === vec[C1::class]) {
+66 |     expect_vc1($v);
+67 |     foreach ($v as $c) {
+68 |       expect_c1($c);
+   |                 ^^ [1]
+69 |     }
+70 |   }
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
@@ -53,7 +228,7 @@ error: Typing[4110] Invalid argument [1]
 ->   by the definition of `classname` [8]
 ->   by the definition of `typename` [9]
 
-precise.php:78:17
+precise.php:79:17
   8 | }
   9 | 
  10 | function expect_c1(class<C1> $_): void {}
@@ -61,17 +236,17 @@ precise.php:78:17
  11 | function expect_vc1(vec<class<C1>> $_): void {}
  12 | 
     :
- 72 | function precise_vec_vs_classname_vec(
- 73 |   vec<class<P>> $v,
- 74 |   vec<classname<C1>> $x,
+ 73 | function precise_vec_vs_classname_vec(
+ 74 |   vec<class<P>> $v,
+ 75 |   vec<classname<C1>> $x,
     |       ^^^^^^^^^^^^^ [3]
- 75 | ): void {
- 76 |   if ($v === $x) {
- 77 |     foreach ($v as $c) {
- 78 |       expect_c1($c); // BAD: false positive, the local is a class pointer
+ 76 | ): void {
+ 77 |   if ($v === $x) {
+ 78 |     foreach ($v as $c) {
+ 79 |       expect_c1($c); // BAD: false positive, the local is a class pointer
     |                 ^^ [1]
- 79 |     }
- 80 |   }
+ 80 |     }
+ 81 |   }
 
 hackarray.hhi:52:72
  20 |     <<__NoAutoBound>> +Tk as arraykey,
@@ -118,24 +293,226 @@ classname.hhi:21:28
  22 | 
  23 |   /**
 
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:86:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                          ^^ [2]
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+12 | 
+   :
+82 | }
+83 | 
+84 | function precise_dict(dict<string, class<P>> $d): void {
+   |                                          ^ [3]
+85 |   if ($d === dict['k' => C1::class]) {
+86 |     expect_c1($d['k']);
+   |               ^^^^^^^ [1]
+87 |   }
+88 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:92:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                          ^^ [2]
+11 | function expect_vc1(vec<class<C1>> $_): void {}
+12 | 
+   :
+88 | }
+89 | 
+90 | function precise_tuple((class<P>, int) $t): void {
+   |                               ^ [3]
+91 |   if ($t === tuple(C1::class, 1)) {
+92 |     expect_c1($t[0]);
+   |               ^^^^^ [1]
+93 |   }
+94 | }
+
 error: Typing[4482] Using `C1::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C1` [1]
 
-precise.php:96:20
-94 | 
-95 | function precise_tuple_mixed_positions((class<P>, string) $t): void {
-96 |   if ($t === tuple(C1::class, nameof C1)) {
+precise.php:97:20
+95 | 
+96 | function precise_tuple_mixed_positions((class<P>, string) $t): void {
+97 |   if ($t === tuple(C1::class, nameof C1)) {
    |                    ^^^^^^^^^ [1]
-97 |     expect_c1($t[0]);
-98 |   }
+98 |     expect_c1($t[0]);
+99 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:98:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                          ^^ [2]
+ 11 | function expect_vc1(vec<class<C1>> $_): void {}
+ 12 | 
+    :
+ 94 | }
+ 95 | 
+ 96 | function precise_tuple_mixed_positions((class<P>, string) $t): void {
+    |                                               ^ [3]
+ 97 |   if ($t === tuple(C1::class, nameof C1)) {
+ 98 |     expect_c1($t[0]);
+    |               ^^^^^ [1]
+ 99 |   }
+100 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:104:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                          ^^ [2]
+ 11 | function expect_vc1(vec<class<C1>> $_): void {}
+ 12 | 
+    :
+100 | }
+101 | 
+102 | function precise_shape(shape('c' => class<P>) $s): void {
+    |                                           ^ [3]
+103 |   if ($s === shape('c' => C1::class)) {
+104 |     expect_c1($s['c']);
+    |               ^^^^^^^ [1]
+105 |   }
+106 | }
 
 error: Typing[4482] Using `C1::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C1` [1]
 
-precise.php:110:27
-108 |   shape('c' => class<P>, 's' => string) $s,
-109 | ): void {
-110 |   if ($s === shape('c' => C1::class, 's' => nameof C1)) {
+precise.php:111:27
+109 |   shape('c' => class<P>, 's' => string) $s,
+110 | ): void {
+111 |   if ($s === shape('c' => C1::class, 's' => nameof C1)) {
     |                           ^^^^^^^^^ [1]
-111 |     expect_c1($s['c']);
-112 |   }
+112 |     expect_c1($s['c']);
+113 |   }
 
-5 errors found
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:112:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                          ^^ [2]
+ 11 | function expect_vc1(vec<class<C1>> $_): void {}
+ 12 | 
+    :
+107 | 
+108 | function precise_shape_mixed_fields(
+109 |   shape('c' => class<P>, 's' => string) $s,
+    |                      ^ [3]
+110 | ): void {
+111 |   if ($s === shape('c' => C1::class, 's' => nameof C1)) {
+112 |     expect_c1($s['c']);
+    |               ^^^^^^^ [1]
+113 |   }
+114 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:118:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                          ^^ [2]
+ 11 | function expect_vc1(vec<class<C1>> $_): void {}
+ 12 | 
+    :
+114 | }
+115 | 
+116 | function precise_nested_vec(vec<vec<class<P>>> $v): void {
+    |                                           ^ [3]
+117 |   if ($v === vec[vec[C1::class]]) {
+118 |     expect_c1($v[0][0]);
+    |               ^^^^^^^^ [1]
+119 |   }
+120 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:125:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                          ^^ [2]
+ 11 | function expect_vc1(vec<class<C1>> $_): void {}
+ 12 | 
+    :
+120 | }
+121 | 
+122 | function precise_imm_vector(ImmVector<class<P>> $v): void {
+    |                                             ^ [3]
+123 |   if ($v === ImmVector {C1::class}) {
+124 |     foreach ($v as $c) {
+125 |       expect_c1($c);
+    |                 ^^ [1]
+126 |     }
+127 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:133:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                          ^^ [2]
+ 11 | function expect_vc1(vec<class<C1>> $_): void {}
+ 12 | 
+    :
+128 | }
+129 | 
+130 | function precise_keyed_container(KeyedContainer<int, class<P>> $kc): void {
+    |                                                            ^ [3]
+131 |   if ($kc === vec[C1::class]) {
+132 |     foreach ($kc as $c) {
+133 |       expect_c1($c);
+    |                 ^^ [1]
+134 |     }
+135 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `C1` [2]
+-> But got `P` [3]
+
+precise.php:141:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                          ^^ [2]
+ 11 | function expect_vc1(vec<class<C1>> $_): void {}
+ 12 | 
+    :
+136 | }
+137 | 
+138 | function precise_traversable(Traversable<class<P>> $t): void {
+    |                                                ^ [3]
+139 |   if ($t === vec[C1::class]) {
+140 |     foreach ($t as $c) {
+141 |       expect_c1($c);
+    |                 ^^ [1]
+142 |     }
+143 |   }
+
+22 errors found

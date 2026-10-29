@@ -1,0 +1,2 @@
+--config union_intersection_type_hints=true
+--config enable_eqeqeq_refinement_filter=true

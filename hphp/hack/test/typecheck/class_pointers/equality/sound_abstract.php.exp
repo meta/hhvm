@@ -1,5 +1,27 @@
 File "sound_abstract.php", line 121, characters 5-15:
-  T
+  mixed
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:33:15
+ 9 | }
+10 | 
+11 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+12 | 
+13 | case type CT = class<C1> | int;
+   :
+29 | // every expect_c1 / ::m() below should be an error.
+30 | 
+31 | function sound_generic_bound<T as class<C1>>(string $s, T $t): void {
+   |                                              ^^^^^^ [3]
+32 |   if ($s === $t) {
+33 |     expect_c1($s);
+   |               ^^ [1]
+34 |   }
+35 | }
+
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
 -> But got `string` [3]
@@ -21,98 +43,6 @@ sound_abstract.php:39:15
    |               ^^ [1]
 40 |   }
 41 | }
-
-error: Typing[4110] Invalid argument [1]
--> Expected `class<C1>` [2]
--> But got `?class<C1>` [3]
-->   by the definition of `T` [4]
-
-sound_abstract.php:39:15
- 9 | }
-10 | 
-11 | function expect_c1(class<C1> $_): void {}
-   |                    ^^^^^^^^^ [2]
-12 | 
-13 | case type CT = class<C1> | int;
-   :
-35 | }
-36 | 
-37 | function sound_generic_nullable_bound<T as ?class<C1>>(string $s, T $t): void {
-   |                                            ^^^^^^^^^^ [4]
-   |                                                                   ^ [3]
-38 |   if ($s === $t) {
-39 |     expect_c1($s);
-   |               ^^ [1]
-40 |   }
-41 | }
-
-error: Typing[4110] Invalid argument [1]
--> Expected `class<C1>` [2]
--> But got `T as ?class<C1>` [3]
-
-sound_abstract.php:39:15
- 9 | }
-10 | 
-11 | function expect_c1(class<C1> $_): void {}
-   |                    ^^^^^^^^^ [2]
-12 | 
-13 | case type CT = class<C1> | int;
-   :
-35 | }
-36 | 
-37 | function sound_generic_nullable_bound<T as ?class<C1>>(string $s, T $t): void {
-   |                                                                   ^ [3]
-38 |   if ($s === $t) {
-39 |     expect_c1($s);
-   |               ^^ [1]
-40 |   }
-41 | }
-
-error: Typing[4110] Invalid argument [1]
--> Expected `class<C1>` [2]
--> But got `(string & <expr#2> as T) where T as ?class<C1>` from this equality test [3]
-
-sound_abstract.php:39:15
- 9 | }
-10 | 
-11 | function expect_c1(class<C1> $_): void {}
-   |                    ^^^^^^^^^ [2]
-12 | 
-13 | case type CT = class<C1> | int;
-   :
-36 | 
-37 | function sound_generic_nullable_bound<T as ?class<C1>>(string $s, T $t): void {
-38 |   if ($s === $t) {
-   |       ^^^^^^^^^ [3]
-39 |     expect_c1($s);
-   |               ^^ [1]
-40 |   }
-41 | }
-
-error: Typing[4110] Invalid argument [1]
--> Expected `class<C1>` [2]
--> But got `int` [3]
-
-sound_abstract.php:48:15
- 9 | }
-10 | 
-11 | function expect_c1(class<C1> $_): void {}
-   |                    ^^^^^^^^^ [2]
-12 | 
-13 | case type CT = class<C1> | int;
-   :
-41 | }
-42 | 
-43 | function sound_generic_union_bound<T as (class<C1> | int)>(
-   |                                                      ^^^ [3]
-44 |   string $s,
-45 |   T $t,
-46 | ): void {
-47 |   if ($s === $t) {
-48 |     expect_c1($s);
-   |               ^^ [1]
-49 |   }
-50 | }
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
@@ -140,9 +70,10 @@ sound_abstract.php:48:15
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
--> But got `T as (int | class<C1>)` [3]
+-> But got `string` [1]
+->   from this definition [3]
 
-sound_abstract.php:48:15
+sound_abstract.php:54:15
  9 | }
 10 | 
 11 | function expect_c1(class<C1> $_): void {}
@@ -150,22 +81,22 @@ sound_abstract.php:48:15
 12 | 
 13 | case type CT = class<C1> | int;
    :
-43 | function sound_generic_union_bound<T as (class<C1> | int)>(
-44 |   string $s,
-45 |   T $t,
-   |   ^ [3]
-46 | ): void {
-47 |   if ($s === $t) {
-48 |     expect_c1($s);
-   |               ^^ [1]
-49 |   }
 50 | }
+51 | 
+52 | function sound_generic_vec_bound<T as vec<class<C1>>>(vec<string> $v, T $t): void {
+   |                                                           ^^^^^^ [3]
+53 |   if ($v === $t) {
+54 |     expect_c1($v[0]);
+   |               ^^^^^ [1]
+55 |   }
+56 | }
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `class<C1>` [2]
--> But got `(string & <expr#2> as T) where T as (int | class<C1>)` from this equality test [3]
+-> But got `string` [1]
+->   from this definition [3]
 
-sound_abstract.php:48:15
+sound_abstract.php:63:15
  9 | }
 10 | 
 11 | function expect_c1(class<C1> $_): void {}
@@ -173,13 +104,211 @@ sound_abstract.php:48:15
 12 | 
 13 | case type CT = class<C1> | int;
    :
-45 |   T $t,
-46 | ): void {
-47 |   if ($s === $t) {
-   |       ^^^^^^^^^ [3]
-48 |     expect_c1($s);
-   |               ^^ [1]
-49 |   }
-50 | }
+57 | 
+58 | function sound_nested_generic_bound<T as class<C1>, TV as vec<T>>(
+59 |   vec<string> $v,
+   |       ^^^^^^ [3]
+60 |   TV $t,
+61 | ): void {
+62 |   if ($v === $t) {
+63 |     expect_c1($v[0]);
+   |               ^^^^^ [1]
+64 |   }
+65 | }
 
-8 errors found
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_abstract.php:69:15
+ 9 | }
+10 | 
+11 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+12 | 
+13 | case type CT = class<C1> | int;
+   :
+65 | }
+66 | 
+67 | function sound_vec_of_generic<T as class<C1>>(vec<string> $v, vec<T> $x): void {
+   |                                                   ^^^^^^ [3]
+68 |   if ($v === $x) {
+69 |     expect_c1($v[0]);
+   |               ^^^^^ [1]
+70 |   }
+71 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:75:15
+ 9 | }
+10 | 
+11 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+12 | 
+13 | case type CT = class<C1> | int;
+   :
+71 | }
+72 | 
+73 | function sound_intersection_operand<T>(string $s, (T & class<C1>) $x): void {
+   |                                        ^^^^^^ [3]
+74 |   if ($s === $x) {
+75 |     expect_c1($s);
+   |               ^^ [1]
+76 |   }
+77 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:81:15
+ 9 | }
+10 | 
+11 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+12 | 
+13 | case type CT = class<C1> | int;
+   :
+77 | }
+78 | 
+79 | function sound_case_type(string $s, CT $ct): void {
+   |                          ^^^^^^ [3]
+80 |   if ($s === $ct) {
+81 |     expect_c1($s);
+   |               ^^ [1]
+82 |   }
+83 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:87:15
+ 9 | }
+10 | 
+11 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+12 | 
+13 | case type CT = class<C1> | int;
+   :
+83 | }
+84 | 
+85 | function sound_generic_case_type(string $s, GCT<C1> $ct): void {
+   |                                  ^^^^^^ [3]
+86 |   if ($s === $ct) {
+87 |     expect_c1($s);
+   |               ^^ [1]
+88 |   }
+89 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:94:17
+ 9 | }
+10 | 
+11 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+12 | 
+13 | case type CT = class<C1> | int;
+   :
+90 | 
+91 | abstract class SoundTypeConstOperand extends WithTypeConsts {
+92 |   public function f(string $s, this::TC $x): void {
+   |                     ^^^^^^ [3]
+93 |     if ($s === $x) {
+94 |       expect_c1($s);
+   |                 ^^ [1]
+95 |     }
+96 |   }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:101:15
+  9 | }
+ 10 | 
+ 11 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 12 | 
+ 13 | case type CT = class<C1> | int;
+    :
+ 97 | }
+ 98 | 
+ 99 | function sound_enum_class_constant(string $s): void {
+    |                                    ^^^^^^ [3]
+100 |   if ($s === EC::A) {
+101 |     expect_c1($s);
+    |               ^^ [1]
+102 |   }
+103 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:107:15
+  9 | }
+ 10 | 
+ 11 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 12 | 
+ 13 | case type CT = class<C1> | int;
+    :
+103 | }
+104 | 
+105 | function sound_nullsafe_operand(string $s, ?Holder $h): void {
+    |                                 ^^^^^^ [3]
+106 |   if ($s === $h?->c) {
+107 |     expect_c1($s);
+    |               ^^ [1]
+108 |   }
+109 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_abstract.php:114:17
+  9 | }
+ 10 | 
+ 11 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 12 | 
+ 13 | case type CT = class<C1> | int;
+    :
+109 | }
+110 | 
+111 | function sound_lambda_param(string $s): void {
+    |                             ^^^^^^ [3]
+112 |   apply_to(C1::class, $c ==> {
+113 |     if ($s === $c) {
+114 |       expect_c1($s);
+    |                 ^^ [1]
+115 |     }
+116 |   });
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `T` [2]
+-> But got `mixed` [3]
+
+sound_abstract.php:122:12
+117 | }
+118 | 
+119 | function sound_unbounded_generic<T>(mixed $m, T $t): T {
+    |                                     ^^^^^ [3]
+    |                                                      ^ [2]
+120 |   if ($m === $t) {
+121 |     hh_show($m);
+122 |     return $m;
+    |            ^^ [1]
+123 |   }
+124 |   return $t;
+
+14 errors found

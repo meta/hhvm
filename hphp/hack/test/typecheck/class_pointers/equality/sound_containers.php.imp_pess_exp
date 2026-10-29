@@ -1,0 +1,385 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:18:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+13 | // every expect_c1 / ::m() below should be an error.
+14 | 
+15 | function sound_vec_literal(vec<string> $v): void {
+   |                                ^^^^^^ [3]
+16 |   $c = C1::class;
+17 |   if ($v === vec[$c]) {
+18 |     expect_c1($v[0]);
+   |               ^^^^^ [1]
+19 |   }
+20 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:24:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+20 | }
+21 | 
+22 | function sound_vec_var(vec<string> $v, vec<class<C1>> $x): void {
+   |                            ^^^^^^ [3]
+23 |   if ($v === $x) {
+24 |     expect_c1($v[0]);
+   |               ^^^^^ [1]
+25 |   }
+26 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:30:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+26 | }
+27 | 
+28 | function sound_dict(dict<string, string> $d, dict<string, class<C1>> $x): void {
+   |                                  ^^^^^^ [3]
+29 |   if ($d === $x) {
+30 |     expect_c1($d['k']);
+   |               ^^^^^^^ [1]
+31 |   }
+32 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:36:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+32 | }
+33 | 
+34 | function sound_tuple((string, int) $t, (class<C1>, int) $x): void {
+   |                       ^^^^^^ [3]
+35 |   if ($t === $x) {
+36 |     expect_c1($t[0]);
+   |               ^^^^^ [1]
+37 |   }
+38 | }
+
+error: Typing[4116] Tuple accessed with an index out of bounds [1]
+
+sound_containers.php:45:18
+43 | ): void {
+44 |   if ($t === $x) {
+45 |     expect_c1($t[1]);
+   |                  ^ [1]
+46 |   }
+47 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:51:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+47 | }
+48 | 
+49 | function sound_shape(shape('c' => string) $s, shape('c' => class<C1>) $x): void {
+   |                                   ^^^^^^ [3]
+50 |   if ($s === $x) {
+51 |     expect_c1($s['c']);
+   |               ^^^^^^^ [1]
+52 |   }
+53 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_containers.php:60:26
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+54 | 
+55 | function sound_optional_shape_field(
+56 |   shape(?'c' => string) $s,
+   |                 ^^^^^^ [3]
+57 |   shape(?'c' => class<C1>) $x,
+58 | ): void {
+59 |   if ($s === $x) {
+60 |     expect_c1(Shapes::at($s, 'c'));
+   |                          ^^ [1]
+61 |   }
+62 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:69:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+63 | 
+64 | function sound_open_shape(
+65 |   shape('c' => string, ...) $s,
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+66 |   shape('c' => class<C1>, ...) $x,
+67 | ): void {
+68 |   if ($s === $x) {
+69 |     expect_c1($s['c']);
+   |               ^^^^^^^ [1]
+70 |   }
+71 | }
+
+error: Typing[4063] You are trying to access an element of this container but the container could be `null`.  [1]
+-> This is what makes me believe it can be `null` [2]
+
+sound_containers.php:76:15
+71 | }
+72 | 
+73 | function sound_splat_shape<T as shape(...)>(T $a, mixed $s): void {
+   |                                                   ^^^^^ [2]
+74 |   $c = C1::class;
+75 |   if ($s === shape(...$a, 'c' => $c)) {
+76 |     expect_c1($s['c']);
+   |               ^^^^^^^ [1]
+77 |   }
+78 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:82:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+78 | }
+79 | 
+80 | function sound_nested_vec(vec<vec<string>> $v, vec<vec<class<C1>>> $x): void {
+   |                                   ^^^^^^ [3]
+81 |   if ($v === $x) {
+82 |     expect_c1($v[0][0]);
+   |               ^^^^^^^^ [1]
+83 |   }
+84 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:91:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | // The local can hold a string, so after the comparison it is at most a name:
+   :
+85 | 
+86 | function sound_vec_of_shapes(
+87 |   vec<shape('c' => string)> $v,
+   |                    ^^^^^^ [3]
+88 |   vec<shape('c' => class<C1>)> $x,
+89 | ): void {
+90 |   if ($v === $x) {
+91 |     expect_c1($v[0]['c']);
+   |               ^^^^^^^^^^ [1]
+92 |   }
+93 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+->   via this generic `T` [4]
+->   via this generic `Tv` [5]
+->   via this generic `Tv` [6]
+->   via this generic `Tv` [7]
+
+sound_containers.php:98:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | // The local can hold a string, so after the comparison it is at most a name:
+    :
+ 93 | }
+ 94 | 
+ 95 | function sound_vec_or_dict(vec<string> $v, vec_or_dict<class<C1>> $x): void {
+    |                                ^^^^^^ [3]
+ 96 |   if ($v === $x) {
+ 97 |     foreach ($v as $e) {
+ 98 |       expect_c1($e);
+    |                 ^^ [1]
+ 99 |     }
+100 |   }
+
+hackarray.hhi:52:72
+ 20 |     <<__NoAutoBound>> +Tk as arraykey,
+ 21 |     <<__NoAutoBound>> +Tv,
+ 22 |   > implements KeyedContainer<Tk, Tv>, \XHPChild {
+    |                                   ^^ [5]
+ 23 | 
+ 24 |   }
+    :
+ 50 |    */
+ 51 |   <<__SupportDynamicType>>
+ 52 |   abstract final class vec<<<__NoAutoBound>> +T> extends AnyArray<int, T> {}
+    |                                                                        ^ [4]
+ 53 | 
+ 54 | } // namespace HH
+
+interfaces.hhi:115:23
+ 90 |    */
+ 91 |   <<__Sealed(KeyedContainer::class)>>
+ 92 |   interface Container<<<__NoAutoBound>> +Tv> extends Traversable<Tv> {
+    |                                                                  ^^ [7]
+ 93 | 
+ 94 |   }
+    :
+113 |   )>>
+114 |   interface KeyedContainer<<<__NoAutoBound>> +Tk as arraykey, <<__NoAutoBound>> +Tv>
+115 |     extends Container<Tv>, KeyedTraversable<Tk, Tv> {}
+    |                       ^^ [6]
+116 | 
+117 |   /**
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:108:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | // The local can hold a string, so after the comparison it is at most a name:
+    :
+102 | 
+103 | function sound_keyed_container_operand(
+104 |   vec<string> $v,
+    |       ^^^^^^ [3]
+105 |   KeyedContainer<int, class<C1>> $x,
+106 | ): void {
+107 |   if ($v === $x) {
+108 |     expect_c1($v[0]);
+    |               ^^^^^ [1]
+109 |   }
+110 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+->   via this generic `Tv` [4]
+->   via this generic `Tv` [5]
+
+sound_containers.php:118:17
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | // The local can hold a string, so after the comparison it is at most a name:
+    :
+111 | 
+112 | function sound_keyed_container_local(
+113 |   KeyedContainer<int, string> $kc,
+    |                       ^^^^^^ [3]
+114 |   vec<class<C1>> $x,
+115 | ): void {
+116 |   if ($kc === $x) {
+117 |     foreach ($kc as $e) {
+118 |       expect_c1($e);
+    |                 ^^ [1]
+119 |     }
+120 |   }
+
+interfaces.hhi:115:23
+ 90 |    */
+ 91 |   <<__Sealed(KeyedContainer::class)>>
+ 92 |   interface Container<<<__NoAutoBound>> +Tv> extends Traversable<Tv> {
+    |                                                                  ^^ [5]
+ 93 | 
+ 94 |   }
+    :
+113 |   )>>
+114 |   interface KeyedContainer<<<__NoAutoBound>> +Tk as arraykey, <<__NoAutoBound>> +Tv>
+115 |     extends Container<Tv>, KeyedTraversable<Tk, Tv> {}
+    |                       ^^ [4]
+116 | 
+117 |   /**
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:125:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | // The local can hold a string, so after the comparison it is at most a name:
+    :
+121 | }
+122 | 
+123 | function sound_loose_vec(vec<string> $v, vec<class<C1>> $x): void {
+    |                              ^^^^^^ [3]
+124 |   if ($v == $x) {
+125 |     expect_c1($v[0]); // error: `==` does not refine
+    |               ^^^^^ [1]
+126 |   }
+127 | }
+
+15 errors found

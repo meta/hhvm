@@ -212,6 +212,9 @@ val is_opt_tyvar : Typing_env_types.env -> Typing_defs.locl_ty -> bool
 
 val is_tyvar_error : Typing_env_types.env -> Typing_defs.locl_ty -> bool
 
+val contains_unresolved_tyvars :
+  Typing_env_types.env -> Typing_defs.locl_ty -> Typing_env_types.env * bool
+
 val get_base_type :
   ?expand_supportdyn:bool ->
   Typing_env_types.env ->

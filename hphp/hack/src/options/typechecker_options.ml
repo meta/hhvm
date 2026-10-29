@@ -243,6 +243,9 @@ let package_info t = t.Global_options.po.Parser_options.package_info
 
 let tco_extended_reasons t = t.Global_options.tco_extended_reasons
 
+let enable_eqeqeq_refinement_filter t =
+  t.Global_options.tco_enable_eqeqeq_refinement_filter
+
 let disable_physical_equality t = t.Global_options.tco_disable_physical_equality
 
 let hack_warnings t = t.Global_options.hack_warnings
