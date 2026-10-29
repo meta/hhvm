@@ -632,10 +632,6 @@ impl HhConfig {
                 "class_pointer_ban_class_array_key",
                 default.class_pointer_ban_class_array_key,
             )?,
-            class_pointer_ban_class_string_comparison: hhconfig.get_bool_or(
-                "class_pointer_ban_class_string_comparison",
-                default.class_pointer_ban_class_string_comparison,
-            )?,
             tco_permits_bypassing_visibility: hhconfig
                 .get_str_list("permits_bypassing_visibility")
                 .map(|classes| classes.map(|s| format!("\\{}", s)).collect())

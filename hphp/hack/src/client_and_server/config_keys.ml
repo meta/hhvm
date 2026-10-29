@@ -91,9 +91,6 @@ module Hhconfig = struct
   let class_pointer_ban_class_array_key =
     key "class_pointer_ban_class_array_key"
 
-  let class_pointer_ban_class_string_comparison =
-    key "class_pointer_ban_class_string_comparison"
-
   let class_sub_classname = key "class_sub_classname"
 
   let code_agnostic_fixme = key "code_agnostic_fixme"

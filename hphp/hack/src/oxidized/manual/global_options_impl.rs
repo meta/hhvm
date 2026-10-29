@@ -155,7 +155,6 @@ impl Default for GlobalOptions {
             strict_consistent_construct: false,
             allow_class_string_cast: true,
             class_pointer_ban_class_array_key: false,
-            class_pointer_ban_class_string_comparison: false,
             tco_permits_bypassing_visibility: Default::default(),
             tco_tests_bypass_visibility_static_properties: false,
             tco_implicit_throw_points: false,

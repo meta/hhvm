@@ -1,4 +1,3 @@
 --config 'allow_class_string_cast=false'
 --config 'class_pointer_ban_class_array_key=true'
---config 'class_pointer_ban_class_string_comparison=true'
 --error-format plain_highlighted

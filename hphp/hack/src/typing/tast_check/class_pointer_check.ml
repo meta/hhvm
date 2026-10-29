@@ -109,9 +109,7 @@ let handler =
               bop = Ast_defs.(Eqeq | Eqeqeq | Diff | Diff2);
               lhs = (lhs_ty, _, _) as lhs;
               rhs = (rhs_ty, _, _) as rhs;
-            } )
-        when Typechecker_options.class_pointer_ban_class_string_comparison
-               env.genv.tcopt ->
+            } ) ->
         check_compared_class_consts env rhs_ty lhs;
         check_compared_class_consts env lhs_ty rhs
       | _ -> ()
@@ -120,9 +118,7 @@ let handler =
     method! at_stmt env (_, stmt) =
       let Equal = Tast_env.eq_typing_env in
       match stmt with
-      | Switch ((scrutinee_ty, _, _), cases, _)
-        when Typechecker_options.class_pointer_ban_class_string_comparison
-               env.genv.tcopt ->
+      | Switch ((scrutinee_ty, _, _), cases, _) ->
         List.iter cases ~f:(fun (case, _) ->
             check_compared_class_consts env scrutinee_ty case)
       | _ -> ()

@@ -1,2 +1,0 @@
---config 'class_pointer_ban_class_string_comparison=false'
---error-format plain_highlighted

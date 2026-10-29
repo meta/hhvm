@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<2429aa2dcfe46c14738f7623f704d31a>>
+// @generated SignedSource<<c22a117100733b031fbd7e1b5450cf7c>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -420,8 +420,6 @@ pub struct GlobalOptions {
     pub allow_class_string_cast: bool,
     /// Error on dict[$c => 1] when $c: class<T>
     pub class_pointer_ban_class_array_key: bool,
-    /// Error on $s === C::class when $s may hold a string
-    pub class_pointer_ban_class_string_comparison: bool,
     pub tco_permits_bypassing_visibility: Vec<String>,
     pub tco_tests_bypass_visibility_static_properties: bool,
     /// Treat `yield`, `clone` and `list()` destructuring as points that may throw when merging try/catch environments.

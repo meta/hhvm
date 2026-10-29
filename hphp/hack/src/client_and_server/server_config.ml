@@ -638,10 +638,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt Config_keys.Hhconfig.allow_class_string_cast config)
     ?class_pointer_ban_class_array_key:
       (bool_opt Config_keys.Hhconfig.class_pointer_ban_class_array_key config)
-    ?class_pointer_ban_class_string_comparison:
-      (bool_opt
-         Config_keys.Hhconfig.class_pointer_ban_class_string_comparison
-         config)
     ?tco_permits_bypassing_visibility:
       (string_list_opt Config_keys.Hhconfig.permits_bypassing_visibility config
       |> Option.map ~f:(List.map ~f:Utils.add_ns))

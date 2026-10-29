@@ -310,8 +310,6 @@ type t = {
   allow_class_string_cast: bool;  (** Admits (string)$c when $c: class<T>  *)
   class_pointer_ban_class_array_key: bool;
       (** Error on dict[$c => 1] when $c: class<T>  *)
-  class_pointer_ban_class_string_comparison: bool;
-      (** Error on $s === C::class when $s may hold a string  *)
   tco_permits_bypassing_visibility: string list;
   tco_tests_bypass_visibility_static_properties: bool;
   tco_implicit_throw_points: bool;
@@ -429,7 +427,6 @@ val set :
   ?strict_consistent_construct:bool ->
   ?allow_class_string_cast:bool ->
   ?class_pointer_ban_class_array_key:bool ->
-  ?class_pointer_ban_class_string_comparison:bool ->
   ?tco_permits_bypassing_visibility:string list ->
   ?tco_tests_bypass_visibility_static_properties:bool ->
   ?tco_implicit_throw_points:bool ->

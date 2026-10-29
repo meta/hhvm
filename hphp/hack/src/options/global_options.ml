@@ -202,7 +202,6 @@ type t = {
   strict_consistent_construct: bool;
   allow_class_string_cast: bool;
   class_pointer_ban_class_array_key: bool;
-  class_pointer_ban_class_string_comparison: bool;
   tco_permits_bypassing_visibility: string list;
   tco_tests_bypass_visibility_static_properties: bool;
   tco_implicit_throw_points: bool;
@@ -321,7 +320,6 @@ let default =
     strict_consistent_construct = false;
     allow_class_string_cast = true;
     class_pointer_ban_class_array_key = false;
-    class_pointer_ban_class_string_comparison = false;
     tco_permits_bypassing_visibility = [];
     tco_tests_bypass_visibility_static_properties = false;
     tco_implicit_throw_points = false;
@@ -437,7 +435,6 @@ let set
     ?strict_consistent_construct
     ?allow_class_string_cast
     ?class_pointer_ban_class_array_key
-    ?class_pointer_ban_class_string_comparison
     ?tco_permits_bypassing_visibility
     ?tco_tests_bypass_visibility_static_properties
     ?tco_implicit_throw_points
@@ -759,10 +756,6 @@ let set
       setting
         class_pointer_ban_class_array_key
         options.class_pointer_ban_class_array_key;
-    class_pointer_ban_class_string_comparison =
-      setting
-        class_pointer_ban_class_string_comparison
-        options.class_pointer_ban_class_string_comparison;
     tco_permits_bypassing_visibility =
       setting
         tco_permits_bypassing_visibility

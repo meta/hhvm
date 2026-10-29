@@ -300,9 +300,6 @@ let allow_class_string_cast t = t.Global_options.allow_class_string_cast
 let class_pointer_ban_class_array_key t =
   t.Global_options.class_pointer_ban_class_array_key
 
-let class_pointer_ban_class_string_comparison t =
-  t.Global_options.class_pointer_ban_class_string_comparison
-
 let enable_recursive_case_types t =
   { t with Global_options.recursive_case_types = true }
 
