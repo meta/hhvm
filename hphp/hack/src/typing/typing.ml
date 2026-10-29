@@ -9125,13 +9125,11 @@ end = struct
     | Aast.False when tparamet -> LEnv.drop_cont env C.Next
     | Aast.Binop
         {
-          bop = (Ast_defs.Eqeq | Ast_defs.Eqeqeq) as bop;
+          bop = Ast_defs.Eqeqeq;
           lhs = (lhs_ty, _, _) as lhs;
           rhs = (rhs_ty, _, _) as rhs;
         }
-      when tparamet
-           && (Ast_defs.equal_bop bop Ast_defs.Eqeqeq
-              || not (TCO.disable_eqeq_refinement (Env.get_tcopt env))) ->
+      when tparamet ->
       let env = refine_for_equality p env lhs rhs_ty in
       let env = refine_for_equality p env rhs lhs_ty in
       env

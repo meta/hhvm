@@ -122,6 +122,6 @@ function sound_keyed_container_local(
 
 function sound_loose_vec(vec<string> $v, vec<class<C1>> $x): void {
   if ($v == $x) {
-    expect_c1($v[0]); // BAD: accepted, but the local can be a string here
+    expect_c1($v[0]); // error: `==` does not refine
   }
 }

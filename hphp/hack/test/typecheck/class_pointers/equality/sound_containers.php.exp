@@ -8,4 +8,27 @@ sound_containers.php:45:18
 46 |   }
 47 | }
 
-1 error found
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [1]
+->   from this definition [3]
+
+sound_containers.php:125:15
+  8 | }
+  9 | 
+ 10 | function expect_c1(class<C1> $_): void {}
+    |                    ^^^^^^^^^ [2]
+ 11 | 
+ 12 | // The local can hold a string, so after the comparison it is at most a name:
+    :
+121 | }
+122 | 
+123 | function sound_loose_vec(vec<string> $v, vec<class<C1>> $x): void {
+    |                              ^^^^^^ [3]
+124 |   if ($v == $x) {
+125 |     expect_c1($v[0]); // error: `==` does not refine
+    |               ^^^^^ [1]
+126 |   }
+127 | }
+
+2 errors found

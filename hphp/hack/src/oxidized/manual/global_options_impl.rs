@@ -125,7 +125,6 @@ impl Default for GlobalOptions {
             dump_tasts: vec![],
             tco_autocomplete_mode: false,
             tco_extended_reasons: None,
-            tco_disable_eqeq_refinement: false,
             tco_disable_physical_equality: false,
             hack_warnings: NoneOrAllExcept::AllExcept(vec![]),
             warnings_default_all: false,

@@ -21,4 +21,26 @@ sound_top_level.php:49:15
 50 |   }
 51 | }
 
-1 error found
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<C1>` [2]
+-> But got `string` [3]
+
+sound_top_level.php:91:15
+ 8 | }
+ 9 | 
+10 | function expect_c1(class<C1> $_): void {}
+   |                    ^^^^^^^^^ [2]
+11 | 
+12 | enum E: string {
+   :
+87 | }
+88 | 
+89 | function sound_loose(string $s, class<C1> $c): void {
+   |                      ^^^^^^ [3]
+90 |   if ($s == $c) {
+91 |     expect_c1($s); // error: `==` does not refine
+   |               ^^ [1]
+92 |   }
+93 | }
+
+2 errors found

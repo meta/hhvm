@@ -16,12 +16,6 @@ function class_local(class<P> $c): void {
   }
 }
 
-function class_local_loose(class<P> $c): void {
-  if ($c == C1::class) {
-    expect_c1($c);
-  }
-}
-
 function nullable_class_local(?class<P> $c): void {
   if ($c === C1::class) {
     expect_c1($c);

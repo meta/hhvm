@@ -243,8 +243,6 @@ let package_info t = t.Global_options.po.Parser_options.package_info
 
 let tco_extended_reasons t = t.Global_options.tco_extended_reasons
 
-let disable_eqeq_refinement t = t.Global_options.tco_disable_eqeq_refinement
-
 let disable_physical_equality t = t.Global_options.tco_disable_physical_equality
 
 let hack_warnings t = t.Global_options.hack_warnings

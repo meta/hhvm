@@ -540,10 +540,6 @@ impl HhConfig {
                     }
                 },
             ),
-            tco_disable_eqeq_refinement: hhconfig.get_bool_or(
-                "disable_eqeq_refinement",
-                default.tco_disable_eqeq_refinement,
-            )?,
             tco_disable_physical_equality: hh_conf.get_bool_or(
                 "disable_physical_equality",
                 default.tco_disable_physical_equality,

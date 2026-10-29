@@ -1,2 +1,1 @@
 --config union_intersection_type_hints=true
---config disable_eqeq_refinement=true

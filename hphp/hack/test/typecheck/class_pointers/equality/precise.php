@@ -20,12 +20,6 @@ function precise_class(class<P> $c): void {
   }
 }
 
-function precise_class_loose(class<P> $c): void {
-  if ($c == C1::class) {
-    expect_c1($c);
-  }
-}
-
 function precise_nullable_class(?class<P> $c): void {
   if ($c === C1::class) {
     expect_c1($c);

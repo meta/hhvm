@@ -579,8 +579,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
     ?tco_package_exclude_patterns:
       (string_list_opt Config_keys.Hhconfig.package_exclude_patterns config)
     ?tco_extended_reasons:(reasons_config_opt config)
-    ?tco_disable_eqeq_refinement:
-      (bool_opt Config_keys.Hhconfig.disable_eqeq_refinement config)
     ?tco_disable_physical_equality:
       (bool_opt Config_keys.Hhconfig.disable_physical_equality config)
     ?re_no_cache:(bool_opt Config_keys.Hhconfig.re_no_cache config)

@@ -88,7 +88,7 @@ function sound_reversed(string $s, class<C1> $c): void {
 
 function sound_loose(string $s, class<C1> $c): void {
   if ($s == $c) {
-    expect_c1($s); // BAD: accepted, but the local can be a string here
+    expect_c1($s); // error: `==` does not refine
   }
 }
 
