@@ -83,7 +83,13 @@ function gzwrite(
 function nzcompress(string $uncompressed)[]: HH\FIXME\MISSING_RETURN_TYPE;
 <<__PHPStdLib>>
 function nzuncompress(string $compressed)[]: HH\FIXME\MISSING_RETURN_TYPE;
-<<__PHPStdLib>>
+<<
+  __PHPStdLib,
+  __Deprecated(
+    'QuickLZ writes are deprecated. Migrate writers and readers together; '.
+    'see T295342194.',
+  ),
+>>
 function qlzcompress(
   string $data,
   int $level = 1,
