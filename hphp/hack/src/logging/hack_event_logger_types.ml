@@ -133,6 +133,10 @@ type rollout_flags = {
       (** POC: @frankemrich - Whether to use Eden's state tracking API *)
   edenfs_informant_enabled: bool;
       (** POC: @frankemrich - If true, use Eden backend for InformantNotifier (= file watching in monitor process) *)
+  eden_prefetch_enabled: bool;
+      (** POC: @frankemrich - If true, prefetch type-checking fanout files with Sapling *)
+  eden_prefetch_fanout_threshold: int;
+      (** POC: @frankemrich - Minimum number of fanout files required to start Sapling prefetching. *)
   prefetch_decls_enabled: bool;
       (** POC: @izorin - If true, prefetch class declarations in parallel before type-checking files with many class references *)
 }

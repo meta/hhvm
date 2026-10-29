@@ -1447,5 +1447,7 @@ let to_rollout_flags (options : t) : Hack_event_logger.rollout_flags =
       edenfs_file_watcher_state_tracking =
         options.edenfs_file_watcher.state_tracking;
       edenfs_informant_enabled = options.edenfs_informant_enabled;
+      eden_prefetch_enabled = options.eden_prefetch_enabled;
+      eden_prefetch_fanout_threshold = options.eden_prefetch_fanout_threshold;
       prefetch_decls_enabled = options.prefetch_decls_enabled;
     }
