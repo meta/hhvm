@@ -20,7 +20,6 @@
 #include "hphp/runtime/server/cli-server.h"
 #include "hphp/runtime/server/cli-server-impl.h"
 
-#include <folly/functional/ApplyTuple.h>
 #include <tuple>
 
 namespace HPHP {
@@ -57,7 +56,7 @@ protected:
   template<class... Ts>
   void read(std::tuple<Ts...>& arg) {
     // use readMulti instead of cli_read so that specializations are used
-    folly::apply([&](Ts&... args) { readMulti(args...); }, arg);
+    std::apply([&](Ts&... args) { readMulti(args...); }, arg);
   }
 
   template<class T>
@@ -77,7 +76,7 @@ protected:
 
   template<class... Ts>
   void write(const std::tuple<Ts...>& arg) {
-    folly::apply([&](const Ts&... args) { writeMulti(args...); }, arg);
+    std::apply([&](const Ts&... args) { writeMulti(args...); }, arg);
   }
 
   template <class T, class... Ts>
@@ -229,8 +228,8 @@ std::string cli_get_extension_function_id(const char* name, TRet(*impl)(Args...)
 template<class TSuccess, class TError, class... Args>
 void cli_server_invoke_wrapped(CLIServerInterface& server, CLISrvResult<TSuccess, TError>(*func)(Args...)) {
   std::tuple<Args...> args;
-  folly::apply([&] (Args&... tupleArgs) { server.readArguments(tupleArgs...); }, args);
-  server.sendResult(folly::apply(func, args));
+  std::apply([&] (Args&... tupleArgs) { server.readArguments(tupleArgs...); }, args);
+  server.sendResult(std::apply(func, args));
 }
 
 template<class TSuccess, class TError, class... Args>
