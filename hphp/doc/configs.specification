@@ -1868,7 +1868,7 @@ The format can be found in hphp/tools/configs/generate_configs.rs
   local rather than an unnamed one, if during the course of the loop the local
   is either not modified, or is only modified at the $key location.
 
-- bool Hack.Lang.OptimizeIsTypeChecks = false, paulbiss, repooptionsflag(Parser)|hackc(hhbc)
+- bool Hack.Lang.OptimizeIsTypeChecks = true, paulbiss, repooptionsflag(Parser)|hackc(hhbc)
 
   Controls whether hackc will attempt to emit IsTypeC instructions in place of
   IsTypeStructC for primitive types that are trivially checkable.
