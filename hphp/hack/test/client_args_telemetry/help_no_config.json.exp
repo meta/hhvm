@@ -1,0 +1,23 @@
+=== hh_client result ===
+argv: hh_client --help --reason ignored --multi ../missing-list
+cwd: <test_tmp>/no_config
+exit_code: 0
+stdout:
+Usage: hh_client check [OPTION]... [WWW-ROOT]
+<usage omitted>
+stderr:
+<empty>
+=== telemetry ===
+[
+  {
+    "argv": "hh_client --help --reason ignored --multi ../missing-list",
+    "data": {
+      "kind": "help"
+    },
+    "event": "HELP",
+    "process": "client"
+  },
+  {
+    "event": "INIT_INFO"
+  }
+]

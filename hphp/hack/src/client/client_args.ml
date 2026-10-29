@@ -156,6 +156,26 @@ exception Parse_error of arg_error
 
 let is_interactive = List.mem [""; "[sh]"] ~equal:String.equal
 
+let log_help ~from log_event =
+  let stderr_level = Hh_logger.Level.min_level_stderr () in
+  Hh_logger.Level.set_min_level_stderr Hh_logger.Level.Off;
+  Utils.try_finally
+    ~finally:(fun () -> Hh_logger.Level.set_min_level_stderr stderr_level)
+    ~f:(fun () ->
+      try
+        Hack_event_logger.client_init
+          ~init_id:(Random_id.short_string ())
+          ~from
+          ~is_interactive:(is_interactive from)
+          ~custom_columns:[]
+          ?agent_session_id:(Agent_session_id.get ())
+          (Path.make ".");
+        log_event ();
+        Hack_event_logger.flush ()
+      with
+      | Exit_status.Exit_with _ as interrupt -> raise interrupt
+      | _ -> ())
+
 (** On malformed command line args, ensure we record telemetry. *)
 module Die : sig
   (** Report [message] and optional [usage] on stderr, log [message] in a
@@ -1302,8 +1322,17 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
   let ultrahelp = argv_has "--ultrahelp" in
   if ultrahelp || argv_has "--help" || argv_has "-help" then begin
     print_string (help ~ultrahelp);
+    Out_channel.flush stdout;
+    log_help ~from:from_default (fun () ->
+        Hack_event_logger.help
+          ~kind:
+            (if ultrahelp then
+              "ultrahelp"
+            else
+              "help"));
     exit 0
   end;
+
   let args =
     try
       parse_without_command

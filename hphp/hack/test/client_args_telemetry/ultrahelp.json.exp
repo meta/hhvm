@@ -8,4 +8,16 @@ Usage: hh_client check [OPTION]... [WWW-ROOT]
 stderr:
 <empty>
 === telemetry ===
-[]
+[
+  {
+    "argv": "hh_client --ultrahelp",
+    "data": {
+      "kind": "ultrahelp"
+    },
+    "event": "HELP",
+    "process": "client"
+  },
+  {
+    "event": "INIT_INFO"
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "args": ["--help", "--reason", "ignored", "--multi", "../missing-list"],
+  "cwd": "no_config"
+}

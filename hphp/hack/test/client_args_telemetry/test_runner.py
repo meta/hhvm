@@ -111,6 +111,8 @@ def _project_sample(
             projection["exception"] = _scrub(data["exn"], hh_client, temp_dir)
             if "stack" in data:
                 projection["stack"] = "<stack trace omitted>"
+        elif normal.get("event") == "HELP":
+            projection["data"] = data
     return projection
 
 
