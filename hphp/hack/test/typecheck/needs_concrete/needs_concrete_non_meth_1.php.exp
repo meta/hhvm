@@ -1,3 +1,19 @@
+error: Typing[4529] Dangerous access of abstract member `A::X`; it may be abstract and `static` might refer to an abstract class here. Consider adding the `__NeedsConcrete` attribute to the containing method. [1]
+-> Declaration is here [2]
+
+needs_concrete_non_meth_1.php:10:13
+ 4 | <<__ConsistentConstruct>>
+ 5 | abstract class A {
+ 6 |   abstract const int X;
+   |                      ^ [2]
+ 7 |   public static abstract function abs(): void;
+ 8 | 
+ 9 |   public static function error(): void {
+10 |     static::X; // error
+   |             ^ [1]
+11 |     static::abs<>; // error
+12 |     new static(); // error
+
 error: Typing[4529] Dangerous access of abstract member `A::abs`; it may be abstract and `static` might refer to an abstract class here. Consider adding the `__NeedsConcrete` attribute to the containing method. [1]
 -> Declaration is here [2]
 
@@ -32,4 +48,4 @@ needs_concrete_non_meth_1.php:12:9
 13 |   }
 14 | }
 
-2 errors found
+3 errors found

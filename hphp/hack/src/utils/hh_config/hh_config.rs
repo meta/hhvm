@@ -606,10 +606,6 @@ impl HhConfig {
                 &hhconfig,
                 "needs_concrete_class_function_pointer_check",
             )?,
-            needs_concrete_abstract_class_const_check: hhconfig.get_bool_or(
-                "needs_concrete_abstract_class_const_check",
-                default.needs_concrete_abstract_class_const_check,
-            )?,
             needs_concrete_require_extends_class_const_check: hhconfig.get_bool_or(
                 "needs_concrete_require_extends_class_const_check",
                 default.needs_concrete_require_extends_class_const_check,

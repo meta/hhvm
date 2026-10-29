@@ -282,9 +282,6 @@ let needs_concrete_class_function_pointer_check t =
     t.Global_options.needs_concrete_class_function_pointer_check
     ~default:(needs_concrete_class_call_check t)
 
-let needs_concrete_abstract_class_const_check t =
-  t.Global_options.needs_concrete_abstract_class_const_check
-
 let needs_concrete_require_extends_class_const_check t =
   t.Global_options.needs_concrete_require_extends_class_const_check
 

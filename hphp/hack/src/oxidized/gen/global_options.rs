@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<b91ba3e361caa0ed40980954bc06b25c>>
+// @generated SignedSource<<997008190f9dbaf138c427d04aa7407a>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -406,9 +406,7 @@ pub struct GlobalOptions {
     /// Like `needs_concrete_class_call_check`, but for function pointers
     /// such as `C::m<>`. When unset, follows `needs_concrete_class_call_check`.
     pub needs_concrete_class_function_pointer_check: Option<isize>,
-    /// When true, error on abstract class constants read through `static::` where `static` might refer to an abstract class (Typing[4529]).
-    pub needs_concrete_abstract_class_const_check: bool,
-    /// When true, also error on abstract class constants that a trait inherits through `require extends` (Typing[4529]). Requires `needs_concrete_abstract_class_const_check`.
+    /// When true, also error on abstract class constants that a trait inherits through `require extends` (Typing[4529]).
     pub needs_concrete_require_extends_class_const_check: bool,
     /// When true, ban abstract final classes from extending nonabstract __ConsistentConstruct classes
     pub strict_consistent_construct: bool,
