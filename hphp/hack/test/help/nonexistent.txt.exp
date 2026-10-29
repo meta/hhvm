@@ -1,0 +1,39 @@
+hh_client: unknown option '--nonexistent'.
+Usage: hh_client check [OPTION]... [WWW-ROOT]
+
+WWW-ROOT is assumed to be current directory if unspecified
+
+Modes (mutually exclusive; choose one; default: --status):
+
+  --find-class-refs        finds references of the provided class name
+  --find-refs              finds references of the provided symbol; optionally specify the symbol kind like "Kind|Symbol" (looks for functions or methods if unspecified); valid kinds are Method, Property, Class_const, Typeconst, Function, Class, ExplicitClass, and GConst; use ExplicitClass instead of Class to exclude references via self/static/parent
+  --identify               identify the named symbol
+  --inheritance-ancestors  prints a list of all related classes or methods to the given class
+  --inheritance-children   prints a list of all related classes or methods to the given class
+  --list-files             list files with errors
+  --outline                prints an outline of the text on stdin
+  --outline-for-agents     <file> outline the file, including line spans, to help agents efficiently navigate large files
+  --status                 show a human readable list of errors (default)
+  --version                show version and exit
+
+Options:
+
+  --error-format <format> Error formatting style (default: highlighted); valid formats: agent, extended, raw, context, highlighted, plain, plain_highlighted
+  --from                  so we know who's calling hh_client - e.g. nuclide, vim, emacs, vscode
+  --json                  output json for machine consumption (default: false)
+  --jsonl                 output streaming jsonl (JSON Lines) for machine consumption (default: false)
+  --max-errors            Maximum number of errors to display
+  --preexisting-warnings  show all preexisting warnings in typechecked files (default: false)
+  --reason                reason for invoking hh, logged to telemetry
+  --single <path>         Return errors in file with provided name (give '-' for stdin)
+  --multi <path>          Return errors for files read from the given file (one per line)
+  --timeout               set the timeout in seconds (default: no timeout)
+  -Wall                   show all warnings
+  -Wnone                  hide all warnings
+  -W                      show all warnings with a given code, e.g. -W 12001
+  -Wno                    hide all warnings with a given code, e.g. -Wno 12001
+  -Wignore-files          hide warnings in files matching a regexp
+  -Wgenerated             show warnings in generated files
+  --ultrahelp             see all modes and options, including less frequently used ones
+  -help                   Display this list of options
+  --help                  Display this list of options

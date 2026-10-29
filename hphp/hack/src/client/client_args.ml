@@ -1256,8 +1256,7 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
   let to_arg_specs options =
     List.map options ~f:(fun (key, spec, doc, _kind) -> (key, spec, doc))
   in
-  let ultrahelp = argv_has "--ultrahelp" in
-  if ultrahelp || argv_has "--help" || argv_has "-help" then begin
+  let help ~ultrahelp =
     let display_options =
       List.filter options ~f:(fun (_key, _spec, _doc, (visibility, _section)) ->
           ultrahelp
@@ -1295,19 +1294,28 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
             " see all modes and options, including less frequently used ones" );
         ]
     in
-    print_string
-      (Arg.usage_string
-         (Arg.align modes)
-         (usage
-         ^ "\nModes (mutually exclusive; choose one; default: --status):\n"));
-    print_string (Arg.usage_string (Arg.align options) "\nOptions:\n");
+    Arg.usage_string
+      (Arg.align modes)
+      (usage ^ "\nModes (mutually exclusive; choose one; default: --status):\n")
+    ^ Arg.usage_string (Arg.align options) "\nOptions:\n"
+  in
+  let ultrahelp = argv_has "--ultrahelp" in
+  if ultrahelp || argv_has "--help" || argv_has "-help" then begin
+    print_string (help ~ultrahelp);
     exit 0
   end;
   let args =
-    parse_without_command
-      (to_arg_specs options)
-      usage
-      (Client_command.command_name cmd)
+    try
+      parse_without_command
+        (to_arg_specs options)
+        usage
+        (Client_command.command_name cmd)
+    with
+    | Parse_error { message; usage = Some _ } ->
+      let usage =
+        String.chop_suffix_if_exists (help ~ultrahelp:false) ~suffix:"\n"
+      in
+      raise (Parse_error { message; usage = Some usage })
   in
 
   validate_check_args ~invalid_warning_codes:!invalid_warning_codes;

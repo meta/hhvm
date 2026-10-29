@@ -6,4 +6,4 @@ set -euo pipefail
 # to replace the full binary path with "hh_client".
 HH_CLIENT="$1"
 shift
-"$HH_CLIENT" "$@" 2>&1 | sed 's|Usage: [^ ]* |Usage: hh_client |'
+"$HH_CLIENT" "$@" 2>&1 | sed -e 's|Usage: [^ ]* |Usage: hh_client |' -e 's|^[^ ]*: unknown option |hh_client: unknown option |'
