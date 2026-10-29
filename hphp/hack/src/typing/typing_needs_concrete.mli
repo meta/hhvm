@@ -40,7 +40,6 @@ val check_instantiation :
  *  resolved through `static`/`this` where `static` might refer to an abstract
  *  class (i.e. outside a `<<__NeedsConcrete>>` or instance method, or a
  *  final concrete class). Emits [Abstract_access_via_static] (`Typing[4529]`).
- *  Does nothing unless `needs_concrete_abstract_type_const_check` is set.
  *)
 val check_abstract_tconst_via_static :
   Typing_env_types.env -> Pos.t -> string -> unit

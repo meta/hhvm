@@ -289,8 +289,6 @@ type t = {
       (** Set of unstable features enabled for the current file *)
   class_sub_classname: bool;  (** Whether class<T> <: classname<T> *)
   class_class_type: bool;  (** When true, C::class : class<C> *)
-  needs_concrete_abstract_type_const_check: bool;
-      (** When true, error on abstract type constants resolved through `this::` in reified type arguments or `type_structure(static::class, ...)` where `static` might refer to an abstract class (Typing[4529]). *)
   needs_concrete_class_call_check: int;
       (** Configure checks for calls to __NeedsConcrete methods through a named
        * non-concrete class: 0 disables, 1 warns, and 2 errors. *)
@@ -411,7 +409,6 @@ val set :
   ?tco_enabled_unstable_features:S_set.t ->
   ?class_sub_classname:bool ->
   ?class_class_type:bool ->
-  ?needs_concrete_abstract_type_const_check:bool ->
   ?needs_concrete_class_call_check:int ->
   ?needs_concrete_class_function_pointer_check:int option ->
   ?needs_concrete_require_extends_class_const_check:bool ->

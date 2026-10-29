@@ -52,6 +52,7 @@ abstract class Controller {
 
   private dict<string, mixed> $data = dict[];
 
+  <<__NeedsConcrete>>
   protected static function key<T>(
     HH\EnumClass\Label<this::TE, XParam<T>> $label,
   ): string {
@@ -60,6 +61,7 @@ abstract class Controller {
     return $cls::nameOf($label);
   }
 
+  <<__NeedsConcrete>>
   protected static function value<T>(
     HH\EnumClass\Label<this::TE, XParam<T>> $label,
   ): HH\MemberOf<this::TE, XParam<T>> {

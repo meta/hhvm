@@ -12,8 +12,8 @@ trait TRequireExtends {
     static::X; // error
   }
 
-  public static function type_structure_ok(): void {
-    // Covered by needs_concrete_abstract_type_const_check, which is off here
+  public static function type_structure_error(): void {
+    // error, reported once: by the type constant check, not the class constant one
     type_structure(static::class, 'T');
   }
 }

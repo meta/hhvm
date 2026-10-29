@@ -1,7 +1,7 @@
-File "type_structure_abstract.php", line 10, characters 5-73:
+File "type_structure_abstract.php", line 11, characters 5-73:
   ?classname<this::T> where this::T as P::T
-File "type_structure_abstract.php", line 17, characters 5-60:
+File "type_structure_abstract.php", line 19, characters 5-60:
   classname<this::T> where this::T as C::T
-File "type_structure_abstract.php", line 24, characters 5-60:
+File "type_structure_abstract.php", line 26, characters 5-60:
   classname<IChild>
 No errors

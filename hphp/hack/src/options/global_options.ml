@@ -192,7 +192,6 @@ type t = {
   tco_enabled_unstable_features: S_set.t;
   class_sub_classname: bool;
   class_class_type: bool;
-  needs_concrete_abstract_type_const_check: bool;
   needs_concrete_class_call_check: int;
   needs_concrete_class_function_pointer_check: int option;
   needs_concrete_require_extends_class_const_check: bool;
@@ -307,7 +306,6 @@ let default =
     tco_enabled_unstable_features = S_set.empty;
     class_sub_classname = true;
     class_class_type = true;
-    needs_concrete_abstract_type_const_check = false;
     needs_concrete_class_call_check = 0;
     needs_concrete_class_function_pointer_check = None;
     needs_concrete_require_extends_class_const_check = false;
@@ -419,7 +417,6 @@ let set
     ?tco_enabled_unstable_features
     ?class_sub_classname
     ?class_class_type
-    ?needs_concrete_abstract_type_const_check
     ?needs_concrete_class_call_check
     ?needs_concrete_class_function_pointer_check
     ?needs_concrete_require_extends_class_const_check
@@ -713,10 +710,6 @@ let set
     class_sub_classname =
       setting class_sub_classname options.class_sub_classname;
     class_class_type = setting class_class_type options.class_class_type;
-    needs_concrete_abstract_type_const_check =
-      setting
-        needs_concrete_abstract_type_const_check
-        options.needs_concrete_abstract_type_const_check;
     needs_concrete_class_call_check =
       setting
         needs_concrete_class_call_check

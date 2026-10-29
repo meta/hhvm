@@ -11,13 +11,13 @@ typing.extends.good.php:38:18
 error: Typing[4482] It is no longer allowed to use a `classname<this::TEnum>` in this position. Please use a `class<this::TEnum>` instead. [1]
 -> Definition is here [2]
 
-typing.extends.good.php:76:14
-74 |     $ts = type_structure(static::class, 'TEnum');
-75 |     $cls = $ts['classname'];
-76 |     foreach ($cls::getValues() as $key => $elt) {
+typing.extends.good.php:77:14
+75 |     $ts = type_structure(static::class, 'TEnum');
+76 |     $cls = $ts['classname'];
+77 |     foreach ($cls::getValues() as $key => $elt) {
    |              ^^^^ [1]
-77 |       $dict[$key] = $elt;
-78 |     }
+78 |       $dict[$key] = $elt;
+79 |     }
 
 typestructure.hhi:64:21
 62 |     'kind' => TypeStructureKind,

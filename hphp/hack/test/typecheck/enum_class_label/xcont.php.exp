@@ -1,33 +1,33 @@
 warning: Warn[12011] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `classname<this::TE>` which is a subtype of `nonnull`. [1]
 
-xcont.php:59:12
-57 |   ): string {
-58 |     $ts = type_structure(static::class, 'TE');
-59 |     $cls = $ts['classname'] as nonnull;
+xcont.php:60:12
+58 |   ): string {
+59 |     $ts = type_structure(static::class, 'TE');
+60 |     $cls = $ts['classname'] as nonnull;
    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-60 |     return $cls::nameOf($label);
-61 |   }
+61 |     return $cls::nameOf($label);
+62 |   }
 
 warning: Warn[12011] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `classname<this::TE>` which is a subtype of `nonnull`. [1]
 
-xcont.php:67:12
-65 |   ): HH\MemberOf<this::TE, XParam<T>> {
-66 |     $ts = type_structure(static::class, 'TE');
-67 |     $cls = $ts['classname'] as nonnull;
+xcont.php:69:12
+67 |   ): HH\MemberOf<this::TE, XParam<T>> {
+68 |     $ts = type_structure(static::class, 'TE');
+69 |     $cls = $ts['classname'] as nonnull;
    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-68 |     return $cls::valueOf($label);
-69 |   }
+70 |     return $cls::valueOf($label);
+71 |   }
 
 error: Typing[4482] It is no longer allowed to use a `classname<this::TE>` in this position. Please use a `class<this::TE>` instead. [1]
 -> Definition is here [2]
 
-xcont.php:60:12
-58 |     $ts = type_structure(static::class, 'TE');
-59 |     $cls = $ts['classname'] as nonnull;
-60 |     return $cls::nameOf($label);
+xcont.php:61:12
+59 |     $ts = type_structure(static::class, 'TE');
+60 |     $cls = $ts['classname'] as nonnull;
+61 |     return $cls::nameOf($label);
    |            ^^^^ [1]
-61 |   }
-62 | 
+62 |   }
+63 | 
 
 typestructure.hhi:64:21
 62 |     'kind' => TypeStructureKind,
@@ -40,13 +40,13 @@ typestructure.hhi:64:21
 error: Typing[4482] It is no longer allowed to use a `classname<this::TE>` in this position. Please use a `class<this::TE>` instead. [1]
 -> Definition is here [2]
 
-xcont.php:68:12
-66 |     $ts = type_structure(static::class, 'TE');
-67 |     $cls = $ts['classname'] as nonnull;
-68 |     return $cls::valueOf($label);
+xcont.php:70:12
+68 |     $ts = type_structure(static::class, 'TE');
+69 |     $cls = $ts['classname'] as nonnull;
+70 |     return $cls::valueOf($label);
    |            ^^^^ [1]
-69 |   }
-70 | 
+71 |   }
+72 | 
 
 typestructure.hhi:64:21
 62 |     'kind' => TypeStructureKind,

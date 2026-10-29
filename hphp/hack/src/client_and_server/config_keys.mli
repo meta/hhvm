@@ -148,8 +148,6 @@ module Hhconfig : sig
 
   val meth_caller_only_public_visibility : string
 
-  val needs_concrete_abstract_type_const_check : string
-
   val needs_concrete_class_call_check : string
 
   val needs_concrete_class_function_pointer_check : string

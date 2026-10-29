@@ -42,6 +42,7 @@ abstract class Base {
     return $param->data;
   }
 
+  <<__NeedsConcrete>>
   public static function dictGen(): dict<string, ExBox> {
     $dict = dict[];
     $ts = type_structure(static::class, 'TEnum');

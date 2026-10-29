@@ -159,10 +159,7 @@ let check_instantiation
 
 let check_abstract_tconst_via_static
     (env : Typing_env_types.env) (pos : Pos.t) (tconst_name : string) : unit =
-  if
-    Typechecker_options.needs_concrete_abstract_type_const_check env.genv.tcopt
-    && not (Typing_env.static_points_to_concrete_class env)
-  then
+  if not (Typing_env.static_points_to_concrete_class env) then
     Typing_env.get_self_class env
     |> Decl_entry.to_option
     |> Option.iter ~f:(fun (class_ : Decl_provider.class_decl) ->

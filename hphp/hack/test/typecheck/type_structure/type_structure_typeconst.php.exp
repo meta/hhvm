@@ -1,13 +1,13 @@
 error: Typing[4165] The field `classname` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
 -> This is where the field was declared as optional. [2]
 
-type_structure_typeconst.php:12:13
-10 |   ): ?classname<this::TC> {
-11 |     $x = type_structure(static::class, 'TC');
-12 |     $y = $x['classname'];
+type_structure_typeconst.php:13:13
+11 |   ): ?classname<this::TC> {
+12 |     $x = type_structure(static::class, 'TC');
+13 |     $y = $x['classname'];
    |             ^^^^^^^^^^^ [1]
-13 |     return $y;
-14 |   }
+14 |     return $y;
+15 |   }
 
 typestructure.hhi:64:6
 62 |     'kind' => TypeStructureKind,

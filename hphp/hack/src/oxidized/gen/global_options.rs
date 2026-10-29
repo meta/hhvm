@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<997008190f9dbaf138c427d04aa7407a>>
+// @generated SignedSource<<a190827c57a079639ebc41a7645aaf11>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -398,8 +398,6 @@ pub struct GlobalOptions {
     pub class_sub_classname: bool,
     /// When true, C::class : class<C>
     pub class_class_type: bool,
-    /// When true, error on abstract type constants resolved through `this::` in reified type arguments or `type_structure(static::class, ...)` where `static` might refer to an abstract class (Typing[4529]).
-    pub needs_concrete_abstract_type_const_check: bool,
     /// Configure checks for calls to __NeedsConcrete methods through a named
     /// non-concrete class: 0 disables, 1 warns, and 2 errors.
     pub needs_concrete_class_call_check: isize,

@@ -1,3 +1,2 @@
 --config needs_concrete_class_call_check=1
---config needs_concrete_abstract_type_const_check=true
 --error-format plain_highlighted

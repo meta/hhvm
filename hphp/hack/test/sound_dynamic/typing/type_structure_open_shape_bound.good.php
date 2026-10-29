@@ -10,6 +10,7 @@ abstract class C {
 
   abstract const type TOutput as supportdyn<shape(...)>;
 
+  <<__NeedsConcrete>>
   final public static function getOutputFields(): ~dict<arraykey,supportdyn<mixed>> {
     $x = type_structure(static::class, 'TOutput')['fields'];
     $y = shapeToDict($x);

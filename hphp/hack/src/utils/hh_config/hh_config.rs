@@ -593,10 +593,6 @@ impl HhConfig {
             class_sub_classname: hhconfig
                 .get_bool_or("class_sub_classname", default.class_sub_classname)?,
             class_class_type: hhconfig.get_bool_or("class_class_type", default.class_class_type)?,
-            needs_concrete_abstract_type_const_check: hhconfig.get_bool_or(
-                "needs_concrete_abstract_type_const_check",
-                default.needs_concrete_abstract_type_const_check,
-            )?,
             needs_concrete_class_call_check: get_tristate(
                 &hhconfig,
                 "needs_concrete_class_call_check",

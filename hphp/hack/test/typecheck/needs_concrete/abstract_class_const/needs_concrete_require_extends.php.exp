@@ -16,4 +16,22 @@ needs_concrete_require_extends.php:12:13
 13 |   }
 14 | 
 
-1 error found
+error: Typing[4529] Dangerous access of abstract member `TRequireExtends::T`; it may be abstract and `static` might refer to an abstract class here. Consider adding the `__NeedsConcrete` attribute to the containing method. [1]
+-> Declaration is here [2]
+
+needs_concrete_require_extends.php:17:5
+ 3 | abstract class Base {
+ 4 |   abstract const int X;
+ 5 |   abstract const type T;
+   |                       ^ [2]
+ 6 | }
+ 7 | 
+   :
+15 |   public static function type_structure_error(): void {
+16 |     // error, reported once: by the type constant check, not the class constant one
+17 |     type_structure(static::class, 'T');
+   |     ^^^^^^^^^^^^^^ [1]
+18 |   }
+19 | }
+
+2 errors found

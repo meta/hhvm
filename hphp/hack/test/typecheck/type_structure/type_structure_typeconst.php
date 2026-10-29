@@ -6,6 +6,7 @@ abstract class C
 {
   abstract const type TC;
 
+  <<__NeedsConcrete>>
   public static function getClassname(
   ): ?classname<this::TC> {
     $x = type_structure(static::class, 'TC');

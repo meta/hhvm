@@ -271,9 +271,6 @@ let class_sub_classname t = t.Global_options.class_sub_classname
 
 let class_class_type t = t.Global_options.class_class_type
 
-let needs_concrete_abstract_type_const_check t =
-  t.Global_options.needs_concrete_abstract_type_const_check
-
 let needs_concrete_class_call_check t =
   t.Global_options.needs_concrete_class_call_check
 

@@ -1,13 +1,13 @@
 error: Typing[4482] It is no longer allowed to use a `classname<this::TEnum>` in this position. Please use a `class<this::TEnum>` instead. [1]
 -> Definition is here [2]
 
-typing.extends1.bad.php:49:14
-47 |     $ts = type_structure(static::class, 'TEnum');
-48 |     $cls = $ts['classname'];
-49 |     foreach ($cls::getValues() as $key => $elt) {
+typing.extends1.bad.php:50:14
+48 |     $ts = type_structure(static::class, 'TEnum');
+49 |     $cls = $ts['classname'];
+50 |     foreach ($cls::getValues() as $key => $elt) {
    |              ^^^^ [1]
-50 |       $dict[$key] = $elt;
-51 |     }
+51 |       $dict[$key] = $elt;
+52 |     }
 
 typestructure.hhi:64:21
 62 |     'kind' => TypeStructureKind,
@@ -23,7 +23,7 @@ error: Typing[4110] Invalid argument [1]
 ->   resulting from expanding the type constant `Ext::TEnum` [4]
 -> This type argument to `HH\MemberOf` only allows supertypes (it is contravariant) [3]
 
-typing.extends1.bad.php:62:18
+typing.extends1.bad.php:63:18
 33 | 
 34 | enum class F: ExBox extends E {
 35 |    Box<num> C = new Box(3.14);
@@ -38,17 +38,17 @@ typing.extends1.bad.php:62:18
 42 |     return $param->data;
 43 |   }
    :
-55 | 
-56 | class Ext extends Base {
-57 |   const type TEnum = E; // [0]
+56 | 
+57 | class Ext extends Base {
+58 |   const type TEnum = E; // [0]
    |                      ^ [3]
-58 | }
-59 | 
-60 | function test_constraint(): void {
-61 |   $ext = new Ext();
-62 |   echo $ext->get(F::C); // F vs E, because of [0].
+59 | }
+60 | 
+61 | function test_constraint(): void {
+62 |   $ext = new Ext();
+63 |   echo $ext->get(F::C); // F vs E, because of [0].
    |                  ^^^^ [1]
-63 |   echo "\n";
-64 | }
+64 |   echo "\n";
+65 | }
 
 2 errors found
