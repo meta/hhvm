@@ -512,8 +512,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt Config_keys.Hhconfig.named_variadic_type config)
     ?tco_variadic_named_parameters:
       (bool_opt Config_keys.Hhconfig.variadic_named_parameters config)
-    ?tco_pure_variadic_splat_subtyping:
-      (bool_opt Config_keys.Hhconfig.pure_variadic_splat_subtyping config)
     ?tco_silence_errors_under_dynamic:
       (bool_opt Config_keys.Hhconfig.silence_errors_under_dynamic config)
     ?tco_reject_promoted_property_redeclaration:

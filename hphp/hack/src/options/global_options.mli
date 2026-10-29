@@ -198,9 +198,6 @@ type t = {
   tco_variadic_named_parameters: bool;
       (** Allow variadic named parameters on function definitions, e.g.
           `function f(named int...): void {}` *)
-  tco_pure_variadic_splat_subtyping: bool;
-      (** Subtype a lone variadic against a lone splat by packing the variadic
-          into a tuple, e.g. `string...` against `...(string...)` *)
   tco_global_access_check_enabled: bool;
   tco_enable_expression_trees: bool;
       (** Enable expression trees via unstable features flag *)
@@ -383,7 +380,6 @@ val set :
   ?tco_typed_open_shapes:bool ->
   ?tco_named_variadic_type:bool ->
   ?tco_variadic_named_parameters:bool ->
-  ?tco_pure_variadic_splat_subtyping:bool ->
   ?tco_global_access_check_enabled:bool ->
   ?tco_enable_expression_trees:bool ->
   ?tco_allowed_expression_tree_visitors:string list ->

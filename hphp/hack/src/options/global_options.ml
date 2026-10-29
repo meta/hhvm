@@ -151,7 +151,6 @@ type t = {
   tco_typed_open_shapes: bool;
   tco_named_variadic_type: bool;
   tco_variadic_named_parameters: bool;
-  tco_pure_variadic_splat_subtyping: bool;
   tco_global_access_check_enabled: bool;
   tco_enable_expression_trees: bool;
   tco_allowed_expression_tree_visitors: string list;
@@ -271,7 +270,6 @@ let default =
     tco_typed_open_shapes = true;
     tco_named_variadic_type = false;
     tco_variadic_named_parameters = false;
-    tco_pure_variadic_splat_subtyping = false;
     tco_global_access_check_enabled = false;
     tco_enable_expression_trees = false;
     tco_allowed_expression_tree_visitors = [];
@@ -390,7 +388,6 @@ let set
     ?tco_typed_open_shapes
     ?tco_named_variadic_type
     ?tco_variadic_named_parameters
-    ?tco_pure_variadic_splat_subtyping
     ?tco_global_access_check_enabled
     ?tco_enable_expression_trees
     ?tco_allowed_expression_tree_visitors
@@ -611,10 +608,6 @@ let set
       setting
         tco_variadic_named_parameters
         options.tco_variadic_named_parameters;
-    tco_pure_variadic_splat_subtyping =
-      setting
-        tco_pure_variadic_splat_subtyping
-        options.tco_pure_variadic_splat_subtyping;
     tco_global_access_check_enabled =
       setting
         tco_global_access_check_enabled

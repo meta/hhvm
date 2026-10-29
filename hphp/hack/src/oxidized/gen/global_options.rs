@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<36380ac3b03a2ff9e975e3f0ea6fa7ca>>
+// @generated SignedSource<<71e685f73dad1b2304f736ada46bafde>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -301,9 +301,6 @@ pub struct GlobalOptions {
     /// Allow variadic named parameters on function definitions, e.g.
     /// `function f(named int...): void {}`
     pub tco_variadic_named_parameters: bool,
-    /// Subtype a lone variadic against a lone splat by packing the variadic
-    /// into a tuple, e.g. `string...` against `...(string...)`
-    pub tco_pure_variadic_splat_subtyping: bool,
     pub tco_global_access_check_enabled: bool,
     /// Enable expression trees via unstable features flag
     pub tco_enable_expression_trees: bool,

@@ -231,8 +231,6 @@ module Hhconfig = struct
 
   let variadic_named_parameters = key "variadic_named_parameters"
 
-  let pure_variadic_splat_subtyping = key "pure_variadic_splat_subtyping"
-
   let strict_consistent_construct = key "strict_consistent_construct"
 
   let symbol_write_exclude_out = key "symbol_write_exclude_out"

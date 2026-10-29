@@ -132,9 +132,6 @@ let named_variadic_type t = t.Global_options.tco_named_variadic_type
 
 let variadic_named_parameters t = t.Global_options.tco_variadic_named_parameters
 
-let pure_variadic_splat_subtyping t =
-  t.Global_options.tco_pure_variadic_splat_subtyping
-
 let interpret_soft_types_as_like_types t =
   t.Global_options.po.Parser_options.interpret_soft_types_as_like_types
 

@@ -2392,9 +2392,6 @@ end = struct
                    fp_sub
                    fp_super)
     in
-    let pure_variadic_splat_subtyping =
-      Typechecker_options.pure_variadic_splat_subtyping (Env.get_tcopt env)
-    in
     (env, prop)
     &&&
     match (positional_params_sub, positional_params_super) with
@@ -2429,9 +2426,7 @@ end = struct
        `(arraykey)...` against `...(arraykey)` passes reflexively, yet the
        implementation receives scalars where it declares 1-tuples. *)
     | ([_], [({ fp_type = ty_super; _ } as fp_super)])
-      when pure_variadic_splat_subtyping
-           && variadic_sub_ty
-           && get_fp_splat fp_super ->
+      when variadic_sub_ty && get_fp_splat fp_super ->
       let tuple_ty_sub =
         params_to_tuple
           (Reason.to_pos r_sub)
@@ -2449,9 +2444,7 @@ end = struct
             ty_super = tuple_ty_sub;
           }
     | ([({ fp_type = ty_sub; _ } as fp_sub)], [_])
-      when pure_variadic_splat_subtyping
-           && variadic_super_ty
-           && get_fp_splat fp_sub ->
+      when variadic_super_ty && get_fp_splat fp_sub ->
       let tuple_ty =
         params_to_tuple
           (Reason.to_pos r_super)

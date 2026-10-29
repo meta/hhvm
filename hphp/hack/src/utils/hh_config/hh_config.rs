@@ -456,10 +456,6 @@ impl HhConfig {
                 "variadic_named_parameters",
                 default.tco_variadic_named_parameters,
             )?,
-            tco_pure_variadic_splat_subtyping: hhconfig.get_bool_or(
-                "pure_variadic_splat_subtyping",
-                default.tco_pure_variadic_splat_subtyping,
-            )?,
             tco_global_access_check_enabled: hhconfig.get_bool_or(
                 "tco_global_access_check_enabled",
                 default.tco_global_access_check_enabled,

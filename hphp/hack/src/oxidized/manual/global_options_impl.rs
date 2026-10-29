@@ -102,7 +102,6 @@ impl Default for GlobalOptions {
             tco_typed_open_shapes: true,
             tco_named_variadic_type: false,
             tco_variadic_named_parameters: false,
-            tco_pure_variadic_splat_subtyping: false,
             tco_global_access_check_enabled: false,
             tco_enable_expression_trees: false,
             tco_allowed_expression_tree_visitors: vec![],

@@ -1,3 +1,0 @@
---config enable_no_auto_dynamic=true
---config pure_variadic_splat_subtyping=true
---error-format plain_highlighted
