@@ -309,9 +309,6 @@ let class_pointer_ban_class_array_key t =
 let class_pointer_ban_class_string_comparison t =
   t.Global_options.class_pointer_ban_class_string_comparison
 
-let disallow_specialized_function_refs t =
-  t.Global_options.tco_disallow_specialized_function_refs
-
 let enable_recursive_case_types t =
   { t with Global_options.recursive_case_types = true }
 

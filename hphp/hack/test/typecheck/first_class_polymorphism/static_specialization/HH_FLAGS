@@ -1,2 +1,1 @@
---config disallow_specialized_function_refs=true
 --error-format plain_highlighted

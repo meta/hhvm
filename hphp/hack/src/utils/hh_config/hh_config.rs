@@ -644,10 +644,6 @@ impl HhConfig {
                 "class_pointer_ban_class_string_comparison",
                 default.class_pointer_ban_class_string_comparison,
             )?,
-            tco_disallow_specialized_function_refs: hhconfig.get_bool_or(
-                "disallow_specialized_function_refs",
-                default.tco_disallow_specialized_function_refs,
-            )?,
             tco_permits_bypassing_visibility: hhconfig
                 .get_str_list("permits_bypassing_visibility")
                 .map(|classes| classes.map(|s| format!("\\{}", s)).collect())

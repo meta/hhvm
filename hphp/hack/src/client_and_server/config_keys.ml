@@ -117,9 +117,6 @@ module Hhconfig = struct
   let disallow_discarded_nullable_awaitables =
     key "disallow_discarded_nullable_awaitables"
 
-  let disallow_specialized_function_refs =
-    key "disallow_specialized_function_refs"
-
   let check_duplicate_enum_values = key "check_duplicate_enum_values"
 
   let require_shape_key_attribute = key "require_shape_key_attribute"

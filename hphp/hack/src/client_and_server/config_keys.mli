@@ -108,8 +108,6 @@ module Hhconfig : sig
 
   val disallow_discarded_nullable_awaitables : string
 
-  val disallow_specialized_function_refs : string
-
   val check_duplicate_enum_values : string
 
   val require_shape_key_attribute : string

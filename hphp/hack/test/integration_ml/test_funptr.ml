@@ -128,6 +128,9 @@ let identify_tests =
                 Lsp.MarkedString "Defined in `Cardoor`";
                 Lsp.MarkedString "---";
                 Lsp.MarkedCode ("hack", "public static function bar<T>(T $x): T");
+                Lsp.MarkedString "---";
+                Lsp.MarkedString "Instantiation:";
+                Lsp.MarkedCode ("hack", "  T = string;");
               ];
             addendum = [Lsp.MarkedString "bar_docblock"];
             pos = pos_at (20, 17) (20, 19);

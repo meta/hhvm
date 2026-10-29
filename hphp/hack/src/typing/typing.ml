@@ -9637,11 +9637,7 @@ end = struct
     let (env, method_ty) = set_function_pointer env method_ty in
     let (env, method_ty) = set_capture_only_readonly env method_ty in
     let method_ty =
-      let contains_generics =
-        Typechecker_options.disallow_specialized_function_refs env.genv.tcopt
-        && has_explicit_targs
-      in
-      make_function_ref ~contains_generics pos method_ty
+      make_function_ref ~contains_generics:has_explicit_targs pos method_ty
     in
     let expr =
       FunctionPointer (FP_class_const (tclass_id, method_name), ty_args, source)
@@ -9694,10 +9690,7 @@ end = struct
       let (env, fpty) = set_capture_only_readonly env fpty in
       let fpty =
         let contains_generics =
-          (not (List.is_empty tal))
-          || Typechecker_options.disallow_specialized_function_refs
-               env.genv.tcopt
-             && not (List.is_empty targs)
+          (not (List.is_empty tal)) || not (List.is_empty targs)
         in
         make_function_ref ~contains_generics pos fpty
       in
