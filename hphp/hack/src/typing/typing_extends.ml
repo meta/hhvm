@@ -2171,12 +2171,6 @@ let tconst_subsumption
     let is_coeffect =
       parent_typeconst.ttc_is_ctx || child_typeconst.ttc_is_ctx
     in
-    let class_sub_classname =
-      if TCO.disable_class_sub_classname_typedef (Env.get_tcopt env) then
-        Some false
-      else
-        None
-    in
     let check_cstrs reason env sub super =
       Option.value ~default:(env, None)
       @@ Option.map2
@@ -2185,7 +2179,7 @@ let tconst_subsumption
            ~f:
              (Typing_ops.sub_type_decl
                 ~is_coeffect
-                ?class_sub_classname
+                ~class_sub_classname:false
                 ~on_error
                 pos
                 reason

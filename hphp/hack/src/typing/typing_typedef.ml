@@ -40,22 +40,13 @@ end = struct
     | Super -> ()
 
   let check_subtype_constraint env ~ty ~cstr_ty t_pos cstr_direction =
-    let class_sub_classname =
-      if
-        Typechecker_options.disable_class_sub_classname_typedef
-          (Env.get_tcopt env)
-      then
-        Some false
-      else
-        None
-    in
     let (ty_sub, ty_super) =
       match cstr_direction with
       | As -> (ty, cstr_ty)
       | Super -> (cstr_ty, ty)
     in
     Typing_ops.sub_type
-      ?class_sub_classname
+      ~class_sub_classname:false
       t_pos
       Reason.URnewtype_cstr
       env

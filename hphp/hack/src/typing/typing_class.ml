@@ -1136,12 +1136,6 @@ let typeconst_def
       c_tconst_is_ctx;
     } =
   let tcopt = Env.get_tcopt env in
-  let class_sub_classname =
-    if TCO.disable_class_sub_classname_typedef tcopt then
-      Some false
-    else
-      None
-  in
   Enable.if_matches_regexp
     tcopt
     (Some env)
@@ -1200,7 +1194,7 @@ let typeconst_def
           | Some ty ->
             let (env, ty_err_opt2) =
               Type.sub_type
-                ?class_sub_classname
+                ~class_sub_classname:false
                 pos
                 Reason.URtypeconst_cstr
                 env
@@ -1222,7 +1216,7 @@ let typeconst_def
           | Some ty ->
             let (env, te2) =
               Type.sub_type
-                ?class_sub_classname
+                ~class_sub_classname:false
                 pos
                 Reason.URtypeconst_cstr
                 env
