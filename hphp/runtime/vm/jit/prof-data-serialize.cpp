@@ -562,7 +562,11 @@ void write_named_type(ProfDataSerializer& ser, const NamedType* ne) {
 
 void read_named_type(ProfDataDeserializer& ser);
 
-Class* read_class_internal(ProfDataDeserializer& ser) {
+Class* read_class_from_id(ProfDataDeserializer& ser,
+                          ProfDataSerializer::Id id);
+
+Class* read_class_internal(ProfDataDeserializer& ser,
+                           ProfDataSerializer::Id id) {
   auto const name = read_string(ser);
   auto const unit = read_unit(ser);
 
@@ -595,7 +599,21 @@ Class* read_class_internal(ProfDataDeserializer& ser) {
   }
 
   if (preClass->parent() == c_Closure::classof()->name()) {
-    auto const ctx = read_class(ser);
+    auto const ctxId = read_raw<ProfDataSerializer::Id>(ser);
+    if (ctxId == id) {
+      auto const cls = Class::defClosure(preClass, true);
+      assertx(!cls->needInitialization());
+      auto const invoke = cls->lookupMethod(s_invoke.get());
+      assertx(invoke);
+      if (invoke->cls() != cls) {
+        throw std::runtime_error(fmt::format(
+          "Cannot deserialize unscoped closure {} over a scoped template",
+          preClass->name()->data()
+        ));
+      }
+      return cls;
+    }
+    auto const ctx = read_class_from_id(ser, ctxId);
     auto const cls = Class::defClosure(preClass, true);
     assertx(!cls->needInitialization());
     return cls->rescope(ctx);
@@ -605,6 +623,16 @@ Class* read_class_internal(ProfDataDeserializer& ser) {
     if (cls->numStaticProperties()) cls->initSPropHandles();
     return cls;
   }
+}
+
+Class* read_class_from_id(ProfDataDeserializer& ser,
+                          ProfDataSerializer::Id id) {
+  if (!(id & kSerializedIdBit)) return ser.getClass(id);
+  id -= kSerializedIdBit;
+  Trace::Indent _;
+  auto const cls = read_class_internal(ser, id);
+  ser.record(id, cls);
+  return cls;
 }
 
 const TypeAlias* read_typealias_internal(ProfDataDeserializer& ser) {
@@ -1929,13 +1957,8 @@ void write_class(ProfDataSerializer& ser, const Class* cls) {
 
 Class* read_class(ProfDataDeserializer& ser) {
   ITRACE(2, "Class>\n");
-  auto const ret = deserialize(
-    ser,
-    [&] () -> Class* {
-      Trace::Indent _;
-      return read_class_internal(ser);
-    }
-  );
+  auto const ret =
+    read_class_from_id(ser, read_raw<ProfDataSerializer::Id>(ser));
 
   ITRACE(2, "Class: {}\n", ret ? ret->name() : staticEmptyString());
   return ret;

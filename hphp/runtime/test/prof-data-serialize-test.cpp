@@ -15,6 +15,7 @@
 
 #include "hphp/runtime/base/runtime-option.h"
 #include "hphp/runtime/base/static-string-table.h"
+#include "hphp/runtime/ext/core/ext_core_closure.h"
 #include "hphp/runtime/vm/class.h"
 #include "hphp/runtime/vm/func-emitter.h"
 #include "hphp/runtime/vm/named-entity.h"
@@ -28,6 +29,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 namespace HPHP::jit {
@@ -107,6 +109,95 @@ TEST(ProfDataSerialize, InitializerIdentity) {
     }
   }
   EXPECT_TRUE(des.done());
+}
+
+TEST(ProfDataSerialize, ClosureScopeIdentity) {
+  auto const oldHHBBC = std::exchange(Cfg::Eval::UseHHBBC, false);
+  SCOPE_EXIT { Cfg::Eval::UseHHBBC = oldHHBBC; };
+
+  UnitEmitter ue{
+    SHA1{103}, SHA1{104}, RepoOptions::defaults().packageInfo(),
+    UnitEmitterAttributes::defaults()
+  };
+  ue.m_filepath = makeStaticString("profile-closure-scope.php");
+  auto const invokeName = makeStaticString("__invoke");
+  auto const closure = ue.newPreClassEmitter("Closure$ProfileScopeIdentity");
+  closure->init(1, 1, AttrFinal, s_Closure.get(), staticEmptyString(), false);
+  auto const invoke = ue.newMethodEmitter(invokeName, closure);
+  invoke->init(1, 1, AttrPublic, nullptr, false);
+  invoke->isClosureBody = true;
+  invoke->retTypeConstraints = TypeIntersectionConstraint{TypeConstraint{}};
+  invoke->recordSourceLocation(HPHP::Location::Range{1, 1, 1, 1}, 0);
+  invoke->emitOp(Op::Null);
+  invoke->emitOp(Op::RetC);
+  invoke->emitByte(static_cast<uint8_t>(VerifyRetKind::None));
+  invoke->maxStackCells = 1;
+  invoke->finish();
+  ASSERT_TRUE(closure->addMethod(invoke));
+  auto const owner = ue.newPreClassEmitter("ProfileClosureScopeOwner");
+  owner->init(1, 1, AttrNone, staticEmptyString(), staticEmptyString(), false);
+  ue.finish();
+  std::unique_ptr<Unit> unit{ue.create()};
+  SCOPE_EXIT {
+    for (auto const pce : {closure, owner}) {
+      auto const named = NamedType::getNoCreate(pce->name());
+      if (named && named->getCachedClass()) named->setCachedClass(nullptr);
+    }
+  };
+
+  auto const cls = Class::defClosure(unit->lookupPreClass(closure->name()), true);
+  ASSERT_NE(cls, nullptr);
+  ASSERT_EQ(cls->lookupMethod(invokeName)->cls(), cls);
+  auto const ctx = Class::def(unit->lookupPreClass(owner->name()), true);
+  ASSERT_NE(ctx, nullptr);
+
+  folly::test::TemporaryDirectory temp{"profile-closure-scope"};
+  auto const roundTrip = [&](const Class* expected) {
+    auto const path = (temp.path() / "jit.prof").native();
+    ProfDataSerializer::Id unitId;
+    ProfDataSerializer::Id parentId;
+    {
+      ProfDataSerializer ser{path, ProfDataSerializer::FileMode::Create};
+      unitId = ser.serialize(unit.get()).first;
+      parentId = ser.serialize(c_Closure::classof()).first;
+      write_raw(ser, uint32_t{0});
+      write_raw(ser, off_t{0});
+      write_class(ser, expected);
+      write_class(ser, expected);
+      ser.finalize();
+    }
+    ProfDataDeserializer des{path};
+    des.record(unitId, unit.get());
+    des.record(parentId, c_Closure::classof());
+    read_raw<uint32_t>(des);
+    des.setExtraDataOffset(read_raw<off_t>(des));
+    EXPECT_EQ(read_class(des), expected);
+    EXPECT_EQ(read_class(des), expected);
+    EXPECT_TRUE(des.done());
+    return std::make_pair(unitId, parentId);
+  };
+
+  auto const unscopedIds = roundTrip(cls);
+  auto const unscopedPath = (temp.path() / "unscoped.prof").native();
+  ASSERT_EQ(std::rename((temp.path() / "jit.prof").c_str(),
+                        unscopedPath.c_str()), 0);
+  EXPECT_EQ(cls->lookupMethod(invokeName)->cls(), cls);
+  EXPECT_EQ(cls->rescope(nullptr), cls);
+  roundTrip(cls);
+  auto const scoped = cls->rescope(ctx);
+  EXPECT_NE(scoped, cls);
+  roundTrip(scoped);
+  EXPECT_EQ(scoped->lookupMethod(invokeName)->cls(), ctx);
+  EXPECT_EQ(cls->lookupMethod(invokeName)->cls(), nullptr);
+
+  ProfDataDeserializer conflict{unscopedPath};
+  conflict.record(unscopedIds.first, unit.get());
+  conflict.record(unscopedIds.second, c_Closure::classof());
+  read_raw<uint32_t>(conflict);
+  conflict.setExtraDataOffset(read_raw<off_t>(conflict));
+  EXPECT_THROW(read_class(conflict), std::runtime_error);
+  EXPECT_EQ(cls->lookupMethod(invokeName)->cls(), nullptr);
+  EXPECT_EQ(scoped->lookupMethod(invokeName)->cls(), ctx);
 }
 
 TEST(ProfDataSerialize, RejectInvalidMagicBeforeLoading) {
