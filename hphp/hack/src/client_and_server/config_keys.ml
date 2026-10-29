@@ -104,9 +104,6 @@ module Hhconfig = struct
 
   let constraint_method_call = key "constraint_method_call"
 
-  let disable_class_sub_classname_method_override =
-    key "disable_class_sub_classname_method_override"
-
   let disable_class_sub_classname_typedef =
     key "disable_class_sub_classname_typedef"
 

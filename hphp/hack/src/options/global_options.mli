@@ -290,8 +290,6 @@ type t = {
   tco_enabled_unstable_features: S_set.t;
       (** Set of unstable features enabled for the current file *)
   class_sub_classname: bool;  (** Whether class<T> <: classname<T> *)
-  disable_class_sub_classname_method_override: bool;
-      (** Disable class<T> <: classname<T> rewrites in method override checks. *)
   disable_class_sub_classname_typedef: bool;
       (** Disable class<T> <: classname<T> rewrites in type-alias and type-constant bound checks. *)
   class_class_type: bool;  (** When true, C::class : class<C> *)
@@ -421,7 +419,6 @@ val set :
   ?recursive_case_types:bool ->
   ?tco_enabled_unstable_features:S_set.t ->
   ?class_sub_classname:bool ->
-  ?disable_class_sub_classname_method_override:bool ->
   ?disable_class_sub_classname_typedef:bool ->
   ?class_class_type:bool ->
   ?needs_concrete_abstract_type_const_check:bool ->

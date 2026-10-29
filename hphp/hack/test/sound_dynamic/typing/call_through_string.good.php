@@ -7,12 +7,7 @@ class C {
 }
 
 <<__SupportDynamicType>>
-interface Get {
-  public function get():string;
-}
-
-<<__SupportDynamicType>>
-class D implements Get {
+class D {
   public function get():(~class<C> & string) {
     return HH\classname_to_class(C::class);
   }

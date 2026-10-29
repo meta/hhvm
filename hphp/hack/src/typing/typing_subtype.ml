@@ -13532,14 +13532,7 @@ let subtype_funs
    * permit subtyping to dynamic
    *)
   let old_env = env in
-  let class_sub_classname =
-    if for_override then
-      not
-        (Typechecker_options.disable_class_sub_classname_method_override
-           (Env.get_tcopt env))
-    else
-      should_cls_sub_cn env
-  in
+  let class_sub_classname = (not for_override) && should_cls_sub_cn env in
   let (env, prop) =
     Subtype.simplify_funs
       ~subtype_env:

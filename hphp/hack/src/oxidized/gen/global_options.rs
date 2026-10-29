@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<71e685f73dad1b2304f736ada46bafde>>
+// @generated SignedSource<<2429aa2dcfe46c14738f7623f704d31a>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -398,8 +398,6 @@ pub struct GlobalOptions {
     pub tco_enabled_unstable_features: s_set::SSet,
     /// Whether class<T> <: classname<T>
     pub class_sub_classname: bool,
-    /// Disable class<T> <: classname<T> rewrites in method override checks.
-    pub disable_class_sub_classname_method_override: bool,
     /// Disable class<T> <: classname<T> rewrites in type-alias and type-constant bound checks.
     pub disable_class_sub_classname_typedef: bool,
     /// When true, C::class : class<C>
