@@ -1,6 +1,6 @@
 Log.Level = Info
 Eval {
-  JitASize = 2323232
+  JitMatureSize = 2323232
 }
 Server {
   ThreadCount = 100

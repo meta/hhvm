@@ -30,7 +30,6 @@
 #include "hphp/runtime/vm/jit/prof-data-serialize.h"
 #include "hphp/runtime/vm/jit/trans-rec.h"
 
-#include "hphp/util/configs/codecache.h"
 #include "hphp/util/configs/eval.h"
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/data-block.h"
@@ -540,7 +539,7 @@ std::string warmupStatusString() {
     return "Waiting on retranslateAll().\n";
   }
 
-  auto checkCodeSize = [&](std::string name, uint32_t maxSize) -> std::string {
+  auto checkCodeSize = [&](std::string name, uint64_t maxSize) -> std::string {
     assertx(!s_used_counters.empty());
     auto series = s_used_counters.at(name);
     if (!series) return "initializing";
@@ -557,7 +556,7 @@ std::string warmupStatusString() {
     }
     return "";
   };
-  std::string status_str = checkCodeSize("main", Cfg::CodeCache::ASize);
+  std::string status_str = checkCodeSize("main", Cfg::Jit::MatureSize);
   if (!status_str.empty()) return status_str;
 
   // If we are running with ROAR, we also should wait for PGO/CSPGO to be

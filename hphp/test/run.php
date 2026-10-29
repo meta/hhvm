@@ -4539,10 +4539,6 @@ function start_server_proc(
     // This ensures we actually jit everything:
     '-vEval.JitRequireWriteLease=1',
 
-    // The default test config uses a small TC but we'll be running thousands
-    // of tests against the same process:
-    '-vEval.JitASize=394264576',
-
     // load/store counters don't work on Ivy Bridge so disable for tests
     '-vEval.ProfileHWEnable=false'
   );

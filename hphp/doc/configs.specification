@@ -496,12 +496,6 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 
 # CodeCache (Eval.Jit)
 
-- uint32_t CodeCache.ASize = 60 << 20, UNKNOWN
-
-  Target size for code.main used to decide when the JIT is warmed up. The TC
-  is allocated as one dynamically partitioned region, so this does not size
-  any section.
-
 - bool CodeCache.MapTCHuge, UNKNOWN, lookuppath(Eval.MapTCHuge)
 - uint32_t CodeCache.TCNumHugeHotMB = 64, UNKNOWN, lookuppath(Eval.TCNumHugeHotMB)
 - uint32_t CodeCache.TCNumHugeMainMB = 16, UNKNOWN, lookuppath(Eval.TCNumHugeMainMB)

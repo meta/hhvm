@@ -711,7 +711,6 @@ The translation cache stores the JIT'd code. It is allocated as a single region,
 
 | Setting | Type | Default | Description
 |---------|------|---------|------------
-| `hhvm.jit_a_size` | `int` | `62914560` (60 MB) | Target size of the main section, used to decide when the JIT is warmed up. Does not size the translation cache.
 | `hhvm.tc_num_huge_cold_mb` | `int` | `4` | The number of megabytes of cold regions to hold in the translation cache.
 | `hhvm.tc_num_huge_hot_mb` | `int` | `16` | The number of megabytes of hot regions to hold in the tranlsation cache.
 

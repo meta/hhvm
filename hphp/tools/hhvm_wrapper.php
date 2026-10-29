@@ -452,7 +452,7 @@ function help(): void {
 "   % hhvm --ini a.ini --hdf b.hdf --ini c.ini test.php\n".
 "\n".
 "   # Specify config option(s) to be used when running your code:\n".
-"   % hhvm --ini hhvm.jit_a_size=15728640 test.php\n".
+"   % hhvm --ini hhvm.jit_mature_size=15728640 test.php\n".
 "\n"
     ;
 }
