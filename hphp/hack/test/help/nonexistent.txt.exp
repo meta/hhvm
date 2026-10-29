@@ -37,3 +37,4 @@ Options:
   --ultrahelp             see all modes and options, including less frequently used ones
   -help                   Display this list of options
   --help                  Display this list of options
+  --agent-help            show guidance for coding agents for using hh

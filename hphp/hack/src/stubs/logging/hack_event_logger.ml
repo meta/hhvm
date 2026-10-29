@@ -138,6 +138,8 @@ let client_restart ~data:_ = ()
 
 let help ~kind:_ = ()
 
+let agent_help () = ()
+
 let client_check_start ~reason:_ = ()
 
 let client_check _ _ ~init_proc_stack:_ ~spinner:_ = ()

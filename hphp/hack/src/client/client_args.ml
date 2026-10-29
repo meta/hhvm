@@ -176,6 +176,34 @@ let log_help ~from log_event =
       | Exit_status.Exit_with _ as interrupt -> raise interrupt
       | _ -> ())
 
+let print_agent_help () =
+  Printf.printf
+    "%s%!"
+    {agent_help|# Type-checking
+1. **Start with `hh --single`** for localized error signals (paths relative to
+   `www/`); iterate until it passes:
+   `cd "$(sl root)/www" && hh --single path/to/file.php`. For several files, repeat
+   the flag (`hh --single a.php --single b.php`) or use `hh --multi <listfile>`
+   (one path per line); extra bare paths are read as the www root, not as files.
+2. **Never stop there** — once edits are final, run full `hh` (no file args) to
+   catch cross-file breakage: `cd "$(sl root)/www" && hh`
+3. **Pass `--reason` with a concise explanation** for any non-trivial `hh`
+   command. It is unnecessary for plain `hh`, `hh --single`, and `hh --multi`.
+
+# Locating a symbol's definition
+
+Facts-based autoloading means file paths need not match symbol names, so don't
+guess or glob for `<SymbolName>.php`; ask the typechecker:
+
+```bash
+cd "$(sl root)/www" && hh --identify <SymbolName> --json --reason '<why>'
+```
+
+It prints each declaration's file, line, and kind; `--json` is mandatory. Qualify
+methods as `'<Class>::<method>'`; bare method names return `[]`. For unknown names,
+search `www` for `class <Name>`, `interface <Name>`, or `function <method>`.
+|agent_help}
+
 (** On malformed command line args, ensure we record telemetry. *)
 module Die : sig
   (** Report [message] and optional [usage] on stderr, log [message] in a
@@ -1312,6 +1340,11 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
           ( "--ultrahelp",
             Arg.Unit (fun () -> ()),
             " see all modes and options, including less frequently used ones" );
+          ("-help", Arg.Unit (fun () -> ()), " Display this list of options");
+          ("--help", Arg.Unit (fun () -> ()), " Display this list of options");
+          ( "--agent-help",
+            Arg.Unit (fun () -> ()),
+            " show guidance for coding agents for using hh" );
         ]
     in
     Arg.usage_string
@@ -1332,6 +1365,12 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
               "help"));
     exit 0
   end;
+
+  if argv_has "--agent-help" then (
+    print_agent_help ();
+    log_help ~from:from_default Hack_event_logger.agent_help;
+    exit 0
+  );
 
   let args =
     try

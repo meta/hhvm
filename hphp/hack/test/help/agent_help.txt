@@ -1,0 +1,1 @@
+# Agent guidance is available without a WWW root or a running typechecker.
