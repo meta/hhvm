@@ -4708,6 +4708,7 @@ end = struct
           env
           e
       in
+      Typing_enforceable_hint.check_this_refinement_in_generic_class env hint;
       let ((env, ty_err_opt), _hint_ty) =
         Phase.localize_hint_for_refinement env hint
       in
@@ -4745,6 +4746,7 @@ end = struct
         ~should_check_package_boundary
         env
         hint;
+      Typing_enforceable_hint.check_this_refinement_in_generic_class env hint;
       let ((env, ty_err_opt1), hint_ty) =
         Phase.localize_hint_for_refinement env hint
       in

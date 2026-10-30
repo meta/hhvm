@@ -3341,6 +3341,17 @@ end = struct
       ~quickfixes
       ()
 
+  let this_refinement_in_generic_class pos class_name decl_pos =
+    let claim =
+      lazy
+        ( pos,
+          "`is this` and `as this` check only the class at runtime, not the type arguments of generic class "
+          ^ Markdown_lite.md_codify (Render.strip_ns class_name)
+          ^ ", so they cannot refine to `this`. Refine to the class with wildcard type arguments instead."
+        )
+    and reasons = lazy [(decl_pos, "The generic class is declared here")] in
+    create ~code:Error_code.ThisRefinementInGenericClass ~claim ~reasons ()
+
   let uninstantiable_class_via_static
       pos _class_name decl_pos containing_method_pos =
     let claim =
@@ -5662,6 +5673,8 @@ end = struct
         class_name
         decl_pos
         containing_method_pos
+    | This_refinement_in_generic_class { pos; class_name; decl_pos } ->
+      this_refinement_in_generic_class pos class_name decl_pos
     | Needs_concrete_override
         {
           pos;

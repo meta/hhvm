@@ -1,0 +1,37 @@
+error: Typing[4536] `is this` and `as this` check only the class at runtime, not the type arguments of generic class `Box`, so they cannot refine to `this`. Refine to the class with wildcard type arguments instead. [1]
+-> The generic class is declared here [2]
+
+is_this_generic.php:11:19
+ 3 | // `is this` refines $other to this box's own T, but the runtime only checks
+ 4 | // the class.
+ 5 | class Box<T> {
+   |       ^^^ [2]
+ 6 |   public function __construct(private T $t) {}
+ 7 |   public function get(): T {
+ 8 |     return $this->t;
+ 9 |   }
+10 |   public function adopt(mixed $other): void {
+11 |     if ($other is this) {
+   |                   ^^^^ [1]
+12 |       $this->t = $other->t;
+13 |     }
+
+error: Typing[4536] `is this` and `as this` check only the class at runtime, not the type arguments of generic class `Box`, so they cannot refine to `this`. Refine to the class with wildcard type arguments instead. [1]
+-> The generic class is declared here [2]
+
+is_this_generic.php:16:22
+ 3 | // `is this` refines $other to this box's own T, but the runtime only checks
+ 4 | // the class.
+ 5 | class Box<T> {
+   |       ^^^ [2]
+ 6 |   public function __construct(private T $t) {}
+ 7 |   public function get(): T {
+   :
+14 |   }
+15 |   public function adopt_nullable(mixed $other): ?this {
+16 |     return $other as ?this;
+   |                      ^^^^^ [1]
+17 |   }
+18 |   // Wildcards refine to fresh type arguments, which is sound.
+
+2 errors found

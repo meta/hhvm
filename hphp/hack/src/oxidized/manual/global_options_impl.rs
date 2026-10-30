@@ -156,6 +156,7 @@ impl Default for GlobalOptions {
             tco_tests_bypass_visibility_static_properties: false,
             tco_implicit_throw_points: false,
             tco_forget_static_prop_refinements_by_name: false,
+            tco_ban_this_refinement_in_generic_class: false,
             tco_repo_stdlib_path: None,
         }
     }

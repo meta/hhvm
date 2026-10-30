@@ -1,0 +1,19 @@
+error: Typing[4536] `is this` and `as this` check only the class at runtime, not the type arguments of generic class `Box`, so they cannot refine to `this`. Refine to the class with wildcard type arguments instead. [1]
+-> The generic class is declared here [2]
+
+as_this_memoize.php:11:20
+ 3 | // Hand-rolled memoization via `as this`: every Box::shared() call gets a new
+ 4 | // T, but the runtime only checks the class, so one box serves every T.
+ 5 | final class Box<T> {
+   |             ^^^ [2]
+ 6 |   private static mixed $shared = null;
+ 7 |   private ?T $t = null;
+ 8 |   public static function shared(): this {
+ 9 |     $box = self::$shared ?? new self();
+10 |     self::$shared = $box;
+11 |     return $box as this;
+   |                    ^^^^ [1]
+12 |   }
+13 |   public function set(T $t): void {
+
+1 error found

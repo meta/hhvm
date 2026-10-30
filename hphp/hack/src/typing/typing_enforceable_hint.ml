@@ -252,3 +252,36 @@ let validator =
 let validate_hint = validator#validate_hint ?reification:None
 
 let validate_type = validator#validate_type ?reification:None
+
+(* `is this` and `as this` check only the class at runtime, so in a generic
+ * class they would refine to an instantiation that was never checked. *)
+let check_this_refinement_in_generic_class env ((pos, _) as hint) =
+  if
+    Typechecker_options.ban_this_refinement_in_generic_class (Env.get_tcopt env)
+  then
+    match Env.get_self_class env with
+    | Decl_entry.Found cls when not (List.is_empty (Cls.tparams cls)) ->
+      let mentions_this =
+        object
+          inherit [bool] Type_visitor.decl_type_visitor as parent
+
+          method! on_tthis _ _ = true
+
+          (* `this::T` names a type constant, not the class *)
+          method! on_taccess found _ _ = found
+
+          method! on_type found ty = found || parent#on_type found ty
+        end
+      in
+      if
+        mentions_this#on_type
+          false
+          (Decl_hint.hint env.Typing_env_types.decl_env hint)
+      then
+        Typing_error_utils.add_typing_error
+          ~env
+          Typing_error.(
+            primary
+            @@ Primary.This_refinement_in_generic_class
+                 { pos; class_name = Cls.name cls; decl_pos = Cls.pos cls })
+    | _ -> ()

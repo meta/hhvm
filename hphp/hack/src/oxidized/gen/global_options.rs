@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<ff208e0dec9d675bc8f19528d48e9cf5>>
+// @generated SignedSource<<5228b4b20f4ef0e28468e63d79f37c47>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -420,4 +420,6 @@ pub struct GlobalOptions {
     pub tco_implicit_throw_points: bool,
     /// When a static property is assigned, invalidate its refinements under every class spelling (`self::`, `static::`, `C::`), not only the one assigned through.
     pub tco_forget_static_prop_refinements_by_name: bool,
+    /// Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments.
+    pub tco_ban_this_refinement_in_generic_class: bool,
 }

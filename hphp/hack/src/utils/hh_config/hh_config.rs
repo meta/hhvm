@@ -634,6 +634,10 @@ impl HhConfig {
                 "forget_static_prop_refinements_by_name",
                 default.tco_forget_static_prop_refinements_by_name,
             )?,
+            tco_ban_this_refinement_in_generic_class: hhconfig.get_bool_or(
+                "ban_this_refinement_in_generic_class",
+                default.tco_ban_this_refinement_in_generic_class,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

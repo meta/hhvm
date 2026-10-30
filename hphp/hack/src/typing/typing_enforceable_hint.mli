@@ -15,3 +15,9 @@ val validate_type :
   Typing_defs.decl_ty ->
   Type_validator.error_emitter ->
   unit
+
+(** Under [ban_this_refinement_in_generic_class], errors on an [is]/[as] hint
+    that mentions [this] inside a generic class: the runtime checks only the
+    class, not its type arguments. *)
+val check_this_refinement_in_generic_class :
+  Typing_env_types.env -> Aast.hint -> unit

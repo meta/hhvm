@@ -30,6 +30,9 @@ module Hhconfig = struct
 
   let auto_namespace_map = key "auto_namespace_map"
 
+  let ban_this_refinement_in_generic_class =
+    key "ban_this_refinement_in_generic_class"
+
   let const_static_props = key "const_static_props"
 
   let deregister_php_stdlib = key "deregister_php_stdlib"

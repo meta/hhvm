@@ -32,6 +32,8 @@ module Hhconfig : sig
 
   val auto_namespace_map : string
 
+  val ban_this_refinement_in_generic_class : string
+
   val const_static_props : string
 
   val deregister_php_stdlib : string

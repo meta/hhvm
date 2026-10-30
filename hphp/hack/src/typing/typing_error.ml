@@ -984,6 +984,11 @@ module Primary = struct
         decl_pos: Pos_or_decl.t;
         containing_method_pos: Pos.t option;
       }
+    | This_refinement_in_generic_class of {
+        pos: Pos.t;
+        class_name: string;
+        decl_pos: Pos_or_decl.t;
+      }
     | Needs_concrete_override of {
         pos: Pos.t;
         method_pos: Pos_or_decl.t;

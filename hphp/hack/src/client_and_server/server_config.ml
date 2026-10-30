@@ -641,6 +641,10 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.forget_static_prop_refinements_by_name
          config)
+    ?tco_ban_this_refinement_in_generic_class:
+      (bool_opt
+         Config_keys.Hhconfig.ban_this_refinement_in_generic_class
+         config)
     options
 
 let warn_on_did_you_mean

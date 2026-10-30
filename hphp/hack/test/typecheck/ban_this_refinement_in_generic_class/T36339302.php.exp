@@ -1,0 +1,16 @@
+error: Typing[4536] `is this` and `as this` check only the class at runtime, not the type arguments of generic class `G`, so they cannot refine to `this`. Refine to the class with wildcard type arguments instead. [1]
+-> The generic class is declared here [2]
+
+T36339302.php:7:15
+2 | // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+3 | 
+4 | class G<T> {
+  |       ^ [2]
+5 |   public function __construct(public T $item) { }
+6 |   public function testit(mixed $m): G<T> {
+7 |     if ($m is this) {
+  |               ^^^^ [1]
+8 |       return $m;
+9 |     }
+
+1 error found
