@@ -1,0 +1,8 @@
+direct: HH\shape(...Base, 'z'=>HH\bool) -> HH\shape(...Base, 'z'=>HH\bool)
+only_splat: HH\shape(...Base) -> HH\shape(...Base)
+nested: HH\vec<HH\shape(...HH\shape(...Base), 'z'=>HH\bool)> -> HH\vec<HH\shape(...HH\shape(...Base), 'z'=>HH\bool)>
+union_splat: HH\shape(...(Base | Other), 'z'=>HH\bool) -> HH\shape(...(Base | Other), 'z'=>HH\bool)
+intersection_splat: HH\shape(...(Base & Other), 'z'=>HH\bool) -> HH\shape(...(Base & Other), 'z'=>HH\bool)
+method: HH\shape(...Base, ...) -> HH\shape(...Base, ...)
+value: HH\shape(...Base, 'z'=>HH\bool, HH\int...)
+generic: HH\shape(...T, T...)

@@ -78,7 +78,7 @@ pub fn fmt_hint(tparams: &[&str], strip_tparams: bool, hint: &Hint) -> Result<St
             if args.is_empty() || strip_tparams {
                 name.to_string()
             } else {
-                format!("{}<{}>", name, fmt_hints(tparams, args)?)
+                format!("{}<{}>", name, fmt_hints(tparams, args, ", ")?)
             }
         }
         HclassPtr(kind, hint) => {
@@ -93,7 +93,7 @@ pub fn fmt_hint(tparams: &[&str], strip_tparams: bool, hint: &Hint) -> Result<St
             // TODO(mqian): Implement for inout parameters
             format!(
                 "(function ({}): {})",
-                fmt_hints(tparams, &hf.param_tys)?,
+                fmt_hints(tparams, &hf.param_tys, ", ")?,
                 fmt_hint(tparams, false, &hf.return_ty)?
             )
         }
@@ -129,9 +129,11 @@ pub fn fmt_hint(tparams: &[&str], strip_tparams: bool, hint: &Hint) -> Result<St
             // and in other cases they should be invisible to the HHVM, so unpack hint
             fmt_hint(tparams, strip_tparams, hint)?
         }
-        // No guarantee that this is in the correct order when using map instead of list
-        //  TODO: Check whether shape fields need to retain order *)
-        Hshape(NastShapeInfo { field_map, .. }) => {
+        Hshape(NastShapeInfo {
+            allows_unknown_fields,
+            field_map,
+            unknown_fields_type,
+        }) => {
             let fmt_field_name = |name: &ShapeFieldName| match name {
                 ShapeFieldName::SFlitStr((_, s)) => format!("'{}'", s),
                 ShapeFieldName::SFclassname(Id(_, cid)) => {
@@ -150,30 +152,36 @@ pub fn fmt_hint(tparams: &[&str], strip_tparams: bool, hint: &Hint) -> Result<St
                     fmt_hint(tparams, false, &field.hint)?
                 ))
             };
-            let shape_fields = field_map
+            let mut shape_fields = field_map
                 .iter()
-                .filter_map(|elem| match elem {
-                    ShapeElement::SEField(sfi) => Some(sfi),
-                    ShapeElement::SESplat(_) => None,
+                .map(|elem| match elem {
+                    ShapeElement::SEField(sfi) => fmt_field(sfi),
+                    ShapeElement::SESplat(hint) => {
+                        Ok(format!("...{}", fmt_hint(tparams, false, hint)?))
+                    }
                 })
-                .map(fmt_field)
-                .collect::<Result<Vec<_>>>()
-                .map(|v| v.join(", "))?;
-            string_utils::prefix_namespace("HH", &format!("shape({})", shape_fields))
+                .collect::<Result<Vec<_>>>()?;
+            if *allows_unknown_fields {
+                shape_fields.push(match unknown_fields_type {
+                    Some(hint) => format!("{}...", fmt_hint(tparams, false, hint)?),
+                    None => "...".into(),
+                });
+            }
+            string_utils::prefix_namespace("HH", &format!("shape({})", shape_fields.join(", ")))
         }
         // TODO optional and variadic components T201398626 T201398652
-        Htuple(TupleInfo { required, .. }) => format!("({})", fmt_hints(tparams, required)?),
+        Htuple(TupleInfo { required, .. }) => format!("({})", fmt_hints(tparams, required, ", ")?),
+        Hunion(hints) => format!("({})", fmt_hints(tparams, hints, " | ")?),
+        Hintersection(hints) => format!("({})", fmt_hints(tparams, hints, " & ")?),
         Hlike(t) => format!("~{}", fmt_hint(tparams, false, t)?),
         Hsoft(t) => format!("@{}", fmt_hint(tparams, false, t)?),
         HfunContext(_)
         | Hdynamic
-        | Hintersection(_)
         | Hmixed
         | Hnonnull
         | Hnothing
         | Hprim(_)
         | Hthis
-        | Hunion(_)
         | Hvar(_)
         | HvecOrDict(_, _) => fmt_name_or_prim(tparams, hint_to_string(h)).into(),
     })
@@ -207,12 +215,12 @@ fn hint_to_string<'a>(h: &'a Hint_) -> &'a str {
     }
 }
 
-fn fmt_hints(tparams: &[&str], hints: &[Hint]) -> Result<String> {
+fn fmt_hints(tparams: &[&str], hints: &[Hint], separator: &str) -> Result<String> {
     hints
         .iter()
         .map(|h| fmt_hint(tparams, false, h))
         .collect::<Result<Vec<_>>>()
-        .map(|v| v.join(", "))
+        .map(|v| v.join(separator))
 }
 
 fn can_be_nullable(hint: &Hint_) -> bool {
