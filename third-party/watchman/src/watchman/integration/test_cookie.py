@@ -4,9 +4,6 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# pyre-unsafe
-
-
 import os
 import socket
 
@@ -42,6 +39,22 @@ class TestCookie(WatchmanTestCase.WatchmanTestCase):
             or ("unable to resolve root" in reason),
             msg=reason,
         )
+
+    def test_cookie_in_new_directory(self) -> None:
+        root = self.mkdtemp()
+        os.mkdir(os.path.join(root, ".git"))
+        self.watchmanCommand("watch", root)
+        expected = [".git"]
+        self.assertFileList(root, files=expected)
+        host = socket.gethostname()
+
+        for attempt in range(32):
+            directory = f"dir{attempt}"
+            os.mkdir(os.path.join(root, directory))
+            cookie = f"{directory}/.watchman-cookie-{host}-1-100000"
+            self.touchRelative(root, cookie)
+            expected.extend([directory, cookie])
+            self.assertFileList(root, files=expected)
 
     def test_other_cookies(self) -> None:
         root = self.mkdtemp()

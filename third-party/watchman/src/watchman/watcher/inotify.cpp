@@ -228,7 +228,9 @@ std::unique_ptr<DirHandle> InotifyWatcher::startWatchDir(
   }
   logf(DBG, "adding {} -> {} mapping\n", newwd, path);
 
-  return osdir;
+  // Btrfs can snapshot directory entries when the handle is opened.
+  osdir.reset();
+  return openDir(path);
 }
 
 bool InotifyWatcher::process_inotify_event(
