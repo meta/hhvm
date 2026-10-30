@@ -486,14 +486,7 @@ impl<R: Reason> crate::visitor::Walkable<R> for Ty_<R> {
                 optional.accept(v);
                 extra.accept(v)
             }
-            Tshape(kind_and_fields) => match &**kind_and_fields {
-                ShapeType::Simple(ShapeTypeSimple(_, fields)) => fields.accept(v),
-                ShapeType::Splat(elems) => {
-                    for elem in elems {
-                        elem.accept(v);
-                    }
-                }
-            },
+            Tshape(shape) => shape.accept(v),
             TvecOrDict(key_and_val_tys) => {
                 let (kty, vty) = &**key_and_val_tys;
                 kty.accept(v);
@@ -838,5 +831,73 @@ impl<P> Enforceable<P> {
     }
     pub fn as_ref(&self) -> Option<&P> {
         self.0.as_ref()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use pos::NPos;
+
+    use super::*;
+    use crate::reason::NReason;
+    use crate::visitor::Visitor;
+    use crate::visitor::Walkable;
+
+    #[derive(Default)]
+    struct GenericCollector {
+        names: Vec<String>,
+    }
+
+    impl Visitor<NReason> for GenericCollector {
+        fn object(&mut self) -> &mut dyn Visitor<NReason> {
+            self
+        }
+
+        fn visit_decl_ty(&mut self, ty: &Ty<NReason>) {
+            if let Ty_::Tgeneric(name) = ty.node_ref() {
+                self.names.push(name.to_string());
+            }
+            ty.recurse(self);
+        }
+    }
+
+    #[test]
+    fn visits_shape_tail_and_fields_inside_splats() {
+        let tail = Ty::new(
+            NReason,
+            Ty_::Tunion(
+                vec![
+                    Ty::generic(NReason, TypeName::from("TailA")),
+                    Ty::generic(NReason, TypeName::from("TailB")),
+                ]
+                .into_boxed_slice(),
+            ),
+        );
+        let fields = BTreeMap::from([(
+            TshapeFieldName::TSFlitStr(Bytes::new(b"field")),
+            ShapeFieldType {
+                field_name_pos: ShapeFieldNamePos::Simple(NPos),
+                optional: false,
+                ty: Ty::generic(NReason, TypeName::from("Field")),
+            },
+        )]);
+        let shape = Ty::new(
+            NReason,
+            Ty_::Tshape(Box::new(ShapeType::Simple(ShapeTypeSimple(tail, fields)))),
+        );
+        let splat = Ty::new(
+            NReason,
+            Ty_::Tshape(Box::new(ShapeType::Splat(vec![shape.clone()]))),
+        );
+
+        for ty in [shape, splat] {
+            let mut visitor = GenericCollector::default();
+            ty.accept(&mut visitor);
+            visitor.names.sort();
+            assert_eq!(
+                visitor.names,
+                vec!["Field".to_owned(), "TailA".to_owned(), "TailB".to_owned()]
+            );
+        }
     }
 }

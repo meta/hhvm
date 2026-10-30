@@ -288,6 +288,9 @@ fn tshape<R: Reason>(
             if !is_first {
                 write!(f, ", ")?;
             }
+            if !matches!(kind.node_ref(), Ty_::Tmixed) {
+                write!(f, "{}", kind)?;
+            }
             write!(f, "...")?;
         }
     }
@@ -316,4 +319,120 @@ fn list<T: Display>(
         write!(f, "{}", item)?;
     }
     write!(f, "{}", right_delim)
+}
+
+#[cfg(test)]
+mod tests {
+    use pos::Bytes;
+    use pos::NPos;
+    use pos::Positioned;
+    use pos::TypeName;
+
+    use super::*;
+    use crate::reason::NReason;
+
+    fn shape(tail: Ty<NReason>, field: Option<Ty<NReason>>) -> Ty<NReason> {
+        let fields = field
+            .into_iter()
+            .map(|ty| {
+                (
+                    TshapeFieldName::TSFlitStr(Bytes::new(b"field")),
+                    ShapeFieldType {
+                        field_name_pos: ShapeFieldNamePos::Simple(NPos),
+                        optional: false,
+                        ty,
+                    },
+                )
+            })
+            .collect();
+        Ty::new(
+            NReason,
+            Ty_::Tshape(Box::new(ShapeType::Simple(ShapeTypeSimple(tail, fields)))),
+        )
+    }
+
+    #[test]
+    fn formats_closed_and_bare_open_shapes() {
+        let closed = Ty::new(NReason, Ty_::Tunion(Vec::new().into_boxed_slice()));
+        assert_eq!(shape(closed.clone(), None).to_string(), "shape()");
+        assert_eq!(
+            shape(closed, Some(Ty::prim(NReason, Prim::Tbool))).to_string(),
+            "shape('field' => bool)"
+        );
+        assert_eq!(shape(Ty::mixed(NReason), None).to_string(), "shape(...)");
+        assert_eq!(
+            shape(Ty::mixed(NReason), Some(Ty::prim(NReason, Prim::Tbool))).to_string(),
+            "shape('field' => bool, ...)"
+        );
+    }
+
+    #[test]
+    fn formats_typed_open_shape_tails() {
+        let cases = [
+            (
+                Ty::prim(NReason, Prim::Tint),
+                "shape(int...)",
+                "shape('field' => bool, int...)",
+            ),
+            (
+                Ty::generic(NReason, TypeName::from("T")),
+                "shape(T...)",
+                "shape('field' => bool, T...)",
+            ),
+            (
+                Ty::apply(
+                    NReason,
+                    Positioned::new(NPos, TypeName::from("\\Example\\Tail")),
+                    Vec::new().into_boxed_slice(),
+                ),
+                "shape(Example\\Tail...)",
+                "shape('field' => bool, Example\\Tail...)",
+            ),
+            (
+                Ty::new(NReason, Ty_::Toption(Ty::prim(NReason, Prim::Tint))),
+                "shape(?int...)",
+                "shape('field' => bool, ?int...)",
+            ),
+            (
+                Ty::new(
+                    NReason,
+                    Ty_::Tunion(
+                        vec![
+                            Ty::prim(NReason, Prim::Tint),
+                            Ty::prim(NReason, Prim::Tfloat),
+                        ]
+                        .into_boxed_slice(),
+                    ),
+                ),
+                "shape((int | float)...)",
+                "shape('field' => bool, (int | float)...)",
+            ),
+            (
+                Ty::new(NReason, Ty_::Tdynamic),
+                "shape(dynamic...)",
+                "shape('field' => bool, dynamic...)",
+            ),
+        ];
+
+        for (tail, empty, with_field) in cases {
+            assert_eq!(shape(tail.clone(), None).to_string(), empty);
+            assert_eq!(
+                shape(tail, Some(Ty::prim(NReason, Prim::Tbool))).to_string(),
+                with_field
+            );
+        }
+    }
+
+    #[test]
+    fn formats_typed_tail_inside_shape_splat() {
+        let inner = shape(
+            Ty::generic(NReason, TypeName::from("T")),
+            Some(Ty::prim(NReason, Prim::Tbool)),
+        );
+        let splat = Ty::new(
+            NReason,
+            Ty_::Tshape(Box::new(ShapeType::Splat(vec![inner]))),
+        );
+        assert_eq!(splat.to_string(), "shape(...shape('field' => bool, T...))");
+    }
 }
