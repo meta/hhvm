@@ -9,3 +9,4 @@ function test(): void {
   f("wrong", label = "ok");
   f(1, label = 123);
 }
+//

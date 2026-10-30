@@ -10,6 +10,7 @@ File named_variadic_param_order_bad.php, line 9, character 5 - line 9, character
  9 |   f(»"wrong"«, label = "ok");
 10 |   f(1, label = 123);
 11 | }
+12 | //
 
 Expected int
 
@@ -23,6 +24,7 @@ File named_variadic_param_order_bad.php, line 6, character 33 - line 6, characte
  9 |   f("wrong", label = "ok");
 10 |   f(1, label = 123);
 11 | }
+12 | //
 
 But got string
 
@@ -36,6 +38,7 @@ File named_variadic_param_order_bad.php, line 9, character 5 - line 9, character
  9 |   f(»"wrong"«, label = "ok");
 10 |   f(1, label = 123);
 11 | }
+12 | //
 
 Here's why:
 
@@ -56,6 +59,7 @@ File named_variadic_param_order_bad.php, line 6, character 10 - line 6, characte
  9 |   f("wrong", label = "ok");
 10 |   f(1, label = 123);
 11 | }
+12 | //
 
 The supertype comes from this expression
 
@@ -69,12 +73,13 @@ File named_variadic_param_order_bad.php, line 9, character 3 - line 9, character
  9 |   »f("wrong", label = "ok")«;
 10 |   f(1, label = 123);
 11 | }
+12 | //
 
 
   Step 2 of 2                                 (here is where the error occurred) 
 
-These are function types so next I checked the 1st function parameters.
-Functions are contravariant in their parameters so the direction of the subtype relationship is reversed.
+These are function types so next I checked the 1st function parameter of the subtype and the 2nd parameter of the supertype.
+Functions are contravariant in their parameters the direction of the subtype relationship is reversed.
 
 The subtype comes from this expression
 
@@ -88,6 +93,7 @@ File named_variadic_param_order_bad.php, line 9, character 5 - line 9, character
  9 |   f(»"wrong"«, label = "ok");
 10 |   f(1, label = 123);
 11 | }
+12 | //
 
 The supertype comes from this hint
 
@@ -101,6 +107,7 @@ File named_variadic_param_order_bad.php, line 6, character 33 - line 6, characte
  9 |   f("wrong", label = "ok");
 10 |   f(1, label = 123);
 11 | }
+12 | //
 
 error: Typing[4110] Invalid argument
 
@@ -110,6 +117,7 @@ File named_variadic_param_order_bad.php, line 10, character 16 - line 10, charac
  9 |   f("wrong", label = "ok");
 10 |   f(1, label = »123«);
 11 | }
+12 | //
 
 Expected string
 
@@ -130,6 +138,7 @@ File named_variadic_param_order_bad.php, line 10, character 16 - line 10, charac
  9 |   f("wrong", label = "ok");
 10 |   f(1, label = »123«);
 11 | }
+12 | //
 
 Here's why:
 
@@ -157,12 +166,13 @@ File named_variadic_param_order_bad.php, line 10, character 3 - line 10, charact
  9 |   f("wrong", label = "ok");
 10 |   »f(1, label = 123)«;
 11 | }
+12 | //
 
 
   Step 2 of 2                                 (here is where the error occurred) 
 
-These are function types so next I checked the 2nd function parameters.
-Functions are contravariant in their parameters so the direction of the subtype relationship is reversed.
+These are function types so next I checked the 2nd function parameter of the subtype and the 1st parameter of the supertype.
+Functions are contravariant in their parameters the direction of the subtype relationship is reversed.
 
 The subtype comes from this expression
 
@@ -172,6 +182,7 @@ File named_variadic_param_order_bad.php, line 10, character 16 - line 10, charac
  9 |   f("wrong", label = "ok");
 10 |   f(1, label = »123«);
 11 | }
+12 | //
 
 The supertype comes from this hint
 

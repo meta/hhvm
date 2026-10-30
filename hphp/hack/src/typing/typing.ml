@@ -1887,7 +1887,7 @@ let check_arity_and_names
   check_arity ();
   check_names ()
 
-(* The last parameter of a function can be
+(* The last positional parameter of a function can be
  *    variadic (written t...), meaning any number of t's
  * or
  *    splat (written ...t), meaning further parameters corresponding to the elements of tuple type t
@@ -1899,13 +1899,16 @@ let get_variadic_or_splat_param ft :
   | Some fp when get_fp_splat fp ->
     (List.drop_last_exn ft.ft_params, Some (`Splat fp))
   | _ when get_ft_variadic ft ->
-    let (named, positional) =
-      List.partition_tf ft.ft_params ~f:Typing_defs_core.get_fp_is_named
+    let (trailing_named_rev, params_rev) =
+      List.split_while
+        (List.rev ft.ft_params)
+        ~f:Typing_defs_core.get_fp_is_named
     in
-    (match List.last positional with
-    | Some variadic ->
-      (List.drop_last_exn positional @ named, Some (`Variadic variadic))
-    | None -> (ft.ft_params, None))
+    (match params_rev with
+    | variadic :: rest_rev ->
+      ( List.rev_append rest_rev (List.rev trailing_named_rev),
+        Some (`Variadic variadic) )
+    | [] -> (ft.ft_params, None))
   | _ -> (ft.ft_params, None)
 
 let check_lambda_arity env lambda_pos def_pos lambda_ft expected_ft =
