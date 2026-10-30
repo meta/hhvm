@@ -106,9 +106,15 @@ let rec of_decl_ty (ty : decl_ty) : string =
     let fields_with_ellipsis =
       if is_nothing kind (* Closed shape *) then
         fields
-      (* Open shape TODO akenn non-mixed open *)
       else
-        fields @ ["..."]
+        let kind = of_decl_ty kind in
+        let tail =
+          if String.equal kind "mixed" then
+            "..."
+          else
+            kind ^ "..."
+        in
+        fields @ [tail]
     in
     Printf.sprintf "shape(%s)" (String.concat ~sep:", " fields_with_ellipsis)
   | Tshape (Shape_splat { ss_elems }) ->

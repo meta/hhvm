@@ -1,0 +1,71 @@
+Code actions available:
+------------------------------------------
+Add override for ShapeParent::transform (CodeActionKind: "refactor") SELECTED
+
+JSON for selected code action:
+------------------------------------------
+{
+  "title": "Add override for ShapeParent::transform",
+  "kind": "refactor",
+  "diagnostics": [],
+  "edit": {
+    "changes": {
+      "FILE.php": [
+        {
+          "range": {
+            "start": { "line": 21, "character": 67 },
+            "end": { "line": 21, "character": 67 }
+          },
+          "newText": "\n  <<__Override>>\n  public function transform(shape(int...) $empty, shape(\"flag\" => bool, ?int...) $nullable, shape(T...) $generic, shape(Payload...) $named, shape(\"child\" => shape(string...)) $nested, shape(...Base, ...shape(\"flag\" => bool, int...)) $splat, shape() $closed, shape(\"flag\" => bool, ...) $open, shape(...) $union, shape(...) $intersection): shape(\"result\" => bool, int...) {\n    \n  }\n\n"
+        }
+      ]
+    }
+  },
+  "command": {
+    "title": "Set Cursor Selection",
+    "command": "hack.setSelection",
+    "arguments": [
+      {
+        "start": { "line": 24, "character": 4 },
+        "end": { "line": 24, "character": 4 }
+      },
+      {
+        "title": "Trigger Inline Suggest",
+        "command": "editor.action.inlineSuggest.trigger",
+        "arguments": []
+      }
+    ]
+  }
+}
+
+Applied edit for code action:
+------------------------------------------
+<?hh
+
+type Base = shape('base' => int);
+class Payload {}
+interface Marker {}
+
+abstract class ShapeParent<T> {
+  abstract public function transform(
+    shape(int...) $empty,
+    shape('flag' => bool, ?int...) $nullable,
+    shape(T...) $generic,
+    shape(Payload...) $named,
+    shape('child' => shape(string...)) $nested,
+    shape(...Base, 'flag' => bool, int...) $splat,
+    shape() $closed,
+    shape('flag' => bool, ...) $open,
+    shape((int | string)...) $union,
+    shape((Payload & Marker)...) $intersection,
+  ): shape('result' => bool, int...);
+}
+
+class Child<T> extends /*range-start*/ShapeParent/*range-end*/<T> {
+  <<__Override>>
+  public function transform(shape(int...) $empty, shape("flag" => bool, ?int...) $nullable, shape(T...) $generic, shape(Payload...) $named, shape("child" => shape(string...)) $nested, shape(...Base, ...shape("flag" => bool, int...)) $splat, shape() $closed, shape("flag" => bool, ...) $open, shape(...) $union, shape(...) $intersection): shape("result" => bool, int...) {
+    >||<
+  }
+
+}
+

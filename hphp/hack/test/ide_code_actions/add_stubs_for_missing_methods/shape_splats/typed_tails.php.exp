@@ -1,0 +1,52 @@
+Code actions available:
+------------------------------------------
+Add stubs for missing interface methods (CodeActionKind: "quickfix") SELECTED
+Devmate Quick Fix - This interface is not properly implemented (CodeActionKind: "quickfix")
+Devmate Agent Fix - This interface is not properly implemented (CodeActionKind: "quickfix")
+Devmate Quick Fix - This interface is not properly implemented (CodeActionKind: "quickfix")
+Devmate Agent Fix - This interface is not properly implemented (CodeActionKind: "quickfix")
+
+JSON for selected code action:
+------------------------------------------
+{
+  "title": "Add stubs for missing interface methods",
+  "kind": "quickfix",
+  "diagnostics": [],
+  "edit": {
+    "changes": {
+      "FILE.php": [
+        {
+          "range": {
+            "start": { "line": 15, "character": 67 },
+            "end": { "line": 15, "character": 67 }
+          },
+          "newText": "\n  public function nested(shape(...Base, ...shape(\"child\" => shape(?int...))) $input): shape(\"result\" => shape(bool...)) {}\n\n  public function transform(shape(\"count\" => int, string...) $input): shape(Payload...) {}\n"
+        }
+      ]
+    }
+  }
+}
+
+Applied edit for code action:
+------------------------------------------
+<?hh
+
+type Base = shape('base' => int);
+class Payload {}
+
+interface ShapeInterface {
+  public function transform(
+    shape('count' => int, string...) $input,
+  ): shape(Payload...);
+
+  public function nested(
+    shape(...Base, 'child' => shape(?int...)) $input,
+  ): shape('result' => shape(bool...));
+}
+
+class Child implements /*range-start*/ShapeInterface/*range-end*/ {
+  public function nested(shape(...Base, ...shape("child" => shape(?int...))) $input): shape("result" => shape(bool...)) {}
+
+  public function transform(shape("count" => int, string...) $input): shape(Payload...) {}
+}
+
