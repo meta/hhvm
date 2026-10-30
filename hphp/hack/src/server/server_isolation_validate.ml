@@ -118,7 +118,13 @@ let is_violation ~(candidate : Relative_path.Set.t) error : bool =
 let violation_of_error error :
     Server_command_types.Isolation_validation.violation =
   let pos = User_diagnostic.get_pos error in
-  let message = Message.get_message_str (User_diagnostic.claim_message error) in
+  let message =
+    Message.get_message_str (User_diagnostic.claim_message error)
+    (* The package the check synthesizes has a name only it knows. *)
+    |> String.substr_replace_all
+         ~pattern:(Printf.sprintf "package `%s`" candidate_package_name)
+         ~with_:"the candidate package"
+  in
   Server_command_types.Isolation_validation.
     {
       referrer = Relative_path.suffix (Pos.filename pos);
