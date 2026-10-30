@@ -1,0 +1,4 @@
+--config 'allow_class_string_cast=false'
+--config 'class_pointer_ban_class_array_key=true'
+--config enable_experimental_stx_features='{"shape_splat_expression":"Unstable"}'
+--error-format plain_highlighted

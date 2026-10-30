@@ -49,8 +49,9 @@ let check_compared_class_consts env other_ty e =
       List.iter fields ~f:(fun (_key, value) -> check value)
     | Shape fields ->
       List.iter fields ~f:(function
-          | SF_field (_name, e) -> check e
-          | SF_splat _ -> ())
+          | SF_field (_, e)
+          | SF_splat e
+          -> check e)
     | _ -> ()
   in
   check e

@@ -1,0 +1,101 @@
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:11:29
+ 9 |   shape('a' => string, 'b' => string) $multiple,
+10 | ): void {
+11 |   if ($rhs === shape('c' => C::class)) {
+   |                             ^^^^^^^^ [1]
+12 |   }
+13 |   if ($rhs === shape(...shape('c' => C::class))) {
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:13:38
+11 |   if ($rhs === shape('c' => C::class)) {
+12 |   }
+13 |   if ($rhs === shape(...shape('c' => C::class))) {
+   |                                      ^^^^^^^^ [1]
+14 |   }
+15 |   if (shape(...shape('c' => C::class)) == $rhs) {
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:15:29
+13 |   if ($rhs === shape(...shape('c' => C::class))) {
+14 |   }
+15 |   if (shape(...shape('c' => C::class)) == $rhs) {
+   |                             ^^^^^^^^ [1]
+16 |   }
+17 |   if ($rhs != shape(...shape('c' => C::class))) {
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:17:37
+15 |   if (shape(...shape('c' => C::class)) == $rhs) {
+16 |   }
+17 |   if ($rhs != shape(...shape('c' => C::class))) {
+   |                                     ^^^^^^^^ [1]
+18 |   }
+19 |   if (shape(...shape('c' => C::class)) !== $rhs) {
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:19:29
+17 |   if ($rhs != shape(...shape('c' => C::class))) {
+18 |   }
+19 |   if (shape(...shape('c' => C::class)) !== $rhs) {
+   |                             ^^^^^^^^ [1]
+20 |   }
+21 |   if ($rhs === shape(...shape(...shape('c' => C::class)))) {
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:21:47
+19 |   if (shape(...shape('c' => C::class)) !== $rhs) {
+20 |   }
+21 |   if ($rhs === shape(...shape(...shape('c' => C::class)))) {
+   |                                               ^^^^^^^^ [1]
+22 |   }
+23 |   if ($nested === shape('nested' => shape(...shape('c' => C::class)))) {
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:23:59
+21 |   if ($rhs === shape(...shape(...shape('c' => C::class)))) {
+22 |   }
+23 |   if ($nested === shape('nested' => shape(...shape('c' => C::class)))) {
+   |                                                           ^^^^^^^^ [1]
+24 |   }
+25 |   if (
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:27:29
+25 |   if (
+26 |     $multiple ===
+27 |       shape(...shape('a' => C::class), ...shape('b' => C::class))
+   |                             ^^^^^^^^ [1]
+28 |   ) {
+29 |   }
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:27:56
+25 |   if (
+26 |     $multiple ===
+27 |       shape(...shape('a' => C::class), ...shape('b' => C::class))
+   |                                                        ^^^^^^^^ [1]
+28 |   ) {
+29 |   }
+
+error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
+
+comparisons.php:31:32
+29 |   }
+30 |   switch ($rhs) {
+31 |     case shape(...shape('c' => C::class)):
+   |                                ^^^^^^^^ [1]
+32 |       break;
+33 |     default:
+
+10 errors found
