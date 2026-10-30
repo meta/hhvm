@@ -385,11 +385,15 @@ let rec this_appears_covariantly ~contra env ty =
     this_appears_covariantly ~contra env ft.ft_ret
     || List.exists ft.ft_params ~f:(fun fp ->
            this_appears_covariantly ~contra:(not contra) env fp.fp_type)
-  | Tshape (Shape_simple { s_fields = fm; _ }) ->
+  | Tshape
+      (Shape_simple { s_origin = _; s_fields = fm; s_unknown_value = unknown })
+    ->
     let fields = TShapeMap.elements fm in
     List.exists fields ~f:(fun (_, f) ->
         this_appears_covariantly ~contra env f.sft_ty)
-  | Tshape (Shape_splat _) -> false
+    || this_appears_covariantly ~contra env unknown
+  | Tshape (Shape_splat { ss_elems }) ->
+    List.exists ss_elems ~f:(this_appears_covariantly ~contra env)
   | Taccess (ty, _)
   | Trefinement (ty, _)
   | Tlike ty

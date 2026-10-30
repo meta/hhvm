@@ -1,0 +1,68 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `this` [2]
+->   via this generic `this` [3]
+-> But got `Base` [4]
+
+invalid_argument.php:15:20
+ 5 | 
+ 6 | class Base {
+ 7 |   public function plain(shape('self' => this, 'tag' => bool) $p): void {}
+   |                                         ^^^^ [3]
+ 8 |   public function splat(
+ 9 |     shape(...shape('self' => this), 'tag' => bool) $p,
+10 |   ): void {}
+11 |   public function tail(shape('tag' => bool, this...) $p): void {}
+12 | 
+13 |   public function test(Base $other): void {
+   |                        ^^^^ [4]
+14 |     if ($this is Marker) {
+   |         ^^^^^ [2]
+15 |       $this->plain(shape('self' => $other, 'tag' => true));
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+16 |       $this->splat(shape('self' => $other, 'tag' => true));
+17 |       $this->tail(shape('self' => $other, 'tag' => true));
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `this` [2]
+->   via this generic `this` [3]
+-> But got `Base` [4]
+
+invalid_argument.php:16:20
+ 7 |   public function plain(shape('self' => this, 'tag' => bool) $p): void {}
+ 8 |   public function splat(
+ 9 |     shape(...shape('self' => this), 'tag' => bool) $p,
+   |                              ^^^^ [3]
+10 |   ): void {}
+11 |   public function tail(shape('tag' => bool, this...) $p): void {}
+12 | 
+13 |   public function test(Base $other): void {
+   |                        ^^^^ [4]
+14 |     if ($this is Marker) {
+   |         ^^^^^ [2]
+15 |       $this->plain(shape('self' => $other, 'tag' => true));
+16 |       $this->splat(shape('self' => $other, 'tag' => true));
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+17 |       $this->tail(shape('self' => $other, 'tag' => true));
+18 |     }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `this` because the field `self` may be set to any type in this shape [2]
+-> But got `Base` [3]
+
+invalid_argument.php:17:19
+ 9 |     shape(...shape('self' => this), 'tag' => bool) $p,
+10 |   ): void {}
+11 |   public function tail(shape('tag' => bool, this...) $p): void {}
+   |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+12 | 
+13 |   public function test(Base $other): void {
+   |                        ^^^^ [3]
+14 |     if ($this is Marker) {
+15 |       $this->plain(shape('self' => $other, 'tag' => true));
+16 |       $this->splat(shape('self' => $other, 'tag' => true));
+17 |       $this->tail(shape('self' => $other, 'tag' => true));
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+18 |     }
+19 |   }
+
+3 errors found

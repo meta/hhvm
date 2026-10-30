@@ -1,0 +1,2 @@
+--config enable_experimental_stx_features='{"shape_splat_concrete":"Unstable","shape_splat_type_parameters":"Unstable","union_intersection_type_hints":"Unstable"}'
+--error-format plain_highlighted
