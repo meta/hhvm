@@ -55,6 +55,20 @@ let isolation_status (result : Server_isolation_types.result) =
   | Some _ -> Exit_status.Input_error
   | None -> Exit_status.No_error
 
+(** The line about clusters that stopped at the size cap. It says "It" of a lone
+    cluster and "N of them" otherwise, and the verb agrees with the count. *)
+let truncated_clusters_sentence ~total_clusters ~total_truncated =
+  Printf.sprintf
+    "%s stopped at the size cap and %s not complete.\n"
+    (if total_clusters = 1 then
+      "It"
+    else
+      Printf.sprintf "%d of them" total_truncated)
+    (if total_truncated = 1 then
+      "is"
+    else
+      "are")
+
 let output_isolation_result
     (result : Server_isolation_types.result) ~output_json =
   let open Server_isolation_types in
@@ -109,9 +123,9 @@ let output_isolation_result
          things, so the line a person reads has to say which. *)
       if result.grown then begin
         Printf.printf
-          "Grew %d clusters covering %d files (largest: %d).\n"
-          result.total_clusters
-          result.total_isolatable_files
+          "Grew %s covering %s (largest: %d).\n"
+          (Utils.print_count result.total_clusters "cluster")
+          (Utils.print_count result.total_isolatable_files "file")
           result.largest_cluster;
         (* A truncated cluster stopped at the cap with more to take, so something
            outside it still references in. Saying how many kept that from being
@@ -119,9 +133,10 @@ let output_isolation_result
            counted here, so that it survives a run that streamed its clusters to a
            file and sent back none of them. *)
         if result.total_truncated > 0 then
-          Printf.printf
-            "%d of them stopped at the size cap and are not complete.\n"
-            result.total_truncated
+          print_string
+            (truncated_clusters_sentence
+               ~total_clusters:result.total_clusters
+               ~total_truncated:result.total_truncated)
       end else
         Printf.printf
           "Found %s without growing, covering %s in all; the largest has %s.\n"
