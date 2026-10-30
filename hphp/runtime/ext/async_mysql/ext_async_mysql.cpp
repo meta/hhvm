@@ -950,6 +950,9 @@ static Object HHVM_METHOD(
   auto* obj = getConnectionOptions(asyncMysqlConnOpts);
   const auto& connOpts = obj->getConnectionOptions();
   op->setConnectionOptions(connOpts);
+  if (connOpts.isEnableResetConnBeforeClose()) {
+    op->enableResetConnBeforeClose();
+  }
 
   return newAsyncMysqlConnectEvent(
       std::move(op), data->m_async_pool->getMysqlClient());
@@ -980,6 +983,9 @@ static Object HHVM_METHOD(
   auto* obj = getConnectionOptions(asyncMysqlConnOpts);
   const auto& connOpts = obj->getConnectionOptions();
   connectOp->setConnectionOptions(connOpts);
+  if (connOpts.isEnableResetConnBeforeClose()) {
+    connectOp->enableResetConnBeforeClose();
+  }
   return newAsyncMysqlConnectAndQueryEvent(
     std::move(connectOp),
     data->m_async_pool->getMysqlClient(),
@@ -2202,7 +2208,7 @@ static struct AsyncMysqlExtension final : Extension {
   // bump the version number and use a version guard in www:
   //   $ext = new ReflectionExtension("async_mysql");
   //   $version = (float) $ext->getVersion();
-  AsyncMysqlExtension() : Extension("async_mysql", "8.3", "mysql_gateway") {}
+  AsyncMysqlExtension() : Extension("async_mysql", "8.4", "mysql_gateway") {}
   void moduleRegisterNative() override {
     // expose the mysql flags
     HHVM_RC_INT_SAME(NOT_NULL_FLAG);
