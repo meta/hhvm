@@ -323,6 +323,12 @@ open Output
 let refusal ~source ~target =
   if not (Disk.is_directory (Relative_path.to_absolute source)) then
     Some (Printf.sprintf "%s is not a directory" (Relative_path.suffix source))
+  else if Relative_path.equal source target then
+    Some
+      (Printf.sprintf
+         "%s is already in %s"
+         (Relative_path.suffix source)
+         (Filename.dirname (Relative_path.suffix source)))
   else if Disk.file_exists (Relative_path.to_absolute target) then
     Some
       (Printf.sprintf
