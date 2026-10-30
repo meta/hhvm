@@ -215,7 +215,7 @@ let go
     else
       Some
         (Printf.sprintf
-           "%s; restart the server with %s, and only where nothing else depends on it"
+           "%s; restart the server with %s. Do this on a server nothing else uses: the check rebuilds declarations in the server's shared memory."
            (String.concat ~sep:", and " (List.map problems ~f:fst))
            (String.concat ~sep:" and " (List.map problems ~f:snd)))
   in

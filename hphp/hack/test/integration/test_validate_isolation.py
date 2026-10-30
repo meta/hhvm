@@ -226,6 +226,7 @@ class TestValidateIsolation(TestCase[common_tests.CommonTestDriver]):
         # and the server it asked is still running afterwards.
         self.assertEqual(config_error_exit_code, retcode)
         self.assertIn("isolation_allow_decl_repackaging", output)
+        self.assertIn("Do this on a server nothing else uses", output)
         self.test_driver.check_cmd(["No errors!"])
 
     def test_validate_isolation_refuses_the_rust_backend(self) -> None:
