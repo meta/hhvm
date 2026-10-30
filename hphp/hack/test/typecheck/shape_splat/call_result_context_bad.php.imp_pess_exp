@@ -1,0 +1,122 @@
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+call_result_context_bad.php:15:10
+ 6 | )>>
+ 7 | 
+ 8 | function string_value(): string {
+   |                          ^^^^^^ [3]
+ 9 |   return 'text';
+10 | }
+11 | 
+12 | function wrong_payload<TRest as supportdyn<shape(...)>>(
+13 |   TRest $s,
+14 | ): ~shape(...TRest, 'payload' => int) {
+   |                                  ^^^ [2]
+15 |   return shape(...$s, 'payload' => string_value());
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+16 | }
+17 | 
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+call_result_context_bad.php:22:10
+ 6 | )>>
+ 7 | 
+ 8 | function string_value(): string {
+   |                          ^^^^^^ [3]
+ 9 |   return 'text';
+10 | }
+   :
+18 | function wrong_payload_local<TRest as supportdyn<shape(...)>>(
+19 |   TRest $s,
+20 | ): ~shape(...TRest, 'payload' => int) {
+   |                                  ^^^ [2]
+21 |   $payload = string_value();
+22 |   return shape(...$s, 'payload' => $payload);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+23 | }
+24 | 
+
+error: Typing[4522] Invalid return type [1]
+-> This shape is not guaranteed to have the fields required here [1]
+-> `TRest` may have required fields of its own [2]
+
+call_result_context_bad.php:28:10
+25 | function wrong_rest<TRest as supportdyn<shape(...)>>(
+26 |   TRest $_,
+27 | ): ~shape(...TRest, 'payload' => int) {
+   |              ^^^^^ [2]
+28 |   return shape('payload' => 1);
+   |          ^^^^^^^^^^^^^^^^^^^^^ [1]
+29 | }
+30 | 
+
+error: Typing[4522] Invalid return type [1]
+-> This shape is not guaranteed to have the fields required here [1]
+-> `TRight` may have required fields of its own [2]
+
+call_result_context_bad.php:38:10
+35 |   TLeft $left,
+36 |   TRight $_right,
+37 | ): ~shape(...TRight, 'payload' => int) {
+   |              ^^^^^^ [2]
+38 |   return shape(...$left, 'payload' => 1);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+39 | }
+40 | 
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+
+call_result_context_bad.php:45:10
+39 | }
+40 | 
+41 | function wrong_spread_order<TRest as supportdyn<shape(...)>>(
+   |                                                 ^^^^^^^^^^ [3]
+42 |   TRest $s,
+43 |   (function(): int) $f,
+44 | ): ~shape(...TRest, 'payload' => int) {
+   |                                  ^^^ [2]
+45 |   return shape('payload' => $f(), ...$s);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+46 | }
+47 | 
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `TOut` [2]
+-> But got `dynamic` [3]
+
+call_result_context_bad.php:56:10
+52 | >(
+53 |   TRest $s,
+54 |   (function(): ~TOut) $f,
+   |                ^^^^^ [3]
+55 | ): shape(...TRest, 'payload' => TOut) {
+   |                                 ^^^^ [2]
+56 |   return shape(...$s, 'payload' => $f());
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+57 | }
+58 | 
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `T` [2]
+-> But got `dynamic` [3]
+
+call_result_context_bad.php:63:10
+59 | <<__NoAutoLikes>>
+60 | function bad_like_return<T as supportdyn<mixed>>(
+61 |   (function(): ~T) $f,
+   |                ^^ [3]
+62 | ): T {
+   |    ^ [2]
+63 |   return $f();
+   |          ^^^^ [1]
+64 | }
+65 | 
+
+7 errors found

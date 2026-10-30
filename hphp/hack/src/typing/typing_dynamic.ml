@@ -259,6 +259,21 @@ let rec try_push_like env ty =
                     }) ))
       else
         None )
+  | (r, Tshape (Shape_splat { ss_elems })) ->
+    let ((env, changed), ss_elems) =
+      List.map_env (env, false) ss_elems ~f:(fun (env, changed) elem ->
+          let (env, pushed) = try_push_like env elem in
+          match pushed with
+          | None -> ((env, changed), elem)
+          | Some ty -> ((env, true), ty))
+    in
+    if changed then
+      let (env, _, ty) =
+        Typing_shape_normalize.splat ~on_error:None ~reason:r ss_elems env
+      in
+      (env, Some ty)
+    else
+      (env, None)
   | (r, Tnewtype (n, tyl, bound)) ->
     let tparams = Env.get_class_or_typedef_tparams env n in
     let (changed, tyl) = push_like_tyargs env tyl tparams in

@@ -1,0 +1,41 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `~shape(..._, ...shape('name' => string))` [2]
+-> But got `shape('name' => string, 'x' => int)` [3]
+
+poly_restricted_bound.php:23:11
+ 4 | // Restricted bound: T must have at least 'id' => int
+ 5 | function with_id<T as shape('id' => int, ...)>(
+ 6 |   shape(...T, 'name' => string) $s,
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+ 7 | ): shape(...T, 'name' => string) {
+ 8 |   return $s;
+   :
+20 | function test_restricted_bound_error(): void {
+21 |   // Error: missing 'id' field
+22 |   $s = shape('name' => 'Bob', 'x' => 1);
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+23 |   with_id($s);
+   |           ^^ [1]
+24 | }
+
+error: Typing[4057] Invalid argument [1]
+-> The field `id` is missing [2]
+-> The field `id` is required here [3]
+
+poly_restricted_bound.php:23:11
+ 3 | 
+ 4 | // Restricted bound: T must have at least 'id' => int
+ 5 | function with_id<T as shape('id' => int, ...)>(
+   |                             ^^^^ [3]
+ 6 |   shape(...T, 'name' => string) $s,
+ 7 | ): shape(...T, 'name' => string) {
+   :
+20 | function test_restricted_bound_error(): void {
+21 |   // Error: missing 'id' field
+22 |   $s = shape('name' => 'Bob', 'x' => 1);
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+23 |   with_id($s);
+   |           ^^ [1]
+24 | }
+
+2 errors found

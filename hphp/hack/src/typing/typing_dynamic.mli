@@ -64,6 +64,9 @@ val maybe_wrap_with_supportdyn :
  * Return None if no change was made.
  * Example input: shape('a' => int, 'b' => string)
  * Output: shape('a' => ~int, 'b' => ~string)
+ * Shape splats recursively push likes into their operands.
+ * Example input: shape(...T, 'a' => int)
+ * Output: shape(...T, 'a' => ~int)
  *
  * Example input: dict<int,string>
  * Output: dict<int,~string> (because ~int doesn't subtype arraykey)
