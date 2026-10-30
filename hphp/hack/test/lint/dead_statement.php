@@ -126,3 +126,42 @@ function test_unreachable_echo_2(): string {
   }
   return "OK";
 }
+
+function test_unreachable_if_not_true(): string {
+  if (!true) {
+    return "Unreachable";
+  }
+  else {
+    return "OK";
+  }
+}
+
+function test_unreachable_else_not_false(): string {
+  if (!false) {
+    return "OK";
+  }
+  else {
+    return "Unreachable";
+  }
+}
+
+function test_unreachable_if_not_not_false(): string {
+  if (!!false) {
+    return "Unreachable";
+  }
+  return "OK";
+}
+
+function test_unreachable_if_not_or(): string {
+  if (!(true || HH\Lib\PseudoRandom\int(0,10) === 1)) {
+    return "Unreachable";
+  }
+  return "OK";
+}
+
+function test_reachable_if_not_call(): string {
+  if (!(HH\Lib\PseudoRandom\int(0,10) === 1)) {
+    return "Option 1";
+  }
+  return "Option 2";
+}

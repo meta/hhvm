@@ -130,3 +130,58 @@ dead_statement.php:118:5
 120 |   return "OK";
 
 
+warning: Other[6001] In function \test_unreachable_if_not_true: This 'return' statement may be unreachable. It appears after a condition which is always false. [1]
+
+dead_statement.php:132:5
+130 | function test_unreachable_if_not_true(): string {
+131 |   if (!true) {
+132 |     return "Unreachable";
+    |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+133 |   }
+134 |   else {
+
+
+warning: Other[6001] In function \test_unreachable_else_not_false: This 'return' statement may be unreachable. It appears after a condition which is always false. [1]
+
+dead_statement.php:144:5
+142 |   }
+143 |   else {
+144 |     return "Unreachable";
+    |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+145 |   }
+146 | }
+
+
+warning: Other[6001] In function \test_unreachable_if_not_not_false: This 'return' statement may be unreachable. It appears after a condition which is always false. [1]
+
+dead_statement.php:150:5
+148 | function test_unreachable_if_not_not_false(): string {
+149 |   if (!!false) {
+150 |     return "Unreachable";
+    |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+151 |   }
+152 |   return "OK";
+
+
+warning: Lint[5644] The boolean expression is always true [1]
+
+dead_statement.php:156:9
+154 | 
+155 | function test_unreachable_if_not_or(): string {
+156 |   if (!(true || HH\Lib\PseudoRandom\int(0,10) === 1)) {
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+157 |     return "Unreachable";
+158 |   }
+
+
+warning: Other[6001] In function \test_unreachable_if_not_or: This 'return' statement may be unreachable. It appears after a condition which is always false. [1]
+
+dead_statement.php:157:5
+155 | function test_unreachable_if_not_or(): string {
+156 |   if (!(true || HH\Lib\PseudoRandom\int(0,10) === 1)) {
+157 |     return "Unreachable";
+    |     ^^^^^^^^^^^^^^^^^^^^^ [1]
+158 |   }
+159 |   return "OK";
+
+
