@@ -176,22 +176,22 @@ let hint_to_string_and_symbols ~is_ctx (hint : Aast.hint) =
       in
       parse_gen_seq ~sep:" " ~f:(parse_bound ~is_ctx:true) bounds
   and parse_shape open_ nsi_field_map unknown_fields_type =
-    let fields =
-      List.filter_map nsi_field_map ~f:(function
-          | Aast.SE_field sfi -> Some sfi
-          | Aast.SE_splat _ -> None)
-    in
-    (match fields with
-    | [] -> ()
-    | _ -> parse_gen_seq ~sep:", " ~f:parse_shape_field fields);
+    parse_gen_seq
+      ~sep:", "
+      ~f:(function
+        | Aast.SE_field sfi -> parse_shape_field sfi
+        | Aast.SE_splat h ->
+          append "...";
+          parse ~is_ctx:false h)
+      nsi_field_map;
     match unknown_fields_type with
     | Some h ->
-      if not (List.is_empty fields) then append ", ";
+      if not (List.is_empty nsi_field_map) then append ", ";
       parse ~is_ctx:false h;
       append "..."
     | None ->
       if open_ then begin
-        if not (List.is_empty fields) then append ", ";
+        if not (List.is_empty nsi_field_map) then append ", ";
         append "..."
       end
   and parse_shape_field Aast.{ sfi_optional; sfi_name; sfi_hint } =
