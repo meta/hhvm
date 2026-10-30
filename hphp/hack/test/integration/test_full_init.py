@@ -534,6 +534,34 @@ class TestFreshInit(common_tests.CommonTests):
         self.assertEqual(input_error_exit_code, retcode, stdout)
         self.assertIsNotNone(json.loads(stdout)["refused"])
 
+    def test_isolation_text_summary_agrees_with_its_counts(self) -> None:
+        repo_dir = self.test_driver.repo_dir
+        with open(os.path.join(repo_dir, "lone.php"), "w") as f:
+            f.write("<?hh\nfunction lone_fn(): void {}\n")
+        seed_list = os.path.join(repo_dir, "lone_seeds.txt")
+        with open(seed_list, "w") as f:
+            f.write("lone.php\n")
+        self.test_driver.start_hh_server(changed_files=["lone.php"], args=["--no-load"])
+
+        measured, _ = self.test_driver.check_cmd(
+            expected_output=None,
+            options=["--isolation", "--isolation-seed-list", seed_list],
+        )
+        self.assertIn(
+            "Found 1 isolatable cluster without growing, covering 1 file.\n",
+            measured,
+        )
+        grown, _ = self.test_driver.check_cmd(
+            expected_output=None,
+            options=[
+                "--isolation",
+                "--isolation-grow",
+                "--isolation-seed-list",
+                seed_list,
+            ],
+        )
+        self.assertIn("Grew 1 cluster covering 1 file.\n", grown)
+
     def test_isolation_refuses_a_seed_source_with_no_files(self) -> None:
         repo_dir = self.test_driver.repo_dir
         os.mkdir(os.path.join(repo_dir, "no_hack"))

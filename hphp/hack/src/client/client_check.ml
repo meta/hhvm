@@ -123,10 +123,15 @@ let output_isolation_result
          things, so the line a person reads has to say which. *)
       if result.grown then begin
         Printf.printf
-          "Grew %s covering %s (largest: %d).\n"
+          "Grew %s covering %s%s.\n"
           (Utils.print_count result.total_clusters "cluster")
           (Utils.print_count result.total_isolatable_files "file")
-          result.largest_cluster;
+          (* With one cluster the largest is that cluster, which the count
+             already says. *)
+          (if result.total_clusters > 1 then
+            Printf.sprintf " (largest: %d)" result.largest_cluster
+          else
+            "");
         (* A truncated cluster stopped at the cap with more to take, so something
            outside it still references in. Saying how many kept that from being
            read as a count of finished packages. Read off the summary rather than
@@ -139,10 +144,15 @@ let output_isolation_result
                ~total_truncated:result.total_truncated)
       end else
         Printf.printf
-          "Found %s without growing, covering %s in all; the largest has %s.\n"
+          "Found %s without growing, covering %s%s.\n"
           (Utils.print_count result.total_clusters "isolatable cluster")
           (Utils.print_count result.total_isolatable_files "file")
-          (Utils.print_count result.largest_cluster "file");
+          (if result.total_clusters > 1 then
+            Printf.sprintf
+              " in all; the largest has %s"
+              (Utils.print_count result.largest_cluster "file")
+          else
+            "");
       if result.total_refused > 0 then
         Printf.printf
           "Not in any cluster: %s (what depends on a file is over the limit, or the file declares nothing).\n"
