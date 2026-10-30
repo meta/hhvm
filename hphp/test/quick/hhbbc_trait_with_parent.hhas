@@ -1,0 +1,19 @@
+# Traits cannot extend classes in source syntax, but HHAS can encode one.
+
+.class HHBBCTraitParent {
+}
+
+.class [trait] HHBBCMalformedTrait extends HHBBCTraitParent {
+}
+
+.class HHBBCUsesMalformedTrait {
+  .use HHBBCMalformedTrait;
+}
+
+.function ["__EntryPoint"("""y:0:{}""")] N main() {
+  String "ok\n"
+  Print
+  PopC
+  Null
+  RetC None
+}

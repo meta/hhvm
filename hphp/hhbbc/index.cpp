@@ -16,6 +16,9 @@
 #include "hphp/hhbbc/index.h"
 
 #include <algorithm>
+#include <atomic>
+#include <deque>
+#include <exception>
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
@@ -39,8 +42,10 @@
 #include <folly/Lazy.h>
 #include <folly/MapUtil.h>
 #include <folly/Memory.h>
+#include <folly/MPMCQueue.h>
 #include <folly/Range.h>
 #include <folly/SharedMutex.h>
+#include <folly/Synchronized.h>
 #include <folly/String.h>
 #include <folly/concurrency/ConcurrentHashMap.h>
 
@@ -7769,7 +7774,62 @@ void add_func_to_index(IndexData& index, php::Func& func) {
   func.idx = index.nextFuncId++;
 }
 
-void add_program_to_index(IndexData& index) {
+void deduplicate_meth_callers(php::Program& program) {
+  SStringToOneT<size_t> winners;
+  std::vector<bool> keep(program.funcs.size(), true);
+  SStringToOneT<SStringSet> unitDeletions;
+
+  for (size_t i = 0; i < program.funcs.size(); ++i) {
+    auto const& func = program.funcs[i];
+    if (!(func->attrs & AttrIsMethCaller)) continue;
+
+    auto const [it, emplaced] = winners.emplace(func->name, i);
+    if (emplaced) continue;
+
+    auto const previous = it->second;
+    always_assert_flog(
+      program.funcs[previous]->unit != func->unit,
+      "Duplicate meth-caller {} in same unit {}",
+      func->name,
+      func->unit
+    );
+    if (string_data_lt{}(func->unit, program.funcs[previous]->unit)) {
+      keep[previous] = false;
+      unitDeletions[program.funcs[previous]->unit].emplace(func->name);
+      it->second = i;
+    } else {
+      keep[i] = false;
+      unitDeletions[func->unit].emplace(func->name);
+    }
+  }
+
+  if (unitDeletions.empty()) return;
+
+  for (auto& unit : program.units) {
+    auto const it = unitDeletions.find(unit->filename);
+    if (it == end(unitDeletions)) continue;
+    auto const before = unit->funcs.size();
+    unit->funcs.erase(
+      std::remove_if(
+        begin(unit->funcs),
+        end(unit->funcs),
+        [&] (SString name) { return it->second.contains(name); }
+      ),
+      end(unit->funcs)
+    );
+    always_assert(before - unit->funcs.size() == it->second.size());
+  }
+
+  size_t next = 0;
+  for (size_t i = 0; i < program.funcs.size(); ++i) {
+    if (!keep[i]) continue;
+    if (next != i) program.funcs[next] = std::move(program.funcs[i]);
+    ++next;
+  }
+  program.funcs.resize(next);
+}
+
+void add_program_to_index(IndexData& index, bool initializeFuncInfos = true) {
   trace_time timer{"add program to index", index.sample};
   timer.ignore_client_stats();
 
@@ -7786,6 +7846,8 @@ void add_program_to_index(IndexData& index) {
   for (auto const& f : program.funcs) {
     add_func_to_index(index, *f);
   }
+
+  if (!initializeFuncInfos) return;
 
   // All funcs have been assigned indices above. Now for each func we
   // initialize a default FuncInfo in the funcInfo vec at the
@@ -7817,6 +7879,26 @@ void add_program_to_index(IndexData& index) {
   parallel::for_each(
     program.funcs,
     [&] (const std::unique_ptr<php::Func>& func) { create(*func); }
+  );
+}
+
+void initialize_method_no_override_attrs(php::Program& program) {
+  parallel::for_each(
+    program.classes,
+    [&] (std::unique_ptr<php::Class>& cls) {
+      for (auto& method : cls->methods) {
+        assertx(!(method->attrs & AttrNoOverride));
+        if (is_special_method_name(method->name)) continue;
+        attribute_setter(method->attrs, true, AttrNoOverride);
+      }
+      for (auto& closure : cls->closures) {
+        assertx(closure->methods.size() == 1);
+        auto& method = closure->methods[0];
+        assertx(!(method->attrs & AttrNoOverride));
+        assertx(!is_special_method_name(method->name));
+        attribute_setter(method->attrs, true, AttrNoOverride);
+      }
+    }
   );
 }
 
@@ -13013,7 +13095,8 @@ void flatten_type_mappings(IndexData& index,
             } else if (*lastTS != next->typeStructure) {
               lastTS = nullptr;
             }
-          } else if (index.classRefs.contains(name)) {
+          } else if (index.classRefs.contains(name) ||
+                     index.classes.contains(name)) {
             if (inEnum) {
               FTRACE(
                 2, "Type-mapping '{}' is invalid because it resolves to "
@@ -13110,6 +13193,2926 @@ void flatten_type_mappings(IndexData& index,
     }
     meta.typeMappings.at(name) = std::move(after);
   }
+}
+
+//////////////////////////////////////////////////////////////////////
+
+/*
+ * Local counterpart to FlattenJob. Unlike FlattenJob, this builds the
+ * pointer based ClassInfos which are used by the local Index directly.
+ *
+ * Workers only mutate the php::Class assigned to them and publish into a
+ * fixed result slot. IndexData and ClassGraph are populated after all of the
+ * structural work has completed.
+ */
+struct LocalFlattenJob {
+  struct State {
+    struct PropTuple {
+      SString src;
+      php::Prop prop;
+    };
+
+    CompactVector<PropTuple> props;
+    CompactVector<php::Const> traitCns;
+    SStringSet cnsFromTrait;
+    SStringToOneT<size_t> methodIndices;
+
+    size_t& methodIdx(SString context, SString cls, SString name) {
+      auto const it = methodIndices.find(name);
+      always_assert_flog(
+        it != methodIndices.end(),
+        "While processing '{}', tried to access missing method index "
+        "for '{}::{}'",
+        context,
+        cls,
+        name
+      );
+      return it->second;
+    }
+
+    size_t methodIdx(SString context, SString cls, SString name) const {
+      return const_cast<State*>(this)->methodIdx(context, cls, name);
+    }
+
+    void releaseFlattenData() {
+      props.clear();
+      traitCns.clear();
+      cnsFromTrait = SStringSet{};
+      methodIndices = SStringToOneT<size_t>{};
+    }
+  };
+
+  struct WorkState : State {
+    SStringToOneT<size_t> propIndices;
+    TSStringSet graphParents;
+    TSStringSet interfaces;
+  };
+
+  struct Result {
+    std::unique_ptr<ClassInfo> cinfo;
+    State state;
+    SStringSet missingMethods;
+    MethRefSet extraMethods;
+    CompactVector<std::unique_ptr<ClassInfo>> closures;
+    CompactVector<const php::Class*> generatedClosures;
+    CompactVector<const ClassInfo*> graphParents;
+    CompactVector<SString> interfaces;
+    bool success{false};
+
+    ClassInfo* closureInfo(SString name) {
+      if (success) {
+        auto const it = std::lower_bound(
+          begin(closures),
+          end(closures),
+          name,
+          [] (auto const& cinfo, SString name) {
+            return string_data_lt_type{}(cinfo->cls->name, name);
+          }
+        );
+        if (it == end(closures) || !(*it)->cls->name->tsame(name)) {
+          return nullptr;
+        }
+        return it->get();
+      }
+      auto const it = std::find_if(
+        begin(closures),
+        end(closures),
+        [&] (auto const& cinfo) { return cinfo->cls->name->tsame(name); }
+      );
+      return it == end(closures) ? nullptr : it->get();
+    }
+
+    const ClassInfo* closureInfo(SString name) const {
+      return const_cast<Result*>(this)->closureInfo(name);
+    }
+
+    ClassInfo* info(SString name) {
+      if (cinfo && cinfo->cls->name->tsame(name)) return cinfo.get();
+      return closureInfo(name);
+    }
+
+    const ClassInfo* info(SString name) const {
+      return const_cast<Result*>(this)->info(name);
+    }
+  };
+
+  struct ResultStore {
+    static constexpr size_t BlockSize = 4 * 1024;
+
+    struct Block {
+      std::unique_ptr<Result[]> results;
+    };
+
+    explicit ResultStore(size_t size) : m_size{size} {
+      m_blocks.resize((size + BlockSize - 1) / BlockSize);
+      parallel::for_each(
+        m_blocks,
+        [&] (Block& block) {
+          auto const idx = &block - m_blocks.data();
+          auto const offset = idx * BlockSize;
+          auto const count = std::min(BlockSize, m_size - offset);
+          block.results = std::make_unique<Result[]>(count);
+        }
+      );
+    }
+
+    Result& operator[](size_t idx) {
+      assertx(idx < m_size);
+      return m_blocks[idx / BlockSize].results[idx % BlockSize];
+    }
+
+    const Result& operator[](size_t idx) const {
+      return const_cast<ResultStore*>(this)->operator[](idx);
+    }
+
+    void clear() {
+      parallel::for_each(
+        m_blocks,
+        [] (Block& block) { block.results.reset(); }
+      );
+      m_blocks.clear();
+      m_size = 0;
+    }
+
+  private:
+    std::vector<Block> m_blocks;
+    size_t m_size;
+  };
+
+  struct Node {
+    php::Class* cls{nullptr};
+    std::vector<size_t> deps;
+    std::vector<size_t> users;
+    size_t remaining{0};
+    bool invalid{false};
+    bool usedAsTrait{false};
+    bool needsState{false};
+    Result* result{nullptr};
+  };
+
+  using PublishedClosures =
+    folly::Synchronized<TSStringToOneT<const php::Class*>>;
+
+  struct LocalIndex {
+    const IndexData& index;
+    const IndexFlattenMetadata& meta;
+    const std::vector<Node>& nodes;
+    const TSStringToOneT<size_t>& nodeForClass;
+    const PublishedClosures& publishedClosures;
+    Result* currentResult{nullptr};
+    const TSStringSet* currentUninstantiable{nullptr};
+    const ClassInfo* currentInfo{nullptr};
+    const State* currentState{nullptr};
+    const SStringSet* currentMissingMethods{nullptr};
+    const php::Class* ctx{nullptr};
+
+    const Result& result(SString name) const {
+      auto const nit = nodeForClass.find(name);
+      always_assert_flog(
+        nit != end(nodeForClass),
+        "While processing '{}', no local flatten node owns '{}'",
+        ctx ? ctx->name : nullptr,
+        name
+      );
+      auto const& node = nodes.at(nit->second);
+      always_assert_flog(
+        node.result && node.result->success,
+        "While processing '{}', local flatten result for '{}' is unavailable",
+        ctx ? ctx->name : nullptr,
+        name
+      );
+      always_assert_flog(
+        node.result->cinfo && node.result->cinfo->cls->name->tsame(name),
+        "While processing '{}', local flatten result for '{}' belongs to '{}'",
+        ctx ? ctx->name : nullptr,
+        name,
+        node.result->cinfo ? node.result->cinfo->cls->name : nullptr
+      );
+      return *node.result;
+    }
+
+    const php::Class& cls(SString name) const {
+      if (ctx && ctx->name->tsame(name)) return *ctx;
+
+      // The map is immutable while workers run. Dependency completion
+      // publishes mutations to the pointed-to classes.
+      auto const it = index.classes.find(name);
+      always_assert_flog(
+        it != end(index.classes),
+        "While processing '{}', tried to access missing original class '{}'",
+        ctx ? ctx->name : nullptr,
+        name
+      );
+      return *it->second;
+    }
+
+    const php::Class& closure(SString name) const {
+      if (auto const cls = folly::get_ptr(index.classes, name)) {
+        always_assert(is_closure(**cls));
+        return **cls;
+      }
+
+      if (currentResult) {
+        if (currentInfo && currentInfo->cls->name->tsame(name)) {
+          always_assert(is_closure(*currentInfo->cls));
+          return *currentInfo->cls;
+        }
+        if (auto const cinfo = currentResult->closureInfo(name)) {
+          always_assert(is_closure(*cinfo->cls));
+          return *cinfo->cls;
+        }
+      }
+
+      auto const closures = publishedClosures.rlock();
+      auto const it = closures->find(name);
+      always_assert_flog(
+        it != end(*closures),
+        "While processing '{}', tried to access missing generated closure '{}'",
+        ctx ? ctx->name : nullptr,
+        name
+      );
+      always_assert(is_closure(*it->second));
+      return *it->second;
+    }
+
+    const ClassInfo& classInfo(SString name) const {
+      if (currentInfo && currentInfo->cls->name->tsame(name)) {
+        return *currentInfo;
+      }
+      return *result(name).cinfo;
+    }
+
+    const State& state(SString name) const {
+      if (currentState && ctx && ctx->name->tsame(name)) return *currentState;
+      return result(name).state;
+    }
+
+    const CompactVector<SString>& interfaces(SString name) const {
+      return result(name).interfaces;
+    }
+
+    const SStringSet& missingMethods(SString name) const {
+      if (currentMissingMethods && ctx && ctx->name->tsame(name)) {
+        return *currentMissingMethods;
+      }
+      return result(name).missingMethods;
+    }
+
+    const CompactVector<const ClassInfo*>& graphParents(SString name) const {
+      return result(name).graphParents;
+    }
+
+    bool uninstantiable(SString name) const {
+      if (currentUninstantiable && currentUninstantiable->contains(name)) {
+        return true;
+      }
+      auto const nit = nodeForClass.find(name);
+      if (nit == end(nodeForClass)) return true;
+      auto const& node = nodes.at(nit->second);
+      if (node.invalid) return true;
+      return node.result && !node.result->success;
+    }
+
+    const TypeMapping* typeMapping(SString name) const {
+      return folly::get_ptr(meta.typeMappings, name);
+    }
+
+    bool missingType(SString name) const {
+      if (meta.typeMappings.contains(name)) return false;
+      auto const it = nodeForClass.find(name);
+      if (it == end(nodeForClass)) return true;
+      return nodes[it->second].invalid;
+    }
+
+    const php::Func& meth(const MethRef& ref) const {
+      auto const& mcls = cls(ref.cls);
+      assertx(ref.idx < mcls.methods.size());
+      return *mcls.methods[ref.idx];
+    }
+
+    const php::Func& meth(const MethTabEntry& mte) const {
+      return meth(mte.meth());
+    }
+
+    const php::Const& cns(const ClassInfo::ConstIndex& idx) const {
+      assertx(idx.idx < idx.cls->constants.size());
+      return idx.cls->constants[idx.idx];
+    }
+
+    size_t methodIdx(SString cls, SString name) const {
+      return state(cls).methodIdx(ctx->name, cls, name);
+    }
+  };
+
+  struct LocalTraitMethod {
+    using class_type = std::pair<const ClassInfo*, const php::Class*>;
+    using method_type = const php::Func*;
+    using origin_type = SString;
+
+    LocalTraitMethod(class_type trait,
+                     method_type method,
+                     Attr modifiers)
+      : trait{trait}, method{method}, modifiers{modifiers} {}
+
+    class_type trait;
+    method_type method;
+    Attr modifiers;
+  };
+
+  struct LocalTMIOps {
+    using string_type = LSString;
+    using class_type = LocalTraitMethod::class_type;
+    using method_type = LocalTraitMethod::method_type;
+    using origin_type = LocalTraitMethod::origin_type;
+
+    struct TMIException : std::exception {
+      explicit TMIException(std::string msg) : msg{std::move(msg)} {}
+      const char* what() const noexcept override { return msg.c_str(); }
+    private:
+      std::string msg;
+    };
+
+    static const string_type clsName(class_type traitCls) {
+      return traitCls.first->cls->name;
+    }
+    static origin_type originalClass(method_type meth) {
+      return meth->originalClass ? meth->originalClass : meth->cls->name;
+    }
+    static bool isAbstract(Attr modifiers) {
+      return modifiers & AttrAbstract;
+    }
+    static bool exclude(string_type methName) {
+      return Func::isSpecial(methName);
+    }
+    static void errorDuplicateMethod(
+        class_type cls,
+        string_type methName,
+        const std::vector<const StringData*>&) {
+      auto const& methods = cls.second->methods;
+      if (std::find_if(
+            begin(methods),
+            end(methods),
+            [&] (auto const& f) { return f->name->same(methName); }
+          ) != end(methods)) {
+        return;
+      }
+      throw TMIException{
+        fmt::format("DuplicateMethod: {}", methName->data())
+      };
+    }
+  };
+
+  using LocalTMIData = TraitMethodImportData<LocalTraitMethod, LocalTMIOps>;
+
+  static bool enforce_sealing(const ClassInfo& cinfo,
+                              const php::Class& cls,
+                              const php::Class& parent) {
+    if (is_mock_class(&cls)) return true;
+    if (!(parent.attrs & AttrSealed)) return true;
+    auto const it = parent.userAttributes.find(s___Sealed.get());
+    assertx(it != parent.userAttributes.end());
+    assertx(tvIsArrayLike(it->second));
+    auto allowed = false;
+    IterateV(
+      it->second.m_data.parr,
+      [&] (TypedValue v) {
+        assertx(tvIsStringLike(v));
+        if (tvAssertStringLike(v)->tsame(cinfo.cls->name)) {
+          allowed = true;
+          return true;
+        }
+        return false;
+      }
+    );
+    if (!allowed) {
+      ITRACE(
+        2,
+        "Making class-info failed for `{}' because `{}' is sealed\n",
+        cinfo.cls->name,
+        parent.name
+      );
+    }
+    return allowed;
+  }
+
+  static bool add_property(ClassInfo& cinfo,
+                           WorkState& state,
+                           SString name,
+                           const php::Prop& prop,
+                           SString src,
+                           bool trait) {
+    auto const [it, emplaced] =
+      state.propIndices.emplace(name, state.props.size());
+    if (emplaced) {
+      state.props.emplace_back(State::PropTuple{src, prop});
+      if (trait) cinfo.traitProps.emplace_back(prop);
+      return true;
+    }
+
+    assertx(it->second < state.props.size());
+    auto& prevTuple = state.props[it->second];
+    auto const& prev = prevTuple.prop;
+    auto const prevSrc = prevTuple.src;
+
+    if (cinfo.cls->name->tsame(prevSrc)) {
+      if ((prev.attrs ^ prop.attrs) &
+          (AttrStatic | AttrPublic | AttrProtected | AttrPrivate) ||
+          (!(prop.attrs & AttrSystemInitialValue) &&
+           !(prev.attrs & AttrSystemInitialValue) &&
+           !Class::compatibleTraitPropInit(prev.val, prop.val))) {
+        ITRACE(
+          2,
+          "Adding property failed for `{}' because two declarations of "
+          "`{}' at the same level had different attributes\n",
+          cinfo.cls->name,
+          prop.name
+        );
+        return false;
+      }
+      return true;
+    }
+
+    if (!(prev.attrs & AttrPrivate)) {
+      if ((prev.attrs ^ prop.attrs) & AttrStatic) {
+        ITRACE(
+          2,
+          "Adding property failed for `{}' because `{}' was defined both "
+          "static and non-static\n",
+          cinfo.cls->name,
+          prop.name
+        );
+        return false;
+      }
+      if (prop.attrs & AttrPrivate) {
+        ITRACE(
+          2,
+          "Adding property failed for `{}' because `{}' was re-declared "
+          "private\n",
+          cinfo.cls->name,
+          prop.name
+        );
+        return false;
+      }
+      if (prop.attrs & AttrProtected && !(prev.attrs & AttrProtected)) {
+        ITRACE(
+          2,
+          "Adding property failed for `{}' because `{}' was redeclared "
+          "protected from public\n",
+          cinfo.cls->name,
+          prop.name
+        );
+        return false;
+      }
+    }
+
+    if (trait) cinfo.traitProps.emplace_back(prop);
+    prevTuple = State::PropTuple{src, prop};
+    return true;
+  }
+
+  static bool merge_properties(ClassInfo& cinfo,
+                               WorkState& dst,
+                               const State& src) {
+    for (auto const& [source, prop] : src.props) {
+      if (!add_property(cinfo, dst, prop.name, prop, source, false)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static bool build_properties(const LocalIndex& index,
+                               const php::Class& cls,
+                               ClassInfo& cinfo,
+                               WorkState& state) {
+    if (cls.parentName) {
+      auto const& parent = index.state(cls.parentName);
+      state.props = parent.props;
+      // propIndices is transient work state derived from the retained
+      // property sequence, so reconstruct it instead of retaining one hash
+      // table for every dependency result.
+      state.propIndices.reserve(state.props.size());
+      for (size_t i = 0; i < state.props.size(); ++i) {
+        always_assert(
+          state.propIndices.emplace(state.props[i].prop.name, i).second
+        );
+      }
+    }
+
+    for (auto const iface : cls.interfaceNames) {
+      if (!merge_properties(cinfo, state, index.state(iface))) return false;
+    }
+    for (auto const trait : cls.usedTraitNames) {
+      if (!merge_properties(cinfo, state, index.state(trait))) return false;
+    }
+    for (auto const e : cls.includedEnumNames) {
+      if (!merge_properties(cinfo, state, index.state(e))) return false;
+    }
+
+    if (cls.attrs & AttrInterface) return true;
+
+    // Public traits cannot define internal properties unless they have the
+    // __ModuleLevelTrait attribute.
+    auto const cannotDefineInternalProperties =
+      ((cls.attrs & AttrTrait) && (cls.attrs & AttrPublic)) &&
+      !cls.userAttributes.contains(s___ModuleLevelTrait.get());
+
+    for (auto const& prop : cls.properties) {
+      if (cannotDefineInternalProperties && (prop.attrs & AttrInternal)) {
+        ITRACE(
+          2,
+          "Adding property failed for `{}' because property `{}' is "
+          "internal and public traits cannot define internal properties\n",
+          cinfo.cls->name,
+          prop.name
+        );
+        return false;
+      }
+      if (!add_property(cinfo, state, prop.name, prop, cinfo.cls->name, false)) {
+        return false;
+      }
+    }
+
+    // If traits were already flattened, checking the original trait
+    // properties cannot improve the result.
+    if (cls.attrs & AttrNoExpandTrait) return true;
+    for (auto const traitName : cls.usedTraitNames) {
+      auto const& trait = index.cls(traitName);
+      auto const& traitInfo = index.classInfo(traitName);
+      for (auto const& prop : trait.properties) {
+        if (!add_property(cinfo, state, prop.name, prop, cinfo.cls->name, true)) {
+          return false;
+        }
+      }
+      for (auto const& prop : traitInfo.traitProps) {
+        if (!add_property(cinfo, state, prop.name, prop, cinfo.cls->name, true)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  static bool add_constant(const LocalIndex& index,
+                           ClassInfo& cinfo,
+                           State& state,
+                           SString name,
+                           const ClassInfo::ConstIndex& cnsIdx,
+                           bool fromTrait) {
+    auto [it, emplaced] = cinfo.clsConstants.emplace(name, cnsIdx);
+    if (emplaced) {
+      if (fromTrait) {
+        always_assert(state.cnsFromTrait.emplace(name).second);
+      } else {
+        always_assert(!state.cnsFromTrait.contains(name));
+      }
+      return true;
+    }
+
+    auto& existingIdx = it->second;
+    // The same constant can arrive from an interface through multiple paths.
+    if (existingIdx.cls == cnsIdx.cls) return true;
+
+    auto const& existingCnsCls = *existingIdx.cls;
+    auto const& existing = index.cns(existingIdx);
+    auto const& cns = index.cns(cnsIdx);
+    if (existing.kind != cns.kind) {
+      ITRACE(
+        2,
+        "Adding constant failed for `{}' because `{}' was defined by `{}' "
+        "as a {} and by `{}' as a {}\n",
+        cinfo.cls->name,
+        name,
+        cnsIdx.cls->name,
+        ConstModifierFlags::show(cns.kind),
+        existingIdx.cls->name,
+        ConstModifierFlags::show(existing.kind)
+      );
+      return false;
+    }
+    // Abstract constants without defaults do not replace anything.
+    if (cns.isAbstract && !cns.val) return true;
+    // A concrete constant wins over an incoming abstract default.
+    if (!existing.isAbstract && cns.isAbstract) return true;
+
+    if (existing.val) {
+      /*
+       * A value constant from a declared interface must conflict with a
+       * constant inherited by another path. Without this check a trait
+       * constant can silently lose instead of producing the runtime fatal.
+       * Type and context constants remain overridable.
+       */
+      auto const& cnsCls = *cnsIdx.cls;
+      if (cns.kind == ConstModifierFlags::Kind::Value &&
+          !existing.isAbstract &&
+          (existingCnsCls.attrs & AttrInterface) &&
+          !((cnsCls.attrs & AttrInterface) && fromTrait)) {
+        for (auto const iface : cinfo.cls->interfaceNames) {
+          if (existingIdx.cls->name->tsame(iface)) {
+            ITRACE(
+              2,
+              "Adding constant failed for `{}' because `{}' was defined by "
+              "both `{}' and `{}'\n",
+              cinfo.cls->name,
+              name,
+              cnsIdx.cls->name,
+              existingIdx.cls->name
+            );
+            return false;
+          }
+        }
+      }
+
+      // Constants from traits silently lose under the legacy behavior.
+      if (!Cfg::Eval::TraitConstantInterfaceBehavior && fromTrait) return true;
+      if ((cnsCls.attrs & AttrInterface ||
+           (Cfg::Eval::TraitConstantInterfaceBehavior &&
+            (cnsCls.attrs & AttrTrait))) &&
+          (existing.isAbstract ||
+           cns.kind == ConstModifierFlags::Kind::Type)) {
+        // An interface or trait abstract default can be replaced. Type
+        // constants from interfaces are overridable even when concrete.
+      } else {
+        // Constants from interfaces, included enums, and participating traits
+        // otherwise conflict with an existing definition.
+        if (cnsCls.attrs & (AttrInterface | AttrEnum | AttrEnumClass) ||
+            (Cfg::Eval::TraitConstantInterfaceBehavior &&
+             (cnsCls.attrs & AttrTrait))) {
+          ITRACE(
+            2,
+            "Adding constant failed for `{}' because `{}' was defined by "
+            "both `{}' and `{}'\n",
+            cinfo.cls->name,
+            name,
+            cnsIdx.cls->name,
+            existingIdx.cls->name
+          );
+          return false;
+        }
+      }
+    }
+
+    if (fromTrait) {
+      state.cnsFromTrait.emplace(name);
+    } else {
+      state.cnsFromTrait.erase(name);
+    }
+    existingIdx = cnsIdx;
+    return true;
+  }
+
+  static bool build_constants(const LocalIndex& index,
+                              php::Class& cls,
+                              ClassInfo& cinfo,
+                              State& state);
+  static bool build_methods(const LocalIndex& index,
+                            const php::Class& cls,
+                            ClassInfo& cinfo,
+                            State& state,
+                            SStringSet& missingMethods,
+                            MethRefSet& extraMethods);
+
+  static std::unique_ptr<ClassInfo> make_info(const LocalIndex& index,
+                                              php::Class& cls,
+                                              WorkState& state,
+                                              SStringSet& missingMethods,
+                                              MethRefSet& extraMethods) {
+    if (debug && (is_closure(cls) || is_closure_base(cls))) {
+      if (is_closure(cls)) {
+        always_assert(cls.parentName);
+        always_assert(cls.parentName->tsame(s_Closure.get()));
+      } else {
+        always_assert(!cls.parentName);
+      }
+      always_assert(cls.interfaceNames.empty());
+      always_assert(cls.includedEnumNames.empty());
+      always_assert(cls.usedTraitNames.empty());
+      always_assert(cls.requirements.empty());
+      always_assert(cls.constants.empty());
+      always_assert(cls.userAttributes.empty());
+      always_assert(!(cls.attrs & (AttrTrait | AttrInterface | AttrAbstract)));
+    }
+
+    auto cinfo = std::make_unique<ClassInfo>();
+    cinfo->cls = &cls;
+    cinfo->hasConstProp = cls.hasConstProp;
+    cinfo->hasReifiedParent = cls.hasReifiedGenerics;
+
+    // Assume the class is not overridden. Subclass processing will update
+    // non-leaf classes later.
+    if (!is_closure_base(cls)) {
+      attribute_setter(cls.attrs, true, AttrNoOverride);
+      attribute_setter(cls.attrs, true, AttrNoOverrideRegular);
+    } else {
+      attribute_setter(cls.attrs, false, AttrNoOverride);
+      attribute_setter(cls.attrs, false, AttrNoOverrideRegular);
+    }
+    // Likewise, assume no subclass is a mock until subclass processing.
+    attribute_setter(cls.attrs, true, AttrNoMock);
+
+    for (auto const& closure : cls.closures) {
+      if (index.uninstantiable(closure->name)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because its closure `{}' is "
+          "uninstantiable\n",
+          cls.name,
+          closure->name
+        );
+        return nullptr;
+      }
+    }
+
+    if (cls.parentName) {
+      assertx(!is_closure_base(cls));
+      assertx(is_closure(cls) == cls.parentName->tsame(s_Closure.get()));
+      if (index.uninstantiable(cls.parentName)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because its parent `{}' is "
+          "uninstantiable\n",
+          cls.name,
+          cls.parentName
+        );
+        return nullptr;
+      }
+      auto const& parent = index.cls(cls.parentName);
+      auto const& parentInfo = index.classInfo(cls.parentName);
+      assertx(!is_closure(parent));
+      if (parent.attrs & (AttrInterface | AttrTrait)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because its parent `{}' is not "
+          "a class\n",
+          cls.name,
+          cls.parentName
+        );
+        return nullptr;
+      }
+      if (!enforce_sealing(*cinfo, cls, parent)) return nullptr;
+
+      cinfo->parent = const_cast<ClassInfo*>(&parentInfo);
+      cinfo->hasConstProp |= parentInfo.hasConstProp;
+      cinfo->hasReifiedParent |= parentInfo.hasReifiedParent;
+      for (auto const iface : index.interfaces(cls.parentName)) {
+        state.interfaces.emplace(iface);
+      }
+    } else if (!cls.userAttributes.contains(s___Reified.get())) {
+      attribute_setter(cls.attrs, true, AttrNoReifiedInit);
+    }
+
+    for (auto const iname : cls.interfaceNames) {
+      assertx(!is_closure(cls));
+      assertx(!is_closure_base(cls));
+      if (index.uninstantiable(iname)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because `{}' is "
+          "uninstantiable\n",
+          cls.name,
+          iname
+        );
+        return nullptr;
+      }
+      auto const& iface = index.cls(iname);
+      assertx(!is_closure(iface));
+      if (!(iface.attrs & AttrInterface)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because `{}' is not an "
+          "interface\n",
+          cls.name,
+          iname
+        );
+        return nullptr;
+      }
+      if (!enforce_sealing(*cinfo, cls, iface)) return nullptr;
+      cinfo->hasReifiedParent |= index.classInfo(iname).hasReifiedParent;
+      state.graphParents.emplace(iname);
+      for (auto const transitive : index.interfaces(iname)) {
+        state.interfaces.emplace(transitive);
+      }
+    }
+
+    for (auto const ename : cls.includedEnumNames) {
+      assertx(!is_closure(cls));
+      assertx(!is_closure_base(cls));
+      if (index.uninstantiable(ename)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because `{}' is "
+          "uninstantiable\n",
+          cls.name,
+          ename
+        );
+        return nullptr;
+      }
+      auto const& e = index.cls(ename);
+      assertx(!is_closure(e));
+      auto const wantAttr = cls.attrs & (AttrEnum | AttrEnumClass);
+      if (!(e.attrs & wantAttr)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because `{}' is not an enum{}\n",
+          cls.name,
+          ename,
+          wantAttr & AttrEnumClass ? " class" : ""
+        );
+        return nullptr;
+      }
+      if (!enforce_sealing(*cinfo, cls, e)) return nullptr;
+      for (auto const iface : index.graphParents(ename)) {
+        if (!(iface->cls->attrs & AttrInterface)) continue;
+        state.graphParents.emplace(iface->cls->name);
+        for (auto const transitive : index.interfaces(iface->cls->name)) {
+          state.interfaces.emplace(transitive);
+        }
+      }
+    }
+
+    auto const clsHasModuleLevelTrait =
+      cls.userAttributes.contains(s___ModuleLevelTrait.get());
+    if (clsHasModuleLevelTrait &&
+        (!(cls.attrs & AttrTrait) || (cls.attrs & AttrInternal))) {
+      ITRACE(
+        2,
+        "Making class-info failed for `{}' because attribute "
+        "<<__ModuleLevelTrait>> can only be specified on public traits\n",
+        cls.name
+      );
+      return nullptr;
+    }
+
+    for (auto const tname : cls.usedTraitNames) {
+      assertx(!is_closure(cls));
+      assertx(!is_closure_base(cls));
+      if (index.uninstantiable(tname)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because `{}' is "
+          "uninstantiable\n",
+          cls.name,
+          tname
+        );
+        return nullptr;
+      }
+      auto const& trait = index.cls(tname);
+      auto const& traitInfo = index.classInfo(tname);
+      assertx(!is_closure(trait));
+      if (!(trait.attrs & AttrTrait)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because `{}' is not a trait\n",
+          cls.name,
+          tname
+        );
+        return nullptr;
+      }
+      if (!enforce_sealing(*cinfo, cls, trait)) return nullptr;
+
+      cinfo->hasConstProp |= traitInfo.hasConstProp;
+      cinfo->hasReifiedParent |= traitInfo.hasReifiedParent;
+      cinfo->usedTraits.emplace_back(&traitInfo);
+      state.graphParents.emplace(tname);
+      for (auto const iface : index.interfaces(tname)) {
+        state.interfaces.emplace(iface);
+      }
+    }
+
+    if (cls.attrs & AttrInterface) state.interfaces.emplace(cls.name);
+
+    if (cls.attrs & AttrEnum) {
+      auto const baseType = [&] {
+        auto const& base = cls.enumBaseTy;
+        if (!base.isUnresolved()) return base.type();
+        auto const tm = index.typeMapping(base.typeName());
+        if (!tm) return AnnotType::Unresolved;
+        // Enums cannot use case types.
+        assertx(!tm->value.isUnion());
+        return tm->value.type();
+      }();
+      if (!enumSupportsAnnot(baseType)) {
+        ITRACE(
+          2,
+          "Making class-info failed for `{}' because {} is not a valid enum "
+          "base type\n",
+          cls.name,
+          annotName(baseType)
+        );
+        return nullptr;
+      }
+    }
+
+    if (!build_methods(
+          index, cls, *cinfo, state, missingMethods, extraMethods
+        )) {
+      return nullptr;
+    }
+    if (!build_properties(index, cls, *cinfo, state)) return nullptr;
+    if (!build_constants(index, cls, *cinfo, state)) return nullptr;
+
+    cinfo->subHasConstProp = cinfo->hasConstProp;
+    // Methods begin as non-overridden, except special methods, which are
+    // always treated as overridden. Subclass processing updates this later.
+    for (auto& [name, mte] : cinfo->methods) {
+      assertx(!missingMethods.contains(name));
+      auto const noOverride = !is_special_method_name(name);
+      attribute_setter(mte.attrs, noOverride, AttrNoOverride);
+      if (noOverride) {
+        mte.setNoOverrideRegular();
+      } else {
+        mte.clearNoOverrideRegular();
+      }
+      // Keep the function attributes synchronized with the method table.
+      auto const meth = mte.meth();
+      if (meth.cls->tsame(cls.name)) {
+        assertx(meth.idx < cls.methods.size());
+        attribute_setter(cls.methods[meth.idx]->attrs, noOverride, AttrNoOverride);
+      }
+    }
+
+    // Closure subclass information is not recalculated later, so its initial
+    // state must already be final.
+    if (debug && (is_closure(cls) || is_closure_base(cls))) {
+      if (is_closure(cls)) {
+        always_assert(is_closure_name(cls.name));
+        always_assert(cinfo->parent);
+        always_assert(cinfo->parent->cls->name->tsame(s_Closure.get()));
+        always_assert(!(cls.attrs & AttrNoReifiedInit));
+      } else {
+        always_assert(!cinfo->parent);
+        always_assert(cls.attrs & AttrNoReifiedInit);
+      }
+      always_assert(state.graphParents.empty());
+      always_assert(missingMethods.empty());
+      always_assert(!cinfo->hasConstProp);
+      always_assert(!cinfo->subHasConstProp);
+      always_assert(!cinfo->hasReifiedParent);
+      always_assert(!is_mock_class(&cls));
+    }
+
+    return cinfo;
+  }
+
+  using ClonedClosures =
+    hphp_fast_map<const php::Class*, std::unique_ptr<php::Class>>;
+
+  static SString rename_closure(const php::Class& closure,
+                                const php::Class& newContext) {
+    auto n = closure.name->slice();
+    auto const p = n.find(';');
+    if (p != std::string::npos) n = n.subpiece(0, p);
+    return makeStaticString(fmt::format(
+      "{};{}",
+      std::string_view{n.data(), n.size()},
+      newContext.name->data()
+    ));
+  }
+
+  static std::unique_ptr<php::Class> clone_closure(
+      const LocalIndex& index,
+      const php::Class& closure,
+      const php::Class& newContext,
+      bool requiresFromOriginalModule,
+      ClonedClosures& clonedClosures) {
+    auto clone = std::make_unique<php::Class>(closure);
+    assertx(clone->closureContextCls);
+    clone->name = rename_closure(closure, newContext);
+    clone->closureContextCls = newContext.name;
+    clone->unit = newContext.unit;
+
+    for (size_t i = 0; i < clone->methods.size(); ++i) {
+      auto method = std::move(clone->methods[i]);
+      method->cls = clone.get();
+      assertx(method->clsIdx == i);
+      if (!method->originalUnit) method->originalUnit = method->unit;
+      if (!method->originalClass) method->originalClass = closure.name;
+      method->requiresFromOriginalModule = requiresFromOriginalModule;
+      method->unit = newContext.unit;
+      clone->methods[i] = clone_closures(
+        index,
+        std::move(method),
+        requiresFromOriginalModule,
+        clonedClosures
+      );
+      if (!clone->methods[i]) return nullptr;
+    }
+    return clone;
+  }
+
+  static std::unique_ptr<php::Func> clone_closures(
+      const LocalIndex& index,
+      std::unique_ptr<php::Func> cloned,
+      bool requiresFromOriginalModule,
+      ClonedClosures& clonedClosures) {
+    if (!cloned->hasCreateCl) return cloned;
+    auto const onClosure = [&] (LSString& closureName) {
+      auto const& cls = index.closure(closureName);
+      assertx(is_closure(cls));
+      // CreateCls can refer to the same closure more than once in one
+      // function. Reuse the first clone in that case.
+      if (auto const it = clonedClosures.find(&cls);
+          it != end(clonedClosures)) {
+        closureName = it->second->name;
+        return true;
+      }
+      // Otherwise clone the closure and rewrite CreateCl to its new name.
+      auto closure = clone_closure(
+        index,
+        cls,
+        cloned->cls->closureContextCls
+          ? index.cls(cloned->cls->closureContextCls)
+          : *cloned->cls,
+        requiresFromOriginalModule,
+        clonedClosures
+      );
+      if (!closure) return false;
+      closureName = closure->name;
+      always_assert(clonedClosures.emplace(&cls, std::move(closure)).second);
+      return true;
+    };
+
+    auto mf = php::WideFunc::mut(cloned.get());
+    assertx(!mf.blocks().empty());
+    for (size_t bid = 0; bid < mf.blocks().size(); ++bid) {
+      auto const block = mf.blocks()[bid].mutate();
+      for (auto& bc : block->hhbcs) {
+        if (bc.op == Op::CreateCl && !onClosure(bc.CreateCl.str2)) {
+          return nullptr;
+        }
+      }
+    }
+    return cloned;
+  }
+
+  static std::unique_ptr<php::Func> clone(
+      const LocalIndex& index,
+      const php::Func& orig,
+      SString name,
+      Attr attrs,
+      const php::Class& dstCls,
+      ClonedClosures& clonedClosures,
+      bool internal = false) {
+    auto cloned = std::make_unique<php::Func>(orig);
+    cloned->name = name;
+    cloned->attrs = attrs;
+    if (!internal) cloned->attrs |= AttrTrait;
+    cloned->cls = const_cast<php::Class*>(&dstCls);
+    cloned->unit = dstCls.unit;
+    if (!cloned->originalUnit) cloned->originalUnit = orig.unit;
+    cloned->originalClass = orig.originalClass
+      ? orig.originalClass
+      : orig.cls->name;
+    cloned->originalModuleName = orig.originalModuleName;
+
+    // Inlining a method across modules must retain its original module so
+    // runtime access checks can be performed against the definition site.
+    // This also applies when an internal trait is used by a module-level
+    // trait.
+    auto const copyFromModuleLevelTrait =
+      orig.fromModuleLevelTrait &&
+      !orig.requiresFromOriginalModule &&
+      orig.originalModuleName != dstCls.moduleName;
+    auto const copyFromInternal =
+      (orig.cls->attrs & AttrInternal) &&
+      dstCls.userAttributes.contains(s___ModuleLevelTrait.get());
+    auto const requiresFromOriginalModule =
+      copyFromModuleLevelTrait || copyFromInternal
+      ? true
+      : orig.requiresFromOriginalModule;
+    cloned->requiresFromOriginalModule = requiresFromOriginalModule;
+    // The clone has not been inserted into a method table yet.
+    cloned->clsIdx = std::numeric_limits<uint32_t>::max();
+    return clone_closures(
+      index,
+      std::move(cloned),
+      requiresFromOriginalModule,
+      clonedClosures
+    );
+  }
+
+  static bool merge_inits(
+      const LocalIndex& index,
+      const php::Class& cls,
+      const ClassInfo& cinfo,
+      SString name,
+      std::vector<std::unique_ptr<php::Func>>& clones);
+
+  static bool merge_xinits(
+      const LocalIndex& index,
+      const php::Class& cls,
+      const ClassInfo& cinfo,
+      const State& state,
+      std::vector<std::unique_ptr<php::Func>>& clones);
+
+  static CompactVector<std::unique_ptr<ClassInfo>> flatten_traits(
+      const LocalIndex& index,
+      php::Class& cls,
+      ClassInfo& cinfo,
+      WorkState& state,
+      SStringSet& missingMethods,
+      MethRefSet& extraMethods);
+
+  static void run_node(
+      const IndexData& index,
+      const IndexFlattenMetadata& meta,
+      const std::vector<Node>& nodes,
+      const TSStringToOneT<size_t>& nodeForClass,
+      const PublishedClosures& publishedClosures,
+      php::Class& owner,
+      bool retainGeneratedClosures,
+      bool retainState,
+      Result& result);
+
+  static bool resolve_one(TypeConstraint& tc,
+                          const TypeConstraint& value,
+                          bool isProp,
+                          bool isUnion);
+  static void update_type_constraint(const LocalIndex& index,
+                                     TypeConstraint& tc,
+                                     bool isProp);
+  static void update_type_constraints(const LocalIndex& index,
+                                      php::Func& func);
+  static void update_type_constraints(const LocalIndex& index,
+                                      php::Class& cls);
+  static void optimize_properties(const LocalIndex& index,
+                                  php::Class& cls,
+                                  ClassInfo& cinfo);
+};
+
+bool LocalFlattenJob::build_constants(const LocalIndex& index,
+                                      php::Class& cls,
+                                      ClassInfo& cinfo,
+                                      State& state) {
+  if (cls.parentName) {
+    cinfo.clsConstants = index.classInfo(cls.parentName).clsConstants;
+    state.cnsFromTrait = index.state(cls.parentName).cnsFromTrait;
+  }
+
+  for (auto const iname : cls.interfaceNames) {
+    auto const& iface = index.classInfo(iname);
+    auto const& ifaceState = index.state(iname);
+    for (auto const& [name, idx] : iface.clsConstants) {
+      if (!add_constant(
+            index,
+            cinfo,
+            state,
+            name,
+            idx,
+            ifaceState.cnsFromTrait.contains(name)
+          )) {
+        return false;
+      }
+    }
+  }
+
+  auto const addShallowConstants = [&] {
+    for (uint32_t idx = 0; idx < cls.constants.size(); ++idx) {
+      if (!add_constant(
+            index,
+            cinfo,
+            state,
+            cls.constants[idx].name,
+            ClassInfo::ConstIndex{&cls, idx},
+            false
+          )) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  auto const addTraitConstants = [&] {
+    for (auto const tname : cls.usedTraitNames) {
+      auto const& trait = index.classInfo(tname);
+      for (auto const& [name, idx] : trait.clsConstants) {
+        if (!add_constant(index, cinfo, state, name, idx, true)) return false;
+      }
+    }
+    return true;
+  };
+
+  if (Cfg::Eval::TraitConstantInterfaceBehavior) {
+    // Trait constants precede shallow declarations to match interface
+    // conflict semantics.
+    if (!addTraitConstants() || !addShallowConstants()) return false;
+  } else {
+    if (!addShallowConstants() || !addTraitConstants()) return false;
+  }
+
+  for (auto const ename : cls.includedEnumNames) {
+    auto const& e = index.classInfo(ename);
+    for (auto const& [name, idx] : e.clsConstants) {
+      if (!add_constant(index, cinfo, state, name, idx, false)) return false;
+    }
+  }
+
+  auto const addTraitConst = [&] (const php::Const& cns) {
+    /*
+     * Retain only winning trait constants. If an interface implemented by a
+     * trait wins, the flattened table no longer identifies which trait the
+     * losing constant came from. Dropping it is safe because conflicts with
+     * declared interfaces were handled above.
+     */
+    auto const it = cinfo.clsConstants.find(cns.name);
+    assertx(it != end(cinfo.clsConstants));
+    if (it->second.cls->name->tsame(cns.cls)) {
+      state.traitCns.emplace_back(cns);
+      state.traitCns.back().isFromTrait = true;
+    }
+  };
+  for (auto const tname : cls.usedTraitNames) {
+    auto const& trait = index.cls(tname);
+    auto const& traitState = index.state(tname);
+    for (auto const& cns : trait.constants) addTraitConst(cns);
+    for (auto const& cns : traitState.traitCns) addTraitConst(cns);
+  }
+
+  if (cls.attrs & (AttrAbstract | AttrInterface | AttrTrait)) return true;
+
+  std::vector<SString> sortedNames;
+  sortedNames.reserve(cinfo.clsConstants.size());
+  for (auto const& [name, _] : cinfo.clsConstants) {
+    sortedNames.emplace_back(name);
+  }
+  std::sort(begin(sortedNames), end(sortedNames), string_data_lt{});
+
+  SStringSet copied;
+  for (auto const name : sortedNames) {
+    auto& cnsIdx = cinfo.clsConstants.find(name)->second;
+    if (cnsIdx.cls == &cls) continue;
+    auto const& cns = index.cns(cnsIdx);
+    if (!cns.isAbstract || !cns.val) continue;
+
+    if (cns.val->m_type == KindOfUninit) {
+      auto const& cnsCls = *cnsIdx.cls;
+      assertx(!cnsCls.methods.empty());
+      assertx(cnsCls.methods.back()->name == s_86cinit.get());
+      auto const& cinit = *cnsCls.methods.back();
+
+      if (cls.methods.empty() || cls.methods.back()->name != s_86cinit.get()) {
+        ClonedClosures clonedClosures;
+        auto cloned = clone(
+          index,
+          cinit,
+          cinit.name,
+          cinit.attrs,
+          cls,
+          clonedClosures,
+          true
+        );
+        assertx(cloned);
+        assertx(clonedClosures.empty());
+        assertx(cloned->cls == &cls);
+        cloned->clsIdx = cls.methods.size();
+        auto const [_, emplaced] =
+          cinfo.methods.emplace(cloned->name, MethTabEntry{*cloned});
+        always_assert(emplaced);
+        cls.methods.emplace_back(std::move(cloned));
+      } else {
+        auto const succeeded = append_86cinit(cls.methods.back().get(), cinit);
+        always_assert(succeeded);
+      }
+    }
+
+    // This is analogous to flattening a trait constant into the class.
+    auto copy = cns;
+    copy.cls = cls.name;
+    copy.isAbstract = false;
+    state.cnsFromTrait.erase(copy.name);
+    copied.emplace(copy.name);
+    cnsIdx.cls = &cls;
+    cnsIdx.idx = cls.constants.size();
+    cls.constants.emplace_back(std::move(copy));
+  }
+
+  // A copied constant is now shallow on this class and must not be imported
+  // again when traits are flattened.
+  if (!copied.empty()) {
+    state.traitCns.erase(
+      std::remove_if(
+        begin(state.traitCns),
+        end(state.traitCns),
+        [&] (const php::Const& cns) { return copied.contains(cns.name); }
+      ),
+      end(state.traitCns)
+    );
+  }
+  return true;
+}
+
+/*
+ * Build the flattened method table. Duplicate names override parent methods
+ * unless the parent method is final and this is not a mock class.
+ * Non-overridden private methods remain in subclass tables, so downstream
+ * method resolution must continue to handle private overriding carefully.
+ */
+bool LocalFlattenJob::build_methods(const LocalIndex& index,
+                                    const php::Class& cls,
+                                    ClassInfo& cinfo,
+                                    State& state,
+                                    SStringSet& missingMethods,
+                                    MethRefSet& extraMethods) {
+  // Interface methods are not inherited, so implemented interface methods
+  // begin as missing.
+  assertx(cinfo.methods.empty());
+  for (auto const iname : cls.interfaceNames) {
+    auto const& iface = index.classInfo(iname);
+    for (auto const& [name, _] : iface.methods) {
+      if (!is_special_method_name(name)) missingMethods.emplace(name);
+    }
+    auto const& ifaceMissing = index.missingMethods(iname);
+    if constexpr (debug) {
+      for (auto const name : ifaceMissing) {
+        always_assert(!is_special_method_name(name));
+      }
+    }
+    missingMethods.insert(begin(ifaceMissing), end(ifaceMissing));
+  }
+
+  // Interface methods are stubs and are not inherited by implementations.
+  if (cls.attrs & AttrInterface) {
+    assertx(!cls.parentName);
+    assertx(cls.usedTraitNames.empty());
+    uint32_t idx = 0;
+    for (auto const& method : cls.methods) {
+      auto const [it, emplaced] =
+        cinfo.methods.emplace(method->name, MethTabEntry{*method});
+      always_assert(emplaced);
+      always_assert(state.methodIndices.emplace(method->name, idx++).second);
+      if (missingMethods.erase(method->name)) {
+        assertx(!it->second.firstName());
+      } else {
+        it->second.setFirstName();
+      }
+    }
+    return true;
+  }
+
+  auto const overridden = [&] (MethTabEntry& existing,
+                                MethRef method,
+                                Attr attrs) {
+    auto const& existingMethod = index.meth(existing);
+    if ((existingMethod.attrs & AttrFinal) && !is_mock_class(&cls)) {
+      ITRACE(
+        2,
+        "Adding methods failed for `{}' because it tried to override final "
+        "method `{}::{}'\n",
+        cls.name,
+        existing.meth().cls,
+        existingMethod.name
+      );
+      return false;
+    }
+    if (existingMethod.attrs & AttrPrivate) {
+      existing.setHasPrivateAncestor();
+    }
+    existing.setMeth(method);
+    existing.attrs = attrs;
+    existing.setTopLevel();
+    return true;
+  };
+
+  // Start with the parent's non-special methods.
+  if (cls.parentName) {
+    auto const& parent = index.classInfo(cls.parentName);
+    auto const& parentMissing = index.missingMethods(cls.parentName);
+    missingMethods.insert(begin(parentMissing), end(parentMissing));
+    for (auto const& [name, mte] : parent.methods) {
+      if (HPHP::Func::isSpecial(name)) continue;
+      auto const [it, emplaced] = cinfo.methods.emplace(name, mte);
+      always_assert(emplaced);
+      it->second.clearTopLevel();
+      it->second.clearFirstName();
+      always_assert(
+        state.methodIndices.emplace(
+          name,
+          index.methodIdx(cls.parentName, name)
+        ).second
+      );
+      missingMethods.erase(name);
+    }
+  }
+
+  auto idx = cinfo.methods.size();
+  auto const clsHasModuleLevelTrait =
+    cls.userAttributes.contains(s___ModuleLevelTrait.get());
+  // Add methods declared directly on this class.
+  for (auto const& method : cls.methods) {
+    if ((cls.attrs & AttrTrait) &&
+        !((cls.attrs & AttrInternal) || clsHasModuleLevelTrait) &&
+        (method->attrs & AttrInternal)) {
+      ITRACE(
+        2,
+        "Adding methods failed for `{}' because method `{}' is internal and "
+        "public traits cannot define internal methods without "
+        "<<__ModuleLevelTrait>>\n",
+        cls.name,
+        method->name
+      );
+      return false;
+    }
+
+    auto const [it, emplaced] =
+      cinfo.methods.emplace(method->name, MethTabEntry{*method});
+    if (emplaced) {
+      always_assert(state.methodIndices.emplace(method->name, idx++).second);
+      if (missingMethods.erase(method->name)) {
+        assertx(!it->second.firstName());
+      } else {
+        it->second.setFirstName();
+      }
+      continue;
+    }
+
+    assertx(!missingMethods.contains(method->name));
+    assertx(!it->second.firstName());
+    if ((method->attrs & AttrTrait) && (method->attrs & AttrAbstract)) {
+      // Abstract methods imported from traits do not override definitions.
+      continue;
+    }
+    if (!overridden(it->second, MethRef{*method}, method->attrs)) return false;
+  }
+
+  // Traits already flattened into the bytecode require no import work.
+  if (cls.attrs & AttrNoExpandTrait) return true;
+
+  try {
+    LocalTMIData tmid;
+    for (auto const tname : cls.usedTraitNames) {
+      auto const& traitCls = index.cls(tname);
+      auto const& trait = index.classInfo(tname);
+      auto const& traitMissing = index.missingMethods(tname);
+
+      std::vector<std::pair<SString, const MethTabEntry*>>
+        methods(trait.methods.size());
+      for (auto const& [name, mte] : trait.methods) {
+        if (HPHP::Func::isSpecial(name)) continue;
+        auto const methodIdx = index.methodIdx(tname, name);
+        assertx(methodIdx < methods.size());
+        assertx(!methods[methodIdx].first);
+        methods[methodIdx] = std::make_pair(name, &mte);
+        if (auto it = cinfo.methods.find(name); it != end(cinfo.methods)) {
+          it->second.clearFirstName();
+        }
+      }
+
+      for (auto const name : traitMissing) {
+        assertx(!is_special_method_name(name));
+        if (!cinfo.methods.contains(name)) missingMethods.emplace(name);
+      }
+
+      for (auto const& [name, mte] : methods) {
+        if (!name) continue;
+        auto const& method = index.meth(*mte);
+        tmid.add(
+          LocalTraitMethod{
+            std::make_pair(&trait, &traitCls),
+            &method,
+            mte->attrs
+          },
+          name
+        );
+      }
+      for (auto const& closure : traitCls.closures) {
+        auto const invoke = find_method(closure.get(), s_invoke.get());
+        assertx(invoke);
+        extraMethods.emplace(MethRef{*invoke});
+      }
+    }
+
+    auto const traitMethods = tmid.finish(
+      std::make_pair(&cinfo, &cls),
+      cls.userAttributes.contains(s___EnableMethodTraitDiamond.get())
+    );
+    for (auto const& mdata : traitMethods) {
+      auto const method = mdata.tm.method;
+      auto attrs = mdata.tm.modifiers;
+      if (attrs == AttrNone) {
+        attrs = method->attrs;
+      } else {
+        auto const mask =
+          (Attr)(AttrPublic | AttrProtected | AttrPrivate |
+                 AttrAbstract | AttrFinal);
+        attrs = (Attr)((attrs & mask) | (method->attrs & ~mask));
+      }
+
+      auto const [it, emplaced] = cinfo.methods.emplace(
+        mdata.name,
+        MethTabEntry{*method, attrs}
+      );
+      if (emplaced) {
+        always_assert(state.methodIndices.emplace(mdata.name, idx++).second);
+        missingMethods.erase(mdata.name);
+      } else {
+        assertx(!missingMethods.contains(mdata.name));
+        if (attrs & AttrAbstract) continue;
+        if (it->second.meth().cls->tsame(cls.name)) continue;
+        if (!overridden(it->second, MethRef{*method}, attrs)) return false;
+        state.methodIdx(index.ctx->name, cinfo.cls->name, mdata.name) = idx++;
+      }
+      extraMethods.emplace(MethRef{*method});
+    }
+  } catch ([[maybe_unused]] const LocalTMIOps::TMIException& exn) {
+    ITRACE(
+      2,
+      "Adding methods failed for `{}' importing traits: {}\n",
+      cls.name,
+      exn.what()
+    );
+    return false;
+  }
+
+  return true;
+}
+
+bool LocalFlattenJob::merge_inits(
+    const LocalIndex& index,
+    const php::Class& cls,
+    const ClassInfo& cinfo,
+    SString name,
+    std::vector<std::unique_ptr<php::Func>>& clones) {
+  auto const existing = [&] () -> const php::Func* {
+    for (auto const& method : cls.methods) {
+      if (method->name == name) return method.get();
+    }
+    return nullptr;
+  }();
+
+  std::unique_ptr<php::Func> cloned;
+  auto const merge = [&] (const php::Func& func) {
+    if (!cloned) {
+      ClonedClosures clonedClosures;
+      if (existing) {
+        cloned = clone(
+          index,
+          *existing,
+          existing->name,
+          existing->attrs,
+          cls,
+          clonedClosures,
+          true
+        );
+      } else {
+        cloned = clone(
+          index,
+          func,
+          func.name,
+          func.attrs,
+          cls,
+          clonedClosures,
+          true
+        );
+      }
+      assertx(clonedClosures.empty());
+      if (!cloned) return false;
+      if (!existing) return true;
+    }
+    if (name == s_86cinit.get()) return append_86cinit(cloned.get(), func);
+    return append_func(cloned.get(), func);
+  };
+
+  for (auto const tname : cls.usedTraitNames) {
+    auto const& trait = index.classInfo(tname);
+    auto const it = trait.methods.find(name);
+    if (it == end(trait.methods)) continue;
+    auto const& method = index.meth(it->second);
+    if (!merge(method)) {
+      ITRACE(
+        4,
+        "merge_inits: failed to merge {}::{}\n",
+        method.cls->name,
+        name
+      );
+      return false;
+    }
+  }
+  if (cloned) clones.emplace_back(std::move(cloned));
+  return true;
+}
+
+bool LocalFlattenJob::merge_xinits(
+    const LocalIndex& index,
+    const php::Class& cls,
+    const ClassInfo& cinfo,
+    const State& state,
+    std::vector<std::unique_ptr<php::Func>>& clones) {
+  auto const mergeOne = [&] (SString name, Attr attrs) {
+    auto const unnecessary = std::all_of(
+      begin(cinfo.traitProps),
+      end(cinfo.traitProps),
+      [&] (const php::Prop& prop) {
+        if ((prop.attrs & (AttrStatic | AttrLSB)) != attrs) return true;
+        if (prop.val.m_type != KindOfUninit) return true;
+        return bool(prop.attrs & AttrLateInit);
+      }
+    );
+    return unnecessary || merge_inits(index, cls, cinfo, name, clones);
+  };
+
+  if (!mergeOne(s_86pinit.get(), AttrNone)) return false;
+  if (!mergeOne(s_86sinit.get(), AttrStatic)) return false;
+  if (!mergeOne(s_86linit.get(), AttrStatic | AttrLSB)) return false;
+
+  auto const unnecessary = std::all_of(
+    begin(state.traitCns),
+    end(state.traitCns),
+    [] (const php::Const& cns) {
+      return !cns.val || cns.val->m_type != KindOfUninit;
+    }
+  );
+  return unnecessary ||
+    merge_inits(index, cls, cinfo, s_86cinit.get(), clones);
+}
+
+CompactVector<std::unique_ptr<ClassInfo>>
+LocalFlattenJob::flatten_traits(const LocalIndex& index,
+                               php::Class& cls,
+                               ClassInfo& cinfo,
+                               WorkState& state,
+                               SStringSet& missingMethods,
+                               MethRefSet& extraMethods) {
+  if (cls.attrs & AttrNoExpandTrait) {
+    // usedTraits contains only traits which remain unflattened.
+    cinfo.usedTraits.clear();
+    return {};
+  }
+  if (cls.usedTraitNames.empty()) {
+    cls.attrs |= AttrNoExpandTrait;
+    cinfo.usedTraits.clear();
+    return {};
+  }
+
+  assertx(!is_closure(cls));
+
+  auto traitHasConstProp = cls.hasConstProp;
+  for (auto const tname : cls.usedTraitNames) {
+    auto const& trait = index.cls(tname);
+    auto const& traitInfo = index.classInfo(tname);
+    if (!(trait.attrs & AttrNoExpandTrait)) {
+      ITRACE(4, "Not flattening {} because of {}\n", cls.name, trait.name);
+      return {};
+    }
+    if (is_noflatten_trait(&trait)) {
+      ITRACE(
+        4,
+        "Not flattening {} because {} is annotated with __NoFlatten\n",
+        cls.name,
+        trait.name
+      );
+      return {};
+    }
+    if (traitInfo.hasConstProp) traitHasConstProp = true;
+  }
+
+  std::vector<std::pair<SString, MethTabEntry*>> toAdd;
+  for (auto& [name, mte] : cinfo.methods) {
+    if (!mte.topLevel()) continue;
+    if (mte.meth().cls->tsame(cls.name)) continue;
+    assertx(index.cls(mte.meth().cls).attrs & AttrTrait);
+    toAdd.emplace_back(name, &mte);
+  }
+  if (!toAdd.empty()) {
+    assertx(!extraMethods.empty());
+    std::sort(
+      begin(toAdd),
+      end(toAdd),
+      [&] (auto const& a, auto const& b) {
+        return state.methodIdx(index.ctx->name, cinfo.cls->name, a.first) <
+          state.methodIdx(index.ctx->name, cinfo.cls->name, b.first);
+      }
+    );
+  } else if constexpr (debug) {
+    // build_methods conservatively records closures from every used trait.
+    // If no trait method is selected, only closure bodies may remain.
+    for (auto const& method : extraMethods) {
+      always_assert(index.meth(method).isClosureBody);
+    }
+  }
+
+  std::vector<std::unique_ptr<php::Func>> clones;
+  ClonedClosures clonedClosures;
+  for (auto const& [name, mte] : toAdd) {
+    auto const& method = index.meth(*mte);
+    auto cloned = clone(
+      index,
+      method,
+      name,
+      mte->attrs,
+      cls,
+      clonedClosures
+    );
+    if (!cloned) {
+      ITRACE(
+        4,
+        "Not flattening {} because {}::{} could not be cloned\n",
+        cls.name,
+        mte->meth().cls,
+        name
+      );
+      return {};
+    }
+    assertx(cloned->attrs & AttrTrait);
+    clones.emplace_back(std::move(cloned));
+  }
+  if (!merge_xinits(index, cls, cinfo, state, clones)) {
+    ITRACE(
+      4,
+      "Not flattening {} because we could not merge the 86xinits\n",
+      cls.name
+    );
+    return {};
+  }
+
+  // No operation below this point can abandon trait flattening.
+
+  if (traitHasConstProp) {
+    assertx(cinfo.hasConstProp);
+    cls.hasConstProp = true;
+  }
+  extraMethods.clear();
+  for (auto const& [_, mte] : toAdd) mte->attrs |= AttrTrait;
+
+  for (auto& prop : cinfo.traitProps) {
+    cls.properties.emplace_back(std::move(prop));
+    cls.properties.back().attrs |= AttrTrait;
+  }
+  cinfo.traitProps.clear();
+
+  // Type and context constants can be overridden. Record existing non-value
+  // constants so a selected trait constant can replace the same slot.
+  SStringToOneT<size_t> existingCnsIndexes;
+  if (!state.traitCns.empty()) {
+    for (size_t i = 0; i < cls.constants.size(); ++i) {
+      auto const& cns = cls.constants[i];
+      if (!cns.val) {
+        always_assert(existingCnsIndexes.emplace(cns.name, i).second);
+      }
+    }
+  }
+
+  for (auto& cns : state.traitCns) {
+    auto it = cinfo.clsConstants.find(cns.name);
+    assertx(it != end(cinfo.clsConstants));
+    auto& cnsIdx = it->second;
+    cns.cls = cls.name;
+    state.cnsFromTrait.erase(cns.name);
+    cnsIdx.cls = &cls;
+
+    auto replaced = false;
+    if (!cns.val) {
+      if (auto const old = existingCnsIndexes.find(cns.name);
+          old != end(existingCnsIndexes)) {
+        assertx(cls.constants[old->second].kind == cns.kind);
+        cnsIdx.idx = old->second;
+        cls.constants[old->second] = std::move(cns);
+        replaced = true;
+      }
+    }
+    if (!replaced) {
+      cnsIdx.idx = cls.constants.size();
+      cls.constants.emplace_back(std::move(cns));
+    }
+  }
+  state.traitCns.clear();
+
+  // Flattened traits cease to be graph parents. Replace them with all of
+  // their graph parents, including a regular parent from malformed bytecode.
+  auto needsTransitiveInterfaces = false;
+  for (auto const tname : cls.usedTraitNames) {
+    auto const& traitInfo = index.classInfo(tname);
+    auto const& traitParents = index.graphParents(tname);
+    state.graphParents.erase(tname);
+    if (traitInfo.parent) {
+      needsTransitiveInterfaces = true;
+      state.graphParents.emplace(traitInfo.parent->cls->name);
+    }
+    for (auto const parent : traitParents) {
+      state.graphParents.emplace(parent->cls->name);
+    }
+  }
+
+  CompactVector<std::unique_ptr<ClassInfo>> newClosures;
+  if (!clones.empty()) {
+    auto const add = [&] (std::unique_ptr<php::Func> cloned) {
+      assertx(cloned->cls == &cls);
+      cloned->clsIdx = cls.methods.size();
+      if (!is_special_method_name(cloned->name)) {
+        auto it = cinfo.methods.find(cloned->name);
+        assertx(it != end(cinfo.methods));
+        assertx(!it->second.meth().cls->tsame(cls.name));
+        it->second.setMeth(MethRef{cls.name, cloned->clsIdx});
+      } else {
+        auto const [it, emplaced] =
+          cinfo.methods.emplace(cloned->name, MethTabEntry{*cloned});
+        if (!emplaced) {
+          assertx(it->second.meth().cls->tsame(cls.name));
+          if (cloned->name != s_86cinit.get()) {
+            auto const idx = it->second.meth().idx;
+            cloned->clsIdx = idx;
+            cls.methods[idx] = std::move(cloned);
+            return;
+          }
+          it->second.setMeth(MethRef{cls.name, cloned->clsIdx});
+        }
+      }
+      cls.methods.emplace_back(std::move(cloned));
+    };
+
+    auto cinit = [&] () -> std::unique_ptr<php::Func> {
+      if (cls.methods.empty()) return nullptr;
+      if (cls.methods.back()->name != s_86cinit.get()) return nullptr;
+      auto out = std::move(cls.methods.back());
+      cls.methods.pop_back();
+      return out;
+    }();
+
+    for (auto& cloned : clones) {
+      if (cloned->name == s_86cinit.get()) {
+        cinit = std::move(cloned);
+      } else {
+        add(std::move(cloned));
+      }
+    }
+    if (cinit) add(std::move(cinit));
+
+    newClosures.reserve(clonedClosures.size());
+    for (auto& [original, closure] : clonedClosures) {
+      assertx(is_closure(*original));
+      always_assert(is_closure(*closure));
+      assertx(closure->closureContextCls->tsame(cls.name));
+      assertx(closure->unit == cls.unit);
+      assertx(closure->usedTraitNames.empty());
+      WorkState closureState;
+      SStringSet missingMethods;
+      MethRefSet extraMethods;
+      auto cinfo = make_info(
+        index,
+        *closure,
+        closureState,
+        missingMethods,
+        extraMethods
+      );
+      always_assert(cinfo);
+      assertx(closureState.traitCns.empty());
+      assertx(closureState.cnsFromTrait.empty());
+      assertx(cinfo->parent);
+      assertx(cinfo->parent->cls->name->tsame(s_Closure.get()));
+      assertx(closureState.graphParents.empty());
+      assertx(missingMethods.empty());
+      assertx(extraMethods.empty());
+      cls.closures.emplace_back(std::move(closure));
+      newClosures.emplace_back(std::move(cinfo));
+    }
+  }
+
+  auto const parent = cls.parentName
+    ? &index.result(cls.parentName)
+    : nullptr;
+  auto const containsName = [&] (const Result& ancestor, SString name) {
+    return ancestor.cinfo->methods.contains(name) ||
+      ancestor.missingMethods.contains(name);
+  };
+
+  CompactVector<const Result*> interfaces;
+  auto interfacesReady = false;
+  auto const inInterfaces = [&] (SString name) {
+    if (!interfacesReady) {
+      for (auto const parent : state.graphParents) {
+        auto const& result = index.result(parent);
+        if (result.cinfo->cls->attrs & AttrInterface) {
+          interfaces.emplace_back(&result);
+        }
+      }
+      interfacesReady = true;
+    }
+    return std::any_of(
+      begin(interfaces),
+      end(interfaces),
+      [&] (const Result* iface) { return containsName(*iface, name); }
+    );
+  };
+
+  CompactVector<const Result*> transitiveInterfaces;
+  auto transitiveInterfacesReady = false;
+  auto const inTransitiveInterfaces = [&] (SString name) {
+    if (!transitiveInterfacesReady) {
+      for (auto const iname : state.interfaces) {
+        if (state.graphParents.contains(iname)) continue;
+        transitiveInterfaces.emplace_back(&index.result(iname));
+      }
+      transitiveInterfacesReady = true;
+    }
+    return std::any_of(
+      begin(transitiveInterfaces),
+      end(transitiveInterfaces),
+      [&] (const Result* iface) { return containsName(*iface, name); }
+    );
+  };
+
+  // Trait flattening can make a method the first occurrence of its name.
+  // Only top-level entries can change: an inherited entry necessarily exists
+  // on the ordinary class parent.
+  for (auto& [name, mte] : cinfo.methods) {
+    if (mte.firstName() || !mte.topLevel()) continue;
+    auto const firstName = [&, name = name] {
+      if (parent && containsName(*parent, name)) return false;
+      if (inInterfaces(name)) return false;
+      // Special methods are not propagated through missingMethods. Invalid
+      // bytecode can also give a flattened trait a regular class parent.
+      if (is_special_method_name(name) || needsTransitiveInterfaces) {
+        return !inTransitiveInterfaces(name);
+      }
+      return true;
+    }();
+    if (firstName) mte.setFirstName();
+  }
+
+  struct EqHash {
+    bool operator()(const PreClass::ClassRequirement& a,
+                    const PreClass::ClassRequirement& b) const {
+      return a.is_same(&b);
+    }
+    size_t operator()(const PreClass::ClassRequirement& a) const {
+      return a.hash();
+    }
+  };
+  hphp_fast_set<PreClass::ClassRequirement, EqHash, EqHash> requirements{
+    begin(cls.requirements), end(cls.requirements)
+  };
+  for (auto const tname : cls.usedTraitNames) {
+    for (auto const& requirement : index.cls(tname).requirements) {
+      if (requirements.emplace(requirement).second) {
+        cls.requirements.emplace_back(requirement);
+      }
+    }
+  }
+
+  cinfo.usedTraits.clear();
+  cls.attrs |= AttrNoExpandTrait;
+  return newClosures;
+}
+
+void LocalFlattenJob::run_node(
+    const IndexData& index,
+    const IndexFlattenMetadata& meta,
+    const std::vector<Node>& nodes,
+    const TSStringToOneT<size_t>& nodeForClass,
+    const PublishedClosures& publishedClosures,
+    php::Class& owner,
+    bool retainGeneratedClosures,
+    bool retainState,
+    Result& result) {
+  LocalIndex local{
+    index, meta, nodes, nodeForClass, publishedClosures, &result
+  };
+  TSStringSet uninstantiable;
+  local.currentUninstantiable = &uninstantiable;
+
+  struct AttrSnapshot {
+    php::Class* cls;
+    Attr attrs;
+    std::vector<Attr> methodAttrs;
+  };
+  std::vector<AttrSnapshot> snapshots;
+  auto const snapshot = [&] (php::Class& cls, auto const& self) -> void {
+    AttrSnapshot out{&cls, cls.attrs, {}};
+    out.methodAttrs.reserve(cls.methods.size());
+    for (auto const& method : cls.methods) {
+      out.methodAttrs.emplace_back(method->attrs);
+    }
+    snapshots.emplace_back(std::move(out));
+    for (auto& closure : cls.closures) self(*closure, self);
+  };
+  snapshot(owner, snapshot);
+  auto committed = false;
+  SCOPE_EXIT {
+    if (committed) return;
+    for (auto& saved : snapshots) {
+      saved.cls->attrs = saved.attrs;
+      always_assert(saved.cls->methods.size() == saved.methodAttrs.size());
+      for (size_t i = 0; i < saved.methodAttrs.size(); ++i) {
+        saved.cls->methods[i]->attrs = saved.methodAttrs[i];
+      }
+    }
+  };
+
+  auto const process = [&] (php::Class& cls,
+                             WorkState& state,
+                             SStringSet& missingMethods,
+                             MethRefSet& extraMethods,
+                             std::unique_ptr<ClassInfo>& cinfo) {
+    local.ctx = &cls;
+    local.currentInfo = nullptr;
+    local.currentState = nullptr;
+    local.currentMissingMethods = nullptr;
+    cinfo = make_info(
+      local,
+      cls,
+      state,
+      missingMethods,
+      extraMethods
+    );
+    if (!cinfo) {
+      uninstantiable.emplace(cls.name);
+      return false;
+    }
+    local.currentInfo = cinfo.get();
+    local.currentState = &state;
+    local.currentMissingMethods = &missingMethods;
+
+    auto generated = flatten_traits(
+      local,
+      cls,
+      *cinfo,
+      state,
+      missingMethods,
+      extraMethods
+    );
+    result.closures.reserve(result.closures.size() + generated.size());
+    if (retainGeneratedClosures) {
+      result.generatedClosures.reserve(
+        result.generatedClosures.size() + generated.size()
+      );
+    }
+    for (auto& closureInfo : generated) {
+      if (retainGeneratedClosures) {
+        result.generatedClosures.emplace_back(closureInfo->cls);
+      }
+      result.closures.emplace_back(std::move(closureInfo));
+    }
+    std::sort(
+      begin(cls.closures),
+      end(cls.closures),
+      [] (const std::unique_ptr<php::Class>& a,
+          const std::unique_ptr<php::Class>& b) {
+        return string_data_lt_type{}(a->name, b->name);
+      }
+    );
+    return true;
+  };
+
+  std::vector<php::Class*> closures;
+  closures.reserve(owner.closures.size());
+  for (auto const& closure : owner.closures) {
+    closures.emplace_back(closure.get());
+  }
+  std::sort(
+    begin(closures),
+    end(closures),
+    [] (const php::Class* a, const php::Class* b) {
+      return string_data_lt_type{}(a->name, b->name);
+    }
+  );
+  result.closures.reserve(closures.size());
+  for (auto const closure : closures) {
+    always_assert(is_closure(*closure));
+    WorkState state;
+    SStringSet missingMethods;
+    MethRefSet extraMethods;
+    std::unique_ptr<ClassInfo> cinfo;
+    if (!process(
+          *closure, state, missingMethods, extraMethods, cinfo
+        )) {
+      continue;
+    }
+    assertx(state.graphParents.empty());
+    assertx(state.traitCns.empty());
+    assertx(state.cnsFromTrait.empty());
+    assertx(cinfo->parent);
+    assertx(cinfo->parent->cls->name->tsame(s_Closure.get()));
+    assertx(missingMethods.empty());
+    assertx(extraMethods.empty());
+    result.closures.emplace_back(std::move(cinfo));
+  }
+
+  WorkState state;
+  if (!process(
+        owner,
+        state,
+        result.missingMethods,
+        result.extraMethods,
+        result.cinfo
+      )) {
+    result.cinfo.reset();
+    result.missingMethods = SStringSet{};
+    result.extraMethods = MethRefSet{};
+    result.closures.clear();
+    result.generatedClosures.clear();
+    return;
+  }
+  std::sort(
+    begin(result.closures),
+    end(result.closures),
+    [] (const auto& a, const auto& b) {
+      return string_data_lt_type{}(a->cls->name, b->cls->name);
+    }
+  );
+  always_assert(
+    std::adjacent_find(
+      begin(result.closures),
+      end(result.closures),
+      [] (const auto& a, const auto& b) {
+        return a->cls->name->tsame(b->cls->name);
+      }
+    ) == end(result.closures)
+  );
+  result.graphParents.reserve(state.graphParents.size());
+  for (auto const name : state.graphParents) {
+    auto const parent = &local.classInfo(name);
+    assertx(!is_closure(*parent->cls));
+    result.graphParents.emplace_back(parent);
+  }
+  std::sort(
+    begin(result.graphParents),
+    end(result.graphParents),
+    [] (const ClassInfo* a, const ClassInfo* b) {
+      return string_data_lt_type{}(a->cls->name, b->cls->name);
+    }
+  );
+  if (retainState) {
+    result.interfaces.reserve(state.interfaces.size());
+    for (auto const name : state.interfaces) {
+      result.interfaces.emplace_back(name);
+    }
+    result.state = std::move(static_cast<State&>(state));
+  }
+  result.success = true;
+  committed = true;
+}
+
+bool LocalFlattenJob::resolve_one(TypeConstraint& tc,
+                                  const TypeConstraint& value,
+                                  bool isProp,
+                                  bool isUnion) {
+  assertx(!value.isUnion());
+  // If the alias target is invalid, leave the original constraint unresolved.
+  if (value.isUnresolved()) return false;
+  if (isProp && !propSupportsAnnot(value.type())) return false;
+  auto const clsName = [&] () -> SString {
+    if (!value.isSubObject()) return nullptr;
+    auto const name = value.clsName();
+    assertx(name);
+    return name;
+  }();
+  if (isUnion) tc.unresolve();
+  tc.resolveType(value.type(), value.isNullable(), clsName);
+  assertx(IMPLIES(isProp, tc.validForProp()));
+  return true;
+}
+
+// Resolve a type constraint to its ultimate type, or leave it unresolved if
+// the name does not resolve to a valid type.
+void LocalFlattenJob::update_type_constraint(const LocalIndex& index,
+                                             TypeConstraint& tc,
+                                             bool isProp) {
+  always_assert(IMPLIES(isProp, tc.validForProp()));
+  // An already-resolved constraint is assumed to be correct.
+  if (!tc.isUnresolved()) return;
+  auto const name = tc.typeName();
+  // Unresolved names inside unions are not supported here.
+  if (tc.isUnion()) not_implemented();
+
+  // The name can resolve through a type alias or enum to one type or a union.
+  auto const mapping = index.typeMapping(name);
+  if (!mapping) {
+    // Explicitly missing names remain unresolved; otherwise the name denotes
+    // an object type.
+    if (!index.missingType(name)) {
+      tc.resolveType(AnnotType::SubObject, tc.isNullable(), name);
+    }
+    return;
+  }
+
+  if (mapping->value.isUnion()) {
+    auto const flags =
+      tc.flags() & (TypeConstraintFlags::Nullable |
+                    TypeConstraintFlags::TypeVar |
+                    TypeConstraintFlags::Soft |
+                    TypeConstraintFlags::TypeConstant |
+                    TypeConstraintFlags::DisplayNullable |
+                    TypeConstraintFlags::UpperBound);
+    std::vector<TypeConstraint> members;
+    for (auto const& value : eachTypeConstraintInUnion(mapping->value)) {
+      auto copy = value;
+      copy.addFlags(flags);
+      if (!resolve_one(copy, value, isProp, true)) return;
+      members.emplace_back(std::move(copy));
+    }
+    tc = TypeConstraint::makeUnion(name, members);
+    return;
+  }
+  resolve_one(tc, mapping->value, isProp, false);
+}
+
+void LocalFlattenJob::update_type_constraints(const LocalIndex& index,
+                                              php::Func& func) {
+  for (auto& param : func.params) {
+    param.typeConstraints.forEachMutable(
+      [&] (TypeConstraint& tc) { update_type_constraint(index, tc, false); }
+    );
+  }
+  func.retTypeConstraints.forEachMutable(
+    [&] (TypeConstraint& tc) { update_type_constraint(index, tc, false); }
+  );
+}
+
+void LocalFlattenJob::update_type_constraints(const LocalIndex& index,
+                                              php::Class& cls) {
+  if (cls.attrs & AttrEnum) {
+    update_type_constraint(index, cls.enumBaseTy, false);
+  }
+  for (auto& method : cls.methods) update_type_constraints(index, *method);
+  for (auto& prop : cls.properties) {
+    prop.typeConstraints.forEachMutable(
+      [&] (TypeConstraint& tc) { update_type_constraint(index, tc, true); }
+    );
+  }
+}
+
+/*
+ * Mark properties which cannot redeclare a parent property with an
+ * inequivalent type constraint. Also replace system-provided null defaults
+ * when the property's constraint does not admit null. This is safe only when
+ * derived redeclarations cannot reintroduce a null system default.
+ *
+ * Unflattened trait properties do not affect the initial value: matching
+ * properties cannot change it, and the runtime clears AttrNoImplicitNullable
+ * when an imported property does not match.
+ */
+void LocalFlattenJob::optimize_properties(const LocalIndex& index,
+                                          php::Class& cls,
+                                          ClassInfo& cinfo) {
+  assertx(cinfo.hasBadRedeclareProp);
+  auto const isClosure = is_closure(cls);
+  cinfo.hasBadRedeclareProp = false;
+
+  for (auto& prop : cls.properties) {
+    assertx(!(prop.attrs & AttrNoBadRedeclare));
+    assertx(!(prop.attrs & AttrNoImplicitNullable));
+
+    auto const noBadRedeclare = [&] {
+      // Closures cannot have redeclared properties.
+      if (isClosure) return true;
+      // Static and private properties do not redeclare inherited properties.
+      if (prop.attrs & (AttrStatic | AttrPrivate)) return true;
+
+      for (auto base = cinfo.parent; base; base = base->parent) {
+        auto const parentProp = [&] () -> php::Prop* {
+          for (auto const& candidate : base->cls->properties) {
+            if (candidate.name == prop.name) {
+              return const_cast<php::Prop*>(&candidate);
+            }
+          }
+          for (auto& candidate : base->traitProps) {
+            if (candidate.name == prop.name) return &candidate;
+          }
+          return nullptr;
+        }();
+        if (!parentProp) continue;
+        if (parentProp->attrs & (AttrStatic | AttrPrivate)) continue;
+
+        // Retained traitProps are copies made before global type-constraint
+        // resolution, which only visits php::Class::properties.
+        parentProp->typeConstraints.forEachMutable(
+          [&] (TypeConstraint& tc) {
+            update_type_constraint(index, tc, true);
+          }
+        );
+
+        // This conservative comparison is sufficient and does not require
+        // rebuilding hierarchy-specific property metadata.
+        for (auto const& tc : prop.typeConstraints.range()) {
+          for (auto const& parentTc : parentProp->typeConstraints.range()) {
+            if (tc.maybeInequivalentForProp(parentTc)) return false;
+          }
+        }
+      }
+      return true;
+    }();
+
+    if (noBadRedeclare) {
+      attribute_setter(prop.attrs, true, AttrNoBadRedeclare);
+    } else {
+      cinfo.hasBadRedeclareProp = true;
+    }
+
+    auto const defaultValue = prop.typeConstraints.defaultValue();
+    auto const nullable = [&] {
+      if (isClosure) return true;
+      if (!(prop.attrs & AttrSystemInitialValue)) return false;
+      return defaultValue && defaultValue->m_type == KindOfNull;
+    }();
+    attribute_setter(
+      prop.attrs,
+      defaultValue && !nullable,
+      AttrNoImplicitNullable
+    );
+    if (!(prop.attrs & AttrSystemInitialValue)) continue;
+    if (prop.val.m_type == KindOfUninit) {
+      assertx(isClosure || bool(prop.attrs & AttrLateInit));
+      continue;
+    }
+    if (nullable) {
+      prop.val = make_tv<KindOfNull>();
+    } else if (prop.name == s_86reified_prop.get()) {
+      // Preserve the precise fixed-size vec type inferred for reified data.
+      prop.val = get_default_value_of_reified_list(cls.userAttributes);
+    } else {
+      prop.val = defaultValue.value_or(make_tv<KindOfNull>());
+    }
+  }
+}
+
+IndexFlattenMetadata make_local_flatten_metadata(IndexData& index) {
+  IndexFlattenMetadata meta;
+  auto& program = *index.program;
+
+  for (auto const& unit : program.units) {
+    for (auto const& typeAlias : unit->typeAliases) {
+      auto const name = typeAlias->name;
+      always_assert(
+        meta.typeMappings.emplace(
+          name,
+          TypeMapping{
+            name,
+            typeAlias->value,
+            true,
+            false,
+            unit->filename,
+            typeAlias->typeStructure
+          }
+        ).second
+      );
+    }
+  }
+
+  auto const addDeps = [&] (const php::Class& cls,
+                             IndexFlattenMetadata::ClassMeta& clsMeta,
+                             auto const& self) -> void {
+    if (cls.parentName) clsMeta.deps.emplace(cls.parentName);
+    clsMeta.deps.insert(
+      begin(cls.interfaceNames), end(cls.interfaceNames)
+    );
+    clsMeta.deps.insert(
+      begin(cls.usedTraitNames), end(cls.usedTraitNames)
+    );
+    clsMeta.deps.insert(
+      begin(cls.includedEnumNames), end(cls.includedEnumNames)
+    );
+    for (auto const& closure : cls.closures) self(*closure, clsMeta, self);
+  };
+
+  meta.allCls.reserve(program.classes.size());
+  for (auto const& cls : program.classes) {
+    auto const name = cls->name;
+    auto& clsMeta = meta.cls[name];
+    clsMeta.idx = meta.allCls.size();
+    clsMeta.isClosure = is_closure(*cls);
+    addDeps(*cls, clsMeta, addDeps);
+    meta.allCls.emplace_back(name);
+
+    if (cls->attrs & AttrEnum) {
+      auto tc = cls->enumBaseTy;
+      assertx(!tc.isNullable());
+      if (tc.isMixed()) tc.setType(AnnotType::ArrayKey);
+      always_assert(
+        meta.typeMappings.emplace(
+          name,
+          TypeMapping{name, tc, false, true, cls->unit, nullptr}
+        ).second
+      );
+    }
+  }
+  return meta;
+}
+
+void rebuild_local_func_infos(IndexData& index) {
+  index.nextFuncId.store(0, std::memory_order_relaxed);
+  auto const assignClass = [&] (php::Class& cls, auto const& self) -> void {
+    for (auto& method : cls.methods) {
+      method->idx = index.nextFuncId.fetch_add(1, std::memory_order_relaxed);
+    }
+    for (auto& closure : cls.closures) self(*closure, self);
+  };
+  for (auto& cls : index.program->classes) assignClass(*cls, assignClass);
+  for (auto& func : index.program->funcs) {
+    func->idx = index.nextFuncId.fetch_add(1, std::memory_order_relaxed);
+  }
+
+  index.funcInfo.clear();
+  index.funcInfo.resize(index.nextFuncId.load(std::memory_order_relaxed));
+  auto const initializeClass = [&] (const php::Class& cls,
+                                    auto const& self) -> void {
+    for (auto const& method : cls.methods) {
+      auto& info = index.funcInfo.at(method->idx);
+      assertx(!info.func);
+      info.func = method.get();
+    }
+    for (auto const& closure : cls.closures) self(*closure, self);
+  };
+  for (auto const& cls : index.program->classes) {
+    initializeClass(*cls, initializeClass);
+  }
+  for (auto const& func : index.program->funcs) {
+    auto& info = index.funcInfo.at(func->idx);
+    assertx(!info.func);
+    info.func = func.get();
+  }
+}
+
+LocalFlattenOutput flatten_classes_local(IndexData& index) {
+  trace_time trace{"flatten classes locally", index.sample};
+  trace.ignore_client_stats();
+  LocalFlattenOutput output;
+
+  auto meta = make_local_flatten_metadata(index);
+  flatten_type_mappings(index, meta);
+
+  using Node = LocalFlattenJob::Node;
+  std::vector<Node> nodes(meta.allCls.size());
+  TSStringToOneT<size_t> nodeForClass;
+  nodeForClass.reserve(index.classes.size());
+  LocalFlattenJob::PublishedClosures publishedClosures;
+
+  for (size_t i = 0; i < meta.allCls.size(); ++i) {
+    auto const name = meta.allCls[i];
+    auto const it = index.classes.find(name);
+    always_assert(it != end(index.classes));
+    nodes[i].cls = it->second;
+    nodes[i].invalid = meta.cls.at(name).uninstantiable;
+    always_assert(nodeForClass.emplace(name, i).second);
+    for (auto const& closure : it->second->closures) {
+      always_assert(nodeForClass.emplace(closure->name, i).second);
+    }
+  }
+
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    auto& node = nodes[i];
+    for (auto const dep : meta.cls.at(node.cls->name).deps) {
+      auto const it = nodeForClass.find(dep);
+      if (it == end(nodeForClass)) {
+        node.invalid = true;
+        continue;
+      }
+      if (it->second == i) {
+        node.invalid = true;
+      } else {
+        node.deps.emplace_back(it->second);
+      }
+    }
+    std::sort(begin(node.deps), end(node.deps));
+    node.deps.erase(
+      std::unique(begin(node.deps), end(node.deps)), end(node.deps)
+    );
+    for (auto const dep : node.deps) nodes[dep].users.emplace_back(i);
+  }
+
+  auto propagateInvalid = [&] {
+    std::deque<size_t> work;
+    std::vector<bool> seen(nodes.size());
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      if (nodes[i].invalid) {
+        work.emplace_back(i);
+        seen[i] = true;
+      }
+    }
+    while (!work.empty()) {
+      auto const idx = work.front();
+      work.pop_front();
+      for (auto const user : nodes[idx].users) {
+        nodes[user].invalid = true;
+        if (!seen[user]) {
+          seen[user] = true;
+          work.emplace_back(user);
+        }
+      }
+    }
+  };
+  propagateInvalid();
+
+  // Detect cycles before launching the worklist. Any node left by this dry
+  // Kahn traversal is either in a cycle or depends on one.
+  std::vector<size_t> topological;
+  topological.reserve(nodes.size());
+  {
+    std::vector<size_t> remaining(nodes.size());
+    std::deque<size_t> ready;
+    size_t valid = 0;
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      if (nodes[i].invalid) continue;
+      ++valid;
+      remaining[i] = nodes[i].deps.size();
+      if (!remaining[i]) ready.emplace_back(i);
+    }
+    size_t visited = 0;
+    while (!ready.empty()) {
+      auto const idx = ready.front();
+      ready.pop_front();
+      ++visited;
+      topological.emplace_back(idx);
+      for (auto const user : nodes[idx].users) {
+        if (nodes[user].invalid) continue;
+        assertx(remaining[user]);
+        if (!--remaining[user]) ready.emplace_back(user);
+      }
+    }
+    if (visited != valid) {
+      for (size_t i = 0; i < nodes.size(); ++i) {
+        if (!nodes[i].invalid && remaining[i]) nodes[i].invalid = true;
+      }
+      propagateInvalid();
+    }
+  }
+
+  auto const markTraitUses = [&] (const php::Class& cls,
+                                  const auto& self) -> void {
+    if (!(cls.attrs & AttrNoExpandTrait)) {
+      for (auto const name : cls.usedTraitNames) {
+        auto const cit = index.classes.find(name);
+        if (cit == end(index.classes)) continue;
+        if (!(cit->second->attrs & AttrTrait)) continue;
+        if (is_noflatten_trait(cit->second)) continue;
+        auto const nit = nodeForClass.find(name);
+        if (nit == end(nodeForClass)) continue;
+        nodes[nit->second].usedAsTrait = true;
+      }
+    }
+    for (auto const& closure : cls.closures) self(*closure, self);
+  };
+  for (auto& node : nodes) {
+    if (node.invalid) continue;
+    for (auto const user : node.users) {
+      if (!nodes[user].invalid) {
+        node.needsState = true;
+        break;
+      }
+    }
+    markTraitUses(*node.cls, markTraitUses);
+  }
+
+  size_t valid = 0;
+  std::vector<size_t> initial;
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    auto& node = nodes[i];
+    if (node.invalid) continue;
+    ++valid;
+    node.remaining = node.deps.size();
+    if (!node.remaining) initial.emplace_back(i);
+  }
+  parallel::for_each(
+    nodes,
+    [] (Node& node) { std::vector<size_t>{}.swap(node.deps); }
+  );
+  std::vector<IndexFlattenMetadata::ClassMeta*> classMetas;
+  classMetas.reserve(meta.cls.size());
+  for (auto& [_, classMeta] : meta.cls) {
+    classMetas.emplace_back(&classMeta);
+  }
+  parallel::for_each(
+    classMetas,
+    [] (IndexFlattenMetadata::ClassMeta* classMeta) {
+      TSStringSet{}.swap(classMeta->deps);
+      std::vector<SString>{}.swap(classMeta->unresolvedTypes);
+    }
+  );
+  std::vector<IndexFlattenMetadata::ClassMeta*>{}.swap(classMetas);
+  meta.cls = {};
+  std::vector<SString>{}.swap(meta.allCls);
+
+  LocalFlattenJob::ResultStore results{nodes.size()};
+  std::sort(
+    begin(initial),
+    end(initial),
+    [&] (size_t a, size_t b) {
+      return string_data_lt_type{}(nodes[a].cls->name, nodes[b].cls->name);
+    }
+  );
+
+  auto const workers = std::min(valid, parallel::num_threads);
+  constexpr auto noNode = std::numeric_limits<uint32_t>::max();
+  always_assert(nodes.size() < noNode);
+  // Exceptional shutdown can leave every valid node queued while adding one
+  // sentinel for each worker.
+  folly::MPMCQueue<uint32_t> ready{
+    std::max<size_t>(1, valid + workers)
+  };
+  for (auto const idx : initial) {
+    ready.blockingWrite(safe_cast<uint32_t>(idx));
+  }
+  initial.clear();
+  initial.shrink_to_fit();
+
+  std::atomic<size_t> outstanding{valid};
+  std::atomic<bool> stop{false};
+  folly::Synchronized<std::exception_ptr> exception;
+  auto const stopWorkers = [&] {
+    if (stop.exchange(true, std::memory_order_acq_rel)) return;
+    for (size_t i = 0; i < workers; ++i) ready.blockingWrite(noNode);
+  };
+  if (workers) {
+    parallel::thread_pool pool;
+    pool.run(
+      workers,
+      [&] (size_t) {
+        auto idx = noNode;
+        while (true) {
+          if (stop.load(std::memory_order_acquire)) idx = noNode;
+          if (idx == noNode) {
+            ready.blockingRead(idx);
+            if (idx == noNode) return;
+            if (stop.load(std::memory_order_acquire)) {
+              idx = noNode;
+              continue;
+            }
+          }
+          try {
+            auto& result = results[idx];
+            LocalFlattenJob::run_node(
+              index,
+              meta,
+              nodes,
+              nodeForClass,
+              publishedClosures,
+              *nodes[idx].cls,
+              nodes[idx].usedAsTrait,
+              nodes[idx].needsState,
+              result
+            );
+            if (stop.load(std::memory_order_acquire)) {
+              idx = noNode;
+              continue;
+            }
+
+            if (nodes[idx].usedAsTrait &&
+                !result.generatedClosures.empty()) {
+              auto closures = publishedClosures.wlock();
+              for (auto const cls : result.generatedClosures) {
+                always_assert(is_closure(*cls));
+                auto const [it, emplaced] =
+                  closures->emplace(cls->name, cls);
+                always_assert(emplaced || it->second == cls);
+              }
+            }
+            nodes[idx].result = &result;
+
+            auto next = noNode;
+            for (auto const user : nodes[idx].users) {
+              if (nodes[user].invalid) continue;
+              // The final decrement acquires the result publications from
+              // every dependency before making this node runnable.
+              std::atomic_ref<size_t> remaining{nodes[user].remaining};
+              auto const before = remaining.fetch_sub(
+                1, std::memory_order_acq_rel
+              );
+              assertx(before > 0);
+              if (before != 1) continue;
+              if (next == noNode) {
+                next = safe_cast<uint32_t>(user);
+              } else {
+                ready.blockingWrite(safe_cast<uint32_t>(user));
+              }
+            }
+
+            if (outstanding.fetch_sub(1, std::memory_order_acq_rel) == 1) {
+              stopWorkers();
+              idx = noNode;
+              continue;
+            }
+            idx = next;
+          } catch (...) {
+            {
+              auto locked = exception.wlock();
+              if (!*locked) *locked = std::current_exception();
+            }
+            stopWorkers();
+            idx = noNode;
+          }
+        }
+      }
+    );
+  }
+
+  if (auto const error = *exception.rlock()) {
+    std::rethrow_exception(error);
+  }
+  always_assert(outstanding.load(std::memory_order_acquire) == 0);
+
+  for (auto& node : nodes) {
+    if (!node.result || !node.result->success ||
+        node.result->missingMethods.empty()) {
+      continue;
+    }
+    always_assert(
+      output.missingMethods.emplace(
+        node.cls->name,
+        std::move(node.result->missingMethods)
+      ).second
+    );
+  }
+
+  parallel::for_each(
+    nodes,
+    [] (Node& node) {
+      std::vector<size_t>{}.swap(node.users);
+      if (!node.result) return;
+      node.result->state.releaseFlattenData();
+      node.result->missingMethods = SStringSet{};
+      node.result->generatedClosures.clear();
+      node.result->interfaces.clear();
+    }
+  );
+
+  // Resolve every type-constraint before property optimization. The latter
+  // reads inherited property constraints, so the barrier between these two
+  // passes avoids sibling workers mutating data another worker is reading.
+  parallel::for_each(
+    nodes,
+    [&] (Node& node) {
+      if (!node.result || !node.result->success) return;
+      LocalFlattenJob::LocalIndex local{
+        index,
+        meta,
+        nodes,
+        nodeForClass,
+        publishedClosures,
+        node.result
+      };
+      auto const update = [&] (php::Class& cls, auto const& self) -> void {
+        local.ctx = &cls;
+        LocalFlattenJob::update_type_constraints(local, cls);
+        for (auto& closure : cls.closures) self(*closure, self);
+      };
+      update(*node.cls, update);
+    }
+  );
+  {
+    LocalFlattenJob::LocalIndex local{
+      index, meta, nodes, nodeForClass, publishedClosures
+    };
+    parallel::for_each(
+      index.program->funcs,
+      [&] (std::unique_ptr<php::Func>& func) {
+        LocalFlattenJob::update_type_constraints(local, *func);
+      }
+    );
+  }
+  for (auto const idx : topological) {
+    auto& node = nodes[idx];
+    if (!node.result || !node.result->success) continue;
+    LocalFlattenJob::LocalIndex local{
+      index,
+      meta,
+      nodes,
+      nodeForClass,
+      publishedClosures,
+      node.result
+    };
+    auto const optimize = [&] (php::Class& cls, auto const& self) -> void {
+      local.ctx = &cls;
+      auto const cinfo = node.result->info(cls.name);
+      always_assert(cinfo);
+      LocalFlattenJob::optimize_properties(local, cls, *cinfo);
+      for (auto& closure : cls.closures) self(*closure, self);
+    };
+    optimize(*node.cls, optimize);
+  }
+  std::vector<size_t>{}.swap(topological);
+  meta = IndexFlattenMetadata{};
+
+  SStringToOneT<std::vector<SString>> newUnitClasses;
+  for (auto const& owner : index.program->classes) {
+    for (auto const& closure : owner->closures) {
+      auto const it = index.classes.find(closure->name);
+      if (it != end(index.classes)) {
+        always_assert(it->second == closure.get());
+        continue;
+      }
+      always_assert(index.classes.emplace(closure->name, closure.get()).second);
+      newUnitClasses[closure->unit].emplace_back(closure->name);
+    }
+  }
+  for (auto& [unit, classes] : newUnitClasses) {
+    std::sort(begin(classes), end(classes), string_data_lt_type{});
+    auto const uit = index.units.find(unit);
+    always_assert(uit != end(index.units));
+    uit->second->classes.insert(
+      end(uit->second->classes), begin(classes), end(classes)
+    );
+    always_assert(
+      std::adjacent_find(
+        begin(uit->second->classes), end(uit->second->classes),
+        string_data_tsame{}
+      ) == end(uit->second->classes)
+    );
+  }
+  SStringToOneT<std::vector<SString>>{}.swap(newUnitClasses);
+
+  for (auto const& [name, cls] : *publishedClosures.rlock()) {
+    always_assert(!nodeForClass.contains(name));
+    auto const it = index.classes.find(name);
+    always_assert(it != end(index.classes));
+    always_assert(it->second == cls);
+  }
+  {
+    auto closures = publishedClosures.wlock();
+    TSStringToOneT<const php::Class*>{}.swap(*closures);
+  }
+  TSStringToOneT<size_t>{}.swap(nodeForClass);
+
+  auto numClassInfos = size_t{0};
+  for (auto const& node : nodes) {
+    if (!node.result || !node.result->success) continue;
+    numClassInfos += 1 + node.result->closures.size();
+  }
+  index.classInfo.reserve(numClassInfos);
+  index.allClassInfos.reserve(numClassInfos);
+  auto const publish = [&] (std::unique_ptr<ClassInfo>& cinfo) {
+    auto const ptr = cinfo.get();
+    always_assert(index.classInfo.emplace(ptr->cls->name, ptr).second);
+    index.allClassInfos.emplace_back(std::move(cinfo));
+  };
+  for (auto& node : nodes) {
+    if (!node.result || !node.result->success) continue;
+    publish(node.result->cinfo);
+    for (auto& cinfo : node.result->closures) publish(cinfo);
+  }
+
+  std::vector<ClassInfo*> ordered;
+  ordered.reserve(numClassInfos);
+  auto const append = [&] (const php::Class& cls, const auto& self) -> void {
+    if (auto const cinfo = folly::get_ptr(index.classInfo, cls.name)) {
+      ordered.emplace_back(*cinfo);
+    }
+    for (auto const& closure : cls.closures) self(*closure, self);
+  };
+  for (auto const& cls : index.program->classes) append(*cls, append);
+  always_assert(ordered.size() == numClassInfos);
+
+  ClassGraph::init();
+  auto graphBuilt = false;
+  SCOPE_EXIT {
+    if (!graphBuilt) ClassGraph::destroy();
+  };
+  for (auto const cinfo : ordered) {
+    cinfo->classGraph = ClassGraph::create(*cinfo->cls);
+  }
+  for (auto const cinfo : ordered) {
+    if (is_closure_base(*cinfo->cls)) cinfo->classGraph.setClosureBase();
+  }
+  for (auto const cinfo : ordered) {
+    if (cinfo->parent) cinfo->classGraph.setBase(cinfo->parent->classGraph);
+  }
+  for (auto& node : nodes) {
+    if (!node.result || !node.result->success) continue;
+    auto& graph = index.classInfo.at(node.cls->name)->classGraph;
+    for (auto const parent : node.result->graphParents) {
+      if (parent->cls->attrs & (AttrInterface | AttrTrait)) {
+        graph.addParent(parent->classGraph);
+      } else {
+        graph.setBase(parent->classGraph);
+      }
+    }
+  }
+  parallel::for_each(
+    nodes,
+    [] (Node& node) {
+      if (node.result) node.result->graphParents.clear();
+    }
+  );
+  for (auto const cinfo : ordered) {
+    auto& graph = cinfo->classGraph;
+    if (is_closure_base(*cinfo->cls)) continue;
+    graph.finalizeParents();
+    if (is_closure(*cinfo->cls)) graph.setComplete();
+  }
+
+  for (auto const& node : nodes) {
+    if (!node.result || !node.result->success) continue;
+    auto const cls = node.cls;
+    if (!node.result->extraMethods.empty()) {
+      auto& extra = index.classExtraMethodMap[cls];
+      for (auto const& method : node.result->extraMethods) {
+        extra.emplace(func_from_meth_ref(index, method));
+      }
+    }
+  }
+
+  parallel::for_each(
+    nodes,
+    [] (Node& node) {
+      std::vector<size_t>{}.swap(node.deps);
+      std::vector<size_t>{}.swap(node.users);
+      node.result = nullptr;
+    }
+  );
+  results.clear();
+  std::vector<Node>{}.swap(nodes);
+  std::vector<ClassInfo*>{}.swap(ordered);
+
+  rebuild_local_func_infos(index);
+  graphBuilt = true;
+  return output;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -18983,23 +21986,7 @@ void make_class_infos_local(
 
   // Set AttrNoOverride to true for all methods. If we determine it's
   // actually overridden below, we'll clear it.
-  parallel::for_each(
-    index.program->classes,
-    [&] (std::unique_ptr<php::Class>& cls) {
-      for (auto& m : cls->methods) {
-        assertx(!(m->attrs & AttrNoOverride));
-        if (is_special_method_name(m->name)) continue;
-        attribute_setter(m->attrs, true, AttrNoOverride);
-      }
-      for (auto& clo : cls->closures) {
-        assertx(clo->methods.size() == 1);
-        auto& m = clo->methods[0];
-        assertx(!(m->attrs & AttrNoOverride));
-        assertx(!is_special_method_name(m->name));
-        attribute_setter(m->attrs, true, AttrNoOverride);
-      }
-    }
-  );
+  initialize_method_no_override_attrs(*index.program);
 
   auto const get = [&] (SString name) {
     auto const it = index.classInfo.find(name);
@@ -20191,12 +23178,22 @@ Index::Index(Input input,
 }
 
 Index::Index(php::Program program, StructuredLogEntry* sample)
+  : Index(std::move(program), sample, nullptr)
+{}
+
+Index::Index(php::Program program,
+             StructuredLogEntry* sample,
+             LocalFlattenOutput* flattenOutput)
   : m_data{std::make_unique<IndexData>(this)}
 {
   m_data->sample = sample;
   m_data->program = std::make_unique<php::Program>(std::move(program));
+  deduplicate_meth_callers(*m_data->program);
   add_system_constants_to_index(*m_data);
-  add_program_to_index(*m_data);
+  add_program_to_index(*m_data, false);
+  initialize_method_no_override_attrs(*m_data->program);
+  auto output = flatten_classes_local(*m_data);
+  if (flattenOutput) *flattenOutput = std::move(output);
 }
 
 // Defined here so IndexData is a complete type for the unique_ptr

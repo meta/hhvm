@@ -1036,6 +1036,16 @@ struct TypeMapping {
 
 //////////////////////////////////////////////////////////////////////
 
+struct LocalFlattenOutput {
+  TSStringToOneT<SStringSet> missingMethods;
+
+  template <typename SerDe> void serde(SerDe& sd) {
+    sd(missingMethods, string_data_lt_type{}, string_data_lt{});
+  }
+};
+
+//////////////////////////////////////////////////////////////////////
+
 /*
  * This class encapsulates the known facts about the program, with a
  * whole-program view.
@@ -1122,6 +1132,7 @@ struct Index {
 
   /* Create an Index which owns an already local php::Program. */
   Index(php::Program, StructuredLogEntry*);
+  Index(php::Program, StructuredLogEntry*, LocalFlattenOutput*);
   ~Index();
 
   Index(const Index&) = delete;

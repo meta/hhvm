@@ -57,6 +57,15 @@ TEST(Index, MaterializeIndexInput_OutOfOrderBytecode_RestoresProgram) {
         RetC None
       }
     }
+    .class [trait] LocalTrait {
+      .method [public] N traitMethod() {
+        Int 2
+        RetC None
+      }
+    }
+    .class UsesLocalTrait {
+      .use LocalTrait;
+    }
     .function N firstFunction() {
       Int 3
       RetC None
@@ -181,7 +190,7 @@ TEST(Index, MaterializeIndexInput_OutOfOrderBytecode_RestoresProgram) {
   Index index{std::move(program), &sample};
   EXPECT_EQ(index.sample(), &sample);
   ASSERT_EQ(index.program().units.size(), 1);
-  ASSERT_EQ(index.program().classes.size(), 2);
+  ASSERT_EQ(index.program().classes.size(), 4);
   ASSERT_EQ(index.program().funcs.size(), 2);
 
   std::vector<std::string> classNames;
@@ -200,13 +209,23 @@ TEST(Index, MaterializeIndexInput_OutOfOrderBytecode_RestoresProgram) {
   std::sort(begin(classNames), end(classNames));
   std::sort(begin(funcNames), end(funcNames));
 
-  const std::vector<std::string> expectedClassNames{"First", "Second"};
+  const std::vector<std::string> expectedClassNames{
+    "First", "LocalTrait", "Second", "UsesLocalTrait"
+  };
   const std::vector<std::string> expectedFuncNames{
     "firstFunction",
     "secondFunction"
   };
   EXPECT_EQ(classNames, expectedClassNames);
   EXPECT_EQ(funcNames, expectedFuncNames);
+
+  auto const usesTrait = index.lookup_class(makeStaticString("UsesLocalTrait"));
+  ASSERT_NE(usesTrait, nullptr);
+  EXPECT_TRUE(usesTrait->attrs & AttrNoExpandTrait);
+  ASSERT_EQ(usesTrait->methods.size(), 1);
+  EXPECT_EQ(usesTrait->methods[0]->name, makeStaticString("traitMethod"));
+  EXPECT_EQ(usesTrait->methods[0]->cls, usesTrait);
+  EXPECT_TRUE(usesTrait->methods[0]->attrs & AttrTrait);
 }
 
 TEST(Index, MaterializeIndexInput_LoadFailure_DisposesResources) {
@@ -268,6 +287,45 @@ TEST(Index, MaterializeIndexInput_LoadFailure_DisposesResources) {
     extern_worker::Error
   );
   EXPECT_EQ(disposals, 1);
+}
+
+TEST(Index, LocalFlattenPreservesLeafMissingMethods) {
+  const std::string hhas = R"(
+    .class [interface] IBase {
+      .method [public abstract] N required() {
+        Null
+        RetC None
+      }
+    }
+    .class [interface] IChild implements (IBase) {
+    }
+    .class [abstract] Leaf implements (IChild) {
+    }
+  )";
+
+  std::unique_ptr<UnitEmitter> ue{assemble_string(
+    hhas,
+    "missing-methods.php",
+    SHA1{},
+    nullptr,
+    RepoOptions::defaults().packageInfo(),
+    UnitEmitterAttributes::defaults()
+  )};
+  ASSERT_FALSE(ue->m_fatalUnit);
+  auto parsed = parse_unit(*ue);
+
+  php::Program program;
+  program.units.emplace_back(std::move(parsed.unit));
+  program.classes = std::move(parsed.classes);
+  program.funcs = std::move(parsed.funcs);
+
+  LocalFlattenOutput output;
+  Index index{std::move(program), nullptr, &output};
+
+  auto const it = output.missingMethods.find(makeStaticString("Leaf"));
+  ASSERT_NE(it, end(output.missingMethods));
+  const SStringSet expected{makeStaticString("required")};
+  EXPECT_EQ(it->second, expected);
 }
 
 }
