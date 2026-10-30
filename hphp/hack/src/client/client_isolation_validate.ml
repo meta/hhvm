@@ -52,8 +52,9 @@ let output
              (List.length result.violations)
              "package violation")
           (Utils.print_count result.files_checked "file");
-      List.iter result.violations ~f:(fun v ->
-          Printf.printf "  %s:%d  %s\n" v.referrer v.line v.message);
+      (* Paths the candidate could not be built from come before the violations:
+         they are an input problem, which outranks the verdict (see [status]),
+         and after a long list of violations they went unread. *)
       if not (List.is_empty result.unknown_files) then begin
         Printf.printf
           "Unknown to the naming table, so nothing was checked for them:\n";
@@ -63,7 +64,9 @@ let output
         Printf.printf
           "Carry a __PackageOverride, so the candidate package cannot claim them:\n";
         List.iter result.overridden_files ~f:(Printf.printf "  %s\n")
-      end
+      end;
+      List.iter result.violations ~f:(fun v ->
+          Printf.printf "  %s:%d  %s\n" v.referrer v.line v.message)
   end
 
 (* A path the candidate could not be built from is an input problem and outranks
