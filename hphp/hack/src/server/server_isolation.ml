@@ -769,6 +769,25 @@ let unreadable_seed_source ~seed_list ~seed_dir =
          dir)
   | _ -> None
 
+(** Refuse a named seed source that gave no files, which would otherwise answer
+    as an empty set that reads as a success: a framework with a mistyped name, a
+    directory with no Hack files, a list of paths the server does not know. *)
+let empty_seed_source ~seed_framework ~seed_list ~seed_dir =
+  match (seed_framework, seed_list, seed_dir) with
+  | (Some base, _, _) ->
+    Some
+      (Printf.sprintf
+         "%s has no subclasses to start from. --isolation-seed-framework takes a class name, fully qualified."
+         base)
+  | (None, Some file, _) ->
+    Some
+      (Printf.sprintf
+         "none of the paths in %s is a Hack file the server knows."
+         file)
+  | (None, None, Some dir) ->
+    Some (Printf.sprintf "%s has no Hack files to start from." dir)
+  | (None, None, None) -> None
+
 (** The query itself: which files to start from, then how far to take them. Runs
     with the caches already clear and the sink already open. *)
 let query r options =
@@ -794,9 +813,11 @@ let query r options =
     Hh_logger.log "[isolation] refused: %s" message;
     refused ~grow ~total_seeds message
   in
-  (* Both are refusals before any work, checked where they can first be
-     answered: the seed source before the seeds are selected, the runtime only
-     once selecting them has said how many there are. *)
+  (* Three reasons to refuse before doing any work, each checked as soon as it
+     can be known:
+     - the seed source cannot be read: before any seeds are selected;
+     - the seed source gave no seeds: once they are selected;
+     - the run would take too long: once the number of seeds is known. *)
   match unreadable_seed_source ~seed_list ~seed_dir with
   | Some refusal -> refuse ~total_seeds:0 refusal
   | None ->
@@ -824,7 +845,9 @@ let query r options =
        the guard does not describe it and would refuse a large directory that
        answers in under a second. *)
     (match
-       if ask_movability then
+       if List.is_empty all_seeds then
+         empty_seed_source ~seed_framework ~seed_list ~seed_dir
+       else if ask_movability then
          None
        else
          too_long_to_run ~grow ~total_seeds ~allow_long_run

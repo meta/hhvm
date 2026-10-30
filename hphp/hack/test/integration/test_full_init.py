@@ -534,6 +534,25 @@ class TestFreshInit(common_tests.CommonTests):
         self.assertEqual(input_error_exit_code, retcode, stdout)
         self.assertIsNotNone(json.loads(stdout)["refused"])
 
+    def test_isolation_refuses_a_seed_source_with_no_files(self) -> None:
+        repo_dir = self.test_driver.repo_dir
+        os.mkdir(os.path.join(repo_dir, "no_hack"))
+        with open(os.path.join(repo_dir, "no_hack", "notes.txt"), "w") as f:
+            f.write("not Hack\n")
+        self.test_driver.start_hh_server(changed_files=[], args=["--no-load"])
+
+        input_error_exit_code = 10
+        for options in (
+            ["--isolation-seed-dir", "no_hack"],
+            ["--isolation-movable", "--isolation-seed-dir", "no_hack"],
+            ["--isolation-seed-framework", "NoSuchFramework"],
+        ):
+            stdout, _, retcode = self.test_driver.run_check(
+                options=["--isolation", *options, "--json"],
+            )
+            self.assertEqual(input_error_exit_code, retcode, (options, stdout))
+            self.assertIsNotNone(json.loads(stdout)["refused"], (options, stdout))
+
     def test_isolation_move_to_is_not_refused_for_watchman_off_eden(self) -> None:
         """Watchman reports a moved directory off Eden, so only the Eden case is
         refused (see the Eden watcher tests)."""
