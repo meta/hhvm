@@ -155,7 +155,7 @@ let output_isolation_result
             "");
       if result.total_refused > 0 then
         Printf.printf
-          "Not in any cluster: %s (what depends on a file is over the limit, or the file declares nothing).\n"
+          "Not in any cluster: %s (for example, more files depend on one than --isolation-max-dependents allows, or it declares nothing).\n"
           (Utils.print_count result.total_refused "starting file")
   end
 
