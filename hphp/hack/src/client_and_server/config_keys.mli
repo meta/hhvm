@@ -66,6 +66,8 @@ module Hhconfig : sig
 
   val keep_user_attributes : string
 
+  val missing_targs_as_fresh_generics : string
+
   val package_support_multifile_tests : string
 
   val treat_non_annotated_memoize_as_kbic : string

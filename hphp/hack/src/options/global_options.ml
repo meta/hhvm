@@ -204,6 +204,7 @@ type t = {
   tco_implicit_throw_points: bool;
   tco_forget_static_prop_refinements_by_name: bool;
   tco_ban_this_refinement_in_generic_class: bool;
+  tco_missing_targs_as_fresh_generics: bool;
 }
 [@@deriving eq, show]
 
@@ -321,6 +322,7 @@ let default =
     tco_implicit_throw_points = false;
     tco_forget_static_prop_refinements_by_name = false;
     tco_ban_this_refinement_in_generic_class = false;
+    tco_missing_targs_as_fresh_generics = false;
   }
 
 let set
@@ -435,6 +437,7 @@ let set
     ?tco_implicit_throw_points
     ?tco_forget_static_prop_refinements_by_name
     ?tco_ban_this_refinement_in_generic_class
+    ?tco_missing_targs_as_fresh_generics
     options =
   let setting setting option =
     match setting with
@@ -761,6 +764,10 @@ let set
       setting
         tco_ban_this_refinement_in_generic_class
         options.tco_ban_this_refinement_in_generic_class;
+    tco_missing_targs_as_fresh_generics =
+      setting
+        tco_missing_targs_as_fresh_generics
+        options.tco_missing_targs_as_fresh_generics;
   }
 
 let so_naming_sqlite_path t = t.so_naming_sqlite_path

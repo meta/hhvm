@@ -1,0 +1,12 @@
+warning: Warn[12023] This null coalesce will always evaluate to its right-hand side. [1]
+-> The expression on the left has type `null` which is always `null`. [2]
+
+class_ptr_generic_attribute.php:15:10
+13 |   $attr = (new ReflectionClass(Target::class))
+14 |     ->getAttributeClass(Attr::class);
+15 |   return $attr?->value ?? 0;
+   |          ^^^^^^^^^^^^^^^^^^ [1]
+   |          ^^^^^^^^^^^^^ [2]
+16 | }
+
+1 error found

@@ -613,6 +613,30 @@ let rec enforce_return_disposable env e =
       ~env
       Typing_error.(primary @@ Primary.Invalid_return_disposable p)
 
+(* A generic class named without type arguments only checks the class at
+ * runtime, so give it fresh rigid type arguments, as `is C<_>` does, rather
+ * than inference variables. *)
+let fresh_generic_targs_for_bare_class env (pos, _) ty =
+  if TCO.missing_targs_as_fresh_generics (Env.get_tcopt env) then
+    match get_node ty with
+    | Tclass (((_, name) as id), exact, (_ :: _ as targs)) ->
+      let hint =
+        ( pos,
+          Aast.Happly
+            ((pos, name), List.map targs ~f:(fun _ -> (pos, Hwildcard))) )
+      in
+      let ((env, ty_err_opt), refined) =
+        Phase.localize_hint_for_refinement env hint
+      in
+      Option.iter ~f:(Typing_error_utils.add_typing_error ~env) ty_err_opt;
+      (match get_node refined with
+      | Tclass (_, _, targs) ->
+        (env, mk (get_reason ty, Tclass (id, exact, targs)))
+      | _ -> (env, ty))
+    | _ -> (env, ty)
+  else
+    (env, ty)
+
 (* Wrappers around the function with the same name in LEnv, which only
  * performs the move/save and merge operation if we are in a try block or in a
  * function with return type 'noreturn'.
@@ -5286,6 +5310,12 @@ end = struct
         env
         []
         cid
+    in
+    let (env, cty) =
+      match cid with
+      | (_, _, Aast.CI sid) when is_class_ptr ->
+        fresh_generic_targs_for_bare_class env sid cty
+      | _ -> (env, cty)
     in
     let should_check_packages =
       let (_, _, cid_) = cid in
@@ -10908,6 +10938,7 @@ end = struct
     let (env, _tal, _te, ety) =
       Class_id.class_expr ~is_catch:true env [] ((), ety_p, cid)
     in
+    let (env, ety) = fresh_generic_targs_for_bare_class env sid ety in
     let (env, ty_err_opt) = coerce_to_throwable ety_p env ety in
     Option.iter ty_err_opt ~f:(Typing_error_utils.add_typing_error ~env);
     let (p, x) = exn_lvar in

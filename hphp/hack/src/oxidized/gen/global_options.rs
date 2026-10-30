@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<5228b4b20f4ef0e28468e63d79f37c47>>
+// @generated SignedSource<<179bad7c5a7988dc0d2bf53728279bef>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -422,4 +422,6 @@ pub struct GlobalOptions {
     pub tco_forget_static_prop_refinements_by_name: bool,
     /// Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments.
     pub tco_ban_this_refinement_in_generic_class: bool,
+    /// Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables.
+    pub tco_missing_targs_as_fresh_generics: bool,
 }

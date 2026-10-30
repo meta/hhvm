@@ -315,3 +315,6 @@ let forget_static_prop_refinements_by_name t =
 
 let ban_this_refinement_in_generic_class t =
   t.Global_options.tco_ban_this_refinement_in_generic_class
+
+let missing_targs_as_fresh_generics t =
+  t.Global_options.tco_missing_targs_as_fresh_generics

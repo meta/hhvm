@@ -645,6 +645,8 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.ban_this_refinement_in_generic_class
          config)
+    ?tco_missing_targs_as_fresh_generics:
+      (bool_opt Config_keys.Hhconfig.missing_targs_as_fresh_generics config)
     options
 
 let warn_on_did_you_mean

@@ -638,6 +638,10 @@ impl HhConfig {
                 "ban_this_refinement_in_generic_class",
                 default.tco_ban_this_refinement_in_generic_class,
             )?,
+            tco_missing_targs_as_fresh_generics: hhconfig.get_bool_or(
+                "missing_targs_as_fresh_generics",
+                default.tco_missing_targs_as_fresh_generics,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

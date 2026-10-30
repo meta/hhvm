@@ -1,0 +1,1 @@
+--config missing_targs_as_fresh_generics=true

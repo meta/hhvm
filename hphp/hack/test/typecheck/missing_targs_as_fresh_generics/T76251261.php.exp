@@ -1,0 +1,51 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `string` [2]
+-> But got `T#1` [3]
+->   via this generic `T` [4]
+
+T76251261.php:15:20
+ 3 | 
+ 4 | class MyException<T> extends Exception {
+ 5 |   public function __construct(public T $in) {
+   |                                      ^ [4]
+ 6 |     parent::__construct();
+ 7 |   }
+   :
+12 |   try {
+13 |     throw new MyException(42);
+14 |   } catch (MyException $e) {
+   |            ^^^^^^^^^^^ [3]
+15 |     expects_string($e->in); // splode
+   |                    ^^^^^^ [1]
+16 |   }
+17 | }
+18 | 
+19 | function expects_string(string $in): void {}
+   |                         ^^^^^^ [2]
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `string` [2]
+-> But got `mixed` [3]
+->   via this generic `T` [4]
+
+T76251261.php:15:20
+ 3 | 
+ 4 | class MyException<T> extends Exception {
+ 5 |   public function __construct(public T $in) {
+   |                                      ^ [4]
+ 6 |     parent::__construct();
+ 7 |   }
+   :
+12 |   try {
+13 |     throw new MyException(42);
+14 |   } catch (MyException $e) {
+   |            ^^^^^^^^^^^ [3]
+15 |     expects_string($e->in); // splode
+   |                    ^^^^^^ [1]
+16 |   }
+17 | }
+18 | 
+19 | function expects_string(string $in): void {}
+   |                         ^^^^^^ [2]
+
+2 errors found

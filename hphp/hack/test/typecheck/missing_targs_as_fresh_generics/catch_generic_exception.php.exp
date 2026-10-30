@@ -1,0 +1,53 @@
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `T#1` [3]
+->   via this generic `T` [4]
+
+catch_generic_exception.php:14:12
+ 2 | 
+ 3 | final class PayloadException<T> extends Exception {
+ 4 |   public function __construct(public T $payload) {
+   |                                      ^ [4]
+ 5 |     parent::__construct();
+ 6 |   }
+ 7 | }
+ 8 | 
+ 9 | // The catch can't know which T was thrown.
+10 | function catch_generic(): int {
+   |                           ^^^ [2]
+11 |   try {
+12 |     throw new PayloadException<string>('foo');
+13 |   } catch (PayloadException $e) {
+   |            ^^^^^^^^^^^^^^^^ [3]
+14 |     return $e->payload;
+   |            ^^^^^^^^^^^ [1]
+15 |   }
+16 | }
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+->   via this generic `T` [4]
+
+catch_generic_exception.php:14:12
+ 2 | 
+ 3 | final class PayloadException<T> extends Exception {
+ 4 |   public function __construct(public T $payload) {
+   |                                      ^ [4]
+ 5 |     parent::__construct();
+ 6 |   }
+ 7 | }
+ 8 | 
+ 9 | // The catch can't know which T was thrown.
+10 | function catch_generic(): int {
+   |                           ^^^ [2]
+11 |   try {
+12 |     throw new PayloadException<string>('foo');
+13 |   } catch (PayloadException $e) {
+   |            ^^^^^^^^^^^^^^^^ [3]
+14 |     return $e->payload;
+   |            ^^^^^^^^^^^ [1]
+15 |   }
+16 | }
+
+2 errors found

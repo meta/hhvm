@@ -312,6 +312,8 @@ type t = {
       (** When a static property is assigned, invalidate its refinements under every class spelling (`self::`, `static::`, `C::`), not only the one assigned through. *)
   tco_ban_this_refinement_in_generic_class: bool;
       (** Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments. *)
+  tco_missing_targs_as_fresh_generics: bool;
+      (** Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables. *)
 }
 [@@deriving eq, show]
 
@@ -427,6 +429,7 @@ val set :
   ?tco_implicit_throw_points:bool ->
   ?tco_forget_static_prop_refinements_by_name:bool ->
   ?tco_ban_this_refinement_in_generic_class:bool ->
+  ?tco_missing_targs_as_fresh_generics:bool ->
   t ->
   t
 
