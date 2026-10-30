@@ -10,6 +10,8 @@ namespace HH\RemoteExecution {
  * @param string $usecase  - CAS use case.
  *
  * @return string  - CAS digest of the uploaded file.
+ *
+ * Throws InvalidOperationException with the RE error if the upload fails.
  */
 function gen_upload_file(string $filepath, string $usecase)[]: Awaitable<string>;
 
@@ -20,7 +22,9 @@ function gen_upload_file(string $filepath, string $usecase)[]: Awaitable<string>
  * @param string $dest  - Destination file path.
  * @param string $usecase  - CAS use case.
  *
- * @return bool - Whether the download was successful.
+ * @return bool - true once the file is downloaded.
+ *
+ * Throws InvalidOperationException with the RE error if the download fails.
  */
 function gen_download_file(string $casdigest, string $destpath, string $usecase)[]: Awaitable<bool>;
 
