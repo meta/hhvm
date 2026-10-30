@@ -29,6 +29,11 @@ let print_count n noun =
   else
     spf "%d %ss" n noun
 
+let print_capped_list ?(max = 20) ?(more_note = "") lines =
+  List.iter (List.take lines max) ~f:(Printf.printf "  %s\n");
+  let more = List.length lines - max in
+  if more > 0 then Printf.printf "  and %d more%s\n" more more_note
+
 let pp_large_list ?(pp_sep = None) ?(max_items = 5) pp_elt fmt xs =
   let list_len = List.length xs in
   if list_len <= max_items then

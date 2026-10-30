@@ -271,7 +271,7 @@ module Output = struct
     Printf.printf
       "Not moved: referenced from %s outside.\n"
       (Utils.print_count (List.length blockers) "file");
-    List.iter blockers ~f:(Printf.printf "  %s\n")
+    Utils.print_capped_list blockers ~more_note:"; --json lists them all"
 
   let print_not_moved ~errors ~baseline_restored =
     Printf.printf

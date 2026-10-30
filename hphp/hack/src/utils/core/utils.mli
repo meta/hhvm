@@ -27,6 +27,11 @@ val prerr_endlinef : ('a, unit, string, unit) format4 -> 'a
     1: "1 file", "3 files". *)
 val print_count : int -> string -> string
 
+(** [print_capped_list lines] prints the first [max] of [lines], default 20,
+    one to a line and indented, then [and N more] and [more_note] if there are
+    others. For a list a person reads and cannot be expected to scroll through. *)
+val print_capped_list : ?max:int -> ?more_note:string -> string list -> unit
+
 val pp_large_list :
   ?pp_sep:(Format.formatter -> unit -> unit) option ->
   ?max_items:int ->
