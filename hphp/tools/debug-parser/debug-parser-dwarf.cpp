@@ -1422,6 +1422,9 @@ Type TypeParserImpl::genType(const DieContext& dieContext) {
     case llvm::dwarf::DW_TAG_restrict_type:
       return RestrictType{type_offset ? recurse(*type_offset) : VoidType{}};
     case llvm::dwarf::DW_TAG_typedef:
+    // libc++ implements std::atomic<T> with a C11 _Atomic(T) member, which has
+    // the same layout as T.
+    case llvm::dwarf::DW_TAG_atomic_type:
       return type_offset ? recurse(*type_offset) : VoidType{};
     case llvm::dwarf::DW_TAG_subroutine_type: {
       FuncType func{type_offset ? recurse(*type_offset) : VoidType{}};
