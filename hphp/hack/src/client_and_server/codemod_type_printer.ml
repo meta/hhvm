@@ -76,7 +76,13 @@ let rec print_ty_exn ?(allow_nothing = false) ty =
       if is_nothing shape_kind then
         fields
       else
-        fields @ ["..."]
+        let tail =
+          match get_node shape_kind with
+          | Toption ty when is_nonnull ty -> "..."
+          | Tintersection [] -> "..."
+          | _ -> print_ty_exn shape_kind ^ "..."
+        in
+        fields @ [tail]
     in
     Printf.sprintf "shape(%s)" (String.concat ~sep:", " fields)
   | Tshape (Shape_splat { ss_elems }) ->
