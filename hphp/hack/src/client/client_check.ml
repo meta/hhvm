@@ -1207,6 +1207,10 @@ let main_internal
               In_channel.iter_lines ic ~f:print_endline)
         | None -> ());
         output_isolation_result result ~output_json:args.output_json;
+        (match options.clusters_destination with
+        | To_file path when Option.is_none temp_file && not args.output_json ->
+          Printf.printf "Clusters written to %s.\n" path
+        | _ -> ());
         Lwt.return (isolation_status result, telemetry))
       (fun () ->
         (match temp_file with
