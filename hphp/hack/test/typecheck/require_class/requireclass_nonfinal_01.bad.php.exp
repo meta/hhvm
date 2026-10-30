@@ -1,18 +1,1 @@
-error: Typing[4111] This class must be final because it uses a trait with a require class constraint. [1]
--> The trait with a require class constraint is used here [2]
--> The require class constraint is here [3]
-
-requireclass_nonfinal_01.bad.php:9:7
- 4 | 
- 5 | trait T {
- 6 |   require class C;
-   |                 ^ [3]
- 7 | }
- 8 | 
- 9 | class C {
-   |       ^ [1]
-10 |   use T;
-   |       ^ [2]
-11 | }
-
-1 error found
+No errors

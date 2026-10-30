@@ -1,3 +1,5 @@
 --config permits_bypassing_visibility=WWWTest,AlternateWWWTest
 --config tests_bypass_visibility_static_properties=true
 --error-format plain_highlighted
+--allowed-fixme-codes-strict 4466
+--allowed-decl-fixme-codes 4466

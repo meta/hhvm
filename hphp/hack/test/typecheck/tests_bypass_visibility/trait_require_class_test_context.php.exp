@@ -1,0 +1,45 @@
+error: Typing[4466] Trait RequireThisAsTestContext requires class WWWTest but WWWTest does not use it. Either use the trait or delete it. [1]
+-> Class WWWTest is defined here. [2]
+-> The require class requirement is here. [3]
+
+trait_require_class_test_context.php:19:7
+ 2 | <<file:__EnableUnstableFeatures('require_constraint')>>
+ 3 | 
+ 4 | class WWWTest {}
+   |       ^^^^^^^ [2]
+ 5 | 
+ 6 | class Target {
+   :
+17 | }
+18 | 
+19 | trait RequireThisAsTestContext {
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+20 |   /* HH_IGNORE[12043] require-class constraint; class does not use trait */
+21 |   require class WWWTest;
+   |                 ^^^^^^^ [3]
+22 | 
+23 |   public function test_require_this_as(Target $obj): void {
+
+error: Typing[4111] This class does not satisfy all the requirements of its traits or interfaces. [1]
+-> This requires to be exactly WWWTest [2]
+-> Required here [3]
+
+trait_require_class_test_context.php:36:7
+19 | trait RequireThisAsTestContext {
+20 |   /* HH_IGNORE[12043] require-class constraint; class does not use trait */
+21 |   require class WWWTest;
+   |                 ^^^^^^^ [3]
+22 | 
+23 |   public function test_require_this_as(Target $obj): void {
+   :
+34 | }
+35 | 
+36 | class TestWithRequirements extends WWWTest {
+   |       ^^^^^^^^^^^^^^^^^^^^ [1]
+37 |   use RequireExtendsTestContext;
+38 |   use RequireThisAsTestContext;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+39 | }
+40 | 
+
+2 errors found

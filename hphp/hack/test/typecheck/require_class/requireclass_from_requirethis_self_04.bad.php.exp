@@ -1,0 +1,119 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `Banana` [2]
+-> But got `int` [3]
+->   resulting from expanding the type constant `DefinesConcreteTypeConst::TThere` [4]
+
+requireclass_from_requirethis_self_04.bad.php:29:22
+ 8 | 
+ 9 | interface IDefinesConcreteTypeConst {
+10 |   const type TThere = int;
+   |                       ^^^ [3]
+11 | }
+12 | 
+   :
+18 |   require class DefinesConcreteTypeConst;
+19 | 
+20 |   const this::TThere I_AM_A_NUMBER = 42;
+   |         ^^^^^^^^^^^^ [4]
+21 | 
+22 |   const type THere = string;
+   :
+27 |     // reports an error - the type of the constant is this::TThere = int, not Banana
+28 |     // wasn't reported before because the type was Tany
+29 |     give_me_a_banana($a);
+   |                      ^^ [1]
+30 |     $b = $this::I_AM_A_NUMBER;
+31 |     // reports an error - the type of the constant is this::TThere = int, not Banana
+   :
+42 | 
+43 | final class Banana {}
+44 | function give_me_a_banana(Banana $_): void {}
+   |                           ^^^^^^ [2]
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `Banana` [2]
+-> But got `int` [3]
+->   resulting from expanding the type constant `this::TThere` [4]
+
+requireclass_from_requirethis_self_04.bad.php:32:22
+ 8 | 
+ 9 | interface IDefinesConcreteTypeConst {
+10 |   const type TThere = int;
+   |                       ^^^ [3]
+11 | }
+12 | 
+   :
+18 |   require class DefinesConcreteTypeConst;
+19 | 
+20 |   const this::TThere I_AM_A_NUMBER = 42;
+   |         ^^^^^^^^^^^^ [4]
+21 | 
+22 |   const type THere = string;
+   :
+30 |     $b = $this::I_AM_A_NUMBER;
+31 |     // reports an error - the type of the constant is this::TThere = int, not Banana
+32 |     give_me_a_banana($b);
+   |                      ^^ [1]
+33 |     $c = self::I_AM_A_STRING;
+34 |     // type constants defined inside a trait still work
+   :
+42 | 
+43 | final class Banana {}
+44 | function give_me_a_banana(Banana $_): void {}
+   |                           ^^^^^^ [2]
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `Banana` [2]
+-> But got `string` [3]
+->   resulting from expanding the type constant `DefinesConcreteTypeConst::THere` [4]
+
+requireclass_from_requirethis_self_04.bad.php:35:22
+20 |   const this::TThere I_AM_A_NUMBER = 42;
+21 | 
+22 |   const type THere = string;
+   |                      ^^^^^^ [3]
+23 |   const this::THere I_AM_A_STRING = "hello";
+   |         ^^^^^^^^^^^ [4]
+24 | 
+25 |   public function behold(): void {
+   :
+33 |     $c = self::I_AM_A_STRING;
+34 |     // type constants defined inside a trait still work
+35 |     give_me_a_banana($c);
+   |                      ^^ [1]
+36 |     $d = $this::I_AM_A_STRING;
+37 |     // type constants defined inside a trait still work
+   :
+42 | 
+43 | final class Banana {}
+44 | function give_me_a_banana(Banana $_): void {}
+   |                           ^^^^^^ [2]
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `Banana` [2]
+-> But got `string` [3]
+->   resulting from expanding the type constant `this::THere` [4]
+
+requireclass_from_requirethis_self_04.bad.php:38:22
+20 |   const this::TThere I_AM_A_NUMBER = 42;
+21 | 
+22 |   const type THere = string;
+   |                      ^^^^^^ [3]
+23 |   const this::THere I_AM_A_STRING = "hello";
+   |         ^^^^^^^^^^^ [4]
+24 | 
+25 |   public function behold(): void {
+   :
+36 |     $d = $this::I_AM_A_STRING;
+37 |     // type constants defined inside a trait still work
+38 |     give_me_a_banana($d);
+   |                      ^^ [1]
+39 | 
+40 |   }
+41 | }
+42 | 
+43 | final class Banana {}
+44 | function give_me_a_banana(Banana $_): void {}
+   |                           ^^^^^^ [2]
+
+4 errors found

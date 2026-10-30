@@ -54,8 +54,9 @@ let is_private_visible env origin_id self_id =
     in
     match Env.get_class env self_id with
     | Decl_entry.Found cls when Ast_defs.is_c_trait (Cls.kind cls) ->
-      (* If the right class is required via `require class`, give access;
-       * `require this as` constraints are not sufficient to give access *)
+      (* If the origin class is final and required via `require class` then
+       * it is sound to give access to its private members.
+       *)
       let bounds_from_require_class_constraints =
         List.map (Cls.all_ancestor_req_class_requirements cls) ~f:snd
       in

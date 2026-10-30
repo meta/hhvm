@@ -1,0 +1,61 @@
+error: Typing[4466] Trait RRTAViolationTrait requires class RRTAClassWithoutTrait but RRTAClassWithoutTrait does not use it. Either use the trait or delete it. [1]
+-> Class RRTAClassWithoutTrait is defined here. [2]
+-> The require class requirement is here. [3]
+
+redundant_require_class.php:11:7
+ 9 | 
+10 | // This SHOULD be flagged - trait has "require class" but class doesn't use it
+11 | trait RRTAViolationTrait {
+   |       ^^^^^^^^^^^^^^^^^^ [1]
+12 |   require class RRTAClassWithoutTrait;
+   |                 ^^^^^^^^^^^^^^^^^^^^^ [3]
+13 | }
+14 | 
+15 | class RRTAClassWithoutTrait {
+   |       ^^^^^^^^^^^^^^^^^^^^^ [2]
+16 | }
+17 | 
+
+error: Typing[4466] Trait RRTATransitiveTrait requires class RRTAClassTransitiveBad but RRTAClassTransitiveBad does not use it. Either use the trait or delete it. [1]
+-> Class RRTAClassTransitiveBad is defined here. [2]
+-> The require class requirement is here. [3]
+
+redundant_require_class.php:53:7
+51 | 
+52 | // This SHOULD be flagged - class does NOT use RRTATransitiveTrait
+53 | trait RRTATransitiveTrait {
+   |       ^^^^^^^^^^^^^^^^^^^ [1]
+54 |   require class RRTAClassTransitiveBad;
+   |                 ^^^^^^^^^^^^^^^^^^^^^^ [3]
+55 | }
+56 | 
+   :
+59 | }
+60 | 
+61 | class RRTAClassTransitiveBad {
+   |       ^^^^^^^^^^^^^^^^^^^^^^ [2]
+62 | }
+63 | 
+
+error: Typing[4466] Trait RRTAMiddleTrait requires class RRTAClassTransitiveBad but RRTAClassTransitiveBad does not use it. Either use the trait or delete it. [1]
+-> Class RRTAClassTransitiveBad is defined here. [2]
+-> The require class requirement is here. [3]
+
+redundant_require_class.php:57:7
+52 | // This SHOULD be flagged - class does NOT use RRTATransitiveTrait
+53 | trait RRTATransitiveTrait {
+54 |   require class RRTAClassTransitiveBad;
+   |                 ^^^^^^^^^^^^^^^^^^^^^^ [3]
+55 | }
+56 | 
+57 | trait RRTAMiddleTrait {
+   |       ^^^^^^^^^^^^^^^ [1]
+58 |   use RRTATransitiveTrait;
+59 | }
+60 | 
+61 | class RRTAClassTransitiveBad {
+   |       ^^^^^^^^^^^^^^^^^^^^^^ [2]
+62 | }
+63 | 
+
+3 errors found

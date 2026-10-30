@@ -1,0 +1,21 @@
+error: NastCheck[3073] Interfaces cannot use traits [1]
+
+requireclass_from_requirethis_interface.bad.php:6:9
+4 | 
+5 | interface I {
+6 |     use T;
+  |         ^ [1]
+7 | 
+8 |     public function bar(): void;
+
+error: NastCheck[3017] `I` is not a class. It is an interface. [1]
+
+requireclass_from_requirethis_interface.bad.php:12:19
+10 | 
+11 | trait T {
+12 |     require class I;
+   |                   ^ [1]
+13 | 
+14 |     public function foo(): void {
+
+2 errors found

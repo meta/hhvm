@@ -1,0 +1,43 @@
+error: Typing[4111] This class does not satisfy all the requirements of its traits or interfaces. [1]
+-> This requires to be exactly C [2]
+-> Required here [3]
+
+requireclass_from_requirethis_02.good.php:9:7
+ 7 | }
+ 8 | 
+ 9 | class D extends C {
+   |       ^ [1]
+10 |     use T;
+   |         ^ [2]
+11 | }
+12 | 
+13 | trait T {
+14 |     /* HH_IGNORE[12043] require-class constraint; class does not use trait */
+15 |     require class C;
+   |                   ^ [3]
+16 | 
+17 |     public function foo(): void {
+
+error: Typing[4466] Trait T requires class C but C does not use it. Either use the trait or delete it. [1]
+-> Class C is defined here. [2]
+-> The require class requirement is here. [3]
+
+requireclass_from_requirethis_02.good.php:13:7
+ 3 | <<file:__EnableUnstableFeatures('require_constraint')>>
+ 4 | 
+ 5 | class C {
+   |       ^ [2]
+ 6 |     public function bar(): void { echo "bar\n"; }
+ 7 | }
+   :
+11 | }
+12 | 
+13 | trait T {
+   |       ^ [1]
+14 |     /* HH_IGNORE[12043] require-class constraint; class does not use trait */
+15 |     require class C;
+   |                   ^ [3]
+16 | 
+17 |     public function foo(): void {
+
+2 errors found

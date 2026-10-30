@@ -2246,24 +2246,6 @@ end = struct
     in
     create ~code:Error_code.UnsatisfiedReq ~claim ~reasons ()
 
-  let req_class_not_final pos trait_pos req_pos =
-    let reasons =
-      lazy
-        (let r =
-           (trait_pos, "The trait with a require class constraint is used here")
-         in
-         if Pos_or_decl.equal trait_pos req_pos then
-           [r]
-         else
-           [r; (req_pos, "The require class constraint is here")])
-    and claim =
-      lazy
-        ( pos,
-          "This class must be final because it uses a trait with a require class constraint."
-        )
-    in
-    create ~code:Error_code.UnsatisfiedReq ~claim ~reasons ()
-
   let incompatible_reqs pos req_name req_class_pos req_extends_pos =
     let reasons =
       lazy
@@ -2280,13 +2262,19 @@ end = struct
     let claim = lazy (pos, "This trait defines incompatible requirements.") in
     create ~code:Error_code.UnsatisfiedReq ~claim ~reasons ()
 
-  let trait_not_used pos trait_name req_class_pos class_pos class_name =
+  let trait_not_used
+      pos trait_name req_class_pos class_pos class_name req_constraint_kind =
     let class_name = Render.strip_ns class_name in
+    let (requires_text, requirement_text) =
+      match req_constraint_kind with
+      | `class_ -> ("requires class ", "require class")
+      | `this_as -> ("requires this as ", "require this as")
+    in
     let reasons =
       lazy
         [
           (class_pos, "Class " ^ class_name ^ " is defined here.");
-          (req_class_pos, "The require class requirement is here.");
+          (req_class_pos, "The " ^ requirement_text ^ " requirement is here.");
         ]
     in
     let claim =
@@ -2294,7 +2282,8 @@ end = struct
         ( pos,
           "Trait "
           ^ Render.strip_ns trait_name
-          ^ " requires class "
+          ^ " "
+          ^ requires_text
           ^ Render.strip_ns class_name
           ^ " but "
           ^ Render.strip_ns class_name
@@ -5487,13 +5476,24 @@ end = struct
       unsatisfied_req_class pos trait_pos req_name req_pos
     | Unsatisfied_req_this_as { pos; trait_pos; req_name; req_pos } ->
       unsatisfied_req_this_as pos trait_pos req_name req_pos
-    | Req_class_not_final { pos; trait_pos; req_pos } ->
-      req_class_not_final pos trait_pos req_pos
     | Incompatible_reqs { pos; req_name; req_class_pos; req_extends_pos } ->
       incompatible_reqs pos req_name req_class_pos req_extends_pos
-    | Trait_not_used { pos; trait_name; req_class_pos; class_pos; class_name }
-      ->
-      trait_not_used pos trait_name req_class_pos class_pos class_name
+    | Trait_not_used
+        {
+          pos;
+          trait_name;
+          req_class_pos;
+          class_pos;
+          class_name;
+          req_constraint_kind;
+        } ->
+      trait_not_used
+        pos
+        trait_name
+        req_class_pos
+        class_pos
+        class_name
+        req_constraint_kind
     | Invalid_echo_argument pos -> invalid_echo_argument pos
     | Index_type_mismatch { pos; is_covariant_container; msg_opt; reasons_opt }
       ->

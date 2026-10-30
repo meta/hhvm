@@ -1812,7 +1812,19 @@ let check_sealed env c =
 let check_class_require_non_strict_constraints env c tc =
   let req_non_strict_constraints =
     List.map (Cls.all_ancestor_req_class_requirements tc) ~f:(fun (_p, t) ->
-        (mk (Reason.none, Tthis), Ast_defs.Constraint_eq, t))
+        let constraint_kind =
+          match TUtils.try_unwrap_class_type t with
+          | Some (_, (_, name), _) ->
+            (match Env.get_class env name with
+            | Decl_entry.Found cls when not (Cls.final cls) ->
+              Ast_defs.Constraint_as
+            | Decl_entry.Found _
+            | Decl_entry.DoesNotExist
+            | Decl_entry.NotYetAvailable ->
+              Ast_defs.Constraint_eq)
+          | None -> Ast_defs.Constraint_eq
+        in
+        (mk (Reason.none, Tthis), constraint_kind, t))
     @ List.map (Cls.all_ancestor_req_this_as_requirements tc) ~f:(fun (_p, t) ->
           (mk (Reason.none, Tthis), Ast_defs.Constraint_as, t))
   in

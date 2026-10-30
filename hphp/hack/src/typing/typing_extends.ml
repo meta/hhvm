@@ -1730,8 +1730,10 @@ let check_inherited_member_is_dynamically_callable
 let eager_resolve_member_via_req_class
     env parent_class_elt class_ member_kind member_name =
   let member_element_opt = get_member member_kind class_ member_name in
-  let req_class_constraints = Cls.all_ancestor_req_class_requirements class_ in
-  if List.is_empty req_class_constraints then
+  let req_equality_constraints =
+    Cls.all_ancestor_req_class_requirements class_
+  in
+  if List.is_empty req_equality_constraints then
     (* fast path: if class_ does not have require class constraints then eager resolution cannot apply *)
     member_element_opt
   else
@@ -1761,7 +1763,7 @@ let eager_resolve_member_via_req_class
              * require class constraint, perform eager fetch of the element via the required class.
              *)
             let member_element_in_req_class =
-              List.find_map req_class_constraints ~f:(fun (_, req_ty) ->
+              List.find_map req_equality_constraints ~f:(fun (_, req_ty) ->
                   let (_, (_, cn), _) = TUtils.unwrap_class_type req_ty in
                   Decl_provider.get_class (Env.get_ctx env) cn
                   |> Decl_entry.to_option
@@ -2897,13 +2899,15 @@ let check_class_extends_parents_typeconsts
                  typeconst = parent_tconst;
                }
              env ->
-          (* If class_ is a trait that has a require class C constraint, and C provides a concrete definition
-           * for the type constant, and the parent definition is abstract, then compare the parent type constant
-           * against the type constant defined in the required class.
+          (* If class_ is a trait that has a require class C constraint, and C is final and
+           * provides a concrete definition for the type constant, and the parent definition
+           * is abstract, then compare the parent type constant against the type constant defined
+           * in the required class.
            * Otherwise compare it against the type constant defined in class_, if any.
-           * However, if the parent definition is a concrete type constant, then we can skip checking type constants
-           * inherited via require class constants, as these must be concrete and a conflict check will be
-           * performed on the class itself *)
+           * However, if the parent definition is a concrete type constant, then we can skip
+           * checking type constants inherited via require class constants, as these must be
+           * concrete and a conflict check will be performed on the class itself
+           *)
           let is_parent_tconst_abstract =
             is_typeconst_type_abstract parent_tconst
           in

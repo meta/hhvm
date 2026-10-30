@@ -16,6 +16,7 @@ trait RequireExtendsTestContext {
   }
 }
 
+/* HH_FIXME[4466] intentionally used by a subclass of WWWTest */
 trait RequireThisAsTestContext {
   /* HH_IGNORE[12043] require-this-as constraint; class does not use trait */
   require this as WWWTest;

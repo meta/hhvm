@@ -50,28 +50,19 @@ let check_require_class env class_pos tc (trait_pos, req_ty) =
     (* in a `require class t;` trait constraint, t must be a non-generic class
      * name.  Since lowering enforces _paraml to be empty, it is safe to
      * ignore _param here.  Additionally we enforce that the class that uses
-     * the trait with a require class constraint does not have type parameters
-     * and is final.
+     * the trait with a require class constraint does not have type parameters.
      *)
-    if String.equal req_name (Cls.name tc) && List.is_empty (Cls.tparams tc)
+    if
+      not (String.equal req_name (Cls.name tc) && List.is_empty (Cls.tparams tc))
     then (
-      if Cls.final tc then
-        env
-      else
-        let req_pos = Typing_defs.get_pos req_ty in
-        (Typing_error_utils.add_typing_error ~env
-        @@ Typing_error.(
-             primary
-             @@ Primary.Req_class_not_final
-                  { pos = class_pos; trait_pos; req_pos }));
-        env
-    ) else
       let req_pos = Typing_defs.get_pos req_ty in
       (Typing_error_utils.add_typing_error ~env
       @@ Typing_error.(
            primary
            @@ Primary.Unsatisfied_req_class
                 { pos = class_pos; trait_pos; req_pos; req_name }));
+      env
+    ) else
       env
 
 (* HHVM enformcement rejects conflicting require class and require extends
@@ -116,13 +107,13 @@ let check_require_class_require_extends_conflict
                   }));
   env
 
-(* If a trait `T` `require class C`, but `C` does not use `T`, then Hack won't report
- * any type error on the body of `T` because the intersection of `C` and `T` is empty.
+(* If a trait `T` requires `C`, but `C` does not use `T`, then Hack won't report any
+ * type error on the body of `T` because the intersection of `C` and `T` is empty.
  * Although this behaviour is sound, it is likely to be confusing for the programmer.
- * We thus eagerly emit an error if a trait `require class` a class that does not use it.
+ * We thus eagerly emit an error if a trait requires a class that does not use it.
  *)
 let check_require_class_use env trait_pos required_classes tc =
-  List.iter required_classes ~f:(fun (nc, pc) ->
+  List.iter required_classes ~f:(fun (req_constraint_kind, (nc, pc)) ->
       match Env.get_class env nc with
       | Decl_entry.DoesNotExist
       | Decl_entry.NotYetAvailable ->
@@ -143,24 +134,34 @@ let check_require_class_use env trait_pos required_classes tc =
                       req_class_pos = pc;
                       class_pos = Cls.pos trc;
                       class_name = Cls.name trc;
-                    }));
-  env
+                      req_constraint_kind;
+                    }))
 
 let check_trait_require_class env trait_pos tc =
-  match Cls.all_ancestor_req_class_requirements tc with
-  | [] -> env
-  | rc ->
-    let required_classes =
-      List.filter_map rc ~f:(fun (_, ty) -> get_require_class_name_pos ty)
-    in
-    let env =
-      check_require_class_require_extends_conflict
-        env
-        trait_pos
-        required_classes
-        tc
-    in
-    check_require_class_use env trait_pos required_classes tc
+  let (required_classes, required_equal_classes) =
+    List.fold_right
+      (Cls.all_ancestor_req_constraints_requirements tc)
+      ~init:([], [])
+      ~f:(fun rc (required_classes, required_equal_classes) ->
+        let (req_constraint_kind, (_, ty)) =
+          match rc with
+          | CR_Equal req -> (`class_, req)
+          | CR_Subtype req -> (`this_as, req)
+        in
+        match get_require_class_name_pos ty with
+        | None -> (required_classes, required_equal_classes)
+        | Some required_class ->
+          ( (req_constraint_kind, required_class) :: required_classes,
+            (match req_constraint_kind with
+            | `class_ -> required_class :: required_equal_classes
+            | `this_as -> required_equal_classes) ))
+  in
+  check_require_class_use env trait_pos required_classes tc;
+  check_require_class_require_extends_conflict
+    env
+    trait_pos
+    required_equal_classes
+    tc
 
 (** Check whether a class satifies all the requirements of the traits it uses,
     namely [require extends] and [require implements]. *)

@@ -640,11 +640,6 @@ module Primary : sig
         req_pos: Pos_or_decl.t;
         req_name: string;
       }
-    | Req_class_not_final of {
-        pos: Pos.t;
-        trait_pos: Pos_or_decl.t;
-        req_pos: Pos_or_decl.t;
-      }
     | Incompatible_reqs of {
         pos: Pos.t;
         req_name: string;
@@ -657,6 +652,7 @@ module Primary : sig
         req_class_pos: Pos_or_decl.t;
         class_pos: Pos_or_decl.t;
         class_name: string;
+        req_constraint_kind: [ `class_ | `this_as ];
       }
     | Invalid_echo_argument of Pos.t
     | Index_type_mismatch of {

@@ -1,3 +1,25 @@
+error: Typing[4466] Trait T requires this as C but C does not use it. Either use the trait or delete it. [1]
+-> Class C is defined here. [2]
+-> The require this as requirement is here. [3]
+
+requirethis_parent_03.bad.php:13:7
+ 3 | <<file:__EnableUnstableFeatures('require_constraint')>>
+ 4 | 
+ 5 | class C {
+   |       ^ [2]
+ 6 |     public static function bar(): void {}
+ 7 | }
+   :
+11 | }
+12 | 
+13 | trait T {
+   |       ^ [1]
+14 |     /* HH_IGNORE[12043] require-this-as constraint; class does not use trait */
+15 |     require this as C;
+   |                     ^ [3]
+16 | 
+17 |     public function foo(): void {
+
 error: Typing[4076] parent is undefined [1]
 -> The class required here has no parent [2]
 
@@ -13,4 +35,4 @@ requirethis_parent_03.bad.php:18:9
 19 |     }
 20 | }
 
-1 error found
+2 errors found

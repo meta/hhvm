@@ -1,0 +1,58 @@
+error: Typing[4111] This class does not satisfy all the requirements of its traits or interfaces. [1]
+-> This requires to be exactly C [2]
+-> Required here [3]
+
+requireclass_from_requirethis_parent_03.bad.php:9:7
+ 7 | }
+ 8 | 
+ 9 | class D extends C {
+   |       ^ [1]
+10 |     use T;
+   |         ^ [2]
+11 | }
+12 | 
+13 | trait T {
+14 |     /* HH_IGNORE[12043] require-class constraint; class does not use trait */
+15 |     require class C;
+   |                   ^ [3]
+16 | 
+17 |     public function foo(): void {
+
+error: Typing[4466] Trait T requires class C but C does not use it. Either use the trait or delete it. [1]
+-> Class C is defined here. [2]
+-> The require class requirement is here. [3]
+
+requireclass_from_requirethis_parent_03.bad.php:13:7
+ 3 | <<file:__EnableUnstableFeatures('require_constraint')>>
+ 4 | 
+ 5 | class C {
+   |       ^ [2]
+ 6 |     public static function bar(): void {}
+ 7 | }
+   :
+11 | }
+12 | 
+13 | trait T {
+   |       ^ [1]
+14 |     /* HH_IGNORE[12043] require-class constraint; class does not use trait */
+15 |     require class C;
+   |                   ^ [3]
+16 | 
+17 |     public function foo(): void {
+
+error: Typing[4076] parent is undefined [1]
+-> The class required here has no parent [2]
+
+requireclass_from_requirethis_parent_03.bad.php:18:9
+13 | trait T {
+14 |     /* HH_IGNORE[12043] require-class constraint; class does not use trait */
+15 |     require class C;
+   |                   ^ [2]
+16 | 
+17 |     public function foo(): void {
+18 |         parent::bar();
+   |         ^^^^^^ [1]
+19 |     }
+20 | }
+
+3 errors found
