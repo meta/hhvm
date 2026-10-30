@@ -51,6 +51,9 @@ module Hhconfig = struct
 
   let everything_sdt = key "everything_sdt"
 
+  let forget_static_prop_refinements_by_name =
+    key "forget_static_prop_refinements_by_name"
+
   let ignore_string_methods = key "ignore_string_methods"
 
   let implicit_throw_points = key "implicit_throw_points"

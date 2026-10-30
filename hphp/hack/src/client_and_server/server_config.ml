@@ -637,6 +637,10 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
          config)
     ?tco_implicit_throw_points:
       (bool_opt Config_keys.Hhconfig.implicit_throw_points config)
+    ?tco_forget_static_prop_refinements_by_name:
+      (bool_opt
+         Config_keys.Hhconfig.forget_static_prop_refinements_by_name
+         config)
     options
 
 let warn_on_did_you_mean

@@ -1,0 +1,1 @@
+--config forget_static_prop_refinements_by_name=true

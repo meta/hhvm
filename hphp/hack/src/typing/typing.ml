@@ -13432,6 +13432,13 @@ end = struct
             env
             property
             Reason.(Blame (p, BSassignment))
+        (* `self::$x` and `C::$x` can name the same property *)
+        | (_, _, Class_get (_, (_, property), _))
+          when TCO.forget_static_prop_refinements_by_name (Env.get_tcopt env) ->
+          Env.forget_static_named_members
+            env
+            property
+            Reason.(Blame (p, BSassignment))
         | _ -> env
       in
       (match e1 with

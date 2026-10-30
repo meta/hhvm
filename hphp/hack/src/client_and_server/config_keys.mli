@@ -52,6 +52,8 @@ module Hhconfig : sig
 
   val everything_sdt : string
 
+  val forget_static_prop_refinements_by_name : string
+
   val ignore_string_methods : string
 
   val implicit_throw_points : string

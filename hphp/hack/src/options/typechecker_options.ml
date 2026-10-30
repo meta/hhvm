@@ -309,3 +309,6 @@ let tests_bypass_visibility_static_properties t =
   t.Global_options.tco_tests_bypass_visibility_static_properties
 
 let implicit_throw_points t = t.Global_options.tco_implicit_throw_points
+
+let forget_static_prop_refinements_by_name t =
+  t.Global_options.tco_forget_static_prop_refinements_by_name

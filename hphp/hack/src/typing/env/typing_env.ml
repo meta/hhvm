@@ -1548,6 +1548,11 @@ module M = struct
       (fun fake_members -> Fake.forget_suffixed fake_members suffix)
       env
 
+  let forget_static_named_members env member_name =
+    forget_generic
+      (fun fake_members -> Fake.forget_static_named fake_members member_name)
+      env
+
   module FakeMembers = struct
     let update_fake_members env fake_members =
       let per_cont_env =

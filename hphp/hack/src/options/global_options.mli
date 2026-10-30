@@ -308,6 +308,8 @@ type t = {
   tco_tests_bypass_visibility_static_properties: bool;
   tco_implicit_throw_points: bool;
       (** Treat `yield`, `clone` and `list()` destructuring as points that may throw when merging try/catch environments. *)
+  tco_forget_static_prop_refinements_by_name: bool;
+      (** When a static property is assigned, invalidate its refinements under every class spelling (`self::`, `static::`, `C::`), not only the one assigned through. *)
 }
 [@@deriving eq, show]
 
@@ -421,6 +423,7 @@ val set :
   ?tco_permits_bypassing_visibility:string list ->
   ?tco_tests_bypass_visibility_static_properties:bool ->
   ?tco_implicit_throw_points:bool ->
+  ?tco_forget_static_prop_refinements_by_name:bool ->
   t ->
   t
 

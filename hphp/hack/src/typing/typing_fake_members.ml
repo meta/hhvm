@@ -106,6 +106,12 @@ let forget_suffixed (ledger : t) suffix blame : t =
   in
   conditionally_forget is_prefixed ledger blame
 
+let forget_static_named (ledger : t) member_name blame : t =
+  let is_named (fake_id, _blame) =
+    String.is_suffix ~suffix:("::" ^ member_name) (Local_id.to_string fake_id)
+  in
+  conditionally_forget is_named ledger blame
+
 let add ledger lid pos =
   let reason = Reason.(Blame (pos, BSout_of_scope)) in
   {

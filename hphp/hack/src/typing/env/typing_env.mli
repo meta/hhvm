@@ -378,6 +378,8 @@ val forget_prefixed_members : env -> Local_id.t -> Reason.blame -> env
 
 val forget_suffixed_members : env -> string -> Reason.blame -> env
 
+val forget_static_named_members : env -> string -> Reason.blame -> env
+
 val get_fake_members : env -> Typing_fake_members.t
 
 module FakeMembers : sig

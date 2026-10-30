@@ -630,6 +630,10 @@ impl HhConfig {
             )?,
             tco_implicit_throw_points: hhconfig
                 .get_bool_or("implicit_throw_points", default.tco_implicit_throw_points)?,
+            tco_forget_static_prop_refinements_by_name: hhconfig.get_bool_or(
+                "forget_static_prop_refinements_by_name",
+                default.tco_forget_static_prop_refinements_by_name,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();
