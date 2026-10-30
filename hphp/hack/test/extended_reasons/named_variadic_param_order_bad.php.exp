@@ -1,0 +1,196 @@
+error: Typing[4110] Invalid argument
+
+File named_variadic_param_order_bad.php, line 9, character 5 - line 9, character 11:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named string $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f(»"wrong"«, label = "ok");
+10 |   f(1, label = 123);
+11 | }
+
+Expected int
+
+File named_variadic_param_order_bad.php, line 6, character 33 - line 6, character 35:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named string $label, »int« $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+10 |   f(1, label = 123);
+11 | }
+
+But got string
+
+File named_variadic_param_order_bad.php, line 9, character 5 - line 9, character 11:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named string $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f(»"wrong"«, label = "ok");
+10 |   f(1, label = 123);
+11 | }
+
+Here's why:
+
+
+  Step 1 of 2                                                                   
+
+I started by checking this subtype relationship.
+
+The subtype comes from this function or method declaration
+
+File named_variadic_param_order_bad.php, line 6, character 10 - line 6, character 10:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function »f«(named string $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+10 |   f(1, label = 123);
+11 | }
+
+The supertype comes from this expression
+
+File named_variadic_param_order_bad.php, line 9, character 3 - line 9, character 26:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named string $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   »f("wrong", label = "ok")«;
+10 |   f(1, label = 123);
+11 | }
+
+
+  Step 2 of 2                                 (here is where the error occurred) 
+
+These are function types so next I checked the 1st function parameters.
+Functions are contravariant in their parameters so the direction of the subtype relationship is reversed.
+
+The subtype comes from this expression
+
+File named_variadic_param_order_bad.php, line 9, character 5 - line 9, character 11:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named string $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f(»"wrong"«, label = "ok");
+10 |   f(1, label = 123);
+11 | }
+
+The supertype comes from this hint
+
+File named_variadic_param_order_bad.php, line 6, character 33 - line 6, character 35:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named string $label, »int« $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+10 |   f(1, label = 123);
+11 | }
+
+error: Typing[4110] Invalid argument
+
+File named_variadic_param_order_bad.php, line 10, character 16 - line 10, character 18:
+
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+10 |   f(1, label = »123«);
+11 | }
+
+Expected string
+
+File named_variadic_param_order_bad.php, line 6, character 18 - line 6, character 23:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named »string« $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+
+But got int
+
+File named_variadic_param_order_bad.php, line 10, character 16 - line 10, character 18:
+
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+10 |   f(1, label = »123«);
+11 | }
+
+Here's why:
+
+
+  Step 1 of 2                                                                   
+
+I started by checking this subtype relationship.
+
+The subtype comes from this function or method declaration
+
+File named_variadic_param_order_bad.php, line 6, character 10 - line 6, character 10:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function »f«(named string $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+
+The supertype comes from this expression
+
+File named_variadic_param_order_bad.php, line 10, character 3 - line 10, character 19:
+
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+10 |   »f(1, label = 123)«;
+11 | }
+
+
+  Step 2 of 2                                 (here is where the error occurred) 
+
+These are function types so next I checked the 2nd function parameters.
+Functions are contravariant in their parameters so the direction of the subtype relationship is reversed.
+
+The subtype comes from this expression
+
+File named_variadic_param_order_bad.php, line 10, character 16 - line 10, character 18:
+
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+10 |   f(1, label = »123«);
+11 | }
+
+The supertype comes from this hint
+
+File named_variadic_param_order_bad.php, line 6, character 18 - line 6, character 23:
+
+ 4 | <<file: __EnableUnstableFeatures('named_parameters')>>
+ 5 | 
+ 6 | function f(named »string« $label, int $first, int ...$rest): void {}
+ 7 | 
+ 8 | function test(): void {
+ 9 |   f("wrong", label = "ok");
+
+which is defined here
+
+File string.hhi, line 6, character 15 - line 6, character 20:
+
+ 5 |   <<__SupportDynamicType>>
+ 6 |   final class »string« {
+ 7 |     // All methods are ignored unless ignore_string_methods is set to false in .hhconfig
+ 8 |     <<__ImplementedBy('\HH\String\__primitive_length')>>
+ 9 |     public function length(): int;
+
