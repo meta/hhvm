@@ -1461,7 +1461,7 @@ Type TypeParserImpl::genType(const DieContext& dieContext) {
         fmt::format(
           "Encountered non-type tag '{}' at offset {} while "
           "traversing type description",
-          die.getTag(),
+          fmt::underlying(die.getTag()),
           die.getOffset()
         )
       };
@@ -1934,7 +1934,7 @@ template<> class FormatValue<llvm::dwarf::Tag> {
 
   template<typename Callback>
   void format(FormatArg& arg, Callback& cb) const {
-    format_value::formatString(fmt::format("{}", m_tag), arg, cb);
+    format_value::formatString(fmt::format("{}", fmt::underlying(m_tag)), arg, cb);
   }
 
  private:
