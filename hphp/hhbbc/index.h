@@ -1110,8 +1110,8 @@ struct Index {
   };
 
   /*
-   * Create an Index for a php::Program.  Performs some initial
-   * analysis of the program.
+   * Create an Index from extern-worker refs. Performs some initial analysis
+   * of the program.
    */
   Index(Input,
         Config,
@@ -1119,6 +1119,9 @@ struct Index {
         std::unique_ptr<extern_worker::Client>,
         DisposeCallback,
         StructuredLogEntry*);
+
+  /* Create an Index which owns an already local php::Program. */
+  Index(php::Program, StructuredLogEntry*);
   ~Index();
 
   Index(const Index&) = delete;
@@ -1717,6 +1720,20 @@ private:
 private:
   std::unique_ptr<IndexData> m_data;
 };
+
+//////////////////////////////////////////////////////////////////////
+
+/*
+ * Download an Index::Input and restore its separately stored bytecode.
+ * The executor and client are passed to the disposal callback before return.
+ */
+folly::coro::Task<php::Program> materialize_index_input(
+  Index::Input,
+  std::unique_ptr<TicketExecutor>,
+  std::unique_ptr<extern_worker::Client>,
+  DisposeCallback,
+  StructuredLogEntry*
+);
 
 //////////////////////////////////////////////////////////////////////
 

@@ -19908,6 +19908,258 @@ std::vector<SString> Index::Input::makeDeps(const php::Class& cls) {
 
 //////////////////////////////////////////////////////////////////////
 
+namespace {
+
+using MaterializeClass = std::tuple<
+  Index::Input::R<php::Class>,
+  Index::Input::R<php::ClassBytecode>
+>;
+using MaterializeFunc = std::tuple<
+  Index::Input::R<php::Func>,
+  Index::Input::R<php::FuncBytecode>
+>;
+
+struct MaterializeChunk {
+  std::vector<MaterializeClass> classes;
+  std::vector<MaterializeFunc> funcs;
+  std::vector<Index::Input::R<php::Unit>> units;
+
+  size_t size() const {
+    return 2 * classes.size() + 2 * funcs.size() + units.size();
+  }
+};
+
+struct LoadedMaterializeChunk {
+  std::vector<
+    std::tuple<
+      std::unique_ptr<php::Class>,
+      std::unique_ptr<php::ClassBytecode>
+    >
+  > classes;
+  std::vector<
+    std::tuple<
+      std::unique_ptr<php::Func>,
+      std::unique_ptr<php::FuncBytecode>
+    >
+  > funcs;
+  std::vector<std::unique_ptr<php::Unit>> units;
+};
+
+std::vector<MaterializeChunk> make_materialize_chunks(Index::Input input) {
+  assertx(input.classes.size() == input.classBC.size());
+  assertx(input.funcs.size() == input.funcBC.size());
+
+  constexpr size_t kLoadChunkSize = 500;
+  std::vector<MaterializeChunk> chunks;
+  auto const chunkFor = [&] (size_t size) -> MaterializeChunk& {
+    if (chunks.empty() || chunks.back().size() + size > kLoadChunkSize) {
+      chunks.emplace_back();
+    }
+    return chunks.back();
+  };
+
+  TSStringToOneT<Index::Input::R<php::ClassBytecode>> classBytecode;
+  classBytecode.reserve(input.classBC.size());
+  for (auto& bc : input.classBC) {
+    always_assert(
+      classBytecode.emplace(bc.name, std::move(bc.bc)).second
+    );
+  }
+
+  for (auto& cls : input.classes) {
+    auto const it = classBytecode.find(cls.name);
+    always_assert(it != end(classBytecode));
+    chunkFor(2).classes.emplace_back(
+      std::move(cls.cls),
+      std::move(it->second)
+    );
+    classBytecode.erase(it);
+  }
+  always_assert(classBytecode.empty());
+
+  using FuncBytecodeRef = Index::Input::R<php::FuncBytecode>;
+  FSStringToOneT<FuncBytecodeRef> funcBytecode;
+  FSStringToOneT<SStringToOneT<FuncBytecodeRef>> methCallerBytecode;
+  funcBytecode.reserve(input.funcBC.size());
+  methCallerBytecode.reserve(input.funcBC.size());
+  for (auto& bc : input.funcBC) {
+    if (bc.methCaller) {
+      always_assert(
+        methCallerBytecode[bc.name]
+          .emplace(bc.unit, std::move(bc.bc))
+          .second
+      );
+    } else {
+      always_assert(
+        funcBytecode.emplace(bc.name, std::move(bc.bc)).second
+      );
+    }
+  }
+
+  for (auto& func : input.funcs) {
+    if (func.methCaller) {
+      auto const nameIt = methCallerBytecode.find(func.name);
+      always_assert(nameIt != end(methCallerBytecode));
+      auto const unitIt = nameIt->second.find(func.unit);
+      always_assert(unitIt != end(nameIt->second));
+      chunkFor(2).funcs.emplace_back(
+        std::move(func.func),
+        std::move(unitIt->second)
+      );
+      nameIt->second.erase(unitIt);
+      if (nameIt->second.empty()) methCallerBytecode.erase(nameIt);
+    } else {
+      auto const it = funcBytecode.find(func.name);
+      always_assert(it != end(funcBytecode));
+      chunkFor(2).funcs.emplace_back(
+        std::move(func.func),
+        std::move(it->second)
+      );
+      funcBytecode.erase(it);
+    }
+  }
+  always_assert(funcBytecode.empty());
+  always_assert(methCallerBytecode.empty());
+
+  for (auto& unit : input.units) {
+    chunkFor(1).units.emplace_back(std::move(unit.unit));
+  }
+
+  return chunks;
+}
+
+coro::Task<LoadedMaterializeChunk> load_materialize_chunk(
+    Client& client,
+    MaterializeChunk chunk) {
+  co_await coro::co_reschedule_on_current_executor;
+
+  auto [classes, funcs, units] = co_await coro::collectAll(
+    client.load(std::move(chunk.classes)),
+    client.load(std::move(chunk.funcs)),
+    client.load(std::move(chunk.units))
+  );
+  co_return LoadedMaterializeChunk{
+    std::move(classes),
+    std::move(funcs),
+    std::move(units)
+  };
+}
+
+void add_materialize_chunk(
+    php::Program& program,
+    LoadedMaterializeChunk chunk) {
+  for (auto& [cls, bytecode] : chunk.classes) {
+    always_assert(bytecode->cls == cls->name);
+    always_assert(
+      bytecode->methodBCs.size() ==
+      cls->methods.size() + cls->closures.size()
+    );
+    size_t idx = 0;
+    for (auto& method : cls->methods) {
+      assertx(idx < bytecode->methodBCs.size());
+      auto& methodBC = bytecode->methodBCs[idx++];
+      always_assert(methodBC.name == method->name);
+      always_assert(!method->rawBlocks);
+      method->rawBlocks = std::move(methodBC.bc);
+    }
+    for (auto& closure : cls->closures) {
+      assertx(idx < bytecode->methodBCs.size());
+      auto& methodBC = bytecode->methodBCs[idx++];
+      assertx(closure->methods.size() == 1);
+      always_assert(methodBC.name == closure->methods[0]->name);
+      always_assert(!closure->methods[0]->rawBlocks);
+      closure->methods[0]->rawBlocks = std::move(methodBC.bc);
+    }
+    assertx(idx == bytecode->methodBCs.size());
+    program.classes.emplace_back(std::move(cls));
+  }
+
+  for (auto& [func, bytecode] : chunk.funcs) {
+    always_assert(bytecode->name == func->name);
+    always_assert(!func->rawBlocks);
+    func->rawBlocks = std::move(bytecode->bc);
+    program.funcs.emplace_back(std::move(func));
+  }
+
+  program.units.insert(
+    end(program.units),
+    std::make_move_iterator(begin(chunk.units)),
+    std::make_move_iterator(end(chunk.units))
+  );
+}
+
+folly::coro::Task<php::Program> materialize_index_input_impl(
+    Index::Input input,
+    TicketExecutor& executor,
+    Client& client,
+    StructuredLogEntry* sample) {
+  trace_time tracer{"materialize index input", sample};
+  tracer.ignore_client_stats();
+
+  auto chunks = make_materialize_chunks(std::move(input));
+
+  Optional<php::FuncBytecode::Reuser> reuser;
+  reuser.emplace();
+  php::FuncBytecode::s_reuser = reuser.get_pointer();
+  SCOPE_EXIT { php::FuncBytecode::s_reuser = nullptr; };
+
+  php::Program program;
+
+  std::vector<coro::TaskWithExecutor<LoadedMaterializeChunk>> tasks;
+  tasks.reserve(chunks.size());
+  for (auto& chunk : chunks) {
+    tasks.emplace_back(
+      co_withExecutor(
+        executor.sticky(),
+        load_materialize_chunk(client, std::move(chunk))
+      )
+    );
+  }
+  auto loaded = co_await coro::collectAllRange(std::move(tasks));
+  for (auto& chunk : loaded) {
+    add_materialize_chunk(program, std::move(chunk));
+  }
+
+  Logger::FInfo(
+    "{}",
+    client.getStats().toString(
+      "hhbbc",
+      fmt::format(
+        "{} units, {} classes, {} funcs",
+        program.units.size(),
+        program.classes.size(),
+        program.funcs.size()
+      )
+    )
+  );
+  if (sample) client.getStats().logSample("hhbbc", *sample);
+
+  php::FuncBytecode::s_reuser = nullptr;
+  reuser.reset();
+
+  program.units.shrink_to_fit();
+  program.classes.shrink_to_fit();
+  program.funcs.shrink_to_fit();
+  co_return std::move(program);
+}
+
+}
+
+folly::coro::Task<php::Program> materialize_index_input(
+    Index::Input input,
+    std::unique_ptr<TicketExecutor> executor,
+    std::unique_ptr<Client> client,
+    DisposeCallback dispose,
+    StructuredLogEntry* sample) {
+  auto result = co_await coro::co_awaitTry(materialize_index_input_impl(
+    std::move(input), *executor, *client, sample
+  ));
+  dispose(std::move(executor), std::move(client));
+  co_yield coro::co_result(std::move(result));
+}
+
+//////////////////////////////////////////////////////////////////////
+
 Index::Index(Input input,
              Config config,
              std::unique_ptr<TicketExecutor> executor,
@@ -19936,6 +20188,15 @@ Index::Index(Input input,
   compute_iface_vtables(*m_data, std::move(ifaceConflicts));
   check_invariants(*m_data);
   bundle_classes(*m_data);
+}
+
+Index::Index(php::Program program, StructuredLogEntry* sample)
+  : m_data{std::make_unique<IndexData>(this)}
+{
+  m_data->sample = sample;
+  m_data->program = std::make_unique<php::Program>(std::move(program));
+  add_system_constants_to_index(*m_data);
+  add_program_to_index(*m_data);
 }
 
 // Defined here so IndexData is a complete type for the unique_ptr
