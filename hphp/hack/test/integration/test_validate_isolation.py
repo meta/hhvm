@@ -11,6 +11,7 @@ from hphp.hack.test.integration.test_case import TestCase
 
 
 config_error_exit_code = 224
+input_error_exit_code = 10
 
 
 class TestValidateIsolation(TestCase[common_tests.CommonTestDriver]):
@@ -259,3 +260,17 @@ class TestValidateIsolation(TestCase[common_tests.CommonTestDriver]):
         self.assertEqual(config_error_exit_code, retcode)
         self.assertIn("rust_provider_backend", output)
         self.test_driver.check_cmd(["No errors!"])
+
+    def test_validate_isolation_refuses_an_empty_list(self) -> None:
+        # Nothing to check is not the same as nothing wrong, so it is an input
+        # error rather than a pass.
+        self.test_driver.start_hh_server(changed_files=[], args=["--no-load"])
+
+        list_file = os.path.join(self.test_driver.repo_dir, "empty.txt")
+        with open(list_file, "w") as f:
+            f.write("\n")
+        output, stderr, retcode = self.test_driver.run_check(
+            options=["--validate-isolation", list_file]
+        )
+        self.assertEqual(input_error_exit_code, retcode, output)
+        self.assertIn("names no files", stderr)

@@ -1205,6 +1205,12 @@ let main_internal
                | "" -> None
                | path -> Some path)
     in
+    if List.is_empty files then begin
+      Printf.eprintf
+        "%s names no files. --validate-isolation takes a file of repo-relative paths, one per line.\n"
+        list_file;
+      raise Exit_status.(Exit_with Input_error)
+    end;
     let%lwt (result, telemetry) =
       rpc args (Server_command_types.VALIDATE_ISOLATION files)
     in
