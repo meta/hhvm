@@ -317,7 +317,8 @@ let rec hint_to_angle h =
     let values = List.map hints ~f:hint_to_angle in
     Hint.(Key (Union_ values))
   | Hoption h -> Hint.(Key (Option (hint_to_angle h)))
-  | Hshape { nsi_allows_unknown_fields; nsi_field_map; _ } ->
+  | Hshape { nsi_allows_unknown_fields; nsi_field_map; nsi_unknown_fields_type }
+    ->
     let shape_field_name_to_hint = function
       | Ast_defs.SFlit_str (_, s) -> ShapeKV.Sf_lit_string s
       | Ast_defs.SFclassname (_, c) ->
@@ -337,12 +338,17 @@ let rec hint_to_angle h =
         }
     in
     let fields =
-      List.filter_map nsi_field_map ~f:(function
-          | Aast_defs.SE_field sfi -> Some sfi
+      List.map nsi_field_map ~f:(function
+          | Aast_defs.SE_field sfi -> Some (f sfi)
           | Aast_defs.SE_splat _ -> None)
+      |> Option.all
     in
-    let map_ = List.map ~f fields in
-    Hint.(Key (Shape { open_ = nsi_allows_unknown_fields; map_ }))
+    (match (nsi_unknown_fields_type, fields) with
+    | (None, Some map_) ->
+      Hint.(Key (Shape { open_ = nsi_allows_unknown_fields; map_ }))
+    | (Some _, _)
+    | (_, None) ->
+      Hint.(Key (Other (Type.Key (hint_to_string ~is_ctx:false h)))))
   | Happly ((_file_pos, cn), hints) ->
     let values = List.map hints ~f:hint_to_angle in
     Hint.(Key (Apply { class_name = Util.make_qname cn; values }))
