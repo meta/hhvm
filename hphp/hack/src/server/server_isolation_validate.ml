@@ -178,23 +178,40 @@ let go
     genv.Server_env.local_config
       .Server_local_config.isolation_allow_decl_repackaging
   in
-  (* Two ways this server cannot answer. Raising would take the server down and
-     reach the caller as a bare disconnection, so the reason is returned
-     instead. *)
+  (* Two ways this server cannot answer, both reported at once since each takes
+     a restart to fix. Raising would take the server down and reach the caller
+     as a bare disconnection, so the reason is returned instead. *)
+  let uses_rust_backend =
+    match Provider_context.get_backend ctx with
+    (* The Rust backend copies the package configuration when it initialises,
+       so a candidate added to [ctx] never reaches the code that enforces
+       packages: every file stays where it was and the run reports violations
+       that are not there. *)
+    | Provider_backend.Rust_provider_backend _ -> true
+    | _ -> false
+  in
   let refused =
-    if not allow_repackaging then
-      Some
-        "this server does not permit decl repackaging; restart it with isolation_allow_decl_repackaging=true, and only where nothing else depends on it"
+    let problems =
+      List.filter_map
+        [
+          ( not allow_repackaging,
+            "this server does not permit decl repackaging",
+            "isolation_allow_decl_repackaging=true" );
+          ( uses_rust_backend,
+            "the Rust provider backend keeps its own copy of the package configuration, which a synthesized package cannot reach",
+            "rust_provider_backend=false" );
+        ]
+        ~f:(fun (applies, reason, setting) ->
+          Option.some_if applies (reason, setting))
+    in
+    if List.is_empty problems then
+      None
     else
-      match Provider_context.get_backend ctx with
-      (* The Rust backend copies the package configuration when it initialises,
-         so a candidate added to [ctx] never reaches the code that enforces
-         packages: every file stays where it was and the run reports violations
-         that are not there. *)
-      | Provider_backend.Rust_provider_backend _ ->
-        Some
-          "the Rust provider backend keeps its own copy of the package configuration, which a synthesized package cannot reach; restart the server with rust_provider_backend=false"
-      | _ -> None
+      Some
+        (Printf.sprintf
+           "%s; restart the server with %s, and only where nothing else depends on it"
+           (String.concat ~sep:", and " (List.map problems ~f:fst))
+           (String.concat ~sep:" and " (List.map problems ~f:snd)))
   in
   match refused with
   | Some _ ->

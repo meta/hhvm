@@ -274,3 +274,31 @@ class TestValidateIsolation(TestCase[common_tests.CommonTestDriver]):
         )
         self.assertEqual(input_error_exit_code, retcode, output)
         self.assertIn("names no files", stderr)
+
+    def test_validate_isolation_names_every_missing_setting(self) -> None:
+        # Each setting takes a restart, so a server missing both says so at
+        # once rather than sending the caller round twice.
+        with open(os.path.join(self.test_driver.repo_dir, "both.php"), "w") as f:
+            f.write("<?hh\nfunction both(): void {}\n")
+        self.test_driver.start_hh_server(
+            changed_files=["both.php"],
+            args=[
+                "--no-load",
+                "--config",
+                "rust_provider_backend=true",
+                "--config",
+                "shm_use_sharded_hashtbl=true",
+                "--config",
+                "populate_member_heaps=false",
+            ],
+        )
+
+        list_file = os.path.join(self.test_driver.repo_dir, "both.txt")
+        with open(list_file, "w") as f:
+            f.write("both.php\n")
+        output, _, retcode = self.test_driver.run_check(
+            options=["--validate-isolation", list_file]
+        )
+        self.assertEqual(config_error_exit_code, retcode)
+        self.assertIn("isolation_allow_decl_repackaging", output)
+        self.assertIn("rust_provider_backend", output)
