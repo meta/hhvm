@@ -259,6 +259,7 @@ class TestValidateIsolation(TestCase[common_tests.CommonTestDriver]):
         )
         self.assertEqual(config_error_exit_code, retcode)
         self.assertIn("rust_provider_backend", output)
+        self.assertTrue(output.startswith("Did not run: "), output)
         self.test_driver.check_cmd(["No errors!"])
 
     def test_validate_isolation_refuses_an_empty_list(self) -> None:

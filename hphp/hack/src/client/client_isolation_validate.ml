@@ -39,7 +39,7 @@ let output
     |> print_endline
   else begin
     match result.refused with
-    | Some reason -> Printf.printf "Cannot run here: %s\n" reason
+    | Some reason -> Printf.printf "Did not run: %s\n" reason
     | None ->
       if result.isolatable then
         Printf.printf
