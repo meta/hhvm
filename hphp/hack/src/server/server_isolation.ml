@@ -314,8 +314,9 @@ type run = {
           reports each cluster it grew, and whether two of them overlap is only
           knowable once they are collected. *)
   refused_seeds: int ref;
-      (** Starting files that got no cluster because [closure_of_seed] found
-          none for them. *)
+      (** Starting files in no cluster: when measuring, because
+          [closure_of_seed] found none for them; when growing, because no
+          reported cluster took them. *)
   truncated_clusters: int ref;
       (** Clusters the cap refused a candidate they would otherwise have taken.
           They stopped short of closing, so they are prefixes of packages rather
@@ -605,12 +606,17 @@ let grow_seeds r seeds ~total_seeds ~since =
   let grown = ref 0 in
   (* [visited] stops a seed being grown twice; [claimed] is every file in a
      cluster already reported. *)
-  let (clusters, _visited, _claimed) =
+  let (clusters, visited, _claimed) =
     List.fold
       (List.chunks_of seeds ~length:batch_size)
       ~init:([], Relative_path.Set.empty, Relative_path.Set.empty)
       ~f:(grow_one_batch r ~max_dependents ~total_seeds ~since ~grown)
   in
+  (* A seed no reported cluster took is one nothing could be grown around, or
+     whose cluster was dropped for overlapping an earlier one. Counted so the
+     summary accounts for every starting file, as the default mode's does. *)
+  r.refused_seeds :=
+    List.count seeds ~f:(fun seed -> not (Relative_path.Set.mem visited seed));
   let _t = Hh_logger.log_duration "[isolation] cluster growth" since in
   let sizes = List.rev clusters in
   log_growth_result r ~sizes;
