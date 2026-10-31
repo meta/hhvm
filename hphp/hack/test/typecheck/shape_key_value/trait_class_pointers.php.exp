@@ -1,3 +1,16 @@
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a mixed value [2]
+
+trait_class_pointers.php:6:5
+4 | 
+5 | trait TraitShapeKeyClassPointers {
+6 |   <<__ShapeKey>>
+  |     ^^^^^^^^^^ [1]
+7 |   const mixed SELF_CLASS_POINTER = self::class;
+  |         ^^^^^ [2]
+8 | 
+9 |   <<__ShapeKey>>
+
 error: Typing[4534] Class constant `TraitShapeKeyClassPointers::SELF_CLASS_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
 -> Class pointers, constant forwarding, and computed expressions are not allowed [2]
 
@@ -10,6 +23,19 @@ trait_class_pointers.php:6:5
   |                                    ^^^^^^^^^^^ [2]
 8 | 
 9 |   <<__ShapeKey>>
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a class pointer for UsesTraitShapeKeyClassPointers [2]
+
+trait_class_pointers.php:9:5
+ 7 |   const mixed SELF_CLASS_POINTER = self::class;
+ 8 | 
+ 9 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+10 |   const class<UsesTraitShapeKeyClassPointers> EXPLICIT_CLASS_POINTER = UsesTraitShapeKeyClassPointers::class;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+11 | }
+12 | 
 
 error: Typing[4534] Class constant `TraitShapeKeyClassPointers::EXPLICIT_CLASS_POINTER` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
 -> Class pointers, constant forwarding, and computed expressions are not allowed [2]
@@ -24,4 +50,4 @@ trait_class_pointers.php:9:5
 11 | }
 12 | 
 
-2 errors found
+4 errors found

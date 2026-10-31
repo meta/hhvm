@@ -1,6 +1,7 @@
 <?hh
 
 trait T {
+  <<__ShapeKey>>
   const string KEY = 'key';
 
   public function idx(shape(...) $s): void {

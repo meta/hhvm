@@ -2,6 +2,7 @@
 <<file:__EnableUnstableFeatures('like_type_hints')>>
 
 trait T {
+  <<__ShapeKey>>
   const string KEY = 'key';
 
   public function like(~shape(T::KEY => int) $s): mixed {

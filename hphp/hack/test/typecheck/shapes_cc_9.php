@@ -12,6 +12,7 @@ class C1 {
 
 newtype foo = bar;
 class C2 {
+  <<__ShapeKey>>
   const foo FOO = C1::FOO;
 }
 

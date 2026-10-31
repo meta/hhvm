@@ -15,34 +15,34 @@ shape_class_constant.php:6:3
 error: Typing[4050] Shape uses literal string as field name [1]
 -> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
 
-shape_class_constant.php:14:7
-11 |   const FooShape
-12 |     FOO = shape(
-13 |       self::BAZ_KEY => vec['a', 'b', 'c'],
+shape_class_constant.php:15:7
+12 |   const FooShape
+13 |     FOO = shape(
+14 |       self::BAZ_KEY => vec['a', 'b', 'c'],
    |       ^^^^^^^^^^^^^ [2]
-14 |       'foo' => 2,
+15 |       'foo' => 2,
    |       ^^^^^ [1]
-15 |       'bar' => null,
-16 |     );
+16 |       'bar' => null,
+17 |     );
 
 error: Typing[4050] Shape uses literal string as field name [1]
 -> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
 
-shape_class_constant.php:15:7
-11 |   const FooShape
-12 |     FOO = shape(
-13 |       self::BAZ_KEY => vec['a', 'b', 'c'],
+shape_class_constant.php:16:7
+12 |   const FooShape
+13 |     FOO = shape(
+14 |       self::BAZ_KEY => vec['a', 'b', 'c'],
    |       ^^^^^^^^^^^^^ [2]
-14 |       'foo' => 2,
-15 |       'bar' => null,
+15 |       'foo' => 2,
+16 |       'bar' => null,
    |       ^^^^^ [1]
-16 |     );
-17 | 
+17 |     );
+18 | 
 
 error: Typing[4108] This shape doesn't have a field `baz` [1]
 -> The shape is defined here [2]
 
-shape_class_constant.php:20:22
+shape_class_constant.php:21:22
  1 | <?hh
  2 | 
  3 | type FooShape = shape(
@@ -58,11 +58,11 @@ shape_class_constant.php:20:22
  8 | 
  9 | class A {
    :
-18 |   public static function getBaz(): varray<string> {
-19 |     // Should throw because the shape uses a constant
-20 |     return self::FOO['baz'];
+19 |   public static function getBaz(): varray<string> {
+20 |     // Should throw because the shape uses a constant
+21 |     return self::FOO['baz'];
    |                      ^^^^^ [1]
-21 |   }
-22 | }
+22 |   }
+23 | }
 
 4 errors found

@@ -1,6 +1,7 @@
 <?hh
 
 class C {
+  <<__ShapeKey>>
   const string KEY = 'KEY';
 
   const mixed X = shape(

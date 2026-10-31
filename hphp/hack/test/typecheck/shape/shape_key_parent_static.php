@@ -5,6 +5,7 @@ class Base {
 }
 
 class Child extends Base {
+  <<__ShapeKey>>
   const string CHILD_KEY = 'child_key';
 
   public function test_parent_const(): shape(parent::KEY => int) {

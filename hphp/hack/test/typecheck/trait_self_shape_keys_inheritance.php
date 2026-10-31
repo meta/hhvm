@@ -1,6 +1,7 @@
 <?hh
 
 trait Keys {
+  <<__ShapeKey>>
   const string KEY = 'key';
 
   public function explicit_key(): shape(Keys::KEY => int) {
@@ -29,6 +30,7 @@ trait RequiredClassKey {
 }
 
 interface I {
+  <<__ShapeKey>>
   const string KEY = 'key';
 }
 

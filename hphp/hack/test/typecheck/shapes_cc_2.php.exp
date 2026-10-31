@@ -1,18 +1,18 @@
 error: Typing[4090] No class constant `X3` in `X` [1]
 -> Declaration of `X` is here [2]
 
-shapes_cc_2.php:22:6
+shapes_cc_2.php:24:6
 12 | // This should fail for using a nonexistent class constant.
 13 | 
 14 | class X {
    |       ^ [2]
-15 |   const string X1 = 'field1';
-16 |   const string X2 = 'field2';
+15 |   <<__ShapeKey>>
+16 |   const string X1 = 'field1';
    :
-20 |   X::X1 => int,
-21 |   X::X2 => bool,
-22 |   X::X3 => bool,
+22 |   X::X1 => int,
+23 |   X::X2 => bool,
+24 |   X::X3 => bool,
    |      ^^ [1]
-23 | );
+25 | );
 
 1 error found

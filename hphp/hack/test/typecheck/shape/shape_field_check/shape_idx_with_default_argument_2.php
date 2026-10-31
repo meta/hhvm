@@ -1,6 +1,7 @@
 <?hh
 
 class TestClass {
+  <<__ShapeKey>>
   const string ID = 'id';
   const string X = 'x';
 

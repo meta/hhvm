@@ -3,6 +3,7 @@
 namespace NS1\NS2;
 
 class C {
+  <<__ShapeKey>>
   const string KEY = 'KEY';
 
   const type TInt = int;

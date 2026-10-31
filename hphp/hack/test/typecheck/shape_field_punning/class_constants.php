@@ -5,6 +5,7 @@
 // field names in shapes. These tests document the expected error behavior.
 
 class MyClass {
+  <<__ShapeKey>>
   const string FIELD_KEY = 'key';
 }
 

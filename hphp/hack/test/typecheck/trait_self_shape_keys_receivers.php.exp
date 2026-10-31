@@ -1,21 +1,21 @@
 error: Naming[2137] `self::KEY` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-trait_self_shape_keys_receivers.php:11:15
- 9 |   >(bool $b, T1 $s1, T2 $s2): int {
-10 |     $s = $b ? $s1 : $s2;
-11 |     return $s[self::KEY];
+trait_self_shape_keys_receivers.php:12:15
+10 |   >(bool $b, T1 $s1, T2 $s2): int {
+11 |     $s = $b ? $s1 : $s2;
+12 |     return $s[self::KEY];
    |               ^^^^^^^^^ [1]
-12 |   }
-13 | 
+13 |   }
+14 | 
 
 error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-trait_self_shape_keys_receivers.php:17:15
-15 |     T as shape(nameof Receivers => int) as shape('other' => string, ...),
-16 |   >(T $s): int {
-17 |     return $s[nameof self];
+trait_self_shape_keys_receivers.php:18:15
+16 |     T as shape(nameof Receivers => int) as shape('other' => string, ...),
+17 |   >(T $s): int {
+18 |     return $s[nameof self];
    |               ^^^^^^^^^^^ [1]
-18 |   }
-19 | 
+19 |   }
+20 | 
 
 2 errors found

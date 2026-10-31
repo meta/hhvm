@@ -15,8 +15,10 @@ type my_shape = shape(
 );
 "
 
-let b_contents = "<?hh // strict
+let b_contents =
+  "<?hh // strict
 class B {
+  <<__ShapeKey>>
   const string KEY = \"KEY\";
 }
 "

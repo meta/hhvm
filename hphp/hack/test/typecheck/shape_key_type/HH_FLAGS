@@ -1,3 +1,2 @@
 --config class_sub_classname=true
---config require_shape_key_attribute=true
 --config include_const_shape_key_values=false

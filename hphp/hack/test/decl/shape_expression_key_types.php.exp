@@ -10,14 +10,14 @@
        sc_implements = []; sc_support_dynamic_type = false;
        sc_consts =
        [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-          scc_name = ([4:16-19], "KEY");
+          scc_name = ([5:16-19], "KEY");
           scc_type =
-          (Rhint ([4:9-15]), (Tapply (([4:9-15], "\\HH\\string"), [])));
-          scc_refs = []; scc_value = None; scc_is_shape_key = false;
-          scc_const_value = Typing_defs.Const_value.CVAbsent };
+          (Rhint ([5:9-15]), (Tapply (([5:9-15], "\\HH\\string"), [])));
+          scc_refs = []; scc_value = None; scc_is_shape_key = true;
+          scc_const_value = Typing_defs.Const_value.CVLabel };
          { Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-           scc_name = ([6:15-16], "X");
-           scc_type = (Rhint ([6:9-14]), Tmixed);
+           scc_name = ([7:15-16], "X");
+           scc_type = (Rhint ([7:9-14]), Tmixed);
            scc_refs =
            [((Typing_defs.From "\\C"), "KEY");
              ((Typing_defs.From "\\C"), "class")];

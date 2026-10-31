@@ -8,11 +8,11 @@ shapes_cc_11.php--use.php:4:3
   |   ^^^^^^^^ [1]
 5 | );
 
-shapes_cc_11.php--def.php:5:9
-3 | newtype blah2 = string;
+shapes_cc_11.php--def.php:6:9
 4 | class Foo {
-5 |   const blah2 BAR = 'bar';
+5 |   <<__ShapeKey>>
+6 |   const blah2 BAR = 'bar';
   |         ^^^^^ [2]
-6 | }
+7 | }
 
 1 error found

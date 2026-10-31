@@ -2,7 +2,7 @@
 <<__SupportDynamicType>>
 class TestClass { // 2. Rename TestClass
   const CONSTANT = 5;
-  const string STR_CONSTANT = "hello";
+  <<__ShapeKey>> const string STR_CONSTANT = "hello";
   const vec<int> VEC_INT_CONSTANT = vec [1, 2, 3, 4];
   public int $property;
 

@@ -10,7 +10,9 @@
  */
 
 class X {
+  <<__ShapeKey>>
   const string X1 = 'field1';
+  <<__ShapeKey>>
   const int X2 = 2;
 }
 

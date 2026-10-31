@@ -1,15 +1,15 @@
 error: Typing[4049] Shape uses class constant as field name [1]
 -> But expected a literal string. Shape fields cannot be a mix of literals and constants. [2]
 
-shape_typeconst1.php:8:5
- 4 |   const BAZ_KEY = '';
- 5 |   const type TShape = shape(
- 6 |     'foo' => int,
+shape_typeconst1.php:9:5
+ 5 |   const BAZ_KEY = '';
+ 6 |   const type TShape = shape(
+ 7 |     'foo' => int,
    |     ^^^^^ [2]
- 7 |     'bar' => string,
- 8 |     C::BAZ_KEY => bool,
+ 8 |     'bar' => string,
+ 9 |     C::BAZ_KEY => bool,
    |     ^^^^^^^^^^ [1]
- 9 |   );
-10 | }
+10 |   );
+11 | }
 
 1 error found

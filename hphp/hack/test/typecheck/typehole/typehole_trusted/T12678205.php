@@ -7,7 +7,9 @@ class C {
   // - not equal as far as static type-checking is concerned
   // - equal for runtime indexing :-(
   // So unsound
+  <<__ShapeKey>>
   const string OfB = "whatevs";
+  <<__ShapeKey>>
   const string OfC = "whatevs";
   public function Foo():void { echo 'Foo'; }
 }

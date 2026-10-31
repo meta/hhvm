@@ -11,8 +11,34 @@ shape_key_value.php:27:5
 29 |   <<__ShapeKey>>
 30 |   abstract const string MISSING;
 
+error: Typing[4129] Abstract constant `AbstractShapeKeyValues::DEFAULTED` cannot be used as a shape key [1]
+-> Declaration is here [2]
+
+shape_key_value.php:27:5
+25 |   <<__ShapeKey>>
+26 |   const string CONCRETE = 'concrete';
+27 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+28 |   abstract const string DEFAULTED = 'default';
+   |                         ^^^^^^^^^ [2]
+29 |   <<__ShapeKey>>
+30 |   abstract const string MISSING;
+
 error: Typing[4535] Abstract class constant `AbstractShapeKeyValues::MISSING` cannot be used as a shape key [1]
 -> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+shape_key_value.php:29:5
+27 |   <<__ShapeKey>>
+28 |   abstract const string DEFAULTED = 'default';
+29 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+30 |   abstract const string MISSING;
+   |                         ^^^^^^^ [2]
+31 | }
+32 | 
+
+error: Typing[4129] Abstract constant `AbstractShapeKeyValues::MISSING` cannot be used as a shape key [1]
+-> Declaration is here [2]
 
 shape_key_value.php:29:5
 27 |   <<__ShapeKey>>
@@ -63,4 +89,20 @@ shape_key_value.php:38:5
 40 | }
 41 | 
 
-5 errors found
+error: Typing[4533] Class constant `UnmarkedValueCheck::KEY` used as a shape key must be annotated with `<<__ShapeKey>>`. Prefer using an enum constant as a shape key. [1]
+-> The class constant is declared here [2]
+
+shape_key_value.php:49:37
+41 | 
+42 | abstract class UnmarkedValueCheck {
+43 |   const string KEY = 'unmarked';
+   |                ^^^ [2]
+44 |   const string COMPUTED = 'computed'.'value';
+45 |   abstract const string DEFAULTED = 'default';
+46 |   abstract const string MISSING;
+47 | }
+48 | 
+49 | type UnmarkedValueCheckType = shape(UnmarkedValueCheck::KEY => int);
+   |                                     ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+8 errors found

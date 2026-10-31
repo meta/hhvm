@@ -430,10 +430,6 @@ impl HhConfig {
                 "check_duplicate_enum_values",
                 default.tco_check_duplicate_enum_values,
             )?,
-            tco_require_shape_key_attribute: hhconfig.get_bool_or(
-                "require_shape_key_attribute",
-                default.tco_require_shape_key_attribute,
-            )?,
             tco_require_const_shape_key_be_resolvable: hhconfig.get_bool_or(
                 "require_const_shape_key_be_resolvable",
                 default.tco_require_const_shape_key_be_resolvable,

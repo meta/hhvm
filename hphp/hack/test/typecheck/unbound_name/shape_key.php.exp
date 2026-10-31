@@ -1,11 +1,11 @@
 error: Naming[2049] Unbound name: `NotFound` (an object type) [1]
 
-shape_key.php:13:5
-11 | type my_shape2 = shape(
-12 |   "HELLO" => shape(
-13 |     NotFound::KEY => string,
+shape_key.php:14:5
+12 | type my_shape2 = shape(
+13 |   "HELLO" => shape(
+14 |     NotFound::KEY => string,
    |     ^^^^^^^^ [1]
-14 |   ),
-15 | );
+15 |   ),
+16 | );
 
 1 error found

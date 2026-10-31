@@ -6,7 +6,9 @@ type my_shape = shape(
 );
 
 class C {
+  <<__ShapeKey>>
   const int KEY1 = 1;
+  <<__ShapeKey>>
   const int KEY2 = 2;
 }
 

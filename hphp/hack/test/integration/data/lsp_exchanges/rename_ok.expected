@@ -297,11 +297,11 @@
             "range": {
               "start": {
                 "line": 4,
-                "character": 15
+                "character": 30
               },
               "end": {
                 "line": 4,
-                "character": 27
+                "character": 42
               }
             },
             "newText": "ANOTHER_STR_CONSTANT"

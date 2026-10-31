@@ -1,1 +1,21 @@
-No errors
+error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
+
+shape_key_values.php:33:28
+31 | 
+32 |   <<__ShapeKey>>
+33 |   const string SELF_NAME = nameof self;
+   |                            ^^^^^^^^^^^ [1]
+34 | 
+35 |   <<__ShapeKey>>
+
+error: Naming[2137] `self::LITERAL` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
+
+shape_key_values.php:36:26
+34 | 
+35 |   <<__ShapeKey>>
+36 |   const int SELF_CONST = self::LITERAL;
+   |                          ^^^^^^^^^^^^^ [1]
+37 | }
+38 | 
+
+2 errors found

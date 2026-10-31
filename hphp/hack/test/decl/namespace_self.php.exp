@@ -10,36 +10,36 @@
        sc_implements = []; sc_support_dynamic_type = false;
        sc_consts =
        [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-          scc_name = ([6:16-19], "KEY");
+          scc_name = ([7:16-19], "KEY");
           scc_type =
-          (Rhint ([6:9-15]), (Tapply (([6:9-15], "\\HH\\string"), [])));
-          scc_refs = []; scc_value = None; scc_is_shape_key = false;
-          scc_const_value = Typing_defs.Const_value.CVAbsent }
+          (Rhint ([7:9-15]), (Tapply (([7:9-15], "\\HH\\string"), [])));
+          scc_refs = []; scc_value = None; scc_is_shape_key = true;
+          scc_const_value = Typing_defs.Const_value.CVLabel }
          ];
        sc_typeconsts =
-       [{ Shallow_decl_defs.stc_name = ([8:14-18], "TInt");
+       [{ Shallow_decl_defs.stc_name = ([9:14-18], "TInt");
           stc_kind =
           (Typing_defs.TCConcrete
-             { Typing_defs.tc_type = (Rhint ([8:21-24]), (Tprim Tint)) });
+             { Typing_defs.tc_type = (Rhint ([9:21-24]), (Tprim Tint)) });
           stc_enforceable = ([Pos.none], false); stc_reifiable = None;
           stc_is_ctx = false };
-         { Shallow_decl_defs.stc_name = ([9:14-20], "TShape");
+         { Shallow_decl_defs.stc_name = ([10:14-20], "TShape");
            stc_kind =
            (Typing_defs.TCConcrete
               { Typing_defs.tc_type =
-                (Rhint ([9:23-11:4]),
+                (Rhint ([10:23-12:4]),
                  (Tshape
                     { s_origin = Typing_defs_core.Missing_origin;
                       s_fields =
                       { (Typing_defs_core.TSFclass_const (
-                           ([10:5-9], "\\NS1\\NS2\\C"), ([10:11-14], "KEY"))) ->
+                           ([11:5-9], "\\NS1\\NS2\\C"), ([11:11-14], "KEY"))) ->
                         { sft_optional = false;
                           sft_ty =
-                          (Rhint ([10:18-28]),
+                          (Rhint ([11:18-28]),
                            (Taccess
-                              ((Rhint ([10:18-28]),
+                              ((Rhint ([11:18-28]),
                                 (Tapply (([5:7-8], "\\NS1\\NS2\\C"), []))),
-                               [([10:24-28], "TInt")])))
+                               [([11:24-28], "TInt")])))
                           } };
                       s_unknown_value = (Rhint ([Pos.none]), (Tunion [])) }))
                 });
@@ -49,19 +49,19 @@
        sc_props = []; sc_sprops = []; sc_constructor = None;
        sc_static_methods = [];
        sc_methods =
-       [{ Shallow_decl_defs.sm_name = ([13:19-20], "f");
+       [{ Shallow_decl_defs.sm_name = ([14:19-20], "f");
           sm_type =
-          (Rwitness_from_decl ([13:19-20]),
+          (Rwitness_from_decl ([14:19-20]),
            (Tfun
               { ft_tparams = []; ft_where_constraints = [];
                 ft_params =
-                [{ fp_pos = [13:32-34]; fp_name = (Some "$x");
+                [{ fp_pos = [14:32-34]; fp_name = (Some "$x");
                    fp_type =
-                   (Rhint ([13:21-31]),
+                   (Rhint ([14:21-31]),
                     (Taccess
-                       ((Rhint ([13:21-31]),
+                       ((Rhint ([14:21-31]),
                          (Tapply (([5:7-8], "\\NS1\\NS2\\C"), []))),
-                        [([13:27-31], "TInt")])));
+                        [([14:27-31], "TInt")])));
                    fp_flags =
                    { Typing_defs_flags.FunParam.accept_disposable = false;
                      inout = false; is_optional = false; readonly = false;
@@ -70,8 +70,8 @@
                    fp_def_value = None }
                   ];
                 ft_implicit_params =
-                { capability = (CapDefaults [13:19-20]) };
-                ft_ret = (Rhint ([13:37-41]), (Tprim Tvoid));
+                { capability = (CapDefaults [14:19-20]) };
+                ft_ret = (Rhint ([14:37-41]), (Tprim Tvoid));
                 ft_flags =
                 { Typing_defs_flags.Fun.return_disposable = false;
                   async = false; generator = false; fun_kind = FSync;

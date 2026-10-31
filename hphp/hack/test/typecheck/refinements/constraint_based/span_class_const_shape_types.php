@@ -1,6 +1,7 @@
 <?hh
 
 final class HasConst {
+  <<__ShapeKey>>
   const string A = 'a';
 }
 

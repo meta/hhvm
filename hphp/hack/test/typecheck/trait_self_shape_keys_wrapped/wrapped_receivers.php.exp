@@ -1,41 +1,41 @@
 error: Naming[2137] `self::KEY` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-wrapped_receivers.php:8:15
- 6 | 
- 7 |   public function like(~shape(T::KEY => int) $s): mixed {
- 8 |     return $s[self::KEY];
+wrapped_receivers.php:9:15
+ 7 | 
+ 8 |   public function like(~shape(T::KEY => int) $s): mixed {
+ 9 |     return $s[self::KEY];
    |               ^^^^^^^^^ [1]
- 9 |   }
-10 | 
+10 |   }
+11 | 
 
 error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-wrapped_receivers.php:12:15
-10 | 
-11 |   public function supportdyn(supportdyn<shape(nameof T => int)> $s): mixed {
-12 |     return $s[nameof self];
+wrapped_receivers.php:13:15
+11 | 
+12 |   public function supportdyn(supportdyn<shape(nameof T => int)> $s): mixed {
+13 |     return $s[nameof self];
    |               ^^^^^^^^^^^ [1]
-13 |   }
-14 | 
+14 |   }
+15 | 
 
 error: Naming[2137] `self::KEY` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-wrapped_receivers.php:16:15
-14 | 
-15 |   public function nullable(?shape(T::KEY => int) $s): ?int {
-16 |     return $s[self::KEY] ?? null;
+wrapped_receivers.php:17:15
+15 | 
+16 |   public function nullable(?shape(T::KEY => int) $s): ?int {
+17 |     return $s[self::KEY] ?? null;
    |               ^^^^^^^^^ [1]
-17 |   }
-18 | 
+18 |   }
+19 | 
 
 error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-wrapped_receivers.php:22:15
-20 |     TS as supportdyn<~?shape(nameof T => int)>,
-21 |   >(TS $s): mixed {
-22 |     return $s[nameof self] ?? null;
+wrapped_receivers.php:23:15
+21 |     TS as supportdyn<~?shape(nameof T => int)>,
+22 |   >(TS $s): mixed {
+23 |     return $s[nameof self] ?? null;
    |               ^^^^^^^^^^^ [1]
-23 |   }
-24 | }
+24 |   }
+25 | }
 
 4 errors found

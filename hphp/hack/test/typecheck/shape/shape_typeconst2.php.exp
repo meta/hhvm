@@ -1,28 +1,28 @@
 error: Typing[4050] Shape uses literal string as field name [1]
 -> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
 
-shape_typeconst2.php:7:5
-4 |   const FOO_KEY = 'FOO';
-5 |   const type TShape = shape(
-6 |     C::FOO_KEY => string,
-  |     ^^^^^^^^^^ [2]
-7 |     'bar' => int,
-  |     ^^^^^ [1]
-8 |     'baz' => bool,
-9 |   );
+shape_typeconst2.php:8:5
+ 5 |   const FOO_KEY = 'FOO';
+ 6 |   const type TShape = shape(
+ 7 |     C::FOO_KEY => string,
+   |     ^^^^^^^^^^ [2]
+ 8 |     'bar' => int,
+   |     ^^^^^ [1]
+ 9 |     'baz' => bool,
+10 |   );
 
 error: Typing[4050] Shape uses literal string as field name [1]
 -> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
 
-shape_typeconst2.php:8:5
- 4 |   const FOO_KEY = 'FOO';
- 5 |   const type TShape = shape(
- 6 |     C::FOO_KEY => string,
+shape_typeconst2.php:9:5
+ 5 |   const FOO_KEY = 'FOO';
+ 6 |   const type TShape = shape(
+ 7 |     C::FOO_KEY => string,
    |     ^^^^^^^^^^ [2]
- 7 |     'bar' => int,
- 8 |     'baz' => bool,
+ 8 |     'bar' => int,
+ 9 |     'baz' => bool,
    |     ^^^^^ [1]
- 9 |   );
-10 | }
+10 |   );
+11 | }
 
 2 errors found

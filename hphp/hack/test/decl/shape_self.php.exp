@@ -10,25 +10,25 @@
        sc_implements = []; sc_support_dynamic_type = false;
        sc_consts =
        [{ Shallow_decl_defs.scc_abstract = Typing_defs.CCConcrete;
-          scc_name = ([4:16-19], "KEY");
+          scc_name = ([5:16-19], "KEY");
           scc_type =
-          (Rhint ([4:9-15]), (Tapply (([4:9-15], "\\HH\\string"), [])));
-          scc_refs = []; scc_value = None; scc_is_shape_key = false;
-          scc_const_value = Typing_defs.Const_value.CVAbsent }
+          (Rhint ([5:9-15]), (Tapply (([5:9-15], "\\HH\\string"), [])));
+          scc_refs = []; scc_value = None; scc_is_shape_key = true;
+          scc_const_value = (Typing_defs.Const_value.CVString "key") }
          ];
        sc_typeconsts =
-       [{ Shallow_decl_defs.stc_name = ([6:14-24], "TClassType");
+       [{ Shallow_decl_defs.stc_name = ([7:14-24], "TClassType");
           stc_kind =
           (Typing_defs.TCConcrete
              { Typing_defs.tc_type =
-               (Rhint ([6:27-8:4]),
+               (Rhint ([7:27-9:4]),
                 (Tshape
                    { s_origin = Typing_defs_core.Missing_origin;
                      s_fields =
                      { (Typing_defs_core.TSFclass_const (
-                          ([7:5-9], "\\TestClass"), ([7:11-14], "KEY"))) ->
+                          ([8:5-9], "\\TestClass"), ([8:11-14], "KEY"))) ->
                        { sft_optional = false;
-                         sft_ty = (Rhint ([7:18-21]), (Tprim Tint)) } };
+                         sft_ty = (Rhint ([8:18-21]), (Tprim Tint)) } };
                      s_unknown_value = (Rhint ([Pos.none]), (Tunion [])) }))
                });
           stc_enforceable = ([Pos.none], false); stc_reifiable = None;

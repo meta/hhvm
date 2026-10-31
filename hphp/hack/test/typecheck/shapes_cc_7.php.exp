@@ -1,30 +1,43 @@
 error: Typing[4052] A shape field name must be an `int` or `string` [1]
 -> Not a bool [2]
 
-shapes_cc_7.php:20:3
-12 | class X {
-13 |   const string X1 = 'field1';
-14 |   const bool X2 = true;
+shapes_cc_7.php:15:5
+13 |   <<__ShapeKey>>
+14 |   const string X1 = 'field1';
+15 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+16 |   const bool X2 = true;
    |         ^^^^ [2]
-15 | }
-16 | 
-17 | // Should fail for using a non int/string key
-18 | type myshape = shape(
-19 |   X::X1 => int,
-20 |   X::X2 => bool,
+17 | }
+18 | 
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a bool [2]
+
+shapes_cc_7.php:22:3
+14 |   const string X1 = 'field1';
+15 |   <<__ShapeKey>>
+16 |   const bool X2 = true;
+   |         ^^^^ [2]
+17 | }
+18 | 
+19 | // Should fail for using a non int/string key
+20 | type myshape = shape(
+21 |   X::X1 => int,
+22 |   X::X2 => bool,
    |   ^^^^^ [1]
-21 | );
+23 | );
 
 error: Typing[4086] Shape field name is a bool class constant [1]
 -> But expected a string [2]
 
-shapes_cc_7.php:20:3
-17 | // Should fail for using a non int/string key
-18 | type myshape = shape(
-19 |   X::X1 => int,
+shapes_cc_7.php:22:3
+19 | // Should fail for using a non int/string key
+20 | type myshape = shape(
+21 |   X::X1 => int,
    |   ^^^^^ [2]
-20 |   X::X2 => bool,
+22 |   X::X2 => bool,
    |   ^^^^^ [1]
-21 | );
+23 | );
 
-2 errors found
+3 errors found

@@ -1,6 +1,7 @@
 <?hh
 
 class A {
+  <<__ShapeKey>>
   const string KEY = "KEY";
 }
 

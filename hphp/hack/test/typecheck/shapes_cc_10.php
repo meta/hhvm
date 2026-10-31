@@ -3,7 +3,9 @@
 
 newtype FooType = int;
 class X {
+  <<__ShapeKey>>
   const FooType X1 = 0;
+  <<__ShapeKey>>
   const FooType X2 = 1;
 }
 

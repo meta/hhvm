@@ -1,6 +1,7 @@
 <?hh
 
 trait Receivers {
+  <<__ShapeKey>>
   const string KEY = 'key';
 
   public function union<

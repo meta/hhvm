@@ -1,3 +1,13 @@
+error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
+
+trait_nameof_self.php:5:28
+3 | trait TraitShapeKeyValues {
+4 |   <<__ShapeKey>>
+5 |   const string SELF_NAME = nameof self;
+  |                            ^^^^^^^^^^^ [1]
+6 | 
+7 |   <<__ShapeKey>>
+
 error: Typing[4534] Class constant `TraitShapeKeyValues::SELF_NAME` marked with `<<__ShapeKey>>` cannot be initialized with `nameof self` in a trait [1]
 -> `nameof self` resolves to the using class; use a literal or an explicit class name with `nameof` [2]
 
@@ -11,4 +21,4 @@ trait_nameof_self.php:4:5
 6 | 
 7 |   <<__ShapeKey>>
 
-1 error found
+2 errors found

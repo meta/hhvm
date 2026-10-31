@@ -7,6 +7,7 @@ type FooShape = shape(
 );
 
 class A {
+  <<__ShapeKey>>
   const string BAZ_KEY = 'baz';
   const FooShape
     FOO = shape(

@@ -10,5 +10,6 @@ newtype blah = shape(
 
 newtype blah2 = string;
 class Foo {
+  <<__ShapeKey>>
   const blah2 BAR = 'bar';
 }

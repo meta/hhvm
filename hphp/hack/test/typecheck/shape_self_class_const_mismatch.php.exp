@@ -1,7 +1,7 @@
 error: Typing[4108] This shape doesn't have a field `\OtherClass::KEY_NAME` [1]
 -> The shape is defined here [2]
 
-shape_self_class_const_mismatch.php:15:19
+shape_self_class_const_mismatch.php:17:19
  1 | <?hh
  2 | 
  3 | type MyShape = shape(MyClass::KEY_NAME => int);
@@ -9,11 +9,11 @@ shape_self_class_const_mismatch.php:15:19
  4 | 
  5 | abstract class MyClass {
    :
-13 |   const string KEY_NAME = 'id1';
-14 |   public function example(MyShape $shape): int {
-15 |     return $shape[self::KEY_NAME];
+15 |   const string KEY_NAME = 'id1';
+16 |   public function example(MyShape $shape): int {
+17 |     return $shape[self::KEY_NAME];
    |                   ^^^^^^^^^^^^^^ [1]
-16 |   }
-17 | }
+18 |   }
+19 | }
 
 1 error found

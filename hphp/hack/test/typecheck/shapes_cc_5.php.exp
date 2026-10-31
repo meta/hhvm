@@ -1,13 +1,13 @@
 error: Typing[4086] Shape field name is an int class constant [1]
 -> But expected a string [2]
 
-shapes_cc_5.php:20:3
-17 | // Should fail for mixing int and string class consts
-18 | type myshape = shape(
-19 |   X::X1 => int,
+shapes_cc_5.php:22:3
+19 | // Should fail for mixing int and string class consts
+20 | type myshape = shape(
+21 |   X::X1 => int,
    |   ^^^^^ [2]
-20 |   X::X2 => bool,
+22 |   X::X2 => bool,
    |   ^^^^^ [1]
-21 | );
+23 | );
 
 1 error found

@@ -1,13 +1,13 @@
 error: Typing[4085] Shape field name is class constant from `Y` [1]
 -> But expected constant from `X` [2]
 
-shapes_cc_6.php:22:3
-19 | // Should reject this because it uses two classes
-20 | type myshape = shape(
-21 |   X::X1 => int,
+shapes_cc_6.php:24:3
+21 | // Should reject this because it uses two classes
+22 | type myshape = shape(
+23 |   X::X1 => int,
    |   ^^^^^ [2]
-22 |   Y::X2 => bool,
+24 |   Y::X2 => bool,
    |   ^^^^^ [1]
-23 | );
+25 | );
 
 1 error found

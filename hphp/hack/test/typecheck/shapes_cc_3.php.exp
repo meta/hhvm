@@ -1,13 +1,13 @@
 error: Typing[4050] Shape uses literal string as field name [1]
 -> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
 
-shapes_cc_3.php:20:3
-17 | // Should fail for mixing class const and string literal
-18 | type myshape = shape(
-19 |   X::X1 => int,
+shapes_cc_3.php:21:3
+18 | // Should fail for mixing class const and string literal
+19 | type myshape = shape(
+20 |   X::X1 => int,
    |   ^^^^^ [2]
-20 |   'field2' => bool,
+21 |   'field2' => bool,
    |   ^^^^^^^^ [1]
-21 | );
+22 | );
 
 1 error found

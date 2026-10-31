@@ -1,11 +1,11 @@
-File "shape_to_dict.php", line 15, characters 3-29:
+File "shape_to_dict.php", line 17, characters 3-29:
   dict<arraykey, mixed>
-File "shape_to_dict.php", line 16, characters 3-34:
+File "shape_to_dict.php", line 18, characters 3-34:
   dict<nothing, nothing>
-File "shape_to_dict.php", line 17, characters 3-56:
+File "shape_to_dict.php", line 19, characters 3-56:
   dict<string, (int | string)>
-File "shape_to_dict.php", line 18, characters 3-64:
+File "shape_to_dict.php", line 20, characters 3-64:
   dict<int, (int | string)>
-File "shape_to_dict.php", line 21, characters 3-29:
+File "shape_to_dict.php", line 23, characters 3-29:
   dict<string, int>
 No errors

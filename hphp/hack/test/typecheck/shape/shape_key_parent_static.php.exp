@@ -1,21 +1,21 @@
 error: Parsing[1002] Cannot use `parent::` or `static::` for class constant shape keys [1]
 
-shape_key_parent_static.php:10:46
- 8 |   const string CHILD_KEY = 'child_key';
- 9 | 
-10 |   public function test_parent_const(): shape(parent::KEY => int) {
+shape_key_parent_static.php:11:46
+ 9 |   const string CHILD_KEY = 'child_key';
+10 | 
+11 |   public function test_parent_const(): shape(parent::KEY => int) {
    |                                              ^^^^^^^^^^^ [1]
-11 |     return shape(parent::KEY => 42);
-12 |   }
+12 |     return shape(parent::KEY => 42);
+13 |   }
 
 error: Parsing[1002] Cannot use `parent::` or `static::` for class constant shape keys [1]
 
-shape_key_parent_static.php:14:46
-12 |   }
-13 | 
-14 |   public function test_static_const(): shape(static::CHILD_KEY => int) {
+shape_key_parent_static.php:15:46
+13 |   }
+14 | 
+15 |   public function test_static_const(): shape(static::CHILD_KEY => int) {
    |                                              ^^^^^^^^^^^^^^^^^ [1]
-15 |     return shape(static::CHILD_KEY => 42);
-16 |   }
+16 |     return shape(static::CHILD_KEY => 42);
+17 |   }
 
 2 errors found

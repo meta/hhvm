@@ -1,6 +1,7 @@
 <?hh
 
 trait SelfKey {
+  <<__ShapeKey>>
   const string KEY = 'key';
 
   public function make(): shape(self::KEY => int) {

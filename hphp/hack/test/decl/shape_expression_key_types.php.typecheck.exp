@@ -1,40 +1,40 @@
 error: Parsing[1002] Shape field name must be a nonempty single-quoted string or a class constant [1]
 
-shape_expression_key_types.php:7:5
-5 | 
-6 |   const mixed X = shape(
-7 |     0 => 0,
-  |     ^ [1]
-8 |     's' => 's',
-9 |     nameof C => C::class,
+shape_expression_key_types.php:8:5
+ 6 | 
+ 7 |   const mixed X = shape(
+ 8 |     0 => 0,
+   |     ^ [1]
+ 9 |     's' => 's',
+10 |     nameof C => C::class,
 
 error: Typing[4049] Shape uses class constant as field name [1]
 -> But expected a literal string. Shape fields cannot be a mix of literals and constants. [2]
 
-shape_expression_key_types.php:9:12
- 5 | 
- 6 |   const mixed X = shape(
- 7 |     0 => 0,
+shape_expression_key_types.php:10:12
+ 6 | 
+ 7 |   const mixed X = shape(
+ 8 |     0 => 0,
    |     ^ [2]
- 8 |     's' => 's',
- 9 |     nameof C => C::class,
+ 9 |     's' => 's',
+10 |     nameof C => C::class,
    |            ^ [1]
-10 |     C::KEY => C::KEY,
-11 |   );
+11 |     C::KEY => C::KEY,
+12 |   );
 
 error: Typing[4049] Shape uses class constant as field name [1]
 -> But expected a literal string. Shape fields cannot be a mix of literals and constants. [2]
 
-shape_expression_key_types.php:10:5
- 5 | 
- 6 |   const mixed X = shape(
- 7 |     0 => 0,
+shape_expression_key_types.php:11:5
+ 6 | 
+ 7 |   const mixed X = shape(
+ 8 |     0 => 0,
    |     ^ [2]
- 8 |     's' => 's',
- 9 |     nameof C => C::class,
-10 |     C::KEY => C::KEY,
+ 9 |     's' => 's',
+10 |     nameof C => C::class,
+11 |     C::KEY => C::KEY,
    |     ^^^^^^ [1]
-11 |   );
-12 | }
+12 |   );
+13 | }
 
 3 errors found

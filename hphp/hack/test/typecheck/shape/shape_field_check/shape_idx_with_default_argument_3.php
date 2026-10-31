@@ -1,7 +1,9 @@
 <?hh
 
 class TestClass {
+  <<__ShapeKey>>
   const string ID = 'id';
+  <<__ShapeKey>>
   const string X = 'x';
 
   const type TClassType = shape(

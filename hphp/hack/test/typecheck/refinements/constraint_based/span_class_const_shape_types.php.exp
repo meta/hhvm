@@ -1,17 +1,17 @@
-File "span_class_const_shape_types.php", line 12, characters 5-15:
+File "span_class_const_shape_types.php", line 13, characters 5-15:
   (shape(HasConst::A => int) & not shape(HasConst::A => int))
-File "span_class_const_shape_types.php", line 21, characters 5-15:
+File "span_class_const_shape_types.php", line 22, characters 5-15:
   (shape(HasConst::A => int) & not shape('a' => int))
-File "span_class_const_shape_types.php", line 30, characters 5-15:
+File "span_class_const_shape_types.php", line 31, characters 5-15:
   (shape('a' => int) & not shape(HasConst::A => int))
 warning: Warn[12009] This `is` check is always `true`. The expression on the left has type `shape(HasConst::A => int)` which is a subtype of `shape(HasConst::A => int)`. [1]
 
-span_class_const_shape_types.php:8:7
- 6 | 
- 7 | function f(shape(HasConst::A => int) $x): void {
- 8 |   if ($x is shape(HasConst::A => int)) {
+span_class_const_shape_types.php:9:7
+ 7 | 
+ 8 | function f(shape(HasConst::A => int) $x): void {
+ 9 |   if ($x is shape(HasConst::A => int)) {
    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
- 9 |     hh_expect<shape(HasConst::A => int)>($x);
-10 |   } else {
+10 |     hh_expect<shape(HasConst::A => int)>($x);
+11 |   } else {
 
 1 error found

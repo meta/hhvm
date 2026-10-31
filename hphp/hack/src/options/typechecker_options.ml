@@ -111,9 +111,6 @@ let disallow_discarded_nullable_awaitables t =
 let check_duplicate_enum_values t =
   t.Global_options.tco_check_duplicate_enum_values
 
-let require_shape_key_attribute t =
-  t.Global_options.tco_require_shape_key_attribute
-
 let require_const_shape_key_be_resolvable t =
   t.Global_options.tco_require_const_shape_key_be_resolvable
 

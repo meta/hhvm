@@ -7,13 +7,13 @@ shapes_cc_10.php--use.php:4:22
 4 | type myshape = shape(X::X1 => int, X::X2 => bool);
   |                      ^^^^^ [1]
 
-shapes_cc_10.php--def.php:5:9
-3 | newtype FooType = int;
+shapes_cc_10.php--def.php:6:9
 4 | class X {
-5 |   const FooType X1 = 0;
+5 |   <<__ShapeKey>>
+6 |   const FooType X1 = 0;
   |         ^^^^^^^ [2]
-6 |   const FooType X2 = 1;
-7 | }
+7 |   <<__ShapeKey>>
+8 |   const FooType X2 = 1;
 
 error: Typing[4052] A shape field name must be an `int` or `string` [1]
 -> Not a value of type FooType [2]
@@ -24,11 +24,11 @@ shapes_cc_10.php--use.php:4:36
 4 | type myshape = shape(X::X1 => int, X::X2 => bool);
   |                                    ^^^^^ [1]
 
-shapes_cc_10.php--def.php:6:9
-4 | class X {
-5 |   const FooType X1 = 0;
-6 |   const FooType X2 = 1;
+shapes_cc_10.php--def.php:8:9
+6 |   const FooType X1 = 0;
+7 |   <<__ShapeKey>>
+8 |   const FooType X2 = 1;
   |         ^^^^^^^ [2]
-7 | }
+9 | }
 
 2 errors found

@@ -1,31 +1,31 @@
 error: Naming[2137] `self::KEY` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-trait_self_shape_keys_inheritance.php:15:18
-13 | 
-14 |   public function make(): shape(...) {
-15 |     return shape(self::KEY => 1);
+trait_self_shape_keys_inheritance.php:16:18
+14 | 
+15 |   public function make(): shape(...) {
+16 |     return shape(self::KEY => 1);
    |                  ^^^^^^^^^ [1]
-16 |   }
-17 | }
+17 |   }
+18 | }
 
 error: Naming[2137] `self::KEY` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-trait_self_shape_keys_inheritance.php:27:18
-25 | 
-26 |   public function make(): shape(...) {
-27 |     return shape(self::KEY => 1);
+trait_self_shape_keys_inheritance.php:28:18
+26 | 
+27 |   public function make(): shape(...) {
+28 |     return shape(self::KEY => 1);
    |                  ^^^^^^^^^ [1]
-28 |   }
-29 | }
+29 |   }
+30 | }
 
 error: Naming[2137] `self::KEY` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-trait_self_shape_keys_inheritance.php:39:18
-37 | 
-38 |   public function make(): shape(...) {
-39 |     return shape(self::KEY => 1);
+trait_self_shape_keys_inheritance.php:41:18
+39 | 
+40 |   public function make(): shape(...) {
+41 |     return shape(self::KEY => 1);
    |                  ^^^^^^^^^ [1]
-40 |   }
-41 | }
+42 |   }
+43 | }
 
 3 errors found

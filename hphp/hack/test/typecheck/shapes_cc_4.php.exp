@@ -1,19 +1,19 @@
 error: Typing[4090] No class constant `X3` in `X` [1]
 -> Declaration of `X` is here [2]
 
-shapes_cc_4.php:25:44
+shapes_cc_4.php:27:44
 12 | // This should fail for using a nonexistent class constant.
 13 | 
 14 | class X {
    |       ^ [2]
-15 |   const string X1 = 'field1';
-16 |   const string X2 = 'field2';
+15 |   <<__ShapeKey>>
+16 |   const string X1 = 'field1';
    :
-23 | 
-24 | function test(): myshape {
-25 |   $x = shape(X::X1 => 1, X::X2 => true, X::X3 => false);
+25 | 
+26 | function test(): myshape {
+27 |   $x = shape(X::X1 => 1, X::X2 => true, X::X3 => false);
    |                                            ^^ [1]
-26 |   $y = shape(X::X1 => 1, X::X2 => true);
-27 |   return $y;
+28 |   $y = shape(X::X1 => 1, X::X2 => true);
+29 |   return $y;
 
 1 error found

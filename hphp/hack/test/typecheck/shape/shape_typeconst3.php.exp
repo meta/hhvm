@@ -1,17 +1,18 @@
 error: Typing[4090] No class constant `MISSING_CONST` in `C` [1]
 -> Declaration of `C` is here [2]
 
-shape_typeconst3.php:7:8
-1 | <?hh
-2 | 
-3 | class C {
-  |       ^ [2]
-4 |   const FOO_KEY = 'foo';
-5 |   const type TShape = shape(
-6 |     C::FOO_KEY => string,
-7 |     C::MISSING_CONST => null,
-  |        ^^^^^^^^^^^^^ [1]
-8 |   );
-9 | }
+shape_typeconst3.php:8:8
+ 1 | <?hh
+ 2 | 
+ 3 | class C {
+   |       ^ [2]
+ 4 |   <<__ShapeKey>>
+ 5 |   const FOO_KEY = 'foo';
+ 6 |   const type TShape = shape(
+ 7 |     C::FOO_KEY => string,
+ 8 |     C::MISSING_CONST => null,
+   |        ^^^^^^^^^^^^^ [1]
+ 9 |   );
+10 | }
 
 1 error found

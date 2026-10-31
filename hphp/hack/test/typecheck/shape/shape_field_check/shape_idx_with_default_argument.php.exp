@@ -1,24 +1,24 @@
 error: Typing[4251] You are calling `Shapes::idx()` on a field known to not exist [1]
 -> The field `xy` is not defined in this shape [2]
 
-shape_idx_with_default_argument.php:14:21
- 5 |   const string X = 'x';
- 6 | 
- 7 |   const type TClassType = shape(
+shape_idx_with_default_argument.php:15:21
+ 6 |   const string X = 'x';
+ 7 | 
+ 8 |   const type TClassType = shape(
    |                           ^^^^^^ [2]
- 8 |     self::ID => int,
+ 9 |     self::ID => int,
    |     ^^^^^^^^^^^^^^^^ [2]
- 9 |     /* HH_FIXME[4050] mixing literal and constant shape keys */
+10 |     /* HH_FIXME[4050] mixing literal and constant shape keys */
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
-10 |     'x' => int,
+11 |     'x' => int,
    |     ^^^^^^^^^^^ [2]
-11 |   );
+12 |   );
    |   ^ [2]
-12 | 
-13 |   public function test(self::TClassType $s): void {
-14 |     Shapes::idx($s, 'xy', 0);
+13 | 
+14 |   public function test(self::TClassType $s): void {
+15 |     Shapes::idx($s, 'xy', 0);
    |                     ^^^^ [1]
-15 |   }
-16 | }
+16 |   }
+17 | }
 
 1 error found

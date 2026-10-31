@@ -118,8 +118,6 @@ module Hhconfig = struct
 
   let check_duplicate_enum_values = key "check_duplicate_enum_values"
 
-  let require_shape_key_attribute = key "require_shape_key_attribute"
-
   let require_const_shape_key_be_resolvable =
     key "require_const_shape_key_be_resolvable"
 

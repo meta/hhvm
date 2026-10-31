@@ -1,51 +1,51 @@
 error: Naming[2137] `self::KEY` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-shapes_self_trait_helpers.php:7:21
-5 | 
-6 |   public function idx(shape(...) $s): void {
-7 |     Shapes::idx($s, self::KEY);
-  |                     ^^^^^^^^^ [1]
-8 |   }
-9 | 
+shapes_self_trait_helpers.php:8:21
+ 6 | 
+ 7 |   public function idx(shape(...) $s): void {
+ 8 |     Shapes::idx($s, self::KEY);
+   |                     ^^^^^^^^^ [1]
+ 9 |   }
+10 | 
 
 error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-shapes_self_trait_helpers.php:11:20
- 9 | 
-10 |   public function at(shape(...) $s): void {
-11 |     Shapes::at($s, nameof self);
+shapes_self_trait_helpers.php:12:20
+10 | 
+11 |   public function at(shape(...) $s): void {
+12 |     Shapes::at($s, nameof self);
    |                    ^^^^^^^^^^^ [1]
-12 |   }
-13 | 
+13 |   }
+14 | 
 
 error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-shapes_self_trait_helpers.php:15:27
-13 | 
-14 |   public function exists(shape(...) $s): void {
-15 |     Shapes::keyExists($s, nameof self);
+shapes_self_trait_helpers.php:16:27
+14 | 
+15 |   public function exists(shape(...) $s): void {
+16 |     Shapes::keyExists($s, nameof self);
    |                           ^^^^^^^^^^^ [1]
-16 |   }
-17 | 
+17 |   }
+18 | 
 
 error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-shapes_self_trait_helpers.php:19:33
-17 | 
-18 |   public function remove(shape(...) $s): void {
-19 |     Shapes::removeKey(inout $s, nameof self);
+shapes_self_trait_helpers.php:20:33
+18 | 
+19 |   public function remove(shape(...) $s): void {
+20 |     Shapes::removeKey(inout $s, nameof self);
    |                                 ^^^^^^^^^^^ [1]
-20 |   }
-21 | 
+21 |   }
+22 | 
 
 error: Naming[2137] `nameof self` cannot be used as a shape key inside a trait; qualify the declaring class, trait, or interface explicitly [1]
 
-shapes_self_trait_helpers.php:23:21
-21 | 
-22 |   public function put(shape(...) $s): void {
-23 |     Shapes::put($s, nameof self, 42);
+shapes_self_trait_helpers.php:24:21
+22 | 
+23 |   public function put(shape(...) $s): void {
+24 |     Shapes::put($s, nameof self, 42);
    |                     ^^^^^^^^^^^ [1]
-24 |   }
-25 | }
+25 |   }
+26 | }
 
 5 errors found

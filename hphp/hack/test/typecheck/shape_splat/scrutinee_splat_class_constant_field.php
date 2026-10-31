@@ -2,6 +2,7 @@
 <<file:__EnableUnstableFeatures('union_intersection_type_hints')>>
 
 final class FieldNames {
+  <<__ShapeKey>>
   const string A = 'a';
 }
 

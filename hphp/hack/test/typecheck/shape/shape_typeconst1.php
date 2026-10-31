@@ -1,6 +1,7 @@
 <?hh
 
 class C {
+  <<__ShapeKey>>
   const BAZ_KEY = '';
   const type TShape = shape(
     'foo' => int,

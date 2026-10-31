@@ -1,24 +1,24 @@
 error: Typing[4050] Shape uses literal string as field name [1]
 -> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
 
-class_constants.php:15:45
-13 |   $other = 42;
-14 |   // This errors because $other becomes literal 'other' which can't mix with class constant
-15 |   $s = shape(MyClass::FIELD_KEY => 'value', $other);
+class_constants.php:16:45
+14 |   $other = 42;
+15 |   // This errors because $other becomes literal 'other' which can't mix with class constant
+16 |   $s = shape(MyClass::FIELD_KEY => 'value', $other);
    |              ^^^^^^^^^^^^^^^^^^ [2]
    |                                             ^^^^^^ [1]
-16 | }
-17 | 
+17 | }
+18 | 
 
 error: Typing[4049] Shape uses class constant as field name [1]
 -> But expected a literal string. Shape fields cannot be a mix of literals and constants. [2]
 
-class_constants.php:22:22
-20 |   $first = 1;
-21 |   // $first becomes literal 'first', can't mix with class constant
-22 |   $s = shape($first, MyClass::FIELD_KEY => 'value');
+class_constants.php:23:22
+21 |   $first = 1;
+22 |   // $first becomes literal 'first', can't mix with class constant
+23 |   $s = shape($first, MyClass::FIELD_KEY => 'value');
    |              ^^^^^^ [2]
    |                      ^^^^^^^^^^^^^^^^^^ [1]
-23 | }
+24 | }
 
 2 errors found

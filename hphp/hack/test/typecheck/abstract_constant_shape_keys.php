@@ -1,6 +1,7 @@
 <?hh
 
 interface MagicFactory {
+  <<__ShapeKey>>
   abstract const string MAGIC;
 
   public function getShape(): shape(self::MAGIC => string);
@@ -15,6 +16,7 @@ final class MyFactory implements MagicFactory {
 }
 
 abstract class AbstractMagicFactory {
+  <<__ShapeKey>>
   abstract const string MAGIC;
 
   public function getShapeViaSelf(): shape(self::MAGIC => string) {
@@ -33,6 +35,7 @@ final class ConcreteMagicFactory extends AbstractMagicFactory {
 }
 
 trait MagicFactoryTrait {
+  <<__ShapeKey>>
   abstract const string MAGIC;
 
   public function getShapeViaSelf(): shape(self::MAGIC => string) {

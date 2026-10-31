@@ -27,11 +27,8 @@ let require_shape_key_attribute cls class_const =
   && (not (Ast_defs.is_c_enum (Cls.kind cls)))
   && not (Ast_defs.is_c_enum_class (Cls.kind cls))
 
-let shape_key_attribute_error env pos cls const_name class_const =
-  if
-    Typechecker_options.require_shape_key_attribute (Env.get_tcopt env)
-    && require_shape_key_attribute cls class_const
-  then
+let shape_key_attribute_error pos cls const_name class_const =
+  if require_shape_key_attribute cls class_const then
     Some
       Typing_error.(
         shape
@@ -176,24 +173,20 @@ let tshape_field_name_with_ty_err env (_, pos, field) =
   let map_pos = Tuple.T2.map_fst ~f:Pos_or_decl.of_raw_pos in
   let class_const_field sid y =
     let field_name = TSFclass_const (sid, map_pos y) in
-    if not (Typechecker_options.require_shape_key_attribute (Env.get_tcopt env))
-    then
-      Ok field_name
-    else
-      let error =
-        match Env.get_class env (snd sid) with
-        | Decl_entry.Found cls ->
-          Option.bind
-            (Env.get_const env cls (snd y))
-            ~f:(shape_key_attribute_error env pos cls (snd y))
-        | Decl_entry.DoesNotExist
-        | Decl_entry.NotYetAvailable ->
-          None
-      in
-      (* A missing attribute does not prevent resolving the key. Preserve normal
-         shape typing and refinement even when this diagnostic is suppressed. *)
-      Option.iter error ~f:(Typing_error_utils.add_typing_error ~env);
-      Ok field_name
+    let error =
+      match Env.get_class env (snd sid) with
+      | Decl_entry.Found cls ->
+        Option.bind
+          (Env.get_const env cls (snd y))
+          ~f:(shape_key_attribute_error pos cls (snd y))
+      | Decl_entry.DoesNotExist
+      | Decl_entry.NotYetAvailable ->
+        None
+    in
+    (* A missing attribute does not prevent resolving the key. Preserve normal
+       shape typing and refinement even when this diagnostic is suppressed. *)
+    Option.iter error ~f:(Typing_error_utils.add_typing_error ~env);
+    Ok field_name
   in
   match field with
   | Aast.Int name -> Ok (TSFregex_group (p, name))
@@ -866,7 +859,7 @@ let shape_field_pos = function
 
 let check_shape_key_attribute env pos cls const_name class_const =
   Option.iter
-    (shape_key_attribute_error env pos cls const_name class_const)
+    (shape_key_attribute_error pos cls const_name class_const)
     ~f:(Typing_error_utils.add_typing_error ~env)
 
 let check_shape_keys_validity env keys =
@@ -1042,18 +1035,15 @@ let check_shape_keys_validity env keys =
 
 let check_shape_key_const env pos c cls cc kind =
   check_shape_key_value env pos c cls cc;
-  if Typechecker_options.require_shape_key_attribute (Env.get_tcopt env) then (
-    let key =
-      Ast_defs.SFclass_const ((pos, snd c.Aast.c_name), (pos, snd cc.Aast.cc_id))
-    in
-    (match kind with
-    | Aast.CCConcrete expr -> check_trait_self_shape_key env expr
-    | Aast.CCAbstract _ -> ());
-    let (env, errors) = check_shape_keys_validity env [key] in
-    List.iter errors ~f:(Typing_error_utils.add_typing_error ~env);
-    env
-  ) else
-    env
+  let key =
+    Ast_defs.SFclass_const ((pos, snd c.Aast.c_name), (pos, snd cc.Aast.cc_id))
+  in
+  (match kind with
+  | Aast.CCConcrete expr -> check_trait_self_shape_key env expr
+  | Aast.CCAbstract _ -> ());
+  let (env, errors) = check_shape_keys_validity env [key] in
+  List.iter errors ~f:(Typing_error_utils.add_typing_error ~env);
+  env
 
 let update_param : decl_fun_param -> decl_ty -> decl_fun_param =
  (fun param ty -> { param with fp_type = ty })
