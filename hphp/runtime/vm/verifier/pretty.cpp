@@ -21,7 +21,6 @@
 #include <stdio.h>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include "hphp/runtime/vm/preclass-emitter.h"
 #include "hphp/runtime/vm/verifier/util.h"
