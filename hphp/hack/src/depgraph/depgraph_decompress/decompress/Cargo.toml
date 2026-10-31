@@ -13,7 +13,7 @@ path = "lib.rs"
 [dependencies]
 bytemuck = { version = "1.25", features = ["const_zeroed", "derive", "min_const_generics", "must_cast", "nightly_portable_simd", "nightly_stdsimd"] }
 depgraph_reader = { path = "../../cargo/depgraph_reader" }
-memmap2 = "0.9.11"
+memmap2 = "0.9.12"
 rayon = "1.11.0"
 vint64 = "1.0.1"
 zstd = { version = "0.14.3", features = ["experimental", "zstdmt"] }

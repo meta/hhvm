@@ -14,7 +14,7 @@ crate-type = ["lib", "staticlib"]
 [dependencies]
 bytemuck = { version = "1.25", features = ["const_zeroed", "derive", "min_const_generics", "must_cast", "nightly_portable_simd", "nightly_stdsimd"] }
 dep = { path = "../dep" }
-memmap2 = "0.9.11"
+memmap2 = "0.9.12"
 rayon = "1.11.0"
 static_assertions = "1.1.0"
 vint64 = "1.0.1"
