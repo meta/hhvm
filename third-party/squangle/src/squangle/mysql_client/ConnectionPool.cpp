@@ -8,7 +8,21 @@
 
 #include "squangle/mysql_client/ConnectionPool.h"
 
+#include <atomic>
+
 namespace facebook::common::mysql_client {
+
+namespace {
+std::atomic<bool> checkout_validation_killed{false};
+} // namespace
+
+void ConnectionPoolBase::setCheckoutValidationKilled(bool killed) noexcept {
+  checkout_validation_killed.store(killed, std::memory_order_relaxed);
+}
+
+bool ConnectionPoolBase::isCheckoutValidationKilled() noexcept {
+  return checkout_validation_killed.load(std::memory_order_relaxed);
+}
 
 bool ConnectionPoolBase::canCreateMoreConnections(
     const PoolKey& pool_key,

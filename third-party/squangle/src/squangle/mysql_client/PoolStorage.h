@@ -159,10 +159,17 @@ class PoolStorageData {
   auto cleanupConnections() {
     Timepoint now = std::chrono::steady_clock::now();
     return stock_.cleanup([&](const auto& conn) {
-      return (conn->getLifeDuration() != Duration::zero() &&
-              (conn->getCreationTime() + conn->getLifeDuration() < now)) ||
-          conn->getLastActivityTime() + max_idle_time_ < now;
+      return isExpired(*conn, max_idle_time_, now);
     });
+  }
+
+  static bool isExpired(
+      MysqlPooledHolder<Client>& conn,
+      Duration max_idle_time,
+      Timepoint now) {
+    return (conn.getLifeDuration() != Duration::zero() &&
+            (conn.getCreationTime() + conn.getLifeDuration() < now)) ||
+        conn.getLastActivityTime() + max_idle_time < now;
   }
 
   // Checks and removes the weak ptrs that already expired, so we have a
