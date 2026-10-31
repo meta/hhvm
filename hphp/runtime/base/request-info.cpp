@@ -20,7 +20,6 @@
 #include <set>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include "hphp/util/alloc.h"
 #include "hphp/util/lock.h"

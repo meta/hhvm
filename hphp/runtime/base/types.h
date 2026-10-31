@@ -22,7 +22,6 @@
 #include "hphp/util/ptr.h"
 
 #include <cstdint>
-#include <folly/Format.h>
 
 namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////

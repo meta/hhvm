@@ -31,7 +31,7 @@
 #include <vector>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
+#include <folly/ScopeGuard.h>
 #include <folly/Random.h>
 
 using folly::SharedMutex;

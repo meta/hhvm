@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <fmt/format.h>
-#include <folly/Format.h>
+#include <folly/String.h>
 
 #include "hphp/util/assertions.h"
 

@@ -24,7 +24,6 @@
 #include "hphp/runtime/base/vanilla-vec.h"
 #include "hphp/runtime/vm/bytecode.h"
 
-#include <folly/Format.h>
 
 #include <type_traits>
 

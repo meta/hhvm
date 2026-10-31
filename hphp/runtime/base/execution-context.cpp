@@ -24,7 +24,7 @@
 
 #include <fmt/format.h>
 #include <folly/MapUtil.h>
-#include <folly/Format.h>
+#include <folly/ScopeGuard.h>
 #include <folly/Likely.h>
 
 #include "hphp/util/configs/log.h"

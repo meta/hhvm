@@ -29,7 +29,7 @@
 
 #include <fmt/format.h>
 #include <folly/concurrency/ConcurrentHashMap.h>
-#include <folly/Format.h>
+#include <folly/ScopeGuard.h>
 #include <folly/Singleton.h>
 
 TRACE_SET_MOD(watchman)

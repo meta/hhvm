@@ -20,7 +20,6 @@
 #include "hphp/util/hash-set.h"
 #include "hphp/util/hdf.h"
 
-#include <folly/Format.h>
 
 #include <boost/container/flat_set.hpp>
 
