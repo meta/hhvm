@@ -138,6 +138,12 @@ function(fb_fetch_from_manifest name manifest)
   # Nor may its export(PACKAGE), as in cpptoml, put its build tree in the
   # user's package registry, where later configures would find it.
   set(CMAKE_EXPORT_NO_PACKAGE_REGISTRY ON)
+  # Its warnings are for its own project to fix, and an installed copy
+  # wouldn't print them either.
+  if(NOT MSVC)
+    string(APPEND CMAKE_C_FLAGS " -w")
+    string(APPEND CMAKE_CXX_FLAGS " -w")
+  endif()
   include(FetchContent)
   FetchContent_Declare(${name} ${source} ${ARGN} ${exclude})
   # CMAKE_REQUIRED_* configure this project's check_*() calls, and a
