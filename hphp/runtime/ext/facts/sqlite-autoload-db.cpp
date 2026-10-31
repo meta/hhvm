@@ -32,13 +32,13 @@
 #include <unistd.h>
 
 #include <fmt/core.h>
-#include <folly/Format.h>
 #include <folly/ScopeGuard.h>
 #include <folly/json/dynamic.h>
 #include <folly/json/json.h>
 #include <folly/logging/LogStreamProcessor.h>
 #include <folly/logging/xlog.h>
 
+#include <fmt/format.h>
 #include "hphp/runtime/ext/facts/autoload-db.h"
 #include "hphp/runtime/ext/facts/file-facts.h"
 #include "hphp/runtime/ext/facts/sqlite-key.h"

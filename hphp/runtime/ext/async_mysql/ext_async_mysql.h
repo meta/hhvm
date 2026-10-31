@@ -29,7 +29,6 @@
 #include "hphp/runtime/ext/asio/asio-external-thread-event.h"
 #include "hphp/runtime/ext/extension.h"
 
-#include <folly/Format.h>
 
 
 namespace HPHP {

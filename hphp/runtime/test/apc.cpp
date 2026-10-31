@@ -15,7 +15,6 @@
 */
 #include <gtest/gtest.h>
 
-#include <folly/Format.h>
 #include <folly/ScopeGuard.h>
 #include <folly/testing/TestUtil.h>
 

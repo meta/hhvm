@@ -31,7 +31,6 @@
 
 #include <fmt/format.h>
 #include <folly/Range.h>
-#include <folly/Format.h>
 #include <folly/Memory.h>
 
 #include <filesystem>

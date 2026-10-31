@@ -17,7 +17,6 @@
 
 #include "hphp/runtime/ext/extension.h"
 #include "hphp/runtime/base/builtin-functions.h"
-#include <folly/Format.h>
 /*
  *                       Heapgraph Extension
  * What is it?
