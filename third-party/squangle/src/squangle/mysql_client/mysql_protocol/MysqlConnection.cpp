@@ -813,18 +813,6 @@ bool MysqlConnection::ping() const {
   return ret == 0;
 }
 
-bool MysqlConnection::isUnusableOnCheckout() const {
-#ifdef MYSQL_HAS_NET_PENDING_DATA
-  // An idle connection has consumed every response it asked for, so any
-  // pending input is the server's close notice or other unrequested data.
-  return mysql_net_has_pending_data(mysql_);
-#else
-  // Client libraries without mysql_net_has_pending_data get only the expiry
-  // check.
-  return false;
-#endif
-}
-
 MysqlConnection::MySqlConnectStage MysqlConnection::getMySqlConnectStage()
     const {
   CHECK_THROW(mysql_ != nullptr, db::InvalidConnectionException);

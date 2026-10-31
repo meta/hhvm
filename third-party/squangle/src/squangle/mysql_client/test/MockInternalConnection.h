@@ -50,7 +50,6 @@ struct MockConnectionConfig {
   bool isSSL = false;
   bool autocommit = true;
   bool needReset = false;
-  bool unusableOnCheckout = false;
 
   // Query results indexed by query string (for exact match)
   std::unordered_map<std::string, MockQueryResult> queryResults;
@@ -233,15 +232,6 @@ class MockInternalConnection : public InternalConnection {
     return config_.errorNumber == 0;
   }
 
-  bool isUnusableOnCheckout() const override {
-    ++checkoutValidations_;
-    return config_.unusableOnCheckout;
-  }
-
-  int checkoutValidations() const {
-    return checkoutValidations_;
-  }
-
   Status resetConn() const override {
     return config_.errorNumber == 0 ? Status::DONE : Status::ERROR;
   }
@@ -321,7 +311,6 @@ class MockInternalConnection : public InternalConnection {
   const MockQueryResult* currentResult_ = nullptr;
   AttributeMap lastQueryAttributes_;
   AttributeMap responseAttributes_;
-  mutable int checkoutValidations_ = 0;
 };
 
 } // namespace facebook::common::mysql_client::test

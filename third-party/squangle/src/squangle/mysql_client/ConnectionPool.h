@@ -46,7 +46,6 @@
       .stream()
 
 namespace facebook::common::mysql_client {
-
 namespace mysql_protocol {
 template <typename C>
 class MysqlConnectPoolOperationImpl;
@@ -86,8 +85,7 @@ class PoolOptions {
         idle_timeout_(kDefaultMaxIdleTime),
         age_timeout_(kDefaultMaxAge),
         exp_policy_(ExpirationPolicy::Age),
-        pool_per_instance_{false},
-        validate_on_checkout_{true} {}
+        pool_per_instance_{false} {}
 
   PoolOptions(PoolOptions&& other) = default;
   PoolOptions(const PoolOptions& other) = default;
@@ -123,14 +121,6 @@ class PoolOptions {
     pool_per_instance_ = poolPerInstance;
     return *this;
   }
-  // On by default: before handing out a cached connection, discard it if it
-  // has outlived the idle/age limit or has pending input (a close notice, an
-  // error or unrequested data). Detects only what is visible locally at
-  // checkout; it does not prove the server will answer the next query.
-  PoolOptions& setValidateOnCheckout(bool validate) {
-    validate_on_checkout_ = validate;
-    return *this;
-  }
 
   uint64_t getPerKeyLimit() const {
     return per_key_limit_;
@@ -150,9 +140,6 @@ class PoolOptions {
   bool poolPerMysqlInstance() const {
     return pool_per_instance_;
   }
-  bool validateOnCheckout() const {
-    return validate_on_checkout_;
-  }
 
   bool operator==(const PoolOptions& other) const {
     return per_key_limit_ == other.per_key_limit_ &&
@@ -162,8 +149,7 @@ class PoolOptions {
         (exp_policy_ == ExpirationPolicy::IdleTime ||
          age_timeout_ == other.age_timeout_) &&
         exp_policy_ == other.exp_policy_ &&
-        pool_per_instance_ == other.pool_per_instance_ &&
-        validate_on_checkout_ == other.validate_on_checkout_;
+        pool_per_instance_ == other.pool_per_instance_;
   }
   bool operator!=(const PoolOptions& other) const {
     return !(operator==(other));
@@ -176,7 +162,6 @@ class PoolOptions {
   Duration age_timeout_;
   ExpirationPolicy exp_policy_;
   bool pool_per_instance_;
-  bool validate_on_checkout_;
 };
 
 std::ostream& operator<<(std::ostream& os, const PoolOptions& options);
@@ -273,11 +258,6 @@ class ConnectionPoolBase {
       std::shared_ptr<db::ConnectionContextBase> context,
       ThrottlingCallback throttlingCallback)>;
 
-  // Process-wide kill switch for checkout validation, off by default. While it
-  // is set, pools skip validation regardless of their own options.
-  static void setCheckoutValidationKilled(bool killed) noexcept;
-  [[nodiscard]] static bool isCheckoutValidationKilled() noexcept;
-
   db::PoolStats* stats() noexcept {
     return &pool_stats_;
   }
@@ -310,10 +290,6 @@ class ConnectionPoolBase {
 
   [[nodiscard]] bool poolPerMysqlInstance() const noexcept {
     return pool_options_.rlock()->poolPerMysqlInstance();
-  }
-
-  [[nodiscard]] bool validateOnCheckout() const noexcept {
-    return pool_options_.rlock()->validateOnCheckout();
   }
 
   void setPerKeyLimit(int limit) {
@@ -539,13 +515,13 @@ class ConnectionPool
         PoolKey(raw_pool_op->getKey(), raw_pool_op->getConnectionOptions());
 
     std::unique_ptr<MysqlPooledHolder<Client>> mysql_conn =
-        popCachedConnection(pool_key, /* any_database */ false);
+        conn_storage_.popConnection(pool_key);
 
     if (mysql_conn == nullptr) {
       // One more try before opening a new connection: finding a connection from
       // level2 cache and if found, run COM_CHANGE_USER
       if (raw_pool_op->getConnectionOptions().isEnableChangeUser()) {
-        auto ret = popCachedConnection(pool_key, /* any_database */ true);
+        auto ret = conn_storage_.popInstanceConnection(pool_key);
         if (ret) { // found
           reuseConnWithChangeUser(raw_pool_op, pool_key, std::move(ret));
           return;
@@ -775,30 +751,6 @@ class ConnectionPool
 
   size_t numQueuedOperations(const PoolKey& pool_key) const {
     return conn_storage_.numQueuedOperations(pool_key);
-  }
-
-  // Discarded connections are destroyed here, outside the storage lock, since
-  // their destructors call back into the pool.
-  std::unique_ptr<MysqlPooledHolder<Client>> popCachedConnection(
-      const PoolKey& pool_key,
-      bool any_database) {
-    const bool validate = validateOnCheckout() && !isCheckoutValidationKilled();
-    while (true) {
-      auto conn = any_database ? conn_storage_.popInstanceConnection(pool_key)
-                               : conn_storage_.popConnection(pool_key);
-      if (conn == nullptr || !validate || isUsableOnCheckout(*conn)) {
-        return conn;
-      }
-      stats()->incrValidationDiscards();
-    }
-  }
-
-  bool isUsableOnCheckout(MysqlPooledHolder<Client>& conn) const {
-    return !PoolStorageData<Client>::isExpired(
-               conn,
-               conn_storage_.maxIdleTime(),
-               std::chrono::steady_clock::now()) &&
-        !conn.isUnusableOnCheckout();
   }
 
   std::shared_ptr<Client> mysql_client_;

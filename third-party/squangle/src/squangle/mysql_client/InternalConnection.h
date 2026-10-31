@@ -193,13 +193,6 @@ class InternalConnection {
 
   virtual bool ping() const = 0;
 
-  // True when an idle connection must not be reused: its socket already
-  // reports a close, an error or unrequested data. Must not block or consume
-  // bytes; false means nothing was detected, not that the server is alive.
-  [[nodiscard]] virtual bool isUnusableOnCheckout() const {
-    return false;
-  }
-
   virtual Status resetConn() const = 0;
 
   virtual Status changeUser(

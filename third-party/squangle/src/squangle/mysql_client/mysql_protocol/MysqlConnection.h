@@ -146,8 +146,6 @@ class MysqlConnection : public InternalConnection {
 
   [[nodiscard]] bool ping() const override;
 
-  [[nodiscard]] bool isUnusableOnCheckout() const override;
-
   // MySQL protocol specfic methods
 
   void setCompression(CompressionAlgorithm algo);

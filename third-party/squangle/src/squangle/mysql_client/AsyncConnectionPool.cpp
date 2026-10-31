@@ -166,8 +166,7 @@ std::ostream& operator<<(std::ostream& os, const PoolOptions& options) {
             << ",idle timeout:" << options.getIdleTimeout().count()
             << "us,age timeout:" << options.getAgeTimeout().count()
             << "us,expiration policy:" << options.getExpPolicy()
-            << ",pool per instance:" << options.poolPerMysqlInstance()
-            << ",validate on checkout:" << options.validateOnCheckout() << "}";
+            << ",pool per instance:" << options.poolPerMysqlInstance() << "}";
 }
 
 std::ostream& operator<<(std::ostream& os, const PoolKey& key) {
