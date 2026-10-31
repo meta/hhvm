@@ -25,7 +25,6 @@
 #include <utility>
 
 #include <fmt/core.h>
-#include <folly/Format.h>
 #include <folly/Preprocessor.h>
 
 #include "hphp/util/debug-format.h"
