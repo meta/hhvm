@@ -20,7 +20,6 @@
 #include "hphp/runtime/base/comparisons.h"
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 using namespace HPHP;
 

@@ -17,7 +17,6 @@
 #include "hphp/util/zstd.h"
 
 #include <folly/Conv.h>
-#include <folly/Format.h>
 #include <folly/Memory.h>
 
 #include "hphp/util/alloc.h"

@@ -20,9 +20,9 @@
 #include <cstring>
 #include <map>
 #include <set>
+#include <unordered_set>
 
 #include <folly/Bits.h>
-#include <folly/Format.h>
 #include <folly/portability/SysMman.h>
 
 #include "hphp/util/arch.h"
