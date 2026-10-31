@@ -28,7 +28,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <fmt/format.h>
 
-#include <folly/Format.h>
+#include <folly/MapUtil.h>
+#include <folly/String.h>
 
 #include "hphp/system/systemlib.h"
 #include "hphp/util/alloc.h"

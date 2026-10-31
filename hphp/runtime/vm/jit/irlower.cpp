@@ -39,7 +39,6 @@
 #include "hphp/util/configs/hhir.h"
 #include "hphp/util/trace.h"
 
-#include <folly/Format.h>
 #include <folly/Range.h>
 
 namespace HPHP::jit::irlower {

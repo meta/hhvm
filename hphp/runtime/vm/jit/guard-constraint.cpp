@@ -18,7 +18,7 @@
 
 #include "hphp/runtime/base/datatype.h"
 
-#include <folly/Format.h>
+#include <folly/Conv.h>
 
 namespace HPHP::jit {
 

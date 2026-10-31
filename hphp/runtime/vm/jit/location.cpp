@@ -19,7 +19,6 @@
 #include "hphp/util/assertions.h"
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 #include <folly/Hash.h>
 
 namespace HPHP::jit {

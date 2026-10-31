@@ -18,7 +18,6 @@
 
 #include <fmt/format.h>
 #include <folly/json/dynamic.h>
-#include <folly/Format.h>
 
 #include "hphp/runtime/vm/jit/target-profile.h"
 

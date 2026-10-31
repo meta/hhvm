@@ -52,7 +52,6 @@
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/trace.h"
 
-#include <folly/Format.h>
 
 namespace HPHP::jit::irlower {
 

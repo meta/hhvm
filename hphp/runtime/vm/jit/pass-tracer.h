@@ -18,7 +18,6 @@
 #include <string>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include "hphp/util/trace.h"
 #include "hphp/runtime/vm/jit/print.h"

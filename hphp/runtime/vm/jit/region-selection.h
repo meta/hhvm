@@ -24,7 +24,6 @@
 
 #include <boost/container/flat_map.hpp>
 
-#include <folly/Format.h>
 #include <folly/Hash.h>
 
 #include "hphp/runtime/vm/jit/containers.h"
