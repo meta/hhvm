@@ -1741,7 +1741,7 @@ Query::Query(Query::CheckedTag, std::string_view fmt, Args&&... args)
 
 template <typename Arg, typename... Args>
 void Query::unpack(Arg&& arg, Args&&... args /* lol */) {
-  using V = folly::remove_cvref_t<Arg>;
+  using V = std::remove_cvref_t<Arg>;
   if constexpr (
       std::is_same_v<V, folly::dynamic> ||
       std::is_same_v<V, decltype(folly::dynamic::object())>) {
