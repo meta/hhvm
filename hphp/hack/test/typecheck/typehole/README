@@ -1,4 +1,4 @@
-All files in this directory
+All tests under this directory
 
 * pass the Hack type checker (i.e. `hh_single_type_check <filename>` produces `No errors` output);
 * fail with a fatal when run under HHVM (type `php <filename>` to demonstrate this).
@@ -15,6 +15,11 @@ the type hole has been fixed. Please move the file to the main
 typecheck directory or an appropriate subdirectory, and check that the
 error makes sense.
 
-The subdirectory typehole_trusted contains a subcategory of type holes whose tasks
-have been tagged with "typehole-trusted". These are "trusted types" holes that can
-make Hack believe that a value has some type when at runtime it has another type.
+Tests live in a subdirectory for the kind of hole they demonstrate:
+
+* typehole_trusted: "trusted types" holes, which can make Hack believe that a
+  value has some type when at runtime it has another type.
+* typehole_invalid_operation: holes where every value has the type Hack believes,
+  but Hack allows an operation that isn't valid for it, such as calling an
+  abstract method, instantiating a trait or calling impure code from a pure
+  function.
