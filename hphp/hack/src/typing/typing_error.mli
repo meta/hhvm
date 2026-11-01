@@ -954,6 +954,12 @@ module Primary : sig
         use_pos: Pos_or_decl.t;
         decl_pos: Pos_or_decl.t;
       }
+    | Memoize_erased_generic_return of {
+        pos: Pos.t;
+        tparam_name: string;
+        attr_pos: Pos.t;
+        via_param: Pos.t option;
+      }
     | Needs_concrete_override of {
         pos: Pos.t;
         method_pos: Pos_or_decl.t;

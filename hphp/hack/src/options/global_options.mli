@@ -314,6 +314,8 @@ type t = {
       (** Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables. *)
   tco_private_member_variance_check: bool;
       (** Error when a private member that mentions a variant class type parameter is written or called through a receiver other than `$this`. *)
+  tco_ban_memoize_erased_generic_return: bool;
+      (** Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics. *)
 }
 [@@deriving eq, show]
 
@@ -430,6 +432,7 @@ val set :
   ?tco_ban_this_refinement_in_generic_class:bool ->
   ?tco_missing_targs_as_fresh_generics:bool ->
   ?tco_private_member_variance_check:bool ->
+  ?tco_ban_memoize_erased_generic_return:bool ->
   t ->
   t
 

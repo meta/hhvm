@@ -358,6 +358,12 @@ let method_def ~is_disposable env cls m =
       m.m_params
   in
   Typing_memoize.check_method env m;
+  Typing_memoize.check_erased_generics
+    env
+    m.m_user_attributes
+    m.m_tparams
+    m.m_params
+    m.m_ret;
   let env = Typing_implemented_by.check_method env (pos, Cls.name cls) m in
   let can_read_globals =
     Typing_subtype.is_sub_type

@@ -213,6 +213,12 @@ let fun_def ctx fd : Tast.fun_def Tast_with_dynamic.t option =
         f.f_user_attributes
     in
     Typing_memoize.check_function env f;
+    Typing_memoize.check_erased_generics
+      env
+      f.f_user_attributes
+      fd.fd_tparams
+      f.f_params
+      f.f_ret;
     let ((env, tb), had_errors) =
       Diagnostics.run_and_check_for_errors (fun () ->
           Typing.fun_

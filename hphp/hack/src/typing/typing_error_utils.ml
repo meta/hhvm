@@ -3389,6 +3389,40 @@ end = struct
     in
     create ~code:Error_code.PrivateMemberVariance ~claim ~reasons ()
 
+  let memoize_erased_generic_return pos tparam_name attr_pos via_param =
+    let name = Markdown_lite.md_codify tparam_name in
+    let problem =
+      match via_param with
+      | None ->
+        " appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics"
+      | Some _ ->
+        " reaches the result of a memoized function through the type arguments of an `IMemoizeParam` parameter, whose cache key comes only from `getInstanceKey()`"
+    in
+    let claim =
+      lazy
+        ( pos,
+          "Erased generic "
+          ^ name
+          ^ problem
+          ^ ", so calls with different "
+          ^ name
+          ^ " can share one result. Make "
+          ^ name
+          ^ " reified, or remove the memoization attribute." )
+    and reasons =
+      lazy
+        ((Pos_or_decl.of_raw_pos attr_pos, "The function is memoized here")
+        ::
+        (match via_param with
+        | None -> []
+        | Some p ->
+          [
+            ( Pos_or_decl.of_raw_pos p,
+              "This parameter is keyed by its `getInstanceKey()`" );
+          ]))
+    in
+    create ~code:Error_code.MemoizeErasedGenericReturn ~claim ~reasons ()
+
   let uninstantiable_class_via_static
       pos _class_name decl_pos containing_method_pos =
     let claim =
@@ -5743,6 +5777,8 @@ end = struct
         variance
         use_pos
         decl_pos
+    | Memoize_erased_generic_return { pos; tparam_name; attr_pos; via_param } ->
+      memoize_erased_generic_return pos tparam_name attr_pos via_param
     | Needs_concrete_override
         {
           pos;

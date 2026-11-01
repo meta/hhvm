@@ -13,6 +13,7 @@ open Typing_env_types
 module Env = Typing_env
 module SN = Naming_special_names
 module MakeType = Typing_make_type
+module TCO = Typechecker_options
 
 let check_param : env -> Nast.fun_param -> unit =
  fun env { param_type_hint; param_pos; param_name; _ } ->
@@ -184,6 +185,127 @@ let check : env -> Nast.user_attribute list -> Nast.fun_param list -> unit =
     || Naming_attributes.mem SN.UserAttributes.uaMemoizeLSB user_attributes
   then
     List.iter ~f:(check_param env) params
+
+let mentions_generic name (ty : decl_ty) =
+  let visitor =
+    object
+      inherit [bool] Type_visitor.decl_type_visitor as parent
+
+      method! on_tgeneric found _ n = found || String.equal n name
+
+      method! on_type found ty = found || parent#on_type found ty
+    end
+  in
+  visitor#on_type false ty
+
+(* Whether generic [name] occurs in the type arguments of an `IMemoizeParam`
+ * class in [ty]. Such an argument is keyed only by its `getInstanceKey()`. *)
+let rec under_instance_key env name ~fuel (ty : decl_ty) =
+  let go = under_instance_key env name ~fuel in
+  match get_node ty with
+  | Tapply ((_, cname), targs) ->
+    (match Env.get_class env cname with
+    | Decl_entry.Found cls ->
+      Folded_class.has_ancestor cls SN.Classes.cIMemoizeParam
+      && List.exists targs ~f:(mentions_generic name)
+      || List.exists targs ~f:go
+    | Decl_entry.DoesNotExist
+    | Decl_entry.NotYetAvailable ->
+      (match Env.get_typedef env cname with
+      | Decl_entry.Found
+          { td_tparams; td_type_assignment = SimpleTypeDef (_, body); _ }
+        when fuel > 0 ->
+        let subst = Decl_instantiate.make_subst td_tparams targs in
+        under_instance_key
+          env
+          name
+          ~fuel:(fuel - 1)
+          (Decl_instantiate.instantiate subst body)
+      | _ -> List.exists targs ~f:go))
+  | Toption ty
+  | Tlike ty ->
+    go ty
+  | Tvec_or_dict (k, v) -> go k || go v
+  | Tunion tyl
+  | Tintersection tyl ->
+    List.exists tyl ~f:go
+  | Ttuple { t_required; t_optional; t_extra } ->
+    List.exists (t_required @ t_optional) ~f:go
+    ||
+    (match t_extra with
+    | Tvariadic ty
+    | Tsplat ty ->
+      go ty)
+  | Tshape (Shape_simple { s_fields; _ }) ->
+    TShapeMap.exists (fun _ { sft_ty; _ } -> go sft_ty) s_fields
+  | _ -> false
+
+(* The memoization cache ignores erased generics, so one cached result serves
+ * every instantiation. *)
+let check_erased_generics
+    env
+    (user_attributes : Nast.user_attribute list)
+    tparams
+    (params : Nast.fun_param list)
+    ret =
+  if TCO.ban_memoize_erased_generic_return (Env.get_tcopt env) then
+    let attr_pos =
+      Option.first_some
+        (Naming_attributes.mem_pos SN.UserAttributes.uaMemoize user_attributes)
+        (Naming_attributes.mem_pos
+           SN.UserAttributes.uaMemoizeLSB
+           user_attributes)
+    in
+    match (attr_pos, hint_of_type_hint ret) with
+    | (Some attr_pos, Some hint) ->
+      let ret_ty = Decl_hint.hint env.decl_env hint in
+      let erased =
+        List.filter tparams ~f:(fun (tp : Nast.tparam) ->
+            match tp.tp_reified with
+            | Reified -> false
+            | Erased
+            | SoftReified ->
+              true)
+      in
+      let (positive, negative) =
+        Typing_variance.get_positive_negative_generics
+          ~tracked:
+            (S_set.of_list
+               (List.map erased ~f:(fun (tp : Nast.tparam) -> snd tp.tp_name)))
+          ~is_mutable:false
+          env
+          (S_map.empty, S_map.empty)
+          ret_ty
+      in
+      List.iter erased ~f:(fun (tp : Nast.tparam) ->
+          let (pos, tparam_name) = tp.tp_name in
+          let report via_param =
+            Typing_error_utils.add_typing_error
+              ~env
+              Typing_error.(
+                primary
+                @@ Primary.Memoize_erased_generic_return
+                     { pos; tparam_name; attr_pos; via_param })
+          in
+          if S_map.mem tparam_name negative then
+            report None
+          else if S_map.mem tparam_name positive then
+            List.find_map params ~f:(fun param ->
+                Option.bind
+                  (hint_of_type_hint param.param_type_hint)
+                  ~f:(fun hint ->
+                    if
+                      under_instance_key
+                        env
+                        tparam_name
+                        ~fuel:10
+                        (Decl_hint.hint env.decl_env hint)
+                    then
+                      Some param.param_pos
+                    else
+                      None))
+            |> Option.iter ~f:(fun p -> report (Some p)))
+    | _ -> ()
 
 let check_function : env -> Nast.fun_ -> unit =
  fun env { f_user_attributes; f_params; _ } ->

@@ -30,6 +30,9 @@ module Hhconfig = struct
 
   let auto_namespace_map = key "auto_namespace_map"
 
+  let ban_memoize_erased_generic_return =
+    key "ban_memoize_erased_generic_return"
+
   let ban_this_refinement_in_generic_class =
     key "ban_this_refinement_in_generic_class"
 

@@ -318,3 +318,6 @@ let missing_targs_as_fresh_generics t =
 
 let private_member_variance_check t =
   t.Global_options.tco_private_member_variance_check
+
+let ban_memoize_erased_generic_return t =
+  t.Global_options.tco_ban_memoize_erased_generic_return

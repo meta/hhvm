@@ -642,6 +642,10 @@ impl HhConfig {
                 "private_member_variance_check",
                 default.tco_private_member_variance_check,
             )?,
+            tco_ban_memoize_erased_generic_return: hhconfig.get_bool_or(
+                "ban_memoize_erased_generic_return",
+                default.tco_ban_memoize_erased_generic_return,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

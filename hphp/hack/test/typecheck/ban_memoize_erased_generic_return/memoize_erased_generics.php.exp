@@ -1,0 +1,79 @@
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generics.php:13:33
+10 |   }
+11 | 
+12 |   <<__Memoize(#MakeICInaccessible)>>
+   |     ^^^^^^^^^ [2]
+13 |   public static function getter<T>(): Vector<T> {
+   |                                 ^ [1]
+14 |     return Vector {};
+15 |   }
+
+error: Typing[4538] Erased generic `T2` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T2` can share one result. Make `T2` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generics.php:28:33
+25 |   }
+26 | 
+27 |   <<__Memoize(#MakeICInaccessible)>>
+   |     ^^^^^^^^^ [2]
+28 |   public static function getter<T2>(): Break3<T2> {
+   |                                 ^^ [1]
+29 |     return new Break3();
+30 |   }
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generics.php:42:36
+39 | }
+40 | 
+41 | <<__Memoize>>
+   |   ^^^^^^^^^ [2]
+42 | function memo_mutable_in_awaitable<T>(): Awaitable<Map<string, T>> {
+   |                                    ^ [1]
+43 |   return async {
+44 |     return Map {};
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generics.php:49:29
+46 | }
+47 | 
+48 | <<__Memoize>>
+   |   ^^^^^^^^^ [2]
+49 | function memo_contravariant<T>(): (function(T): void) {
+   |                             ^ [1]
+50 |   return (T $_) ==> {};
+51 | }
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generics.php:55:30
+52 | 
+53 | class LSB {
+54 |   <<__MemoizeLSB>>
+   |     ^^^^^^^^^^^^ [2]
+55 |   public static function lsb<T>(): Vector<T> {
+   |                              ^ [1]
+56 |     return Vector {};
+57 |   }
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generics.php:65:31
+62 | type InvariantVec<T> = vec<T>;
+63 | 
+64 | <<__Memoize>>
+   |   ^^^^^^^^^ [2]
+65 | function memo_invariant_alias<T>(): InvariantVec<T> {
+   |                               ^ [1]
+66 |   return vec[];
+67 | }
+
+6 errors found
