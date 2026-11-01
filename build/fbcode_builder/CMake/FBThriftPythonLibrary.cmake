@@ -67,7 +67,7 @@ macro(fb_find_thrift_python_runtime)
   if(
     NOT _FB_THRIFT_PYTHON_RUNTIME_FOUND OR
     NOT EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift/python" OR
-    NOT EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs" OR
+    (NOT APPLE AND NOT EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs") OR
     NOT EXISTS "${FOLLY_PYTHON_SITE_PACKAGES}/folly"
   )
     # Ensure Python3 is found so we can use ${Python3_EXECUTABLE}
@@ -121,7 +121,9 @@ macro(fb_find_thrift_python_runtime)
         "fbthrift-python was found at ${THRIFT_PYTHON_SITE_PACKAGES}, but "
         "its thrift/python runtime package is missing.")
       unset(THRIFT_PYTHON_SITE_PACKAGES)
-    elseif(NOT EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs")
+    elseif(NOT APPLE AND NOT EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs")
+      # On macOS, delocate puts the wheel's native dependencies in the
+      # .dylibs/ of one of its packages instead.
       message(WARNING
         "fbthrift-python was found at ${THRIFT_PYTHON_SITE_PACKAGES}, but "
         "thrift.libs is missing. Install an auditwheel-repaired "
@@ -370,7 +372,7 @@ function(add_fb_thrift_python_executable TARGET)
   if(
     THRIFT_PYTHON_SITE_PACKAGES AND
     EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift/python" AND
-    EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs"
+    (APPLE OR EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs")
   )
     # The bundled thrift/ hides the wheel's namespace package, so link all of
     # its subpackages: thrift.python imports thrift.py3, for example.
@@ -390,17 +392,21 @@ function(add_fb_thrift_python_executable TARGET)
         )
       endif()
     endforeach()
+    if(EXISTS "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs")
+      list(APPEND link_commands
+        COMMAND ${CMAKE_COMMAND}
+          "-DFB_REMOVE_PATH=${target_dir}/thrift.libs"
+          -P "${_FB_THRIFT_PYTHON_REMOVE_PATH_SCRIPT}"
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+          "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs"
+          "${target_dir}/thrift.libs"
+      )
+    endif()
     add_custom_command(
       TARGET ${TARGET}.GEN_PY_EXE POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E make_directory "${target_dir}/thrift"
       COMMAND ${CMAKE_COMMAND} -E touch "${target_dir}/thrift/__init__.py"
       ${link_commands}
-      COMMAND ${CMAKE_COMMAND}
-        "-DFB_REMOVE_PATH=${target_dir}/thrift.libs"
-        -P "${_FB_THRIFT_PYTHON_REMOVE_PATH_SCRIPT}"
-      COMMAND ${CMAKE_COMMAND} -E create_symlink
-        "${THRIFT_PYTHON_SITE_PACKAGES}/thrift.libs"
-        "${target_dir}/thrift.libs"
       COMMENT "Symlinking thrift-python and its native dependencies into ${TARGET}"
     )
   else()
