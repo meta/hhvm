@@ -6,7 +6,13 @@
 # to these shared compiler settings in order to avoid accidentally
 # breaking a build in another project!
 
+# C and C++ only: ml64, which assembles the MASM sources of dependencies such as
+# Boost.Context, reads /Zc:preprocessor as several options, /Zs among them, and
+# then writes no object file. CMake before 3.15 takes one language per
+# $<COMPILE_LANGUAGE>, hence the OR.
 add_compile_options(
-  /wd4250 # 'class1' : inherits 'class2::member' via dominance
-  /Zc:preprocessor # Enable conforming preprocessor for __VA_OPT__ support
+  # 'class1' : inherits 'class2::member' via dominance
+  "$<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:/wd4250>"
+  # Enable conforming preprocessor for __VA_OPT__ support
+  "$<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:/Zc:preprocessor>"
 )
