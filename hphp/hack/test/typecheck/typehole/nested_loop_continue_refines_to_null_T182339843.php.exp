@@ -1,0 +1,11 @@
+warning: Warn[12010] This `is` check is always `false`. The expression on the left has type `null` which shares no values with `nonnull`. [1]
+
+nested_loop_continue_refines_to_null_T182339843.php:12:11
+10 |     $foo = null;
+11 |     while (true) {
+12 |       if ($foo is nonnull) {
+   |           ^^^^^^^^^^^^^^^ [1]
+13 |         takes_string($foo);
+14 |         continue;
+
+1 error found
