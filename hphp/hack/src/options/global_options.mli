@@ -312,6 +312,8 @@ type t = {
       (** Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments. *)
   tco_missing_targs_as_fresh_generics: bool;
       (** Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables. *)
+  tco_private_member_variance_check: bool;
+      (** Error when a private member that mentions a variant class type parameter is written or called through a receiver other than `$this`. *)
 }
 [@@deriving eq, show]
 
@@ -427,6 +429,7 @@ val set :
   ?tco_forget_static_prop_refinements_by_name:bool ->
   ?tco_ban_this_refinement_in_generic_class:bool ->
   ?tco_missing_targs_as_fresh_generics:bool ->
+  ?tco_private_member_variance_check:bool ->
   t ->
   t
 

@@ -1,0 +1,133 @@
+error: Typing[4537] Private member `t` of `Box` can only be written through `$this`: its type uses the covariant type parameter `T` covariantly, and through another receiver the type arguments may have been widened. [1]
+-> `T` is used covariantly here [2]
+-> The class and its type parameters are declared here [3]
+
+private_member_variance.php:11:11
+ 1 | <?hh
+ 2 | 
+ 3 | final class Box<+T> {
+   |             ^^^ [3]
+ 4 |   public function __construct(private T $t, private vec<T> $all = vec[]) {}
+   |                                       ^ [2]
+ 5 |   public function get(): T {
+ 6 |     return $this->t;
+   :
+ 9 |   // $box may be a Box<int> passed as a Box<arraykey>.
+10 |   public static function overwrite(Box<arraykey> $box, arraykey $in): void {
+11 |     $box->t = $in;
+   |           ^ [1]
+12 |   }
+13 |   public static function append(Box<arraykey> $box, arraykey $in): void {
+
+error: Typing[4537] Private member `all` of `Box` can only be written through `$this`: its type uses the covariant type parameter `T` covariantly, and through another receiver the type arguments may have been widened. [1]
+-> `T` is used covariantly here [2]
+-> The class and its type parameters are declared here [3]
+
+private_member_variance.php:14:11
+ 1 | <?hh
+ 2 | 
+ 3 | final class Box<+T> {
+   |             ^^^ [3]
+ 4 |   public function __construct(private T $t, private vec<T> $all = vec[]) {}
+   |                                                         ^ [2]
+ 5 |   public function get(): T {
+ 6 |     return $this->t;
+   :
+12 |   }
+13 |   public static function append(Box<arraykey> $box, arraykey $in): void {
+14 |     $box->all[] = $in;
+   |           ^^^ [1]
+15 |   }
+16 |   public static function call_set(Box<arraykey> $box, arraykey $in): void {
+
+error: Typing[4537] Private member `set` of `Box` can only be called through `$this`: its type uses the covariant type parameter `T` contravariantly, and through another receiver the type arguments may have been widened. [1]
+-> `T` is used contravariantly here [2]
+-> The class and its type parameters are declared here [3]
+
+private_member_variance.php:17:11
+ 1 | <?hh
+ 2 | 
+ 3 | final class Box<+T> {
+   |             ^^^ [3]
+ 4 |   public function __construct(private T $t, private vec<T> $all = vec[]) {}
+ 5 |   public function get(): T {
+   :
+15 |   }
+16 |   public static function call_set(Box<arraykey> $box, arraykey $in): void {
+17 |     $box->set($in);
+   |           ^^^ [1]
+18 |   }
+19 | 
+   :
+27 |     return $other->t === $this->t && $other->peek() === $this->t;
+28 |   }
+29 |   private function set(T $t): void {
+   |                        ^ [2]
+30 |     $this->t = $t;
+31 |   }
+
+error: Typing[4537] Private member `lastValue` of `Sink` can only be called through `$this`: its type uses the contravariant type parameter `T` covariantly, and through another receiver the type arguments may have been narrowed. [1]
+-> `T` is used covariantly here [2]
+-> The class and its type parameters are declared here [3]
+
+private_member_variance.php:41:19
+35 | }
+36 | 
+37 | final class Sink<-T> {
+   |             ^^^^ [3]
+38 |   public function __construct(private ?T $last = null) {}
+39 |   // $sink may be a Sink<mixed> passed as a Sink<int>.
+40 |   public static function last(Sink<int> $sink): ?int {
+41 |     return $sink->lastValue();
+   |                   ^^^^^^^^^ [1]
+42 |   }
+43 |   private function lastValue(): ?T {
+   |                                  ^ [2]
+44 |     return $this->last;
+45 |   }
+
+error: Typing[4537] Private member `contra` of `Wobble` can only be called through `$this`: its type uses the covariant type parameter `T` contravariantly, and through another receiver the type arguments may have been widened. [1]
+-> `T` is used contravariantly here [2]
+-> The class and its type parameters are declared here [3]
+
+private_member_variance.php:77:19
+57 | }
+58 | 
+59 | final class Wobble<+T> {
+   |             ^^^^^^ [3]
+60 |   public function __construct(private ContraBox<T> $contra, private T $in) {}
+61 | 
+   :
+75 |   // int-only sink would be returned as a ContraBox<arraykey>.
+76 |   public static function leak(Wobble<arraykey> $that): ContraBox<arraykey> {
+77 |     return $that->contra();
+   |                   ^^^^^^ [1]
+78 |   }
+79 |   private function contra(): ContraBox<T> {
+   |                                        ^ [2]
+80 |     return $this->contra;
+81 |   }
+
+error: Typing[4537] Private member `on` of `Handler` can only be written through `$this`: its type uses the contravariant type parameter `T` contravariantly, and through another receiver the type arguments may have been narrowed. [1]
+-> `T` is used contravariantly here [2]
+-> The class and its type parameters are declared here [3]
+
+private_member_variance.php:104:9
+ 93 | }
+ 94 | 
+ 95 | final class Handler<-T> {
+    |             ^^^^^^^ [3]
+ 96 |   public function __construct(
+ 97 |     private (function(T): void) $on,
+    |                       ^ [2]
+ 98 |     private ?T $last = null,
+ 99 |   ) {}
+    :
+102 |   // would be stored where any value can be passed to it.
+103 |   public static function replace(Handler<int> $h, (function(int): void) $on): void {
+104 |     $h->on = $on;
+    |         ^^ [1]
+105 |   }
+106 |   // ?T uses T covariantly, so this write is fine.
+
+6 errors found

@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<dc46698468ffbfb874ee34028f5df462>>
+// @generated SignedSource<<c3c8cbad2947ad54ff07383dce010b80>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -422,4 +422,6 @@ pub struct GlobalOptions {
     pub tco_ban_this_refinement_in_generic_class: bool,
     /// Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables.
     pub tco_missing_targs_as_fresh_generics: bool,
+    /// Error when a private member that mentions a variant class type parameter is written or called through a receiver other than `$this`.
+    pub tco_private_member_variance_check: bool,
 }

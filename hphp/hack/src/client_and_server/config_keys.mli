@@ -70,6 +70,8 @@ module Hhconfig : sig
 
   val package_support_multifile_tests : string
 
+  val private_member_variance_check : string
+
   val treat_non_annotated_memoize_as_kbic : string
 
   val union_intersection_type_hints : string

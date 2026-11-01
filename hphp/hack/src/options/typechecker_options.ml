@@ -315,3 +315,6 @@ let ban_this_refinement_in_generic_class t =
 
 let missing_targs_as_fresh_generics t =
   t.Global_options.tco_missing_targs_as_fresh_generics
+
+let private_member_variance_check t =
+  t.Global_options.tco_private_member_variance_check

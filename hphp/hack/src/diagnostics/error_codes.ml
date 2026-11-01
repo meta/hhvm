@@ -837,6 +837,7 @@ module Typing = struct
     | ShapeKeyClassConstValueUnresolvable [@value 4534]
     | ShapeKeyClassConstIsAbstract [@value 4535]
     | ThisRefinementInGenericClass [@value 4536]
+    | PrivateMemberVariance [@value 4537]
   (* Add new Typing codes here! Comment out when deprecating. *)
   [@@deriving enum, show { with_path = false }]
 

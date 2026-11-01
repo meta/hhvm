@@ -638,6 +638,10 @@ impl HhConfig {
                 "missing_targs_as_fresh_generics",
                 default.tco_missing_targs_as_fresh_generics,
             )?,
+            tco_private_member_variance_check: hhconfig.get_bool_or(
+                "private_member_variance_check",
+                default.tco_private_member_variance_check,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

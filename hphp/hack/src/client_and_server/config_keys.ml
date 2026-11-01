@@ -72,6 +72,8 @@ module Hhconfig = struct
 
   let package_support_multifile_tests = key "package_support_multifile_tests"
 
+  let private_member_variance_check = key "private_member_variance_check"
+
   let treat_non_annotated_memoize_as_kbic =
     key "treat_non_annotated_memoize_as_kbic"
 

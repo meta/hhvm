@@ -985,6 +985,16 @@ module Primary = struct
         class_name: string;
         decl_pos: Pos_or_decl.t;
       }
+    | Private_member_variance of {
+        pos: Pos.t;
+        class_name: string;
+        member_name: string;
+        is_write: bool;
+        tparam_name: string;
+        variance: Ast_defs.variance;
+        use_pos: Pos_or_decl.t;
+        decl_pos: Pos_or_decl.t;
+      }
     | Needs_concrete_override of {
         pos: Pos.t;
         method_pos: Pos_or_decl.t;

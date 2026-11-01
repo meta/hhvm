@@ -3341,6 +3341,54 @@ end = struct
     and reasons = lazy [(decl_pos, "The generic class is declared here")] in
     create ~code:Error_code.ThisRefinementInGenericClass ~claim ~reasons ()
 
+  let private_member_variance
+      pos class_name member_name is_write tparam_name variance use_pos decl_pos
+      =
+    let (kind, effect) =
+      match variance with
+      | Ast_defs.Contravariant -> ("contravariant", "narrowed")
+      | Ast_defs.Covariant
+      | Ast_defs.Invariant ->
+        ("covariant", "widened")
+    in
+    let use_variance =
+      match (is_write, variance) with
+      | (true, Ast_defs.Covariant)
+      | (false, Ast_defs.Contravariant) ->
+        "covariantly"
+      | _ -> "contravariantly"
+    in
+    let tparam = Markdown_lite.md_codify tparam_name in
+    let claim =
+      lazy
+        ( pos,
+          "Private member "
+          ^ Markdown_lite.md_codify member_name
+          ^ " of "
+          ^ Markdown_lite.md_codify (Render.strip_ns class_name)
+          ^ " can only be "
+          ^ (if is_write then
+              "written"
+            else
+              "called")
+          ^ " through `$this`: its type uses the "
+          ^ kind
+          ^ " type parameter "
+          ^ tparam
+          ^ " "
+          ^ use_variance
+          ^ ", and through another receiver the type arguments may have been "
+          ^ effect
+          ^ "." )
+    and reasons =
+      lazy
+        [
+          (use_pos, tparam ^ " is used " ^ use_variance ^ " here");
+          (decl_pos, "The class and its type parameters are declared here");
+        ]
+    in
+    create ~code:Error_code.PrivateMemberVariance ~claim ~reasons ()
+
   let uninstantiable_class_via_static
       pos _class_name decl_pos containing_method_pos =
     let claim =
@@ -5675,6 +5723,26 @@ end = struct
         containing_method_pos
     | This_refinement_in_generic_class { pos; class_name; decl_pos } ->
       this_refinement_in_generic_class pos class_name decl_pos
+    | Private_member_variance
+        {
+          pos;
+          class_name;
+          member_name;
+          is_write;
+          tparam_name;
+          variance;
+          use_pos;
+          decl_pos;
+        } ->
+      private_member_variance
+        pos
+        class_name
+        member_name
+        is_write
+        tparam_name
+        variance
+        use_pos
+        decl_pos
     | Needs_concrete_override
         {
           pos;
