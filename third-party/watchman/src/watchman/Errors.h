@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <cstdint>
 #include <string>
 #include <system_error>
