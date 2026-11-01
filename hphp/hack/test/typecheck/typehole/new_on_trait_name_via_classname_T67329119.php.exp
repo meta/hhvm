@@ -1,7 +1,7 @@
 error: Typing[4482] It is no longer allowed to use a `classname<MyFooClass>` in this position. Please use a `class<MyFooClass>` instead. [1]
 -> Definition is here [2]
 
-T67329119.php:18:7
+new_on_trait_name_via_classname_T67329119.php:18:7
 15 | }
 16 | 
 17 | function new_it(classname<MyFooClass> $c): void {

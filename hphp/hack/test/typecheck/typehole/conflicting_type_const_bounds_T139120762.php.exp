@@ -1,6 +1,6 @@
 error: Typing[4366] This generic parameter is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter [1]
 
-T139120762.php:7:14
+conflicting_type_const_bounds_T139120762.php:7:14
 5 | }
 6 | 
 7 | function id1<T as C with { type T = mixed }, Tacc>(mixed $x): Tacc
@@ -12,7 +12,7 @@ error: Typing[4110] Invalid return type [1]
 -> Expected `Tacc` [2]
 -> But got `mixed` [3]
 
-T139120762.php:10:10
+conflicting_type_const_bounds_T139120762.php:10:10
  5 | }
  6 | 
  7 | function id1<T as C with { type T = mixed }, Tacc>(mixed $x): Tacc
@@ -27,7 +27,7 @@ T139120762.php:10:10
 
 error: Typing[4366] This generic parameter is redundant because it only appears in a covariant (output) position with useless `as` bound. Consider replacing uses of generic parameter with `nothing` or specifying `<<__Explicit>>` on the generic parameter [1]
 
-T139120762.php:13:14
+conflicting_type_const_bounds_T139120762.php:13:14
 11 | }
 12 | 
 13 | function id2<T as C with { type T = nothing }, Tacc>(Tacc $x): nothing
@@ -39,7 +39,7 @@ error: Typing[4110] Invalid return type [1]
 -> Expected `nothing` [2]
 -> But got `Tacc` [3]
 
-T139120762.php:16:10
+conflicting_type_const_bounds_T139120762.php:16:10
 11 | }
 12 | 
 13 | function id2<T as C with { type T = nothing }, Tacc>(Tacc $x): nothing
@@ -55,13 +55,12 @@ T139120762.php:16:10
 error: Typing[4110] Invalid return type [1]
 -> Expected `nothing` [2]
 -> But got `mixed` [3]
-->   by the definition of `Tacc` [4]
+->   by the definition of `Tacc` arising from an implicit `as mixed` constraint on this type [3]
 
-T139120762.php:16:10
+conflicting_type_const_bounds_T139120762.php:16:10
 11 | }
 12 | 
 13 | function id2<T as C with { type T = nothing }, Tacc>(Tacc $x): nothing
-   |                                                ^^^^ [4]
    |                                                      ^^^^ [3]
    |                                                                ^^^^^^^ [2]
 14 | where

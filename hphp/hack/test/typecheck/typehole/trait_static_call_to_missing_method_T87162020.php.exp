@@ -1,7 +1,7 @@
 warning: Warn[12020] Static method call on a trait: `MyTrait::bar` [1]
 -> `MyTrait` is defined here [2]
 
-T87162020.php:18:12
+trait_static_call_to_missing_method_T87162020.php:18:12
  6 | }
  7 | 
  8 | trait MyTrait {

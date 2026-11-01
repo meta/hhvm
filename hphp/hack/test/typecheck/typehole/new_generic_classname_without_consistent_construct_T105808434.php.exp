@@ -1,7 +1,7 @@
 error: Typing[4482] It is no longer allowed to use a `classname<Tm>` in this position. Please use a `class<Tm>` instead. [1]
 -> Definition is here [2]
 
-T105808434.php:6:9
+new_generic_classname_without_consistent_construct_T105808434.php:6:9
 2 | 
 3 | class C<Tm> {
 4 |   public function __construct(private classname<Tm> $className) {

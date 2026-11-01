@@ -1,6 +1,6 @@
 warning: Warn[12008] Duplicated property `x` in `TraitTestClass` (defined in `TraitBar` and `TraitFoo`): all instances will be aliased at runtime [1]
 
-T54803936.php:10:7
+conflicting_trait_properties_T54803936.php:10:7
  8 |   protected int $x = 5;
  9 | }
 10 | class TraitTestClass {

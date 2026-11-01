@@ -1,7 +1,7 @@
 warning: Warn[12042] Property accessed on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-T63738857b.php:7:26
+foreach_into_property_of_dynamic_T63738857b.php:7:26
 3 | 
 4 | function my_example(darray<int, int> $items): void {
 5 |   $k = null as dynamic;

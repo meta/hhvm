@@ -3,7 +3,8 @@ All files in this directory
 * pass the Hack type checker (i.e. `hh_single_type_check <filename>` produces `No errors` output);
 * fail with a fatal when run under HHVM (type `php <filename>` to demonstrate this).
 
-Each file is named with an associated task number that has the tag `typehole`.
+Each file is named for the hole it demonstrates, suffixed with the number of its
+task tagged `typehole` when there is one.
 
 In other words, the expected output of "No errors" is wrong, but it's
 useful to keep the tests here as ready-made regression tests for when the

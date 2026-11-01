@@ -1,7 +1,7 @@
 warning: Warn[12020] Static method call on a trait: `T::foo` [1]
 -> `T` is defined here [2]
 
-T81198878.php:7:8
+private_trait_method_via_trait_name_T81198878.php:7:8
 2 | // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 3 | 
 4 | trait T {

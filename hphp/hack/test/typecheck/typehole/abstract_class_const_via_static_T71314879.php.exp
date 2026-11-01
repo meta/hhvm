@@ -1,7 +1,7 @@
 error: Typing[4529] Dangerous access of abstract member `C1::X`; it may be abstract and `static` might refer to an abstract class here. Consider adding the `__NeedsConcrete` attribute to the containing method. [1]
 -> Declaration is here [2]
 
-T71314879.php:7:18
+abstract_class_const_via_static_T71314879.php:7:18
 3 | 
 4 | abstract class C1 {
 5 |   abstract const int X;

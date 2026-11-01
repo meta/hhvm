@@ -2,7 +2,7 @@ error: Typing[4053] No instance method `__construct` in `MyParent` [1]
 -> This is why I think it is an object of type MyParent [2]
 -> Declaration of `MyParent` is here [3]
 
-T38050584.php:8:13
+parent_construct_not_checked_T38050584.php:8:13
  2 | // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
  3 | 
  4 | class MyParent {}

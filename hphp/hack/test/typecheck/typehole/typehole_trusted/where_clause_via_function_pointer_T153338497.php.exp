@@ -1,6 +1,6 @@
 error: Naming[2129] Type access is only valid for a class, `self`, or `this`. To relate type parameters and type constants, you likely want to use the 'with refinement' feature instead. [1]
 
-T153338497.php:15:91
+where_clause_via_function_pointer_T153338497.php:15:91
 13 | }
 14 | 
 15 |   function set_a_box<TBox as nonnull as MyBox, TVal>(TBox $b, TVal $v): void where TVal = TBox::TInner {
@@ -8,31 +8,11 @@ T153338497.php:15:91
 16 |   $b->set($v);
 17 | }
 
-error: Typing[4110] Typing error [1]
--> Expected `dynamic` [2]
--> Type `TBox::TInner` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
-
-T153338497.php:23:3
-13 | }
-14 | 
-15 |   function set_a_box<TBox as nonnull as MyBox, TVal>(TBox $b, TVal $v): void where TVal = TBox::TInner {
-   |            ^^^^^^^^^ [2]
-   |                                                                                    ^^^^ [3]
-16 |   $b->set($v);
-17 | }
-   :
-21 |   $fun = set_a_box<>;
-22 |   $x = new IntBox();
-23 |   $fun($x, "hello");
-   |   ^^^^^^^^^^^^^^^^^ [1]
-24 |   $x->get();
-25 | }
-
 error: Typing[4110] Invalid argument [1]
 -> Expected `TBox::TInner` [2]
 -> But got `string` [1]
 
-T153338497.php:23:12
+where_clause_via_function_pointer_T153338497.php:23:12
 13 | }
 14 | 
 15 |   function set_a_box<TBox as nonnull as MyBox, TVal>(TBox $b, TVal $v): void where TVal = TBox::TInner {
@@ -47,4 +27,4 @@ T153338497.php:23:12
 24 |   $x->get();
 25 | }
 
-3 errors found
+2 errors found

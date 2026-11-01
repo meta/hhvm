@@ -1,7 +1,7 @@
 error: Typing[4482] It is no longer allowed to use a `classname<A<num>>` in this position. Please use a `class<A<num>>` instead. [1]
 -> Definition is here [2]
 
-T120782397.php:13:14
+covariant_generic_consistent_construct_T120782397.php:13:14
 10 | class B extends A<int> {}
 11 | 
 12 | function make_a_num(classname<A<num>> $a): A<num> {

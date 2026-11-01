@@ -1,7 +1,7 @@
 warning: Warn[12020] Static method call on a trait: `BarTrait2::start` [1]
 -> `BarTrait2` is defined here [2]
 
-T55089659.php:15:14
+trait_abstract_static_call_T55089659.php:15:14
  2 | // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
  3 | 
  4 | trait BarTrait2 {

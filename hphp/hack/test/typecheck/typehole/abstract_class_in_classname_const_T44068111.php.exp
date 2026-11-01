@@ -1,7 +1,7 @@
 error: Typing[4482] It is no longer allowed to use a `classname<MyTestBase>` in this position. Please use a `class<MyTestBase>` instead. [1]
 -> Definition is here [2]
 
-T44068111.php:21:12
+abstract_class_in_classname_const_T44068111.php:21:12
 14 | 
 15 | abstract final class MyTestRunner {
 16 |   const vec<classname<MyTestBase>> TESTS =
