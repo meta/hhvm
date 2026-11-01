@@ -9,12 +9,12 @@ abstract class A<+T> {
 }
 class B extends A<int> {}
 
-function make_a_num(classname<A<num>> $a): A<num> {
+function make_a_num(class<A<num>> $a): A<num> {
   return new $a(1.1);
 }
 
 function breakit(): int {
-  $b = make_a_num(nameof B) as B;
+  $b = make_a_num(B::class) as B;
   return $b->get();
 }
 

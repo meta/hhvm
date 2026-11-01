@@ -9,12 +9,12 @@ trait MyTrait {
   require extends MyClass;
 }
 
-function takes_classname(classname<MyClass> $cn): void {
+function takes_classname(class<MyClass> $cn): void {
   $cn::foo();
 }
 
 <<__EntryPoint>>
 function call_it(): void {
   // accepted by hh, error at runtime (calling abstract method)
-  takes_classname(nameof MyTrait);
+  takes_classname(MyTrait::class);
 }

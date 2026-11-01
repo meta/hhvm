@@ -28,3 +28,8 @@ final class Break8Child extends Break8Base {
   }
   private static function expectInt(int $_): void {}
 }
+
+<<__EntryPoint>>
+function main(): void {
+  Break8::run();
+}

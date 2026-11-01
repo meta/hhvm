@@ -1,14 +1,1 @@
-error: Typing[4482] It is no longer allowed to use a `classname<MyClass>` in this position. Please use a `class<MyClass>` instead. [1]
--> Definition is here [2]
-
-trait_name_as_classname_T74154579.php:13:3
-10 | }
-11 | 
-12 | function takes_classname(classname<MyClass> $cn): void {
-   |                          ^^^^^^^^^^^^^^^^^^ [2]
-13 |   $cn::foo();
-   |   ^^^ [1]
-14 | }
-15 | 
-
-1 error found
+No errors

@@ -10,10 +10,10 @@ trait FooTrait {
 
 <<__EntryPoint>>
 function bar(): void {
-  $x = nameof FooTrait;
+  $x = FooTrait::class;
   new_it($x);
 }
 
-function new_it(classname<MyFooClass> $c): void {
+function new_it(class<MyFooClass> $c): void {
   new $c(); // boom
 }
