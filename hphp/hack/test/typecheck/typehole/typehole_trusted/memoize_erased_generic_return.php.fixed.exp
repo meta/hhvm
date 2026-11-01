@@ -1,0 +1,14 @@
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generic_return.php:14:33
+11 |   }
+12 | 
+13 |   <<__Memoize(#MakeICInaccessible)>>
+   |     ^^^^^^^^^ [2]
+14 |   public static function getter<T>(): Vector<T> {
+   |                                 ^ [1]
+15 |     return Vector {};
+16 |   }
+
+1 error found

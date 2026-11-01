@@ -1,0 +1,44 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+->   via this generic `T` [3]
+-> But got `arraykey` [4]
+-> This type argument to `Vector` must match exactly (it is invariant) [4]
+
+memoize_erased_generic_strict_eq.php:10:20
+ 5 | class Break1 {
+ 6 |   public static function run(): int {
+ 7 |     $vi = self::getter<int>();
+   |                        ^^^ [2]
+ 8 |     $va = self::getter<arraykey>();
+ 9 |     if ($vi === $va) {
+10 |       self::vecarr($vi);
+   |                    ^^^ [1]
+11 |     }
+12 |     return $vi[0];
+13 |   }
+14 | 
+15 |   public static function vecarr(Vector<arraykey> $va): void {
+   |                                        ^^^^^^^^ [4]
+16 |     $va[] = 'lol';
+17 |   }
+18 | 
+19 |   <<__Memoize(#MakeICInaccessible)>>
+20 |   public static function getter<T>(): Vector<T> {
+   |                                              ^ [3]
+21 |     return Vector {};
+22 |   }
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_erased_generic_strict_eq.php:20:33
+17 |   }
+18 | 
+19 |   <<__Memoize(#MakeICInaccessible)>>
+   |     ^^^^^^^^^ [2]
+20 |   public static function getter<T>(): Vector<T> {
+   |                                 ^ [1]
+21 |     return Vector {};
+22 |   }
+
+2 errors found

@@ -1,0 +1,18 @@
+error: Typing[4528] Dangerous call to `FooA::create` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `FooA` is not concrete. [1]
+-> Declaration is here [2]
+
+consistent_construct_abstract_class_instantiated_T67222643.php:16:9
+ 7 |   public function __construct(private string $a) {}
+ 8 |   <<__NeedsConcrete>>
+ 9 |   public static function create(string $a): FooA {
+   |                          ^^^^^^ [2]
+10 |     return new static($a);
+11 |   }
+   :
+14 | <<__EntryPoint>>
+15 | function main():void {
+16 |   FooA::create('hello');
+   |         ^^^^^^ [1]
+17 | }
+
+1 error found

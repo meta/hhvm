@@ -1,0 +1,16 @@
+error: Typing[4538] Erased generic `T` reaches the result of a memoized function through the type arguments of an `IMemoizeParam` parameter, whose cache key comes only from `getInstanceKey()`, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+-> This parameter is keyed by its `getInstanceKey()` [3]
+
+memoize_param_instance_key.php:17:29
+14 | }
+15 | 
+16 | <<__Memoize(#MakeICInaccessible)>>
+   |   ^^^^^^^^^ [2]
+17 | function bad_get_out_of_box<T>(BadMemoParamBox<T> $box): T {
+   |                             ^ [1]
+   |                                                   ^^^^ [3]
+18 |   return $box->get();
+19 | }
+
+1 error found

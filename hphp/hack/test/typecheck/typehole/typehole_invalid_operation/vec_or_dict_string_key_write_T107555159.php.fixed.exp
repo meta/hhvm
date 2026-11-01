@@ -1,0 +1,15 @@
+error: Typing[4110] Typing error [1]
+-> Expected an array that can be updated [1]
+-> But got `vec_or_dict<arraykey, int>` [2]
+
+vec_or_dict_string_key_write_T107555159.php:4:3
+1 | <?hh
+2 | 
+3 | function kv(vec_or_dict<int> $v) : void {
+  |             ^^^^^^^^^^^^^^^^ [2]
+4 |   $v["1"] = 1;
+  |   ^^^^^^^^^^^ [1]
+5 | }
+6 | 
+
+1 error found

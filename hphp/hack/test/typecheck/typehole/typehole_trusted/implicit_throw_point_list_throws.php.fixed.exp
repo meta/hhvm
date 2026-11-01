@@ -1,0 +1,22 @@
+error: Typing[4110] Invalid return type [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+implicit_throw_point_list_throws.php:11:12
+ 2 | 
+ 3 | // list() throws on a short vec, so the catch sees $x as string.
+ 4 | function list_throws(): int {
+   |                         ^^^ [2]
+ 5 |   $x = 0;
+ 6 |   try {
+ 7 |     $x = 'foo';
+   |          ^^^^^ [3]
+ 8 |     list($_a, $_b) = vec[1];
+ 9 |     $x = 1;
+10 |   } catch (Exception $_) {
+11 |     return $x;
+   |            ^^ [1]
+12 |   }
+13 |   return $x;
+
+1 error found

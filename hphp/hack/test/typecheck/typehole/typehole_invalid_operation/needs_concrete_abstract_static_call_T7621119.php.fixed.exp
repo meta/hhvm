@@ -1,0 +1,18 @@
+error: Typing[4528] Dangerous call to `Parent_::getSomeClass` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `Parent_` is not concrete. [1]
+-> Declaration is here [2]
+
+needs_concrete_abstract_static_call_T7621119.php:28:12
+ 8 |   abstract public function someClass(): SomeClass<T>;
+ 9 |   <<__NeedsConcrete>>
+10 |   public static function getSomeClass(): SomeClass<T> {
+   |                          ^^^^^^^^^^^^ [2]
+11 |     $self = static::get();
+12 |     return $self->someClass();
+   :
+26 | function fun(): void {
+27 |   $c = Child::getSomeClass(); // $c is SomeClass<int>
+28 |   Parent_::getSomeClass(); // splode
+   |            ^^^^^^^^^^^^ [1]
+29 | }
+
+1 error found

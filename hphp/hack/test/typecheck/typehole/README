@@ -23,3 +23,18 @@ Tests live in a subdirectory for the kind of hole they demonstrate:
   but Hack allows an operation that isn't valid for it, such as calling an
   abstract method, instantiating a trait or calling impure code from a pure
   function.
+
+Some holes are fixed behind a typechecker flag that is off by default. The
+`typehole_fixed` target in ../BUCK runs every test here with all such flags on,
+listed in `typehole_fix_flags`. A test one of them fixes has a
+`<test>.php.fixed.exp` holding the errors it then reports, so a `.fixed.exp`
+means a fix already exists. Every other test must still match its `.exp`.
+
+If you add a flag that fixes a typehole, add it to `typehole_fix_flags` in
+../BUCK in the same diff, then run
+
+  buck test fbcode//hphp/hack/test/typecheck:typehole_fixed --config hack.update=always
+
+to write a `.fixed.exp` for each hole it fixes. Check that each new error
+points at the hole. When a fix flag is removed or turned on by default, delete
+the `.fixed.exp` files it produced.
