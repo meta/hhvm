@@ -15,7 +15,7 @@ hack_name = { path = "../../utils/hack_name/cargo" }
 heapless = "0.9.3"
 operator = { path = "../cargo/operator" }
 parser_core_types = { path = "../cargo/core_types" }
-smallvec = { version = "1.16.2", features = ["const_generics", "impl_bincode", "serde", "specialization", "union", "write"] }
+smallvec = { version = "1.16.4", features = ["const_generics", "impl_bincode", "serde", "specialization", "union", "write"] }
 smart_constructors = { path = "../cargo/smart_constructors" }
 stack_limit = { path = "../../utils/stack_limit" }
 static_assertions = "1.1.0"
