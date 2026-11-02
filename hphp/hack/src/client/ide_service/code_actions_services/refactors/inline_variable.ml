@@ -222,7 +222,7 @@ let visitor ~(selection : Pos.t) =
       let (pos, stmt_) = stmt in
       let open Aast in
       match stmt_ with
-      | Expr (_, _, Assign (((_, _, Lvar (_, lid)) as lhs), _, rhs)) ->
+      | Expr (_, _, Assign (((_, _, Lvar (_, lid)) as lhs), None, rhs)) ->
         let name = Local_id.get_name lid in
         let def_needs_grouping =
           match rhs with
@@ -245,6 +245,9 @@ let visitor ~(selection : Pos.t) =
     method! on_expr env expr =
       let open Aast in
       match Tuple3.get3 expr with
+      | Assign ((_, _, Lvar (_, lid)), Some _, _) ->
+        super#on_expr env expr
+        |> Var_info.mark_ineligible ~name:(Local_id.get_name lid)
       | Lvar (use_pos, lid) when not !in_lvalue ->
         let name = Local_id.get_name lid in
         Var_info.add_use Var_info.empty ~name ~use_pos

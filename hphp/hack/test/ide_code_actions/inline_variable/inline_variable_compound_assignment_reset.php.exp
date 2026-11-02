@@ -1,0 +1,42 @@
+Code actions available:
+------------------------------------------
+Inline variable $x (CodeActionKind: "refactor") SELECTED
+
+JSON for selected code action:
+------------------------------------------
+{
+  "title": "Inline variable $x",
+  "kind": "refactor",
+  "diagnostics": [],
+  "edit": {
+    "changes": {
+      "FILE.php": [
+        {
+          "range": {
+            "start": { "line": 5, "character": 0 },
+            "end": { "line": 6, "character": 0 }
+          },
+          "newText": ""
+        },
+        {
+          "range": {
+            "start": { "line": 6, "character": 26 },
+            "end": { "line": 6, "character": 28 }
+          },
+          "newText": "3"
+        }
+      ]
+    }
+  }
+}
+
+Applied edit for code action:
+------------------------------------------
+<?hh
+
+function compound_assignment_then_reset(): void {
+  $x = 10;
+  $x += 2;
+  var_dump(/*range-start*/3/*range-end*/);
+}
+
