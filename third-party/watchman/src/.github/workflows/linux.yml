@@ -53,10 +53,13 @@ jobs:
     - name: Install Rust Stable
       uses: dtolnay/rust-toolchain@stable
 
+    # This builds the release binaries: they link the system libraries
+    # statically, so they need only glibc and GCC's runtime libraries.
     - name: Configure
       run: >
         cmake -B _build -G Ninja
         -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DCMAKE_PROJECT_INCLUDE="$PWD/watchman/build/package/prefer-static.cmake"
         -DCMAKE_C_COMPILER_LAUNCHER=sccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
 
