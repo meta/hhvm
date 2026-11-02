@@ -549,7 +549,7 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
                 (match !mode with
                 | None -> MODE_DEPS_OUT_AT_POS_BATCH [position]
                 | Some (MODE_DEPS_OUT_AT_POS_BATCH positions) ->
-                  MODE_FUN_DEPS_AT_POS_BATCH (position :: positions)
+                  MODE_DEPS_OUT_AT_POS_BATCH (position :: positions)
                 | _ -> raise (Arg.Bad "only a single mode should be specified"))
           end,
         " for each entry in input list get list of what it depends on [file:line:character list]",
