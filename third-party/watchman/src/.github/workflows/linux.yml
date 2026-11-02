@@ -1,0 +1,75 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: linux
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    env:
+      SCCACHE_GHA_ENABLED: "on"
+      # sccache caches cargo's crates too, and keeps one server, so the stats
+      # at the end cover the whole build.
+      RUSTC_WRAPPER: sccache
+      SCCACHE_IDLE_TIMEOUT: "0"
+    steps:
+
+    - uses: actions/checkout@v6
+
+    - name: Set up sccache
+      uses: mozilla-actions/sccache-action@v0.0.10
+      with:
+        version: "v0.14.0"
+
+    - name: Free up disk space
+      run: sudo rm -rf /usr/local/lib/android
+
+    # fizz, fbthrift, fb303 and edencommon build only against installed copies
+    # of these, and pywatchman's extension needs Python's headers and
+    # setuptools. The build fetches the rest, folly and Boost among them.
+    - name: Update system package info
+      run: sudo --preserve-env=http_proxy apt-get update
+    - name: Install system deps
+      run: >
+        sudo --preserve-env=http_proxy apt-get install -y
+        libevent-dev libgflags-dev libpcre2-dev libsodium-dev libssl-dev
+        libxxhash-dev libzstd-dev ninja-build python3-dev python3-setuptools
+        zlib1g-dev
+
+    - name: Install Rust Stable
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Configure
+      run: >
+        cmake -B _build -G Ninja
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DCMAKE_C_COMPILER_LAUNCHER=sccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+    - name: Build
+      run: cmake --build _build -j "$(nproc)"
+
+    # Like getdeps' test step, retry failures: the integration tests' timing
+    # varies on loaded machines.
+    - name: Test
+      run: >
+        ctest --test-dir _build --output-on-failure -j "$(nproc)"
+        --repeat until-pass:3
+
+    - name: Show sccache stats
+      if: always()
+      run: sccache --show-stats
