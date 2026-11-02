@@ -21,7 +21,6 @@
 #include <string>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/optional.h"
@@ -382,34 +381,6 @@ bool operator>=(DataType, DataType) = delete;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-namespace folly {
-template<> class FormatValue<HPHP::DataTypeCategory> {
- public:
-  explicit FormatValue(HPHP::DataTypeCategory val) noexcept : m_val(val) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    format_value::formatString(typeCategoryName(m_val), arg, cb);
-  }
-
- private:
-  HPHP::DataTypeCategory m_val;
-};
-
-template<> class FormatValue<HPHP::DataType> {
- public:
-  explicit FormatValue(HPHP::DataType dt) noexcept : m_dt(dt) {}
-
-  template<typename C>
-  void format(FormatArg& arg, C& cb) const {
-    format_value::formatString(tname(m_dt), arg, cb);
-  }
-
- private:
-  HPHP::DataType m_dt;
-};
-}
 
 template <>
 struct fmt::formatter<HPHP::DataTypeCategory>

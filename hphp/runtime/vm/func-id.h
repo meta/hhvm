@@ -18,7 +18,6 @@
 
 #include <cstdint>
 #include <limits>
-#include <folly/Format.h>
 #include <fmt/core.h>
 
 #include "hphp/util/hash.h"
@@ -84,21 +83,6 @@ namespace std {
   template<> struct hash<HPHP::FuncId> {
     size_t operator()(HPHP::FuncId id) const { return id.hash(); }
   };
-}
-
-namespace folly {
-template<> class FormatValue<HPHP::FuncId> {
-  public:
-    explicit FormatValue(HPHP::FuncId id) noexcept : m_id(id) {}
-
-    template<typename C>
-    void format(FormatArg& arg, C& cb) const {
-      format_value::formatString(folly::to<std::string>(m_id.toInt()), arg, cb);
-    }
-
-  private:
-    HPHP::FuncId m_id;
-};
 }
 
 template <>

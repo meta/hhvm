@@ -22,7 +22,6 @@
 #include <vector>
 
 #include <fmt/format.h>
-#include <folly/Format.h>
 #include <folly/json/dynamic.h>
 #include "hphp/hack/src/hackc/ffi_bridge/compiler_ffi.rs.h"
 
@@ -130,23 +129,6 @@ struct Clock {
 
 } // namespace Facts
 } // namespace HPHP
-
-namespace folly {
-template <>
-class FormatValue<HPHP::Facts::Clock> {
- public:
-  explicit FormatValue(HPHP::Facts::Clock v) : m_val(std::move(v)) {}
-
-  template <typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    format_value::formatString(
-        fmt::format("\"{}|{}\"", m_val.m_clock, m_val.m_mergebase), arg, cb);
-  }
-
- private:
-  const HPHP::Facts::Clock m_val;
-};
-} // namespace folly
 
 template <>
 struct fmt::formatter<HPHP::Facts::Clock> {

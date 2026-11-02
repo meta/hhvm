@@ -662,34 +662,6 @@ ALWAYS_INLINE const OptString& asCStrRef(tv_rval tv) {
 
 }
 
-namespace folly {
-template<> class FormatValue<HPHP::OptString> {
- public:
-  explicit FormatValue(const HPHP::OptString& str) : m_val(str) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    FormatValue<HPHP::StringData*>(m_val.get()).format(arg, cb);
-  }
-
- private:
-  const HPHP::OptString& m_val;
-};
-
-template<> class FormatValue<HPHP::StaticString> {
- public:
-  explicit FormatValue(const HPHP::StaticString& str) : m_val(str) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    FormatValue<HPHP::StringData*>(m_val.get()).format(arg, cb);
-  }
-
- private:
-  const HPHP::StaticString& m_val;
-};
-}
-
 template <>
 struct fmt::formatter<HPHP::OptString> : fmt::formatter<std::string_view> {
   auto format(const HPHP::OptString& str, fmt::format_context& ctx) const {

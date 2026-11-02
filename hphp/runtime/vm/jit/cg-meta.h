@@ -261,27 +261,6 @@ void eraseInlineStacksInRange(CTCA start, CTCA end);
 
 }
 
-namespace folly {
-template<> class FormatValue<HPHP::IFrame> {
-public:
-  explicit FormatValue(HPHP::IFrame ifr) : m_ifr(ifr) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    auto str = fmt::format(
-      "IFrame{{func = {}, callOff = {}, parent = {}}}",
-      m_ifr.func->fullName()->data(),
-      m_ifr.callOff,
-      m_ifr.parent
-    );
-    format_value::formatString(str, arg, cb);
-  }
-
-private:
-  HPHP::IFrame m_ifr;
-};
-}
-
 template <>
 struct fmt::formatter<HPHP::IFrame> : fmt::formatter<std::string_view> {
   auto format(const HPHP::IFrame& ifr, fmt::format_context& ctx) const {

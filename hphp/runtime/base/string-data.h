@@ -667,7 +667,7 @@ private:
 //////////////////////////////////////////////////////////////////////
 
 // FTRACE, always_assert_flog and other debugFormat() users print a
-// StringData* as its contents, like folly::FormatValue<StringData*> below.
+// StringData* as its contents, like the PtrImpl fmt::formatters below.
 inline std::string_view hphpDebugFormatArg(DebugFormatTag<const StringData*>,
                                            const StringData* s) {
   if (!s) return "(null)";
@@ -683,36 +683,7 @@ inline std::string_view hphpDebugFormatArg(DebugFormatTag<StringData*>,
 
 }
 
-namespace folly {
-template<> class FormatValue<const HPHP::StringData*> {
- public:
-  explicit FormatValue(const HPHP::StringData* str) : m_val(str) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    auto piece = folly::StringPiece(m_val->data(), m_val->size());
-    format_value::formatString(piece, arg, cb);
-  }
-
- private:
-  const HPHP::StringData* m_val;
-};
-
-template<> class FormatValue<HPHP::StringData*> {
- public:
-  explicit FormatValue(const HPHP::StringData* str) : m_val(str) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    FormatValue<const HPHP::StringData*>(m_val).format(arg, cb);
-  }
-
- private:
-  const HPHP::StringData* m_val;
-};
-}
-
-// Formats the string contents, like folly::FormatValue<StringData*> above.
+// Formats the string contents.
 template <typename S, typename P>
 struct fmt::formatter<HPHP::ptrimpl::PtrImpl<const HPHP::StringData, S, P>>
     : fmt::formatter<std::string_view> {

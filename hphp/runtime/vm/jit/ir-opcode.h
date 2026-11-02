@@ -195,20 +195,6 @@ namespace std {
   };
 }
 
-namespace folly {
-template<> class FormatValue<HPHP::jit::Opcode> {
- public:
-  explicit FormatValue(HPHP::jit::Opcode op) : m_op(op) {}
-
-  template<typename Callback> void format(FormatArg& arg, Callback& cb) const {
-    format_value::formatString(opcodeName(m_op), arg, cb);
-  }
-
- private:
-  HPHP::jit::Opcode m_op;
-};
-}
-
 template <>
 struct fmt::formatter<HPHP::jit::Opcode> : fmt::formatter<std::string_view> {
   auto format(HPHP::jit::Opcode op, fmt::format_context& ctx) const {
