@@ -302,8 +302,6 @@ type t = {
       (** Error on dict[$c => 1] when $c: class<T>  *)
   tco_permits_bypassing_visibility: string list;
   tco_tests_bypass_visibility_static_properties: bool;
-  tco_implicit_throw_points: bool;
-      (** Treat `yield`, `clone` and `list()` destructuring as points that may throw when merging try/catch environments. *)
   tco_forget_static_prop_refinements_by_name: bool;
       (** When a static property is assigned, invalidate its refinements under every class spelling (`self::`, `static::`, `C::`), not only the one assigned through. *)
   tco_ban_this_refinement_in_generic_class: bool;
@@ -424,7 +422,6 @@ val set :
   ?class_pointer_ban_class_array_key:bool ->
   ?tco_permits_bypassing_visibility:string list ->
   ?tco_tests_bypass_visibility_static_properties:bool ->
-  ?tco_implicit_throw_points:bool ->
   ?tco_forget_static_prop_refinements_by_name:bool ->
   ?tco_ban_this_refinement_in_generic_class:bool ->
   ?tco_missing_targs_as_fresh_generics:bool ->

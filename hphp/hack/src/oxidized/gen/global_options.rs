@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<0fd313ca210651f5b3ef2f0c4a21b2eb>>
+// @generated SignedSource<<ab201a4b60a8246fe43e4ef8c58ea26a>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -412,8 +412,6 @@ pub struct GlobalOptions {
     pub class_pointer_ban_class_array_key: bool,
     pub tco_permits_bypassing_visibility: Vec<String>,
     pub tco_tests_bypass_visibility_static_properties: bool,
-    /// Treat `yield`, `clone` and `list()` destructuring as points that may throw when merging try/catch environments.
-    pub tco_implicit_throw_points: bool,
     /// When a static property is assigned, invalidate its refinements under every class spelling (`self::`, `static::`, `C::`), not only the one assigned through.
     pub tco_forget_static_prop_refinements_by_name: bool,
     /// Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments.

@@ -62,8 +62,6 @@ module Hhconfig = struct
 
   let ignore_string_methods = key "ignore_string_methods"
 
-  let implicit_throw_points = key "implicit_throw_points"
-
   let interpret_soft_types_as_like_types =
     key "interpret_soft_types_as_like_types"
 

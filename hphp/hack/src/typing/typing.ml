@@ -3546,12 +3546,7 @@ end = struct
           []
           None
       in
-      let env =
-        if TCO.implicit_throw_points (Env.get_tcopt env) then
-          might_throw ~join_pos:p env
-        else
-          env
-      in
+      let env = might_throw ~join_pos:p env in
       make_result env p (Aast.Clone te) ty
     | This ->
       if Option.is_none (Env.get_self_ty env) then
@@ -4563,12 +4558,7 @@ end = struct
       let env = Env.forget_members env Reason.(Blame (p, BScall)) in
       let env = LEnv.save_and_merge_next_in_cont ~join_pos:p env C.Exit in
       (* The generator can be resumed with Generator::raise *)
-      let env =
-        if TCO.implicit_throw_points (Env.get_tcopt env) then
-          might_throw ~join_pos:p env
-        else
-          env
-      in
+      let env = might_throw ~join_pos:p env in
       make_result
         env
         p
@@ -13506,21 +13496,16 @@ end = struct
         (* Destructuring throws when the rhs is too short, which a tuple of the
            list's arity is not. Like types count by their non-dynamic part. *)
         let env =
-          if TCO.implicit_throw_points (Env.get_tcopt env) then
-            let (env, ty2_nondyn) =
-              Typing_dynamic_utils.strip_dynamic env ty2
-            in
-            let tuple_of_arity =
-              MakeType.tuple
-                Reason.none
-                (List.map el ~f:(fun _ -> MakeType.mixed Reason.none))
-            in
-            if SubType.is_sub_type env ty2_nondyn tuple_of_arity then
-              env
-            else
-              might_throw ~join_pos:p env
-          else
+          let (env, ty2_nondyn) = Typing_dynamic_utils.strip_dynamic env ty2 in
+          let tuple_of_arity =
+            MakeType.tuple
+              Reason.none
+              (List.map el ~f:(fun _ -> MakeType.mixed Reason.none))
+          in
+          if SubType.is_sub_type env ty2_nondyn tuple_of_arity then
             env
+          else
+            might_throw ~join_pos:p env
         in
         (* Generate fresh types for each lhs list element, then subtype against
            rhs type. If original type was generated from an error, propagate this to

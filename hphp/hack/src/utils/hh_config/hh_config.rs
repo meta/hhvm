@@ -620,8 +620,6 @@ impl HhConfig {
                 "tests_bypass_visibility_static_properties",
                 default.tco_tests_bypass_visibility_static_properties,
             )?,
-            tco_implicit_throw_points: hhconfig
-                .get_bool_or("implicit_throw_points", default.tco_implicit_throw_points)?,
             tco_forget_static_prop_refinements_by_name: hhconfig.get_bool_or(
                 "forget_static_prop_refinements_by_name",
                 default.tco_forget_static_prop_refinements_by_name,

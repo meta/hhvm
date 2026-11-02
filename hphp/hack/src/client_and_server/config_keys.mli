@@ -60,8 +60,6 @@ module Hhconfig : sig
 
   val ignore_string_methods : string
 
-  val implicit_throw_points : string
-
   val interpret_soft_types_as_like_types : string
 
   val is_systemlib : string
