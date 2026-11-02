@@ -1,0 +1,116 @@
+error: Typing[4472] Cannot access class constant `Pkg2Consts` defined in package `pkg2` which may not be available [1]
+-> `Pkg2Consts` is defined in cross_package_with_requirepackage_attr_default_param.php--pkg2/b.php [2]
+-> `Pkg2Consts` belongs to package `pkg2` by this entry in the package config [3]
+-> package `pkg1` is available because the current file belongs to it by this entry in the package config [4]
+
+cross_package_with_requirepackage_attr_default_param.php--a.php:13:14
+11 | 
+12 |   public function withoutRequiredPackage(
+13 |     int $x = Pkg2Consts::VALUE, // error
+   |              ^^^^^^^^^^^^^^^^^ [1]
+14 |   ): void {}
+15 | 
+
+cross_package_with_requirepackage_attr_default_param.php--pkg2/b.php:3:7
+ 1 | <?hh
+ 2 | 
+ 3 | class Pkg2Consts {
+   |       ^^^^^^^^^^ [2]
+ 4 |   const int VALUE = 2;
+ 5 | }
+
+PACKAGES.toml:7:11
+ 1 | [packages]
+ 2 | 
+ 3 | [packages.pkg1]
+   |           ^^^^ [4]
+ 4 | include_paths=["//"]
+ 5 | allow_deployed_packages_checking = true
+ 6 | 
+ 7 | [packages.pkg2]
+   |           ^^^^ [3]
+ 8 | include_paths=[
+ 9 |     "//cross_package_access_internal1_foo.php",
+
+error: Typing[4472] Cannot access class constant `Pkg3Consts` defined in package `pkg3` which may not be available [1]
+-> `Pkg3Consts` is defined in cross_package_with_requirepackage_attr_default_param.php--pkg3/c.php [2]
+-> `Pkg3Consts` belongs to package `pkg3` by this entry in the package config [3]
+-> package `pkg1` is available because the current file belongs to it by this entry in the package config [4]
+-> package `pkg2` is assumed to be deployed here [5]
+-> `pkg2` includes `pkg1` via its definition [6]
+
+cross_package_with_requirepackage_attr_default_param.php--a.php:18:14
+14 |   ): void {}
+15 | 
+16 |   <<__RequirePackage("pkg2")>>
+   |     ^^^^^^^^^^^^^^^^ [5]
+17 |   public function outOfReach(
+18 |     int $x = Pkg3Consts::VALUE, // error
+   |              ^^^^^^^^^^^^^^^^^ [1]
+19 |   ): void {}
+20 | }
+
+cross_package_with_requirepackage_attr_default_param.php--pkg3/c.php:3:7
+ 1 | <?hh
+ 2 | 
+ 3 | class Pkg3Consts {
+   |       ^^^^^^^^^^ [2]
+ 4 |   const int VALUE = 3;
+ 5 | }
+
+PACKAGES.toml:21:11
+ 1 | [packages]
+ 2 | 
+ 3 | [packages.pkg1]
+   |           ^^^^ [4]
+ 4 | include_paths=["//"]
+ 5 | allow_deployed_packages_checking = true
+   :
+11 |     "//pkg2/",
+12 | ]
+13 | includes = ["pkg1"]
+   |             ^^^^^^ [6]
+14 | soft_includes=["pkg2_soft"]
+15 | allow_deployed_packages_checking = true
+   :
+19 | allow_deployed_packages_checking = true
+20 | 
+21 | [packages.pkg3]
+   |           ^^^^ [3]
+22 | include_paths=["//pkg3/"]
+23 | includes = ["pkg2", "pkg2_soft", "pkg1"]
+
+error: Typing[4472] Cannot access class constant `Pkg2Consts` defined in package `pkg2` which may not be available [1]
+-> `Pkg2Consts` is defined in cross_package_with_requirepackage_attr_default_param.php--pkg2/b.php [2]
+-> `Pkg2Consts` belongs to package `pkg2` by this entry in the package config [3]
+-> package `pkg1` is available because the current file belongs to it by this entry in the package config [4]
+
+cross_package_with_requirepackage_attr_default_param.php--a.php:28:12
+26 | 
+27 | function top_level_without_required_package(
+28 |   int $x = Pkg2Consts::VALUE, // error
+   |            ^^^^^^^^^^^^^^^^^ [1]
+29 | ): void {}
+
+cross_package_with_requirepackage_attr_default_param.php--pkg2/b.php:3:7
+ 1 | <?hh
+ 2 | 
+ 3 | class Pkg2Consts {
+   |       ^^^^^^^^^^ [2]
+ 4 |   const int VALUE = 2;
+ 5 | }
+
+PACKAGES.toml:7:11
+ 1 | [packages]
+ 2 | 
+ 3 | [packages.pkg1]
+   |           ^^^^ [4]
+ 4 | include_paths=["//"]
+ 5 | allow_deployed_packages_checking = true
+ 6 | 
+ 7 | [packages.pkg2]
+   |           ^^^^ [3]
+ 8 | include_paths=[
+ 9 |     "//cross_package_access_internal1_foo.php",
+
+3 errors found

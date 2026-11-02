@@ -324,16 +324,20 @@ let with_special_coeffects env cap_ty unsafe_cap_ty f =
     Option.map (Env.next_cont_opt env) ~f:(fun next_cont ->
         let initial_locals = next_cont.Typing_per_cont_env.local_types in
         let tpenv = Env.get_tpenv env in
-        (initial_locals, tpenv))
+        let initial_loaded_packages =
+          next_cont.Typing_per_cont_env.loaded_packages
+        in
+        (initial_locals, tpenv, initial_loaded_packages))
   in
   LEnv.stash_and_do env (Env.all_continuations env) (fun env ->
       let env =
         match init with
         | None -> env
-        | Some (initial_locals, tpenv) ->
+        | Some (initial_locals, tpenv, initial_loaded_packages) ->
           let env = Env.reinitialize_locals env in
           let env = Env.set_locals env initial_locals in
           let env = Env.env_with_tpenv env tpenv in
+          let env = Env.set_loaded_packages env initial_loaded_packages in
           env
       in
       let (env, _ty) =
