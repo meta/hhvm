@@ -220,7 +220,8 @@ class PoolStats {
         connections_requested_(0),
         pool_hits_(0),
         pool_misses_(0),
-        pool_hits_change_user_(0) {}
+        pool_hits_change_user_(0),
+        validation_discards_(0) {}
   // created connections
   uint64_t numCreatedPoolConnections() const noexcept {
     return created_pool_connections_.load(std::memory_order_relaxed);
@@ -266,6 +267,15 @@ class PoolStats {
     pool_hits_change_user_.fetch_add(1, std::memory_order_relaxed);
   }
 
+  // Cached connections discarded at checkout by validateOnCheckout
+  uint64_t numValidationDiscards() const noexcept {
+    return validation_discards_.load(std::memory_order_relaxed);
+  }
+
+  void incrValidationDiscards() {
+    validation_discards_.fetch_add(1, std::memory_order_relaxed);
+  }
+
   // how many times the pool didn't have a connection right in cache
   uint64_t numPoolMisses() const noexcept {
     return pool_misses_.load(std::memory_order_relaxed);
@@ -282,6 +292,7 @@ class PoolStats {
   std::atomic<uint64_t> pool_hits_;
   std::atomic<uint64_t> pool_misses_;
   std::atomic<uint64_t> pool_hits_change_user_;
+  std::atomic<uint64_t> validation_discards_;
 };
 } // namespace db
 } // namespace facebook

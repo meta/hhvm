@@ -298,6 +298,10 @@ class ConnectionHolder : public InternalConnection {
     return internalConn_->ping();
   }
 
+  [[nodiscard]] bool isUnusableOnCheckout() const override {
+    return internalConn_ == nullptr || internalConn_->isUnusableOnCheckout();
+  }
+
  protected:
   // Used to update the connection key when updating to a pooled connection
   void updateConnectionKey(std::shared_ptr<const ConnectionKey> new_key);
