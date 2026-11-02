@@ -11,7 +11,7 @@ include "thrift/annotation/cpp.thrift"
 include "thrift/annotation/rust.thrift"
 include "thrift/annotation/thrift.thrift"
 
-cpp_include "eden/fs/utils/GlobPath.h"
+cpp_include "eden/common/utils/GlobPath.h"
 
 @thrift.AllowLegacyMissingUris
 package;
