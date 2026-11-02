@@ -1029,7 +1029,7 @@ void FrameStateMgr::trackEnterInlineFrame(const IRInstruction* inst) {
 
   // Push a new state for the inlined callee; saving the state we'll need to
   // pop on return.
-  m_stack.emplace_back(FrameState{callee});
+  m_stack.emplace_back(callee);
 
   // Set up the callee's frame.
   cur().fpValue = inst->src(0);
