@@ -1,0 +1,12 @@
+module facebook.test | line 3
+class ModifierComments | lines 5-15
+  function shownMethod | line 6
+  $shownProp | line 7
+  $protectedProp | line 8
+  function protectedMethod | line 9
+  function shownLeadingComment | line 10
+  const COUNT | line 13
+  const type T | line 14
+class NotAbstract | line 17
+abstract class ReallyAbstract | line 18
+class OnlyFinal | line 19

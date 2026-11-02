@@ -54,8 +54,8 @@ let to_line_range_annotation ((start_line, end_line) : int * int) : string =
   else
     Printf.sprintf " | lines %d-%d" start_line end_line
 
-let is_private (src : Full_fidelity_source_text.t) (modifiers : Syn.t) : bool =
-  String.is_substring (node_text src modifiers) ~substring:"private"
+let has_modifier (is_kind : Syn.t -> bool) (modifiers : Syn.t) : bool =
+  List.exists (Syn.syntax_node_to_list modifiers) ~f:is_kind
 
 (** Extract just the names from a list of declarators, stripping initializers. *)
 let declarator_names (src : Full_fidelity_source_text.t) (node : Syn.t) : string
@@ -87,7 +87,7 @@ let write_member
   | Syn.MethodishDeclaration { methodish_function_decl_header; _ } ->
     (match Syn.syntax methodish_function_decl_header with
     | FunctionDeclarationHeader { function_modifiers; function_name; _ } ->
-      if not (is_private src function_modifiers) then
+      if not (has_modifier Syn.is_private function_modifiers) then
         Printf.bprintf
           buf
           "%sfunction %s%s\n"
@@ -96,7 +96,7 @@ let write_member
           suffix
     | _ -> ())
   | PropertyDeclaration { property_modifiers; property_declarators; _ } ->
-    if not (is_private src property_modifiers) then
+    if not (has_modifier Syn.is_private property_modifiers) then
       Printf.bprintf
         buf
         "%s%s%s\n"
@@ -104,7 +104,7 @@ let write_member
         (declarator_names src property_declarators)
         suffix
   | ConstDeclaration { const_modifiers; const_declarators; _ } ->
-    if not (is_private src const_modifiers) then
+    if not (has_modifier Syn.is_private const_modifiers) then
       Printf.bprintf
         buf
         "%sconst %s%s\n"
@@ -112,7 +112,7 @@ let write_member
         (declarator_names src const_declarators)
         suffix
   | TypeConstDeclaration { type_const_modifiers; type_const_name; _ } ->
-    if not (is_private src type_const_modifiers) then
+    if not (has_modifier Syn.is_private type_const_modifiers) then
       Printf.bprintf
         buf
         "%sconst type %s%s\n"
@@ -162,10 +162,9 @@ let rec write_top_level
   | ClassishDeclaration
       { classish_modifiers; classish_keyword; classish_name; classish_body; _ }
     ->
-    let mods = node_text src classish_modifiers in
     let kw = String.strip (node_text src classish_keyword) in
     let kind =
-      if String.is_substring mods ~substring:"abstract" then
+      if has_modifier Syn.is_abstract classish_modifiers then
         "abstract " ^ kw
       else
         kw
