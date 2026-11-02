@@ -21,6 +21,7 @@
 #include <string>
 
 #include <fmt/format.h>
+#include <folly/lang/Bits.h>
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/optional.h"
