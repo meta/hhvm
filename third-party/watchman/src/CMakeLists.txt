@@ -649,7 +649,7 @@ watchman/root/file.cpp
 watchman/root/init.cpp
 watchman/root/iothread.cpp
 watchman/root/notifythread.cpp
-watchman/# root/poison.cpp (in liberr)
+# root/poison.cpp (in liberr)
 watchman/root/reap.cpp
 watchman/root/resolve.cpp
 watchman/root/sync.cpp
@@ -756,7 +756,7 @@ t_test(bser watchman/test/BserTest.cpp)
 t_test(cache watchman/test/CacheTest.cpp)
 t_test(childproc watchman/test/ChildProcTest.cpp)
 t_test(fsdetect watchman/test/FSDetectTest.cpp)
-t_test(ignore watchman/test/BserTest.cpp)
+t_test(ignore watchman/test/IgnoreTest.cpp)
 # Linking this test needs the targets graph to be cleaned up.
 #t_test(inmemoryview watchman/test/InMemoryViewTest.cpp)
 t_test(log watchman/test/LogTest.cpp)
