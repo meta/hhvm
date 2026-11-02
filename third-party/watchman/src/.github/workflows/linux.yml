@@ -12,6 +12,13 @@ on:
   pull_request:
     branches:
     - main
+  # release.yml calls this to package a release.
+  workflow_call:
+    inputs:
+      release:
+        description: The release's name, such as its tag
+        type: string
+        default: ""
 
 permissions:
   contents: read  #  to fetch code (actions/checkout)
@@ -72,6 +79,22 @@ jobs:
       run: >
         ctest --test-dir _build --output-on-failure -j "$(nproc)"
         --repeat until-pass:3
+
+    - name: Install packaging tools
+      run: sudo --preserve-env=http_proxy apt-get install -y dpkg-dev rpm zip
+    - name: Package
+      env:
+        RELEASE: ${{ inputs.release || 'ci' }}
+      run: ./watchman/build/package/package-linux.sh _build "$RELEASE" _packages
+    - name: Install the .deb
+      run: >
+        sudo --preserve-env=http_proxy apt-get install -y ./_packages/*.deb
+        && /usr/local/bin/watchman --version
+    - uses: actions/upload-artifact@v6
+      if: inputs.release != ''
+      with:
+        name: linux-packages
+        path: _packages
 
     - name: Show sccache stats
       if: always()
