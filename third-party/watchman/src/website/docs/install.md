@@ -111,30 +111,31 @@ If you use Homebrew on Linux, it's a great way to get a recent Watchman build.
 
 Follow the [macOS instructions above](#homebrew-instructions).
 
-### Fedora (Prebuilt RPMs)
+### Fedora and RHEL (Prebuilt RPM)
 
 **Warning**: Do not install the Fedora-supplied Watchman package. It is old and
 missing security, bug, and performance fixes.
 
+The .rpm works on Fedora 40, RHEL 10 and newer.
+
 1. From the
    [latest release](https://github.com/facebook/watchman/releases/latest),
-   download the .rpm corresponding to your Fedora version
-2. `sudo dnf localinstall watchman-$VERSION.fc$FEDORA_VERSION.x86_64.rpm`
+   download the .rpm
+2. `sudo dnf install ./watchman-$VERSION-1.x86_64.rpm`
 3. Confirm successful installation by running `watchman version`
 
-### Ubuntu (Prebuilt Debs)
+### Ubuntu and Debian (Prebuilt Deb)
 
 **Warning**: Do not install the Ubuntu-supplied Watchman package. It is old and
 missing security, bug, and performance fixes.
 
+The .deb works on Ubuntu 24.04, Debian 13 and newer.
+
 1. From the
    [latest release](https://github.com/facebook/watchman/releases/latest),
-   download the .deb corresponding to your Ubuntu version
-2. `sudo dpkg -i watchman_$UBUNTU_RELEASE_$VERSION.deb`
-3. You will likely see errors about unresolved dependencies. The next step will
-   resolve them.
-4. `sudo apt-get -f install`
-5. Confirm successful installation by running `watchman version`
+   download the .deb
+2. `sudo apt install ./watchman_vYYYY.MM.DD.00_amd64.deb`
+3. Confirm successful installation by running `watchman version`
 
 ### <a name="building-from-source"></a> Building from Source
 
@@ -159,10 +160,11 @@ $ ./autogen.sh
 **Note**: Our binaries are built from the main branch only. We don't provide
 binaries for v4.9.0.
 
-**Note**: The Linux binaries are compiled on a GitHub Action VM (ubuntu-20.04 at
-the time of this writing), and Linux binaries are
-[not generally compatible across distributions](https://github.com/facebook/watchman/issues/1019),
-so try the prebuilt Fedora, Ubuntu, or Homebrew packages first.
+**Note**: The Linux binaries are compiled on a GitHub Action VM (ubuntu-24.04 at
+the time of this writing). They link every library except glibc and the GCC
+runtime statically, so they run on distributions with glibc 2.39 and the
+libstdc++ of GCC 13 or newer, such as Ubuntu 24.04, Debian 13, Fedora 40 and
+RHEL 10.
 
 Watchman is continuously deployed as it passes our internal test validation
 inside Meta and doesn't use manually assigned or "approved" version numbers.
@@ -178,9 +180,8 @@ some or all of the binaries may not be present for any given tag.
 ```bash
 $ unzip watchman-*-linux.zip
 $ cd watchman-vYYYY.MM.DD.00-linux
-$ sudo mkdir -p /usr/local/{bin,lib} /usr/local/var/run/watchman
+$ sudo mkdir -p /usr/local/bin /usr/local/var/run/watchman
 $ sudo cp bin/* /usr/local/bin
-$ sudo cp lib/* /usr/local/lib
 $ sudo chmod 755 /usr/local/bin/watchman
 $ sudo chmod 2777 /usr/local/var/run/watchman
 ```
