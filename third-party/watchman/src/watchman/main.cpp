@@ -859,13 +859,13 @@ static SpawnResult try_spawn_watchman(
 #endif
 }
 
-static int inner_main(int argc, char** argv) {
+static int
+inner_main(int argc, char** argv, std::optional<folly::Init>& follyInit) {
   // TODO: We used to avoid folly::init so it didn't interfere with our own
   // signal handling. We want to swap to folly signal handling, so we'll do a
   // full init on Linux to test it. We should remove this if in the future.
   if (kUseFollySignalHandler) {
-    folly::unsafe_unscoped_init(
-        &argc, &argv, folly::InitOptions().useGFlags(false));
+    follyInit.emplace(&argc, &argv, folly::InitOptions().useGFlags(false));
   } else {
     folly::SingletonVault::singleton()->registrationComplete();
   }
@@ -986,8 +986,9 @@ static int inner_main(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+  std::optional<folly::Init> follyInit;
   try {
-    return inner_main(argc, argv);
+    return inner_main(argc, argv, follyInit);
   } catch (const std::exception& e) {
     logf_stderr(
         "Uncaught C++ exception: {}\n", folly::exceptionStr(e).toStdString());
