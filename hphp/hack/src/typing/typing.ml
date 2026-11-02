@@ -14307,9 +14307,7 @@ end = struct
               if
                 (not has_default)
                 && ((not cc_synthesized)
-                   || TCO.needs_concrete_require_extends_class_const_check
-                        (Env.get_tcopt env)
-                      && Option.is_none (Env.get_typeconst env class_ mid))
+                   || Option.is_none (Env.get_typeconst env class_ mid))
               then
                 Typing_needs_concrete.check_abstract_access_via_static
                   env

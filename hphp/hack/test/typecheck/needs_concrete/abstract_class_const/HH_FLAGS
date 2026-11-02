@@ -1,4 +1,3 @@
 --config needs_concrete_class_call_check=1
---config needs_concrete_require_extends_class_const_check=true
 --config enable_experimental_stx_features='{"class_const_default":"Migration"}'
 --error-format plain_highlighted

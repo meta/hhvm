@@ -295,8 +295,6 @@ type t = {
   needs_concrete_class_function_pointer_check: int option;
       (** Like `needs_concrete_class_call_check`, but for function pointers
        * such as `C::m<>`. When unset, follows `needs_concrete_class_call_check`. *)
-  needs_concrete_require_extends_class_const_check: bool;
-      (** When true, also error on abstract class constants that a trait inherits through `require extends` (Typing[4529]). *)
   strict_consistent_construct: bool;
       (** When true, ban abstract final classes from extending nonabstract __ConsistentConstruct classes *)
   allow_class_string_cast: bool;  (** Admits (string)$c when $c: class<T>  *)
@@ -421,7 +419,6 @@ val set :
   ?class_class_type:bool ->
   ?needs_concrete_class_call_check:int ->
   ?needs_concrete_class_function_pointer_check:int option ->
-  ?needs_concrete_require_extends_class_const_check:bool ->
   ?strict_consistent_construct:bool ->
   ?allow_class_string_cast:bool ->
   ?class_pointer_ban_class_array_key:bool ->
