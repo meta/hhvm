@@ -48,6 +48,7 @@
 #include <folly/Synchronized.h>
 #include <folly/String.h>
 #include <folly/concurrency/ConcurrentHashMap.h>
+#include <folly/synchronization/AtomicRef.h>
 
 #include "hphp/runtime/base/array-iterator.h"
 #include "hphp/runtime/base/tv-comparisons.h"
@@ -15861,7 +15862,7 @@ LocalFlattenOutput flatten_classes_local(IndexData& index) {
               if (nodes[user].invalid) continue;
               // The final decrement acquires the result publications from
               // every dependency before making this node runnable.
-              std::atomic_ref<size_t> remaining{nodes[user].remaining};
+              folly::atomic_ref<size_t> remaining{nodes[user].remaining};
               auto const before = remaining.fetch_sub(
                 1, std::memory_order_acq_rel
               );
