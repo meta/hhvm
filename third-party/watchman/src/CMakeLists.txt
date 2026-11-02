@@ -3,12 +3,9 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
 
 set(CMAKE_MODULE_PATH
-  # For in-fbsource builds on mac
-  "${CMAKE_CURRENT_SOURCE_DIR}/../opensource/fbcode_builder/CMake"
-  # For shipit-transformed builds
   "${CMAKE_CURRENT_SOURCE_DIR}/build/fbcode_builder/CMake"
   ${CMAKE_MODULE_PATH})
 
@@ -27,10 +24,6 @@ endif()
 if (WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DWIN32_LEAN_AND_MEAN -DNOMINMAX -DSTRICT")
 endif()
-
-# Tell CMake to also look in the directories where getdeps.py installs
-# our third-party dependencies.
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/install")
 
 option(BUILD_SHARED_LIBS
   "If enabled, build libraries as a shared library.  \
@@ -52,52 +45,10 @@ option(USE_SYS_PYTHON
 enable_testing()
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/external/install/include")
 
 option(ENABLE_EDEN_SUPPORT "If enabled, add support for the Eden \
   virtual filesystem.  That requires fbthrift."
   ON)
-
-# Determine whether we are the git repo produced by shipit, a staging
-# area produced by shipit in the FB internal CI, or whether
-# we are building in the source monorepo.
-# For the FB internal CI flavor running shipit, CMAKE_CURRENT_SOURCE_DIR
-# will have a value like "..../shipit_projects/watchman".
-if (IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/.git" OR
-    "${CMAKE_CURRENT_SOURCE_DIR}" MATCHES "shipit_projects")
-  set(IS_SHIPPED_IT TRUE)
-else()
-  set(IS_SHIPPED_IT FALSE)
-endif()
-
-# If we're building from inside the monorepo, make the local directory
-# look like the shipit-transformed source in the git repo.
-# On windows we do a dumb recursive copy of the files because we cannot
-# guarantee that we'll be successful in setting up a symlink.
-# On everything else we set up a simple symlink.
-# In theory we can tell cmake to add a non-child subdir and avoid the
-# copy/symlink thing, but we'd need to teach various targets how to resolve
-# the path and that is rather a lot of work (I spent a couple of hours on this
-# before throwing in the towel).
-function(maybe_shipit_dir MONOREPO_RELATIVE_PATH)
-  get_filename_component(base "${MONOREPO_RELATIVE_PATH}" NAME)
-  if (NOT IS_SHIPPED_IT AND
-      NOT IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${base})
-    if (WIN32)
-      file(COPY
-        "${CMAKE_CURRENT_SOURCE_DIR}/${MONOREPO_RELATIVE_PATH}"
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
-    else()
-      execute_process(COMMAND
-        ln -s ${MONOREPO_RELATIVE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/${base})
-    endif()
-  endif()
-endfunction()
-
-if (ENABLE_EDEN_SUPPORT)
-  # We use shipit to mirror in these locations from the monorepo
-  maybe_shipit_dir("../eden")
-endif()
 
 # A nonsensical version that doesn't correspond to any manually
 # released version.
@@ -308,36 +259,7 @@ endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-# This block is for cmake 3.0 which doesn't define the Threads::Threads
-# interface section.  Test for that and define it for ourselves.
-if(THREADS_FOUND AND NOT TARGET Threads::Threads)
-  add_library(Threads::Threads INTERFACE IMPORTED)
-
-  if(THREADS_HAVE_PTHREAD_ARG)
-    set_property(TARGET Threads::Threads PROPERTY
-      INTERFACE_COMPILE_OPTIONS "-pthread")
-  endif()
-
-  if(CMAKE_THREAD_LIBS_INIT)
-    set_property(TARGET Threads::Threads PROPERTY
-      INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
-  endif()
-endif()
-
 find_package(OpenSSL)
-
-# This block is for cmake 3.0 which doesn't define the OpenSSL::Crypto
-# interface section.  Test for that and define it for ourselves.
-if(OPENSSL_FOUND AND NOT TARGET OpenSSL::Crypto)
-  add_library(OpenSSL::Crypto UNKNOWN IMPORTED)
-    set_target_properties(OpenSSL::Crypto PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}")
-    if(EXISTS "${OPENSSL_CRYPTO_LIBRARY}")
-      set_target_properties(OpenSSL::Crypto PROPERTIES
-        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-        IMPORTED_LOCATION "${OPENSSL_CRYPTO_LIBRARY}")
-    endif()
-endif()
 
 find_package(Gflags REQUIRED)
 include_directories(SYSTEM ${GFLAGS_INCLUDE_DIR})
@@ -496,7 +418,6 @@ if (ENABLE_EDEN_SUPPORT)
   target_link_libraries(
     third_party_deps
     INTERFACE
-    ${YARPL_LIBRARIES}
     FBThrift::thriftcpp2
     cpptoml
   )
