@@ -1,4 +1,4 @@
-dict(5) {
+dict(6) {
   ["created_pool_connections"]=>
   int(0)
   ["destroyed_pool_connections"]=>
@@ -8,5 +8,7 @@ dict(5) {
   ["pool_hits"]=>
   int(0)
   ["pool_misses"]=>
+  int(0)
+  ["validation_discards"]=>
   int(0)
 }

@@ -213,7 +213,8 @@ class AsyncMysqlConnectionPool {
    * of your pool. If you don't want an options, pass an empty `array()`.
    *
    * Here are the keys for that array, and all values are `int`, except for
-   * `expiration_policy`, which is a `string`:
+   * `expiration_policy`, which is a `string`, and `validate_on_checkout`,
+   * which is a `bool`:
    *
    * - `per_key_connection_limit`: The maximum number of connections allowed
    *                               in the pool for a single combination of
@@ -234,6 +235,11 @@ class AsyncMysqlConnectionPool {
    *                        specifies whether connections in the pool will be
    *                        destroyed based on how long it sits idle or total
    *                        age in the pool. The default is `'Age'`.
+   * - `validate_on_checkout`: Unless `false`, a connection taken from the pool
+   *                           is discarded instead of returned if it is past
+   *                           its expiry or has pending input (a close or
+   *                           unrequested data). This does not guarantee the
+   *                           next query succeeds. The default is `true`.
    *
    * @param $pool_options - The `array` of options for the connection pool.
    *                        The key to each array element is an option listed
@@ -256,6 +262,7 @@ class AsyncMysqlConnectionPool {
    * - `connections_requested`
    * - `pool_hits`
    * - `pool_misses`
+   * - `validation_discards`
    *
    * @return - A string-keyed `array` with the statistical information above.
    */

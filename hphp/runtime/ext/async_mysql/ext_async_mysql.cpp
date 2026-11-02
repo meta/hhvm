@@ -800,12 +800,16 @@ Object HHVM_STATIC_METHOD(
 // connection: `IdleTime` and `Age`, in the Idle policy a connection will only
 // die after some time being idle; in Age policy we extend the idle one to kill
 // also by age
+// `validate_on_checkout` - Discard a cached connection at checkout when it is
+// past its expiry or has pending input (a close or unrequested data). On by
+// default; pass false to disable
 //
 const StaticString s_per_key_connection_limit("per_key_connection_limit"),
     s_pool_connection_limit("pool_connection_limit"),
     s_idle_timeout_micros("idle_timeout_micros"),
     s_age_timeout_micros("age_timeout_micros"),
-    s_expiration_policy("expiration_policy");
+    s_expiration_policy("expiration_policy"),
+    s_validate_on_checkout("validate_on_checkout");
 
 static void
 HHVM_METHOD(AsyncMysqlConnectionPool, __construct, const Array& options) {
@@ -832,6 +836,10 @@ HHVM_METHOD(AsyncMysqlConnectionPool, __construct, const Array& options) {
                                   ? am::ExpirationPolicy::IdleTime
                                   : am::ExpirationPolicy::Age);
   }
+  if (options.exists(s_validate_on_checkout)) {
+    pool_options.setValidateOnCheckout(
+        options[s_validate_on_checkout].toBoolean());
+  }
   data->m_async_pool =
       am::AsyncConnectionPool::makePool(getClient(), pool_options);
 }
@@ -854,10 +862,13 @@ void AsyncMysqlConnectionPool::sweep() {
 //  the pool and it had a connection ready in cache
 // `pool_misses` - Counts the number of times a we needed a connection and
 //  none was ready to return
+// `validation_discards` - Cached connections discarded at checkout because
+//  `validate_on_checkout` found them expired or unusable
 const StaticString s_created_pool_connections("created_pool_connections"),
     s_destroyed_pool_connections("destroyed_pool_connections"),
     s_connections_requested("connections_requested"), s_pool_hits("pool_hits"),
-    s_pool_misses("pool_misses");
+    s_pool_misses("pool_misses"),
+    s_validation_discards("validation_discards");
 
 static Array HHVM_METHOD(AsyncMysqlConnectionPool, getPoolStats) {
   auto* data = Native::data<AsyncMysqlConnectionPool>(this_);
@@ -872,7 +883,9 @@ static Array HHVM_METHOD(AsyncMysqlConnectionPool, getPoolStats) {
       s_pool_hits,
       pool_stats->numPoolHits(),
       s_pool_misses,
-      pool_stats->numPoolMisses());
+      pool_stats->numPoolMisses(),
+      s_validation_discards,
+      pool_stats->numValidationDiscards());
   return ret;
 }
 
@@ -2208,7 +2221,7 @@ static struct AsyncMysqlExtension final : Extension {
   // bump the version number and use a version guard in www:
   //   $ext = new ReflectionExtension("async_mysql");
   //   $version = (float) $ext->getVersion();
-  AsyncMysqlExtension() : Extension("async_mysql", "8.4", "mysql_gateway") {}
+  AsyncMysqlExtension() : Extension("async_mysql", "8.5", "mysql_gateway") {}
   void moduleRegisterNative() override {
     // expose the mysql flags
     HHVM_RC_INT_SAME(NOT_NULL_FLAG);
