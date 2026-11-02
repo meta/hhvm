@@ -4,6 +4,10 @@
 # LICENSE file in the root directory of this source tree.
 
 cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
+# URL downloads timestamp extracted files at extraction time.
+if (POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
 
 set(CMAKE_MODULE_PATH
   "${CMAKE_CURRENT_SOURCE_DIR}/build/fbcode_builder/CMake"
@@ -91,8 +95,6 @@ set(PACKAGE_TARNAME   "${PACKAGE_NAME}-${PACKAGE_VERSION}")
 set(PACKAGE_BUGREPORT "https://github.com/facebook/watchman/issues")
 project(${PACKAGE_NAME} CXX C)
 
-find_package(GMock MODULE REQUIRED)
-include_directories(${GMOCK_INCLUDEDIR} ${LIBGMOCK_INCLUDE_DIR})
 include(GoogleTest)
 enable_testing()
 
@@ -261,6 +263,23 @@ find_package(Threads REQUIRED)
 
 find_package(OpenSSL)
 
+include(FBFetchFromManifest)
+
+# We indirectly depend on libevent.  Folly pulls in linkage to
+# event.lib, but on my system it does so as simply "event.lib"
+# and that fails linking.  Let's probe for the library and force
+# in the library directory for the linker. :-/
+find_package(LibEvent REQUIRED)
+get_filename_component(LIBEVENT_LIBDIR "${LIBEVENT_LIB}" DIRECTORY)
+link_directories(${LIBEVENT_LIBDIR})
+
+# The Boost that folly fetches has only the libraries that folly links.
+# edencommon links Boost.Filesystem.
+list(APPEND BOOST_INCLUDE_LIBRARIES filesystem)
+fb_find_or_fetch(folly)
+include_directories(${FOLLY_INCLUDE_DIR})
+
+# After folly, so that what folly fetched satisfies these.
 find_package(Gflags REQUIRED)
 include_directories(SYSTEM ${GFLAGS_INCLUDE_DIR})
 
@@ -279,26 +298,35 @@ find_package(
     context
     thread
 )
-
-# We indirectly depend on libevent.  Folly pulls in linkage to
-# event.lib, but on my system it does so as simply "event.lib"
-# and that fails linking.  Let's probe for the library and force
-# in the library directory for the linker. :-/
-find_package(LibEvent REQUIRED)
-get_filename_component(LIBEVENT_LIBDIR "${LIBEVENT_LIB}" DIRECTORY)
-link_directories(${LIBEVENT_LIBDIR})
-find_package(edencommon CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(folly CONFIG REQUIRED)
+
+# Watchman's telemetry uses fb303, and edencommon's links fb303 and fbthrift,
+# so these are needed even without eden support.
+fb_find_or_fetch(fizz)
+fb_find_or_fetch(wangle)
+fb_find_or_fetch(FBThrift)
+include_directories(${FBTHRIFT_INCLUDE_DIR})
+fb_find_or_fetch(fb303)
+include_directories(${FB303_INCLUDE_DIR})
+fb_find_or_fetch(edencommon)
 
 if (ENABLE_EDEN_SUPPORT)
-  find_package(fizz CONFIG REQUIRED)
-  find_package(wangle CONFIG REQUIRED)
-  find_package(FBThrift CONFIG REQUIRED)
-  find_package(fb303 CONFIG REQUIRED)
-  find_package(cpptoml CONFIG REQUIRED)
-  include_directories(${FB303_INCLUDE_DIR})
+  find_package(cpptoml CONFIG QUIET)
+  if (NOT cpptoml_FOUND)
+    # cpptoml asks for CMake 3.1, which leaves CMP0077 unset, so its option()s
+    # would clear these settings, and which CMake 4 refuses.
+    set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
+    set(CPPTOML_BUILD_EXAMPLES OFF)
+    set(ENABLE_LIBCXX OFF)
+    fb_fetch_from_manifest(cpptoml cpptoml)
+    unset(CMAKE_POLICY_VERSION_MINIMUM)
+    unset(CMAKE_POLICY_DEFAULT_CMP0077)
+  endif()
 endif()
+
+fb_find_or_fetch_gmock()
+include_directories(${GMOCK_INCLUDEDIR} ${LIBGMOCK_INCLUDE_DIR})
 if(DEFINED ENV{NODE_BIN})
   set(NODE $ENV{NODE_BIN})
 else()
