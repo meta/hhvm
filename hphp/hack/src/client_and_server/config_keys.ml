@@ -45,8 +45,6 @@ module Hhconfig = struct
 
   let disable_xhp_element_mangling = key "disable_xhp_element_mangling"
 
-  let disallow_late_bound_defaults = key "disallow_late_bound_defaults"
-
   let disallow_non_annotated_memoize = key "disallow_non_annotated_memoize"
 
   let enable_experimental_stx_features = key "enable_experimental_stx_features"

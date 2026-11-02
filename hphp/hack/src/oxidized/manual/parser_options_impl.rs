@@ -42,7 +42,6 @@ impl Default for ParserOptions {
             ignore_string_methods: true,
             enable_intrinsics_extension: false,
             expression_tree_shape_no_unwrap: false,
-            disallow_late_bound_defaults: false,
         }
     }
 }

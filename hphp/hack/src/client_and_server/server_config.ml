@@ -423,9 +423,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
         expression_tree_shape_no_unwrap =
           bool_opt Config_keys.Hhconfig.expression_tree_shape_no_unwrap config
           >?? po_opt.expression_tree_shape_no_unwrap;
-        disallow_late_bound_defaults =
-          bool_opt Config_keys.Hhconfig.disallow_late_bound_defaults config
-          >?? po_opt.disallow_late_bound_defaults;
       }
   in
   Global_options.set

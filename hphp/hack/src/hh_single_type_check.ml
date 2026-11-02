@@ -872,7 +872,6 @@ let parse_options () =
         enable_intrinsics_extension = default.enable_intrinsics_extension;
         expression_tree_shape_no_unwrap =
           default.expression_tree_shape_no_unwrap;
-        disallow_late_bound_defaults = default.disallow_late_bound_defaults;
       }
   in
 

@@ -328,10 +328,6 @@ impl HhConfig {
                 "expression_tree_shape_no_unwrap",
                 default.expression_tree_shape_no_unwrap,
             )?,
-            disallow_late_bound_defaults: hhconfig.get_bool_or(
-                "disallow_late_bound_defaults",
-                default.disallow_late_bound_defaults,
-            )?,
         };
         let rollouts = SavedStateRollouts::make(
             current_rolled_out_flag_idx,

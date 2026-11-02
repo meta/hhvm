@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<1446f2a8483c104e984a753fde528a74>>
+// @generated SignedSource<<fd535e9cc4fa7a333d584ec021d93210>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -111,9 +111,6 @@ pub struct ParserOptions {
     /// DSL's shape wrapper type a transparent type alias, after which the unwrap call no longer
     /// typechecks.
     pub expression_tree_shape_no_unwrap: bool,
-    /// Disallow late-bound class references in default values: `static` in parameter and XHP
-    /// attribute defaults, and `self` or `parent` in a trait's parameter defaults.
-    pub disallow_late_bound_defaults: bool,
 }
 
 /// Options passed to the Rust parser-error checker. Oxidised into FfiT.

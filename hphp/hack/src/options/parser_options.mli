@@ -76,9 +76,6 @@ type t = {
           argument of the shape ops (`shapeAt`/`shapeIdx`/`shapePut`). Used to roll out making the
           DSL's shape wrapper type a transparent type alias, after which the unwrap call no longer
           typechecks. *)
-  disallow_late_bound_defaults: bool;
-      (** Disallow late-bound class references in default values: `static` in parameter and XHP
-          attribute defaults, and `self` or `parent` in a trait's parameter defaults. *)
 }
 [@@deriving show, eq]
 

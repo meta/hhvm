@@ -41,7 +41,6 @@ type t = {
   ignore_string_methods: bool;
   enable_intrinsics_extension: bool;
   expression_tree_shape_no_unwrap: bool;
-  disallow_late_bound_defaults: bool;
 }
 [@@deriving show, eq]
 
@@ -79,7 +78,6 @@ let default =
     ignore_string_methods = true;
     enable_intrinsics_extension = false;
     expression_tree_shape_no_unwrap = false;
-    disallow_late_bound_defaults = false;
   }
 
 (* Options passed to the Rust parser-error checker. Oxidised into FfiT. *)

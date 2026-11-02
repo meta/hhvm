@@ -5781,7 +5781,7 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
                 self.env.context.active_callable.map(|node| &node.children),
                 Some(AnonymousFunction(_) | LambdaExpression(_))
             );
-            let rule = if self.env.parser_options.disallow_late_bound_defaults {
+            let rule = if self.env.is_typechecker() {
                 LateBoundRule::NoLateBound
             } else if in_lambda {
                 // Lambda defaults never allow `static`.
@@ -6065,8 +6065,8 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
             PropertyDeclarator(x) => self.check_constant_expression_ban_static(&x.initializer),
             XHPClassAttribute(x) => {
                 // `static` here resolves against whichever class first builds the cached attribute
-                // declaration, but existing code relies on it, so only the option rejects it.
-                let rule = if self.env.parser_options.disallow_late_bound_defaults {
+                // declaration, but existing code relies on it, so only the typechecker rejects it.
+                let rule = if self.env.is_typechecker() {
                     LateBoundRule::NoStatic
                 } else {
                     LateBoundRule::Allowed
