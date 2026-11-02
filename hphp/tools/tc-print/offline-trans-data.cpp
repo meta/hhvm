@@ -15,12 +15,13 @@
 */
 #include "hphp/tools/tc-print/offline-trans-data.h"
 
+#include <numeric>
+
 #include "hphp/tools/tc-print/tc-print.h"
 #include "hphp/tools/tc-print/offline-code.h"
 #include "hphp/tools/tc-print/repo-wrapper.h"
 #include "hphp/util/build-info.h"
 
-#include <folly/Math.h>
 #include <fmt/core.h>
 #include <folly/gen/String.h>
 
@@ -272,7 +273,7 @@ TransID OfflineTransData::getTransContaining(TCA addr) const {
   int32_t first = 0;
   int32_t last  = transAddrRanges.size() - 1;
   while (first <= last) {
-    const auto mid = folly::midpoint(first, last);
+    const auto mid = std::midpoint(first, last);
     if (transAddrRanges[mid].start > addr) {
       last = mid - 1;
     } else if (transAddrRanges[mid].end < addr) {
