@@ -52,7 +52,6 @@ pub struct DistcConfig {
     pub min_cpu_units: i64,
     pub decl_buckets: i64,
     pub enable_p2p: bool,
-    pub upload_only_changed_files: bool,
 }
 
 /// Aggregated configuration consumed by Rust Hack tools.
@@ -696,9 +695,6 @@ impl HhConfig {
                 "distc_enable_p2p" => {
                     c.distc.enable_p2p = parse_json(&value)?;
                 }
-                "distc_upload_only_changed_files" => {
-                    c.distc.upload_only_changed_files = parse_json(&value)?;
-                }
                 _ => {}
             }
         }
@@ -710,7 +706,6 @@ impl HhConfig {
             "eden_fetch_parallelism": self.common.eden_fetch_parallelism,
             "use_distc_crawl_dircache": self.common.use_distc_crawl_dircache,
             "distc_enable_p2p": self.distc.enable_p2p,
-            "distc_upload_only_changed_files": self.distc.upload_only_changed_files,
         });
         experiments.to_string()
     }
