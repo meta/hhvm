@@ -1,7 +1,10 @@
 All tests under this directory
 
 * pass the Hack type checker (i.e. `hh_single_type_check <filename>` produces `No errors` output);
-* fail with a fatal when run under HHVM (type `php <filename>` to demonstrate this).
+* do something at runtime that Hack should have rejected. Trusted-type holes
+  fail with a fatal under HHVM (type `php <filename>` to demonstrate this);
+  an invalid operation may run without one, for example impure code called
+  from a pure function when coeffects aren't enforced.
 
 Each file is named for the hole it demonstrates, suffixed with the number of its
 task tagged `typehole` when there is one.
