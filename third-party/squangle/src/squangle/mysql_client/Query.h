@@ -98,7 +98,6 @@
 #pragma once
 
 #include <fmt/core.h>
-#include <folly/Format.h>
 #include <folly/Memory.h>
 #include <folly/Optional.h>
 #include <folly/Range.h>
@@ -1754,22 +1753,6 @@ void Query::unpack(Arg&& arg, Args&&... args /* lol */) {
 }
 
 } // namespace facebook::common::mysql_client
-
-// A formatter for the Query class for folly::format
-template <>
-class folly::FormatValue<facebook::common::mysql_client::Query> {
- public:
-  explicit FormatValue(const facebook::common::mysql_client::Query& query)
-      : query_(query) {}
-
-  template <class FormatCallback>
-  void format(FormatArg& /*arg*/, FormatCallback& cb) const {
-    cb(query_.renderInsecure());
-  }
-
- private:
-  const facebook::common::mysql_client::Query& query_;
-};
 
 // A formatter for the Query class for fmt::format
 template <>
