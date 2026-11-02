@@ -76,22 +76,14 @@ let check_shape_key_value env pos c cls cc =
         (match recorded_value with
         | Some _ -> None
         | None ->
-          let value_pos = Aast_utils.get_expr_pos value in
-          if Typechecker_options.require_const_shape_key_be_resolvable tcopt
-          then
-            Some
-              (Shape_key_class_const_value_unresolvable
-                 { pos; value_pos; class_name; const_name })
-          else begin
-            Typing_warning_utils.add
-              env
-              Typing_warning.
-                ( pos,
-                  Shape_key_class_const_value_unresolvable,
-                  Shape_key_class_const_value_unresolvable.
-                    { class_name; const_name; value_pos } );
-            None
-          end)
+          Some
+            (Shape_key_class_const_value_unresolvable
+               {
+                 pos;
+                 value_pos = Aast_utils.get_expr_pos value;
+                 class_name;
+                 const_name;
+               }))
     in
     Option.iter error ~f:(fun error ->
         Typing_error_utils.add_typing_error ~env @@ Typing_error.shape error)

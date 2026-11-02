@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<da4edca6fd0a2575c1afe89c668bfad5>>
+// @generated SignedSource<<b0897155e9ea5cf3505b883867813b7a>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -668,7 +668,6 @@ pub enum Warning {
     RedundantRequireThisAs = 12043,
     DynamicReturn = 12044,
     ReadonlyPropertyOverride = 12045,
-    ShapeKeyClassConstValueUnresolvable = 12046,
 }
 impl TrivialDrop for Warning {}
 arena_deserializer::impl_deserialize_in_arena!(Warning);

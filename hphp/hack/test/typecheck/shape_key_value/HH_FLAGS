@@ -1,3 +1,2 @@
---config require_const_shape_key_be_resolvable=true
 --config include_const_shape_key_values=true
 --config enable_experimental_stx_features='{"class_const_default":"Migration","class_type":"Migration"}'

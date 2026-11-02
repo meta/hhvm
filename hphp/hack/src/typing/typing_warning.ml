@@ -278,14 +278,6 @@ module Redundant_require_this_as = struct
   }
 end
 
-module Shape_key_class_const_value_unresolvable = struct
-  type t = {
-    class_name: string;
-    const_name: string;
-    value_pos: Pos.t;
-  }
-end
-
 type (_, _) kind =
   | Sketchy_equality : (Sketchy_equality.t, warn) kind
   | Is_as_always : (Is_as_always.t, migrated) kind
@@ -315,7 +307,5 @@ type (_, _) kind =
   | Dynamic_return : (Dynamic_return.t, warn) kind
   | Sealed_not_override : (Sealed_not_override.t, warn) kind
   | Redundant_require_this_as : (Redundant_require_this_as.t, warn) kind
-  | Shape_key_class_const_value_unresolvable
-      : (Shape_key_class_const_value_unresolvable.t, warn) kind
 
 type ('x, 'a) t = Pos.t * ('x, 'a) kind * 'x
