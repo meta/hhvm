@@ -31,7 +31,6 @@
 #include "hphp/util/hash.h"
 #include "hphp/util/trace.h"
 
-#include <folly/portability/Constexpr.h>
 
 #include <algorithm>
 

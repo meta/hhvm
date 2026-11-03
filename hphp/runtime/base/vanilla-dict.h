@@ -26,7 +26,6 @@
 #include "hphp/runtime/base/tv-val.h"
 #include "hphp/runtime/base/typed-value.h"
 
-#include <folly/portability/Constexpr.h>
 
 namespace HPHP {
 
