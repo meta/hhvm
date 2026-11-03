@@ -104,7 +104,74 @@ function late_c(): void {
     scenario;
   true
 
+(** Restore C after a consumer checked it as missing, using a historical old
+    declaration rather than a local cache refill. Restoring C should trigger a
+    consumer recheck and clear the unbound-name error, but the bug leaves that
+    error in place. *)
+let test_missing_class_after_restore_with_remote_old_decls () =
+  let scenario =
+    Scheduled_fanout.
+      {
+        (* 1. Load a clean saved state with cold declarations. The old-decl
+           fixture supplies the original C whenever its old declaration is
+           missing; the saved graph records AUse.php's dependency on C. *)
+        initial_files =
+          [
+            ("ZC.php", class_contents);
+            ( "AUse.php",
+              {|<?hh
+function use_c(): void {
+  $_ = meth_caller(C::class, 'foo');
+}
+|}
+            );
+          ];
+        iterations =
+          [
+            (* First iteration: C disappears after indexing and stays absent
+               until every selected file has finished checking. *)
+            {
+              (* 2. Index C with its name and signature still present. *)
+              before_type_check =
+                [Write_file ("ZC.php", class_contents_plus_comment)];
+              disk_needs_parsing = ["ZC.php"];
+              (* 3. Remove C before redeclaration. The old-decl fixture supplies
+                 old C, while current C is absent, producing New_decl_not_found.
+                 AUse.php is checked against missing C and gets a false error. *)
+              after_indexing = [Write_file ("ZC.php", "<?hh\n")];
+              type_check = [Remaining];
+            };
+            (* Second iteration: restore C without an intervening lazy lookup. *)
+            {
+              default_iteration with
+              (* 4. Restore C and process its notification together. There is
+                 no current C to oldify, so the old-decl service supplies the
+                 historical C again. Comparing it with restored C misses the
+                 temporary absence and fails to recheck AUse.php. *)
+              before_type_check =
+                [Write_file ("ZC.php", class_contents_plus_comment)];
+              disk_needs_parsing = ["ZC.php"];
+              type_check = [Remaining];
+            };
+          ];
+      }
+  in
+  (* 5. The final files are valid. The fresh check is clean, but the bug leaves
+     AUse.php's false "Unbound name (typing): C" diagnostic behind. *)
+  Scheduled_fanout.run_expect_bug
+    ~bug:"missing-class recovery with remote old declarations"
+    ~incremental:[("AUse.php", 4107, "Unbound name (typing): `C`")]
+    ~full:[]
+    ~initialization:Saved_state
+    ~remote_old_decls:class_contents
+    scenario;
+  true
+
 let () =
   Daemon.check_entry_point ();
   Unit_test.run_all
-    [("missing_class_after_restore", test_missing_class_after_restore)]
+    [
+      ("missing_class_after_restore", test_missing_class_after_restore);
+      ( "missing_class_after_restore_with_remote_old_decls",
+        test_missing_class_after_restore_with_remote_old_decls );
+    ]
