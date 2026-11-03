@@ -1,0 +1,53 @@
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_shape_tail.php:8:22
+ 5 | type NamedField<T> = shape('v' => Vector<T>);
+ 6 | 
+ 7 | <<__Memoize>>
+   |   ^^^^^^^^^ [2]
+ 8 | function direct_tail<T>(): shape(Vector<T>...) {
+   |                      ^ [1]
+ 9 |   return shape('v' => Vector {});
+10 | }
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_shape_tail.php:13:29
+10 | }
+11 | 
+12 | <<__Memoize>>
+   |   ^^^^^^^^^ [2]
+13 | function renamed_alias_tail<T>(): RenamedTail<T> {
+   |                             ^ [1]
+14 |   return shape('v' => Vector {});
+15 | }
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_shape_tail.php:18:26
+15 | }
+16 | 
+17 | <<__Memoize>>
+   |   ^^^^^^^^^ [2]
+18 | function same_alias_tail<T>(): SameTail<T> {
+   |                          ^ [1]
+19 |   return shape('v' => Vector {});
+20 | }
+
+error: Typing[4538] Erased generic `T` appears in an invariant or contravariant position of the return type of a memoized function. The memoization cache ignores erased generics, so calls with different `T` can share one result. Make `T` reified, or remove the memoization attribute. [1]
+-> The function is memoized here [2]
+
+memoize_shape_tail.php:23:22
+20 | }
+21 | 
+22 | <<__Memoize>>
+   |   ^^^^^^^^^ [2]
+23 | function named_field<T>(): NamedField<T> {
+   |                      ^ [1]
+24 |   return shape('v' => Vector {});
+25 | }
+
+4 errors found

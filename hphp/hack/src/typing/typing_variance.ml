@@ -367,11 +367,11 @@ and get_typarams ~tracked tenv (ty : decl_ty) =
     union
       (get_typarams_list t_optional)
       (union (get_typarams_list t_required) (get_typarams t_vs))
-  | Tshape (Shape_simple { s_fields = m; _ }) ->
+  | Tshape (Shape_simple { s_fields = m; s_unknown_value; _ }) ->
     TShapeMap.fold
       (fun _ { sft_ty; _ } res -> get_typarams_union res sft_ty)
       m
-      empty
+      (get_typarams s_unknown_value)
   | Tshape (Shape_splat { ss_elems }) ->
     List.fold_left ss_elems ~init:empty ~f:(fun acc ty ->
         get_typarams_union acc ty)

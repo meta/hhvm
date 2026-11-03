@@ -1,0 +1,9 @@
+warning: Lint[5624] The generic parameter `T` is redundant because it only appears in a contravariant (input) position. Consider replacing uses of generic parameter with `mixed` or specifying `<<__Explicit>>` on the generic parameter [1]
+
+redundant_generics_shape_tail.php:7:32
+5 | }
+6 | 
+7 | function typed_tail_only_input<T>(shape(T...) $_x): void {}
+  |                                ^ [1]
+
+
