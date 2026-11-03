@@ -21,8 +21,7 @@
 #include <vector>
 #include <stdarg.h>
 
-#include <folly/Format.h>
-#include <folly/functional/Invoke.h>
+#include <folly/Range.h>
 #include <folly/portability/Unistd.h>
 
 #include "hphp/util/assertions.h"
@@ -525,28 +524,4 @@ inline std::string color(const char* fg, const char* bg) {
 
 //////////////////////////////////////////////////////////////////////
 
-FOLLY_CREATE_MEMBER_INVOKER(invoke_toString, toString);
-
 } // HPHP
-
-namespace folly {
-template<typename Val>
-class FormatValue<Val,
-                   std::enable_if_t<
-                     std::is_invocable_v<HPHP::invoke_toString, Val const> &&
-                     // This is here because StringPiece and its subclasses
-                     // match both this overload as well as the FormatValue
-                     // overload for string-y types in folly itself.
-                     !std::is_convertible<Val, StringPiece>::value
-                   >> {
- public:
-  explicit FormatValue(const Val& val) : m_val(val) {}
-
-  template<typename Callback> void format(FormatArg& arg, Callback& cb) const {
-    format_value::formatString(m_val.toString(), arg, cb);
-  }
-
- private:
-  const Val& m_val;
-};
-}

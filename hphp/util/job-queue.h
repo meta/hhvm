@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <deque>
 #include <atomic>
 #include <chrono>
 #include <memory>

@@ -57,24 +57,6 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace folly {
-template<> class FormatValue<debug_parser::GlobalOff> {
- public:
-  explicit FormatValue(debug_parser::GlobalOff val) : m_val(val) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    format_value::formatString(fmt::format("{}:{}",
-                                              m_val.offset(),
-                                              m_val.isInfo() ? 1 : 0),
-                               arg, cb);
-  }
-
- private:
-  debug_parser::GlobalOff m_val;
-};
-}
-
 template <>
 struct fmt::formatter<debug_parser::GlobalOff>
     : fmt::formatter<std::string_view> {

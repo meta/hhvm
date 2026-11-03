@@ -23,7 +23,6 @@
 
 #include <cstdint>
 #include <fmt/format.h>
-#include <folly/Format.h>
 #include <iostream>
 
 namespace HPHP {
@@ -284,8 +283,7 @@ private:
 
 namespace HPHP {
 
-// debugFormat() prints a PtrImpl like the raw pointer it holds, as
-// folly::FormatValue<PtrImpl> below does.
+// debugFormat() prints a PtrImpl like the raw pointer it holds.
 template <class T, typename S, typename P>
 auto hphpDebugFormatArg(DebugFormatTag<ptrimpl::PtrImpl<T, S, P>>,
                         const ptrimpl::PtrImpl<T, S, P>& v) {
@@ -294,24 +292,7 @@ auto hphpDebugFormatArg(DebugFormatTag<ptrimpl::PtrImpl<T, S, P>>,
 
 }
 
-namespace folly {
-
-template<class T, typename S, typename P> class FormatValue<HPHP::ptrimpl::PtrImpl<T, S, P>> {
- public:
-  explicit FormatValue(HPHP::ptrimpl::PtrImpl<T, S, P> v) : m_val(v) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    FormatValue<T*>(m_val.get()).format(arg, cb);
-  }
-
- private:
-  const HPHP::ptrimpl::PtrImpl<T, S, P> m_val;
-};
-
-}
-
-// Formats the address, like folly::FormatValue<T*>. StringData pointers are
+// Formats the address. StringData pointers are
 // specialized in string-data.h to format the string contents.
 template <class T, typename S, typename P>
 struct fmt::formatter<HPHP::ptrimpl::PtrImpl<T, S, P>>

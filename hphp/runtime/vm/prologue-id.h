@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <folly/hash/Hash.h>
+
 #include "hphp/runtime/vm/func-id.h"
 
 namespace HPHP {

@@ -19,6 +19,7 @@
 #include <set>
 
 #include <fmt/core.h>
+#include <folly/String.h>
 
 #include "hphp/util/hash.h"
 #include "hphp/util/trace.h"

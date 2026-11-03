@@ -32,6 +32,7 @@
 #include <stdarg.h>
 #include <string>
 
+#include <folly/String.h>
 #include <folly/portability/PThread.h>
 #include <fmt/core.h>
 

@@ -18,7 +18,6 @@
 
 #include <fmt/format.h>
 #include <folly/Demangle.h>
-#include <folly/Format.h>
 #include <folly/Memory.h>
 #include <folly/ScopeGuard.h>
 #include <folly/container/F14Map.h>
@@ -1926,18 +1925,3 @@ std::unique_ptr<Printer> make_dwarf_printer(const std::string& filename) {
 }
 
 #endif
-
-namespace folly {
-template<> class FormatValue<llvm::dwarf::Tag> {
- public:
-  explicit FormatValue(llvm::dwarf::Tag tag) : m_tag(tag) {}
-
-  template<typename Callback>
-  void format(FormatArg& arg, Callback& cb) const {
-    format_value::formatString(fmt::format("{}", fmt::underlying(m_tag)), arg, cb);
-  }
-
- private:
-  llvm::dwarf::Tag m_tag;
-};
-}
