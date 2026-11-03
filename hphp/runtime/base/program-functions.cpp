@@ -359,6 +359,10 @@ void process_env_variables(Array& variables) {
   process_env_variables(variables, environ, RuntimeOption::EnvVariables);
 }
 
+const StaticString
+  s_HPHP_INPUT_PARSE_ERROR("HPHP_INPUT_PARSE_ERROR"),
+  s_failed_append("failed_append");
+
 // Handle adding a variable to an array, supporting keys that look
 // like array expressions (like 'FOO[][key1][k2]').
 void register_variable(Array& variables, char *name, const Variant& value,
@@ -434,7 +438,10 @@ void register_variable(Array& variables, char *name, const Variant& value,
       if (!index) {
         auto const size = symtable->size();
         symtable->append(make_persistent_array_like_tv(staticEmptyDictArray()));
-        if (symtable->size() == size) return;
+        if (symtable->size() == size) {
+          ServerNote::Add(s_HPHP_INPUT_PARSE_ERROR, s_failed_append);
+          return;
+        }
         auto const key = symtable->get()->getKey(symtable->get()->iter_last());
         symtable = &asArrRef(symtable->lval(key));
       } else {
