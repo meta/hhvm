@@ -265,11 +265,11 @@ find_package(OpenSSL)
 
 include(FBFetchFromManifest)
 
-# We indirectly depend on libevent.  Folly pulls in linkage to
-# event.lib, but on my system it does so as simply "event.lib"
-# and that fails linking.  Let's probe for the library and force
-# in the library directory for the linker. :-/
-find_package(LibEvent REQUIRED)
+# We indirectly depend on libevent.  An installed folly can link it as
+# simply "event.lib", which fails linking, so probe for the library and
+# force in the library directory for the linker.  A fetched folly
+# fetches libevent itself when it isn't installed.
+find_package(LibEvent)
 get_filename_component(LIBEVENT_LIBDIR "${LIBEVENT_LIB}" DIRECTORY)
 link_directories(${LIBEVENT_LIBDIR})
 
