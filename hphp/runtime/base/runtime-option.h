@@ -53,6 +53,7 @@ namespace HPHP {
 struct AccessLogFileData;
 struct ErrorLogFileData;
 struct VirtualHost;
+struct RequestBodyRegistry;
 struct IpBlockMap;
 struct SatelliteServerInfo;
 struct FilesMatch;
@@ -324,6 +325,7 @@ struct RuntimeOption {
   static const std::string& GetServerPrimaryIPv4();
   static const std::string& GetServerPrimaryIPv6();
   static std::vector<std::shared_ptr<VirtualHost>> VirtualHosts;
+  static std::shared_ptr<const RequestBodyRegistry> RequestBodyReaders;
   static std::shared_ptr<IpBlockMap> IpBlocks;
   static std::vector<std::shared_ptr<SatelliteServerInfo>>
          SatelliteServerInfos;

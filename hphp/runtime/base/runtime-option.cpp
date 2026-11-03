@@ -43,6 +43,7 @@
 #include "hphp/runtime/server/access-log.h"
 #include "hphp/runtime/server/cli-server.h"
 #include "hphp/runtime/server/files-match.h"
+#include "hphp/runtime/server/request-body-registry.h"
 #include "hphp/runtime/server/virtual-host.h"
 #include "hphp/runtime/vm/jit/mcgen-translate.h"
 #include "hphp/util/arch.h"
@@ -622,6 +623,7 @@ std::map<std::string, AccessLogFileData> RuntimeOption::AccessLogs;
 std::map<std::string, AccessLogFileData> RuntimeOption::RPCLogs;
 
 std::vector<std::shared_ptr<VirtualHost>> RuntimeOption::VirtualHosts;
+std::shared_ptr<const RequestBodyRegistry> RuntimeOption::RequestBodyReaders;
 std::shared_ptr<IpBlockMap> RuntimeOption::IpBlocks;
 
 std::map<std::string, std::string> RuntimeOption::IncludeRoots;
@@ -1465,6 +1467,7 @@ void RuntimeOption::Load(
     Config::Iterate(vh_callback, ini, config, "VirtualHost");
     Cfg::Server::LowestMaxPostSize = VirtualHost::GetLowestMaxPostSize();
   }
+  RequestBodyReaders = RequestBodyRegistry::load(ini, config);
   {
     // IpBlocks
     IpBlocks = std::make_shared<IpBlockMap>(ini, config);
