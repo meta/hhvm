@@ -76,6 +76,42 @@ let test_saved_errors () =
     };
   true
 
+(** The remote old-declaration fixture must supply a missing comparison
+    baseline during an ordinary incremental iteration. A comment-only class
+    edit should then leave its unchanged consumer out of the fanout. Without
+    the fixture, the cold old declaration is missing and conservative fanout
+    includes Use.php, violating the explicit C.php-only checking schedule. *)
+let test_remote_old_declarations () =
+  let open Scheduled_fanout in
+  let class_contents =
+    {|<?hh
+class C {
+  public static function value(): int { return 1; }
+}
+|}
+  in
+  run
+    ~initialization:Saved_state
+    ~remote_old_decls:class_contents
+    {
+      initial_files =
+        [
+          ("C.php", class_contents);
+          ("Use.php", "<?hh\nfunction use_c(): int { return C::value(); }\n");
+        ];
+      iterations =
+        [
+          {
+            default_iteration with
+            before_type_check =
+              [Write_file ("C.php", class_contents ^ "// Recheck C.\n")];
+            disk_needs_parsing = ["C.php"];
+            type_check = [Check { file = "C.php"; after_check = [] }];
+          };
+        ];
+    };
+  true
+
 let () =
   Daemon.check_entry_point ();
   Unit_test.run_all
@@ -83,4 +119,5 @@ let () =
       ("saved_dependencies", test_saved_dependencies);
       ("cold_declarations", test_cold_declarations);
       ("saved_errors", test_saved_errors);
+      ("remote_old_declarations", test_remote_old_declarations);
     ]

@@ -148,8 +148,15 @@ let parser_options =
       use_legacy_experimental_feature_config = false;
     }
 
-let setup ~root ~hhi ~tmp =
+let setup ~root ~hhi ~tmp ~remote_old_decls =
   Unix.putenv "HH_TEST_MODE" "1";
+  Option.iter remote_old_decls ~f:(fun contents ->
+      let directory = Filename.concat tmp "remote_old_decls" in
+      Sys_utils.mkdir_p directory;
+      Sys_utils.write_file
+        ~file:(Filename.concat directory ".hh_remote_old_decls_test")
+        contents;
+      Unix.putenv "HH_LOCALCONF_PATH" directory);
   Printexc.record_backtrace true;
   Folly.ensure_folly_init ();
   Event_logger.init_fake ();
@@ -170,7 +177,8 @@ let setup ~root ~hhi ~tmp =
   let tcopt =
     Global_options.set
       ~po:parser_options
-      ~tco_fetch_remote_old_decls:false
+      ~tco_fetch_remote_old_decls:(Option.is_some remote_old_decls)
+      ~tco_only_fetch_remote_old_decl_during_init:false
       ~tco_populate_member_heaps:false
       Global_options.default
   in
@@ -391,11 +399,13 @@ type child_request = {
   hhi: string;
   tmp: string;
   saved_state: Scheduled_fanout_saved_state.t option;
+  remote_old_decls: string option;
   check: child_check;
 }
 
-let run_child ({ root; hhi; tmp; saved_state; check } : child_request) =
-  let (genv, env) = setup ~root ~hhi ~tmp in
+let run_child
+    ({ root; hhi; tmp; saved_state; remote_old_decls; check } : child_request) =
+  let (genv, env) = setup ~root ~hhi ~tmp ~remote_old_decls in
   let env =
     match check with
     | Incremental { initial_files; iterations } ->
@@ -490,11 +500,18 @@ let in_process ~name request =
       ))
 
 let run
-    ?(initialization = Full_check) ({ initial_files; iterations } as scenario) =
+    ?(initialization = Full_check)
+    ?remote_old_decls
+    ({ initial_files; iterations } as scenario) =
   if List.is_empty iterations then
     invalid_arg "A scheduled fanout scenario must contain an iteration";
   List.iter iterations ~f:(fun iteration ->
       ignore (split_type_check_schedule iteration.type_check));
+  (match (initialization, remote_old_decls) with
+  | (Full_check, Some _) ->
+    invalid_arg
+      "Remote old declaration fixtures require Saved_state initialization"
+  | _ -> ());
   Tempfile.with_real_tempdir @@ fun workspace ->
   let directory name =
     let path = Path.concat workspace name |> Path.to_string in
@@ -518,7 +535,14 @@ let run
   let incremental =
     in_process
       ~name:"incremental"
-      { root; hhi; tmp; saved_state; check = Incremental scenario }
+      {
+        root;
+        hhi;
+        tmp;
+        saved_state;
+        remote_old_decls;
+        check = Incremental scenario;
+      }
   in
   (* Writes are the only supported disk actions, so these are exactly the files
      in the final repository. Read their actual contents in the fresh child. *)
@@ -539,7 +563,14 @@ let run
   let full =
     in_process
       ~name:"full check"
-      { root; hhi; tmp; saved_state; check = Fresh_check final_files }
+      {
+        root;
+        hhi;
+        tmp;
+        saved_state;
+        remote_old_decls = None;
+        check = Fresh_check final_files;
+      }
   in
   if not (List.equal String.equal incremental full) then
     let format diagnostics =
@@ -557,8 +588,9 @@ let run
             (format incremental)
             (format full)))
 
-let run_expect_bug ?initialization ~bug ~incremental ~full scenario =
+let run_expect_bug
+    ?initialization ?remote_old_decls ~bug ~incremental ~full scenario =
   expect_known_fanout_bug
     ~bug
     ~matches:(matches_diagnostics_mismatch ~incremental ~full)
-    (fun () -> run ?initialization scenario)
+    (fun () -> run ?initialization ?remote_old_decls scenario)
