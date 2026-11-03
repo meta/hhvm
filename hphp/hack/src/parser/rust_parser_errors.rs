@@ -1229,8 +1229,6 @@ fn is_foreach_in_for(for_initializer: S<'_>) -> bool {
 /// Which late-bound class references `check_constant_expression` accepts, most permissive first.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum LateBoundRule {
-    /// Accept `static::FOO`, `static::class` and `nameof static`.
-    Allowed,
     /// Reject `static`.
     NoStatic,
     /// Reject `static`, plus `self` and `parent` in a trait, which resolve against the using class.
@@ -5136,13 +5134,11 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
                 self.check_constant_expression(&x.value, rule);
             }
             ShapeSplatExpression(x) => self.check_constant_expression(&x.expression, rule),
-            // Allow `ClassName::foo` in a constant, but don't allow `parent::class` and
-            // only allow late-bound qualifiers like `static::foo` as `rule` permits.
+            // Allow `ClassName::foo` in a constant, but don't allow `parent::class` or `static::foo`,
+            // and only allow `self` and `parent` in a trait as `rule` permits.
             ScopeResolutionExpression(x)
-                if is_good_scope_resolution_qualifier(
-                    &x.qualifier,
-                    rule == LateBoundRule::Allowed,
-                ) && is_good_scope_resolution_name(&x.name)
+                if is_good_scope_resolution_qualifier(&x.qualifier, false)
+                    && is_good_scope_resolution_name(&x.name)
                     && !is_parent_class_access(&x.qualifier, &x.name)
                     && !(rule == LateBoundRule::NoLateBound
                         && self.is_late_bound_class_name(&x.qualifier)) => {}
@@ -5156,7 +5152,7 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
                     // always name tokens.
                     let txt = self.token_text(&t);
                     if txt == sn::classes::PARENT
-                        || (rule != LateBoundRule::Allowed && txt == sn::classes::STATIC)
+                        || txt == sn::classes::STATIC
                         || (rule == LateBoundRule::NoLateBound
                             && self.is_late_bound_class_name(&x.target))
                     {
@@ -5777,19 +5773,7 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
             if parameter_modifier(node, TokenKind::Named).is_some() {
                 self.check_can_use_feature(node, &FeatureName::NamedParameters);
             }
-            let in_lambda = matches!(
-                self.env.context.active_callable.map(|node| &node.children),
-                Some(AnonymousFunction(_) | LambdaExpression(_))
-            );
-            let rule = if self.env.is_typechecker() {
-                LateBoundRule::NoLateBound
-            } else if in_lambda {
-                // Lambda defaults never allow `static`.
-                LateBoundRule::NoStatic
-            } else {
-                LateBoundRule::Allowed
-            };
-            self.check_constant_expression(&x.default_value, rule)
+            self.check_constant_expression(&x.default_value, LateBoundRule::NoLateBound)
         }
     }
 
@@ -6063,16 +6047,9 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
             | CatchClause(_) => self.assignment_errors(node),
             XHPEnumType(_) | XHPExpression(_) => self.xhp_errors(node),
             PropertyDeclarator(x) => self.check_constant_expression_ban_static(&x.initializer),
-            XHPClassAttribute(x) => {
-                // `static` here resolves against whichever class first builds the cached attribute
-                // declaration, but existing code relies on it, so only the typechecker rejects it.
-                let rule = if self.env.is_typechecker() {
-                    LateBoundRule::NoStatic
-                } else {
-                    LateBoundRule::Allowed
-                };
-                self.check_constant_expression(&x.initializer, rule);
-            }
+            // `static` here would resolve against whichever class first builds the cached attribute
+            // declaration.
+            XHPClassAttribute(x) => self.check_constant_expression_ban_static(&x.initializer),
             QualifiedName(_) => self.check_qualified_name(node),
             UnsetStatement(x) => {
                 for expr in syntax_to_list_no_separators(&x.variables) {
