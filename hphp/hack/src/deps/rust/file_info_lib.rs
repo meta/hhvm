@@ -88,11 +88,11 @@ impl TryFrom<NameType> for KindOfType {
 impl From<NameType> for typing_deps_hash::DepType {
     fn from(name_type: NameType) -> Self {
         match name_type {
-            NameType::Fun => Self::Fun,
-            NameType::Class => Self::Type,
-            NameType::Typedef => Self::Type,
-            NameType::Const => Self::GConst,
-            NameType::Module => Self::Module,
+            NameType::Fun => Self::KFun,
+            NameType::Class => Self::KType,
+            NameType::Typedef => Self::KType,
+            NameType::Const => Self::KGConst,
+            NameType::Module => Self::KModule,
         }
     }
 }

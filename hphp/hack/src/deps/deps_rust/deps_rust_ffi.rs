@@ -411,37 +411,37 @@ mod tests {
     #[bench]
     fn bench_hash1_short(b: &mut Bencher) {
         b.iter(|| {
-            crate::hash1(crate::DepType::Type, SHORT_CLASS_NAME.as_bytes());
+            crate::hash1(crate::DepType::KType, SHORT_CLASS_NAME.as_bytes());
         });
     }
 
     #[bench]
     fn bench_hash1_long(b: &mut Bencher) {
         b.iter(|| {
-            crate::hash1(crate::DepType::Type, LONG_CLASS_NAME.as_bytes());
+            crate::hash1(crate::DepType::KType, LONG_CLASS_NAME.as_bytes());
         });
     }
 
     #[bench]
     fn bench_hash2_short(b: &mut Bencher) {
         b.iter(|| {
-            let type_hash = crate::hash1(crate::DepType::Type, SHORT_CLASS_NAME.as_bytes());
-            crate::hash2(crate::DepType::Const, type_hash, b"\\T");
+            let type_hash = crate::hash1(crate::DepType::KType, SHORT_CLASS_NAME.as_bytes());
+            crate::hash2(crate::DepType::KConst, type_hash, b"\\T");
         });
     }
 
     #[bench]
     fn bench_hash2_long(b: &mut Bencher) {
         b.iter(|| {
-            let type_hash = crate::hash1(crate::DepType::Type, LONG_CLASS_NAME.as_bytes());
-            crate::hash2(crate::DepType::Const, type_hash, b"\\TSomeTypeConstant");
+            let type_hash = crate::hash1(crate::DepType::KType, LONG_CLASS_NAME.as_bytes());
+            crate::hash2(crate::DepType::KConst, type_hash, b"\\TSomeTypeConstant");
         });
     }
 
     #[bench]
     fn bench_hash1_ocaml(b: &mut Bencher) {
         let arena = Arena::new();
-        let dep_type = crate::DepType::Type;
+        let dep_type = crate::DepType::KType;
         let name1 = arena.add(LONG_CLASS_NAME);
         b.iter(|| unsafe {
             crate::hash1_ocaml(Value::int(dep_type as isize).to_bits(), name1.to_bits())
@@ -451,8 +451,8 @@ mod tests {
     #[bench]
     fn bench_hash2_ocaml(b: &mut Bencher) {
         let arena = Arena::new();
-        let dep_type = crate::DepType::Const;
-        let type_hash = crate::hash1(crate::DepType::Type, LONG_CLASS_NAME.as_bytes());
+        let dep_type = crate::DepType::KConst;
+        let type_hash = crate::hash1(crate::DepType::KType, LONG_CLASS_NAME.as_bytes());
         let member_name = arena.add("\\TSomeTypeConstant");
         b.iter(|| unsafe {
             crate::hash2_ocaml(

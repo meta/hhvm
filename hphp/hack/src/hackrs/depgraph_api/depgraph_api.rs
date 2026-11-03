@@ -35,10 +35,10 @@ pub enum DeclName {
 impl DeclName {
     pub fn to_dep(&self) -> Dep {
         Dep::new(match self {
-            DeclName::Fun(n) => typing_deps_hash::hash1(DepType::Fun, n.as_str().as_bytes()),
-            DeclName::Const(n) => typing_deps_hash::hash1(DepType::GConst, n.as_str().as_bytes()),
-            DeclName::Type(n) => typing_deps_hash::hash1(DepType::Type, n.as_str().as_bytes()),
-            DeclName::Module(n) => typing_deps_hash::hash1(DepType::Module, n.as_str().as_bytes()),
+            DeclName::Fun(n) => typing_deps_hash::hash1(DepType::KFun, n.as_str().as_bytes()),
+            DeclName::Const(n) => typing_deps_hash::hash1(DepType::KGConst, n.as_str().as_bytes()),
+            DeclName::Type(n) => typing_deps_hash::hash1(DepType::KType, n.as_str().as_bytes()),
+            DeclName::Module(n) => typing_deps_hash::hash1(DepType::KModule, n.as_str().as_bytes()),
         })
     }
 }
@@ -141,18 +141,18 @@ impl From<DependencyName> for DependencyHash {
     // Keep in sync with Dep.make in typing_deps.ml
     fn from(name: DependencyName) -> Self {
         match name {
-            DependencyName::Extends(t) => Self::of_symbol(DepType::Extends, &t),
-            DependencyName::Const(t, c) => Self::of_member(DepType::Const, t.into(), &c),
-            DependencyName::Constructor(t) => Self::of_member(DepType::Constructor, t.into(), ""),
-            DependencyName::Prop(t, p) => Self::of_member(DepType::Prop, t.into(), &p),
-            DependencyName::StaticProp(t, p) => Self::of_member(DepType::SProp, t.into(), &p),
-            DependencyName::Method(t, m) => Self::of_member(DepType::Method, t.into(), &m),
-            DependencyName::StaticMethod(t, m) => Self::of_member(DepType::SMethod, t.into(), &m),
-            DependencyName::AllMembers(t) => Self::of_member(DepType::AllMembers, t.into(), ""),
-            DependencyName::GConst(c) => Self::of_symbol(DepType::GConst, &c),
-            DependencyName::Fun(f) => Self::of_symbol(DepType::Fun, &f),
-            DependencyName::Type(t) => Self::of_symbol(DepType::Type, &t),
-            DependencyName::Module(m) => Self::of_symbol(DepType::Module, &m),
+            DependencyName::Extends(t) => Self::of_symbol(DepType::KExtends, &t),
+            DependencyName::Const(t, c) => Self::of_member(DepType::KConst, t.into(), &c),
+            DependencyName::Constructor(t) => Self::of_member(DepType::KConstructor, t.into(), ""),
+            DependencyName::Prop(t, p) => Self::of_member(DepType::KProp, t.into(), &p),
+            DependencyName::StaticProp(t, p) => Self::of_member(DepType::KSProp, t.into(), &p),
+            DependencyName::Method(t, m) => Self::of_member(DepType::KMethod, t.into(), &m),
+            DependencyName::StaticMethod(t, m) => Self::of_member(DepType::KSMethod, t.into(), &m),
+            DependencyName::AllMembers(t) => Self::of_member(DepType::KAllMembers, t.into(), ""),
+            DependencyName::GConst(c) => Self::of_symbol(DepType::KGConst, &c),
+            DependencyName::Fun(f) => Self::of_symbol(DepType::KFun, &f),
+            DependencyName::Type(t) => Self::of_symbol(DepType::KType, &t),
+            DependencyName::Module(m) => Self::of_symbol(DepType::KModule, &m),
         }
     }
 }
@@ -185,18 +185,18 @@ impl DependencyName {
 
     pub fn dep_type(&self) -> DepType {
         match self {
-            DependencyName::Extends(_) => DepType::Extends,
-            DependencyName::Const(_, _) => DepType::Const,
-            DependencyName::Constructor(_) => DepType::Constructor,
-            DependencyName::Prop(_, _) => DepType::Prop,
-            DependencyName::StaticProp(_, _) => DepType::SProp,
-            DependencyName::Method(_, _) => DepType::Method,
-            DependencyName::StaticMethod(_, _) => DepType::SMethod,
-            DependencyName::AllMembers(_) => DepType::AllMembers,
-            DependencyName::GConst(_) => DepType::GConst,
-            DependencyName::Fun(_) => DepType::Fun,
-            DependencyName::Type(_) => DepType::Type,
-            DependencyName::Module(_) => DepType::Module,
+            DependencyName::Extends(_) => DepType::KExtends,
+            DependencyName::Const(_, _) => DepType::KConst,
+            DependencyName::Constructor(_) => DepType::KConstructor,
+            DependencyName::Prop(_, _) => DepType::KProp,
+            DependencyName::StaticProp(_, _) => DepType::KSProp,
+            DependencyName::Method(_, _) => DepType::KMethod,
+            DependencyName::StaticMethod(_, _) => DepType::KSMethod,
+            DependencyName::AllMembers(_) => DepType::KAllMembers,
+            DependencyName::GConst(_) => DepType::KGConst,
+            DependencyName::Fun(_) => DepType::KFun,
+            DependencyName::Type(_) => DepType::KType,
+            DependencyName::Module(_) => DepType::KModule,
         }
     }
 }

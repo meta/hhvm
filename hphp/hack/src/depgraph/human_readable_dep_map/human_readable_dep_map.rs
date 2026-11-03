@@ -37,7 +37,6 @@ impl HumanReadableDepMap {
     /// 1154245141631872204 Extends Base
     /// 718472355108616429 Type ChildA
     pub fn load(&self, path: &Path) -> anyhow::Result<Vec<DepMapCollision>> {
-        use std::str::FromStr;
         let mut collisions = vec![];
         for line in BufReader::new(File::open(path)?).lines() {
             let line = line?;
@@ -47,7 +46,8 @@ impl HumanReadableDepMap {
                 None => anyhow::bail!("expected hash"),
             };
             let kind: DepType = match parts.next() {
-                Some(s) => DepType::from_str(s)?,
+                // Also accept dependency kind names without the leading K.
+                Some(s) => s.parse().or_else(|_| format!("K{s}").parse())?,
                 None => anyhow::bail!("expected DepType"),
             };
             let sym: &str = match parts.next() {
@@ -99,7 +99,7 @@ impl fmt::Display for DepMapCollision {
         write!(
             f,
             "(Hash Collision {}: ({:?},{}) != ({:?},{}))",
-            &self.hash, &self.old_kind, &self.old_symbol, &self.new_kind, &self.new_symbol,
+            self.hash, self.old_kind, self.old_symbol, self.new_kind, self.new_symbol,
         )
     }
 }
@@ -115,24 +115,35 @@ mod tests {
     #[test]
     fn test_load_and_collisions() -> anyhow::Result<()> {
         let dep_map = HumanReadableDepMap::default();
-
         let mut f1 = NamedTempFile::new()?;
         let mut f2 = NamedTempFile::new()?;
         writeln!(f1, "123456 Type Foo")?;
-        writeln!(f2, "123456 Constructor Base")?;
+        writeln!(f2, "123456 KConstructor Base")?;
 
         assert_eq!(dep_map.load(f1.path())?, vec![]);
         assert_eq!(
             dep_map.load(f2.path())?,
             vec![DepMapCollision {
                 hash: 123456u64,
-                old_kind: DepType::Type,
+                old_kind: DepType::KType,
                 old_symbol: "Foo".to_owned(),
-                new_kind: DepType::Constructor,
+                new_kind: DepType::KConstructor,
                 new_symbol: "Base".to_owned(),
             }],
         );
+        Ok(())
+    }
 
+    #[test]
+    fn test_load_kind_names() -> anyhow::Result<()> {
+        let dep_map = HumanReadableDepMap::default();
+        let mut file = NamedTempFile::new()?;
+        writeln!(file, "1 Type Foo")?;
+        writeln!(file, "1 KType Foo")?;
+        assert!(dep_map.load(file.path())?.is_empty());
+
+        writeln!(file, "2 Unknown Foo")?;
+        assert!(dep_map.load(file.path()).is_err());
         Ok(())
     }
 }

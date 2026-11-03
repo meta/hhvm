@@ -14,22 +14,22 @@ use ocamlrep::FromOcamlRep;
 #[derive(Copy, Clone, Debug, PartialEq, Eq, strum::EnumString, FromOcamlRep)]
 #[repr(u8)]
 pub enum DepType {
-    GConst = 0,
-    Fun = 1,
-    Type = 2,
-    Extends = 3,
-    Const = 5,
-    Constructor = 6,
-    Prop = 7,
-    SProp = 8,
-    Method = 9,
-    SMethod = 10,
-    AllMembers = 11,
-    GConstName = 12,
-    Module = 13,
-    Declares = 14,
-    NotSubtype = 15,
-    File = 16,
+    KGConst = 0,
+    KFun = 1,
+    KType = 2,
+    KExtends = 3,
+    KConst = 5,
+    KConstructor = 6,
+    KProp = 7,
+    KSProp = 8,
+    KMethod = 9,
+    KSMethod = 10,
+    KAllMembers = 11,
+    KGConstName = 12,
+    KModule = 13,
+    KDeclares = 14,
+    KNotSubtype = 15,
+    KFile = 16,
 }
 
 impl DepType {
@@ -39,22 +39,22 @@ impl DepType {
 
     pub fn from_u8(tag: u8) -> Option<Self> {
         match tag {
-            0 => Some(DepType::GConst),
-            1 => Some(DepType::Fun),
-            2 => Some(DepType::Type),
-            3 => Some(DepType::Extends),
-            5 => Some(DepType::Const),
-            6 => Some(DepType::Constructor),
-            7 => Some(DepType::Prop),
-            8 => Some(DepType::SProp),
-            9 => Some(DepType::Method),
-            10 => Some(DepType::SMethod),
-            11 => Some(DepType::AllMembers),
-            12 => Some(DepType::GConstName),
-            13 => Some(DepType::Module),
-            14 => Some(DepType::Declares),
-            15 => Some(DepType::NotSubtype),
-            16 => Some(DepType::File),
+            0 => Some(DepType::KGConst),
+            1 => Some(DepType::KFun),
+            2 => Some(DepType::KType),
+            3 => Some(DepType::KExtends),
+            5 => Some(DepType::KConst),
+            6 => Some(DepType::KConstructor),
+            7 => Some(DepType::KProp),
+            8 => Some(DepType::KSProp),
+            9 => Some(DepType::KMethod),
+            10 => Some(DepType::KSMethod),
+            11 => Some(DepType::KAllMembers),
+            12 => Some(DepType::KGConstName),
+            13 => Some(DepType::KModule),
+            14 => Some(DepType::KDeclares),
+            15 => Some(DepType::KNotSubtype),
+            16 => Some(DepType::KFile),
             _ => None,
         }
     }
@@ -71,7 +71,7 @@ fn make_hasher() -> FnvHasher {
 
 fn postprocess_hash(dep_type: DepType, hash: u64) -> u64 {
     let hash: u64 = match dep_type {
-        DepType::Type => {
+        DepType::KType => {
             // For class dependencies, set the lowest bit to 1. For extends
             // dependencies, the lowest bit will be 0 (in the case below), so we'll
             // be able to convert from a class hash to its extends hash without
@@ -90,10 +90,10 @@ fn postprocess_hash(dep_type: DepType, hash: u64) -> u64 {
 
 fn get_dep_type_hash_key(dep_type: DepType) -> u8 {
     match dep_type {
-        DepType::Type | DepType::Extends => {
+        DepType::KType | DepType::KExtends => {
             // Use the same tag for classes and extends dependencies, so that we can
             // convert between them without reversing the hash.
-            DepType::Type as u8
+            DepType::KType as u8
         }
         _ => dep_type as u8,
     }
@@ -117,5 +117,5 @@ pub fn hash2(dep_type: DepType, type_hash: u64, name2: &[u8]) -> u64 {
 }
 
 pub fn declares_hash() -> u64 {
-    hash1(DepType::Declares, &[])
+    hash1(DepType::KDeclares, &[])
 }

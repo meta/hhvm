@@ -928,14 +928,14 @@ mod tests {
         let class_h = class_dep(7);
         let class_i = class_dep(8);
         let class_j = class_dep(9);
-        let a_m = class_a.member(DepType::Method, "m");
-        let b_m = class_b.member(DepType::Method, "m");
-        let c_m = class_c.member(DepType::Method, "m");
-        let d_m = class_d.member(DepType::Method, "m");
-        let e_m = class_e.member(DepType::Method, "m");
-        let f_m = class_f.member(DepType::Method, "m");
-        let g_m = class_g.member(DepType::Method, "m");
-        let h_m = class_h.member(DepType::Method, "m");
+        let a_m = class_a.member(DepType::KMethod, "m");
+        let b_m = class_b.member(DepType::KMethod, "m");
+        let c_m = class_c.member(DepType::KMethod, "m");
+        let d_m = class_d.member(DepType::KMethod, "m");
+        let e_m = class_e.member(DepType::KMethod, "m");
+        let f_m = class_f.member(DepType::KMethod, "m");
+        let g_m = class_g.member(DepType::KMethod, "m");
+        let h_m = class_h.member(DepType::KMethod, "m");
         let d0 = Dep::new(100);
         let d1 = Dep::new(101);
         let d2 = Dep::new(102);
@@ -1014,7 +1014,7 @@ mod tests {
             DepGraphDelta::default(),
         );
         let mut fanout = HashTrieSet::new();
-        dg.get_member_fanout(class_b, DepType::Method, "m", &mut fanout);
+        dg.get_member_fanout(class_b, DepType::KMethod, "m", &mut fanout);
         assert_eq!(
             fanout.into_iter().copied().sorted().collect::<Vec<_>>(),
             [

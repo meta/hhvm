@@ -314,7 +314,7 @@ impl ToplevelSymbolHash {
 
     pub fn from_type(symbol: &str) -> Self {
         // Could also be a NameType::Typedef, but both Class and Typedef are
-        // represented with DepType::Type. See test_dep_type_from_name_type below.
+        // represented with DepType::KType. See test_dep_type_from_name_type below.
         Self::new(file_info::NameType::Class, symbol)
     }
 
@@ -363,7 +363,7 @@ impl ToplevelCanonSymbolHash {
 
     pub fn from_type(symbol: String) -> Self {
         // Could also be a NameType::Typedef, but both Class and Typedef are
-        // represented with DepType::Type. See test_dep_type_from_name_type below.
+        // represented with DepType::KType. See test_dep_type_from_name_type below.
         Self::new(file_info::NameType::Class, symbol)
     }
 

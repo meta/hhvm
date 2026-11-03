@@ -44,7 +44,7 @@ impl Dep {
 
     // Return the 'NotSubtype' dep for a class from its 'Type' dep
     pub fn class_to_not_subtype(self) -> Self {
-        Dep(typing_deps_hash::hash2(DepType::NotSubtype, self.0, &[]))
+        Dep(typing_deps_hash::hash2(DepType::KNotSubtype, self.0, &[]))
     }
 
     /// The `Declares` special dep, used to mark declared members.
