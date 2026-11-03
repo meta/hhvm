@@ -16,9 +16,11 @@
 
 #pragma once
 
+#include "hphp/runtime/server/request-body-reader.h"
 #include "hphp/runtime/server/transport.h"
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include "hphp/util/logger.h"
 #include "hphp/util/lock.h"
 #include "hphp/util/synchronizable.h"
@@ -44,6 +46,8 @@ struct ResponseMessage {
     BODY,
     EOM,
     FINISH,
+    READ_REQUEST_BODY,
+    ABANDON_REQUEST_BODY,
     RESUME_INGRESS, // a bit of a hack to have this here
   };
 
@@ -62,13 +66,16 @@ struct ResponseMessage {
       }
     }
 
-  ResponseMessage(ResponseMessage&& m) noexcept
-  : m_transport(std::move(m.m_transport)),
-    m_type(m.m_type),
-    m_pushId(m.m_pushId),
-    m_chunked(m.m_chunked),
-    m_chunk(std::move(m.m_chunk)),
-    m_eom(m.m_eom) {}
+  ResponseMessage(ResponseMessage&&) noexcept = default;
+
+  ResponseMessage(std::shared_ptr<ProxygenTransport> transport,
+                  size_t maxBytes, RequestBodyReader::Clock::time_point deadline,
+                  std::unique_ptr<RequestBodyReadCompletion> completion)
+    : m_transport(std::move(transport)),
+      m_type(Type::READ_REQUEST_BODY),
+      m_bodyRead(std::move(completion)),
+      m_readMax(maxBytes),
+      m_readDeadline(deadline) {}
 
   explicit ResponseMessage(std::shared_ptr<ProxygenTransport> &&transport)
       : m_transport(std::move(transport)),
@@ -80,6 +87,9 @@ struct ResponseMessage {
   bool m_chunked{false};
   std::unique_ptr<folly::IOBuf> m_chunk;
   bool m_eom{false};
+  std::unique_ptr<RequestBodyReadCompletion> m_bodyRead;
+  size_t m_readMax{0};
+  RequestBodyReader::Clock::time_point m_readDeadline;
 };
 
 namespace stream_transport {
@@ -182,6 +192,9 @@ struct ProxygenTransport final
   std::shared_ptr<stream_transport::StreamTransport>
     getStreamTransport() const override;
   bool isStreamTransport() const override;
+  std::shared_ptr<RequestBodyReader> getRequestBodyReader() const override {
+    return m_requestBodyReader;
+  }
 
   /**
    * Add/remove a response header.
@@ -263,6 +276,9 @@ struct ProxygenTransport final
     {
       Lock lock(this);
       m_clientTxn = nullptr;
+    }
+    if (m_requestBodyReader) {
+      m_requestBodyReader->detached();
     }
     m_transactionReference.reset();
   }
@@ -348,7 +364,18 @@ struct ProxygenTransport final
 
   void requestDoneLocking();
 
-  bool handlePOST(const proxygen::HTTPHeaders& headers);
+  bool handlePOST(const proxygen::HTTPHeaders& headers,
+                  std::optional<int64_t> selectedMaxPost);
+  bool bodyExceedsMaxPost() const;
+  void initializeRequestBodyReader(std::shared_ptr<RequestBodyProfile> profile,
+                                   RequestBodyReader::Metadata metadata);
+  void onReaderBody(std::unique_ptr<folly::IOBuf> chain);
+  void discardReaderBody(size_t bytes);
+  void setReaderIngressPaused(bool paused);
+  bool holdsReaderIngressPause() const;
+  void resumeDeferredReaderIngress();
+  void beginReaderDrain();
+  void finishRequestBody();
 
   proxygen::HTTPTransaction* getTransaction(
     uint64_t id, proxygen::HTTPMessage **msg);
@@ -396,6 +423,12 @@ struct ProxygenTransport final
   const proxygen::HTTPHeaders* m_proxygenHeaders = nullptr;
   std::shared_ptr<stream_transport::HttpStreamServerTransport>
     m_streamTransport;
+  // Set before enqueue and never reset, so request threads may read it.
+  std::shared_ptr<RequestBodyReader> m_requestBodyReader;
+  // IO-thread reader state. EOM submission does not mean egress completed.
+  bool m_readerEomSubmitted{false};
+  bool m_readerFinished{false};
+  bool m_readerResumeDeferred{false};
   folly::ssl::X509UniquePtr m_peerCert{nullptr};
  public:
   // List of ProxygenTransport not yet handed to the server will sit

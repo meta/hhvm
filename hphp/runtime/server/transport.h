@@ -39,6 +39,7 @@ namespace HPHP {
 
 struct Array;
 struct Variant;
+struct RequestBodyReader;
 struct ResponseCompressorManager;
 namespace stream_transport {
 struct StreamTransport;
@@ -209,12 +210,16 @@ public:
     return false;
   }
 
+  virtual std::shared_ptr<RequestBodyReader> getRequestBodyReader() const {
+    return nullptr;
+  }
+
   /**
    * Returns true if post data should be read.
    */
   virtual bool shouldReadPostData() {
     return getMethod() == Transport::Method::POST &&
-      !isStreamTransport();
+      !isStreamTransport() && !getRequestBodyReader();
   }
 
   /**
