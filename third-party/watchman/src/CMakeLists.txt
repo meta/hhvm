@@ -279,8 +279,10 @@ list(APPEND BOOST_INCLUDE_LIBRARIES filesystem)
 fb_find_or_fetch(folly)
 include_directories(${FOLLY_INCLUDE_DIR})
 
-# After folly, so that what folly fetched satisfies these.
-find_package(Gflags REQUIRED)
+# After folly, so that what folly fetched satisfies these.  Config mode, as
+# eden uses: with vcpkg, FindGflags defines `gflags` as an imported library
+# whose file is the name of vcpkg's gflags::gflags_static target.
+find_package(gflags CONFIG REQUIRED)
 include_directories(SYSTEM ${GFLAGS_INCLUDE_DIR})
 
 find_package(Glog REQUIRED)
