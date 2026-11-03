@@ -1,0 +1,126 @@
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:3:43
+1 | <?hh
+2 | 
+3 | function assignment(inout int $_): void { $_ = ''; }
+  |                               ^^ [2]
+  |                                           ^^ [1]
+4 | function destructure(inout int $_): void {
+5 |   list(list($_)) = tuple(tuple(''));
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:5:13
+2 | 
+3 | function assignment(inout int $_): void { $_ = ''; }
+4 | function destructure(inout int $_): void {
+  |                                ^^ [2]
+5 |   list(list($_)) = tuple(tuple(''));
+  |             ^^ [1]
+6 | }
+7 | function iteration(inout int $_): void {
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:8:38
+ 5 |   list(list($_)) = tuple(tuple(''));
+ 6 | }
+ 7 | function iteration(inout int $_): void {
+   |                              ^^ [2]
+ 8 |   foreach (dict['key' => 'value'] as $_ => $_) {}
+   |                                      ^^ [1]
+ 9 | }
+10 | function caught(inout Exception $_): void {
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:8:44
+ 5 |   list(list($_)) = tuple(tuple(''));
+ 6 | }
+ 7 | function iteration(inout int $_): void {
+   |                              ^^ [2]
+ 8 |   foreach (dict['key' => 'value'] as $_ => $_) {}
+   |                                            ^^ [1]
+ 9 | }
+10 | function caught(inout Exception $_): void {
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:11:51
+ 8 |   foreach (dict['key' => 'value'] as $_ => $_) {}
+ 9 | }
+10 | function caught(inout Exception $_): void {
+   |                                 ^^ [2]
+11 |   try { throw new Exception(); } catch (Exception $_) {}
+   |                                                   ^^ [1]
+12 | }
+13 | function nested(): void {
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:14:35
+12 | }
+13 | function nested(): void {
+14 |   $f = (inout int $_): void ==> { $_ = ''; };
+   |                   ^^ [2]
+   |                                   ^^ [1]
+15 | }
+16 | function outer(inout int $_): void {
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:18:3
+14 |   $f = (inout int $_): void ==> { $_ = ''; };
+15 | }
+16 | function outer(inout int $_): void {
+   |                          ^^ [2]
+17 |   $f = () ==> { $_ = ''; };
+18 |   $_ = '';
+   |   ^^ [1]
+19 | }
+20 | function duplicate_inout_first(inout int $_, string $_): void { $_ = ''; }
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:20:65
+18 |   $_ = '';
+19 | }
+20 | function duplicate_inout_first(inout int $_, string $_): void { $_ = ''; }
+   |                                          ^^ [2]
+   |                                                                 ^^ [1]
+21 | function duplicate_inout_last(string $_, inout int $_): void { $_ = ''; }
+22 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:21:64
+19 | }
+20 | function duplicate_inout_first(inout int $_, string $_): void { $_ = ''; }
+21 | function duplicate_inout_last(string $_, inout int $_): void { $_ = ''; }
+   |                                                    ^^ [2]
+   |                                                                ^^ [1]
+22 | 
+23 | class Writes {
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_writes_bad.php:24:46
+22 | 
+23 | class Writes {
+24 |   public function test(inout int $_): void { $_ = ''; }
+   |                                  ^^ [2]
+   |                                              ^^ [1]
+25 | }
+
+10 errors found

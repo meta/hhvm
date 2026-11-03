@@ -1,3 +1,22 @@
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+discard_bad.php:7:3
+5 | function test_punning_discard(shape('_' => int) $s): void {
+6 |   shape($_) = $s;
+7 |   $_ + 1; // $_ is a placeholder variable not meant to be used
+  |   ^^ [1]
+8 | }
+9 | 
+
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+discard_bad.php:12:3
+10 | function test_explicit_discard(shape('x' => int) $s): void {
+11 |   shape('x' => $_) = $s;
+12 |   $_ + 1; // $_ is a placeholder variable not meant to be used
+   |   ^^ [1]
+13 | }
+
 error: Typing[4429] Typing error [1]
 -> Expected `num` because this is used in an arithmetic operation [2]
 -> But got `void` (`$_` is a placeholder variable not meant to be used) [1]
@@ -44,4 +63,4 @@ discard_bad.php:12:3
    |   ^^ [1]
 13 | }
 
-4 errors found
+6 errors found

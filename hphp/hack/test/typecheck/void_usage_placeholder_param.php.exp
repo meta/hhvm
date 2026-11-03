@@ -1,3 +1,12 @@
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+void_usage_placeholder_param.php:10:16
+ 8 | 
+ 9 | function test_improper_usage(C1 $c1, C2 $_): void {
+10 |   test_ok($c1, $_);
+   |                ^^ [1]
+11 | }
+
 error: Typing[4110] Invalid argument [1]
 -> Expected `C2` [2]
 -> But got `void` (`$_` is a placeholder variable not meant to be used) [1]
@@ -23,4 +32,4 @@ void_usage_placeholder_param.php:10:16
    |                ^^ [1]
 11 | }
 
-2 errors found
+3 errors found

@@ -297,6 +297,8 @@ module NastCheck = struct
     | RedundantPackageOverride [@value 3112]
     (* | NamedParamsMemoizeDEPRECATED [@value 3113] *)
     | OverrideNotAllowedForPackage [@value 3114]
+    | PlaceholderRead [@value 3115]
+    | PlaceholderInoutWrite [@value 3116]
   (* Add new NastCheck codes here! Comment out when deprecating. *)
   [@@deriving enum, show { with_path = false }]
 

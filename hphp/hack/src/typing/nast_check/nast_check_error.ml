@@ -121,6 +121,11 @@ type t =
     }
   | Reading_from_append of Pos.t
   | List_rvalue of Pos.t
+  | Placeholder_read of Pos.t
+  | Placeholder_inout_write of {
+      pos: Pos.t;
+      param_pos: Pos.t;
+    }
   | Illegal_destructor of Pos.t
   | Illegal_context of {
       pos: Pos.t;
@@ -566,6 +571,22 @@ let list_rvalue pos =
       "`list()` can only be used for destructuring assignment. Did you mean `tuple()` or `vec[]`?"
     )
     []
+
+let placeholder_read pos =
+  User_diagnostic.make_err
+    Error_code.(to_enum PlaceholderRead)
+    ( pos,
+      "Cannot read from the placeholder `$_`. Please name this variable instead"
+    )
+    []
+
+let placeholder_inout_write pos param_pos =
+  User_diagnostic.make_err
+    Error_code.(to_enum PlaceholderInoutWrite)
+    ( pos,
+      "Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead"
+    )
+    [(Pos_or_decl.of_raw_pos param_pos, "This is an `inout` parameter")]
 
 let illegal_destructor pos =
   User_diagnostic.make_err
@@ -1060,6 +1081,9 @@ let to_user_diagnostic t =
       named_in_transformed_pseudofunction pos fn_name
     | Reading_from_append pos -> reading_from_append pos
     | List_rvalue pos -> list_rvalue pos
+    | Placeholder_read pos -> placeholder_read pos
+    | Placeholder_inout_write { pos; param_pos } ->
+      placeholder_inout_write pos param_pos
     | Illegal_destructor pos -> illegal_destructor pos
     | Illegal_context { pos; name } -> illegal_context pos name
     | Case_fallthrough { switch_pos; case_pos; next_pos } ->

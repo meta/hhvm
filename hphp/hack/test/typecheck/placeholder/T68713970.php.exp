@@ -1,0 +1,14 @@
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+T68713970.php:5:3
+2 | // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+3 | 
+4 | function foo(inout int $_): void {
+  |                        ^^ [2]
+5 |   $_ = "";
+  |   ^^ [1]
+6 | }
+7 | 
+
+1 error found

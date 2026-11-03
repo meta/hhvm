@@ -32,6 +32,7 @@
    nast_generics_check
    package_expression_check
    pessimisation_node_recording
+   placeholder_check
    private_final_check
    prop_modifier_prohibited_check
    read_from_append_check

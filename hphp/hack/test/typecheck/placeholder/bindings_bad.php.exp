@@ -1,0 +1,43 @@
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+bindings_bad.php:5:16
+2 | <<file:__EnableUnstableFeatures('shape_and_tuple_destructuring', 'shape_field_punning')>>
+3 | 
+4 | function destructure(inout int $_): void {
+  |                                ^^ [2]
+5 |   shape('x' => $_) = shape('x' => '');
+  |                ^^ [1]
+6 |   tuple($_) = tuple('');
+7 |   shape($_) = shape('_' => '');
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+bindings_bad.php:6:9
+2 | <<file:__EnableUnstableFeatures('shape_and_tuple_destructuring', 'shape_field_punning')>>
+3 | 
+4 | function destructure(inout int $_): void {
+  |                                ^^ [2]
+5 |   shape('x' => $_) = shape('x' => '');
+6 |   tuple($_) = tuple('');
+  |         ^^ [1]
+7 |   shape($_) = shape('_' => '');
+8 | }
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+bindings_bad.php:7:9
+2 | <<file:__EnableUnstableFeatures('shape_and_tuple_destructuring', 'shape_field_punning')>>
+3 | 
+4 | function destructure(inout int $_): void {
+  |                                ^^ [2]
+5 |   shape('x' => $_) = shape('x' => '');
+6 |   tuple($_) = tuple('');
+7 |   shape($_) = shape('_' => '');
+  |         ^^ [1]
+8 | }
+9 | 
+
+3 errors found

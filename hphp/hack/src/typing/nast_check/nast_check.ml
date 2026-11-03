@@ -36,6 +36,7 @@ let visitor ctx =
       Duplicate_xhp_attribute_check.handler;
       Attribute_nast_checks.handler;
       List_rvalue_check.handler;
+      Placeholder_check.handler;
       Private_final_check.handler;
       Well_formed_internal_trait.handler;
       Package_expression_check.handler;

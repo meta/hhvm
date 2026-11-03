@@ -1,3 +1,12 @@
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+void_usage_placeholder.php:6:15
+4 | 
+5 | function test(): void {
+6 |   takes_mixed($_);
+  |               ^^ [1]
+7 | }
+
 error: Typing[4119] You are using the return value of a `void` function [1]
 -> A `void` function doesn't return a value. (`$_` is a placeholder variable not meant to be used) [1]
 
@@ -8,4 +17,4 @@ void_usage_placeholder.php:6:15
   |               ^^ [1]
 7 | }
 
-1 error found
+2 errors found

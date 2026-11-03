@@ -120,6 +120,11 @@ type t =
     }
   | Reading_from_append of Pos.t
   | List_rvalue of Pos.t
+  | Placeholder_read of Pos.t
+  | Placeholder_inout_write of {
+      pos: Pos.t;
+      param_pos: Pos.t;
+    }
   | Illegal_destructor of Pos.t
   | Illegal_context of {
       pos: Pos.t;

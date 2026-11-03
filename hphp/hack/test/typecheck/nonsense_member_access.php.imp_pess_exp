@@ -139,6 +139,66 @@ nonsense_member_access.php:18:9
 19 |   }
 20 | }
 
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+nonsense_member_access.php:8:12
+ 6 |     $this->$this->baz();
+ 7 |     $this->$this();
+ 8 |     $this->$_;
+   |            ^^ [1]
+ 9 |     $this->$_->baz();
+10 |     $this->$_();
+
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+nonsense_member_access.php:9:12
+ 7 |     $this->$this();
+ 8 |     $this->$_;
+ 9 |     $this->$_->baz();
+   |            ^^ [1]
+10 |     $this->$_();
+11 |   }
+
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+nonsense_member_access.php:10:12
+ 8 |     $this->$_;
+ 9 |     $this->$_->baz();
+10 |     $this->$_();
+   |            ^^ [1]
+11 |   }
+12 |   public function onDynamic(dynamic $d): void {
+
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+nonsense_member_access.php:16:9
+14 |     $d->$this->baz();
+15 |     $d->$this();
+16 |     $d->$_;
+   |         ^^ [1]
+17 |     $d->$_->baz();
+18 |     $d->$_();
+
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+nonsense_member_access.php:17:9
+15 |     $d->$this();
+16 |     $d->$_;
+17 |     $d->$_->baz();
+   |         ^^ [1]
+18 |     $d->$_();
+19 |   }
+
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+nonsense_member_access.php:18:9
+16 |     $d->$_;
+17 |     $d->$_->baz();
+18 |     $d->$_();
+   |         ^^ [1]
+19 |   }
+20 | }
+
 error: Typing[4525] Dynamic access of a property is only permitted on a receiver of type `dynamic`, but this receiver has type `this` [1]
 
 nonsense_member_access.php:5:5
@@ -319,4 +379,4 @@ nonsense_member_access.php:18:9
 19 |   }
 20 | }
 
-28 errors found
+34 errors found

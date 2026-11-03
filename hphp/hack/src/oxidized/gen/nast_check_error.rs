@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<8334c63504f76b586bbed8ac5b031884>>
+// @generated SignedSource<<24422564e313d7ece0ae4d3ece5b0047>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -231,6 +231,13 @@ pub enum NastCheckError {
     ReadingFromAppend(pos::Pos),
     #[rust_to_ocaml(name = "List_rvalue")]
     ListRvalue(pos::Pos),
+    #[rust_to_ocaml(name = "Placeholder_read")]
+    PlaceholderRead(pos::Pos),
+    #[rust_to_ocaml(name = "Placeholder_inout_write")]
+    PlaceholderInoutWrite {
+        pos: pos::Pos,
+        param_pos: pos::Pos,
+    },
     #[rust_to_ocaml(name = "Illegal_destructor")]
     IllegalDestructor(pos::Pos),
     #[rust_to_ocaml(name = "Illegal_context")]

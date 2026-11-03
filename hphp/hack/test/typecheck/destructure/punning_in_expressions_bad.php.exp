@@ -1,3 +1,12 @@
+error: NastCheck[3115] Cannot read from the placeholder `$_`. Please name this variable instead [1]
+
+punning_in_expressions_bad.php:7:14
+5 | function test_dollar_underscore_in_expr(): void {
+6 |   $_ = 1;
+7 |   $s = shape($_);
+  |              ^^ [1]
+8 | }
+
 error: Typing[4119] You are using the return value of a `void` function [1]
 -> A `void` function doesn't return a value. (`$_` is a placeholder variable not meant to be used) [1]
 
@@ -8,4 +17,4 @@ punning_in_expressions_bad.php:7:14
   |              ^^ [1]
 8 | }
 
-1 error found
+2 errors found
