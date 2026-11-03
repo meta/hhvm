@@ -1298,23 +1298,23 @@ namespace HH {
 
   type TypeStructure<T> = shape(
     'kind' => TypeStructureKind,
-    'nullable' => ?bool,
+    ?'nullable' => bool,
     // classname for classes, interfaces, enums, or traits
-    'classname' => ?classname<T>,
+    ?'classname' => classname<T>,
     // for tuples
-    'elem_types' => ?varray,
+    ?'elem_types' => varray,
     // for functions
-    'param_types' => ?varray,
-    'return_type' => ?darray,
-    ?'variadic_type' => darray,
+    ?'param_types' => varray,
+    ?'return_type' => mixed,
+    ?'variadic_type' => mixed,
     // for arrays, classes
-    'generic_types' => ?varray,
+    ?'generic_types' => varray,
     // for shapes
-    'fields' => ?darray,
+    ?'fields' => darray,
     // name for generics (type variables)
-    'name' => ?string,
+    ?'name' => string,
     // for type aliases
-    'alias' => ?string,
+    ?'alias' => string,
     // if the type is exact (i.e., not a subtype)
     ?'exact' => bool,
     // if the type is a like-type
