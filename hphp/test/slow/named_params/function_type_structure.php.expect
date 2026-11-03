@@ -1,0 +1,77 @@
+positional
+function(positional)
+dict(3) {
+  ["kind"]=>
+  int(11)
+  ["return_type"]=>
+  dict(1) {
+    ["kind"]=>
+    int(0)
+  }
+  ["param_types"]=>
+  vec(1) {
+    dict(1) {
+      ["kind"]=>
+      int(1)
+    }
+  }
+}
+named
+function(named_only)
+dict(3) {
+  ["kind"]=>
+  int(11)
+  ["return_type"]=>
+  dict(1) {
+    ["kind"]=>
+    int(0)
+  }
+  ["param_types"]=>
+  vec(1) {
+    dict(1) {
+      ["kind"]=>
+      int(1)
+    }
+  }
+}
+mixed
+function(mixed_params)
+dict(3) {
+  ["kind"]=>
+  int(11)
+  ["return_type"]=>
+  dict(1) {
+    ["kind"]=>
+    int(0)
+  }
+  ["param_types"]=>
+  vec(2) {
+    dict(1) {
+      ["kind"]=>
+      int(1)
+    }
+    dict(1) {
+      ["kind"]=>
+      int(4)
+    }
+  }
+}
+type alias
+dict(4) {
+  ["kind"]=>
+  int(11)
+  ["return_type"]=>
+  dict(1) {
+    ["kind"]=>
+    int(0)
+  }
+  ["param_types"]=>
+  vec(1) {
+    dict(1) {
+      ["kind"]=>
+      int(1)
+    }
+  }
+  ["alias"]=>
+  string(13) "NamedFunction"
+}
