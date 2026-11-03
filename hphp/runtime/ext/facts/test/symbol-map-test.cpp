@@ -2488,9 +2488,9 @@ TEST_F(SymbolMapTest, GetFileExists) {
   auto m1 = make("/var/www");
 
   FileFacts ff1{
-      .sha1sum = "a79ebb17f2955b220f4c4fa6603a3389450ee6f8",
-      .file_attributes = {
-          {.name = "A1", .args = {"1"}}, {.name = "A2", .args = {}}}};
+      .file_attributes =
+          {{.name = "A1", .args = {"1"}}, {.name = "A2", .args = {}}},
+      .sha1sum = "a79ebb17f2955b220f4c4fa6603a3389450ee6f8"};
   fs::path p1{"some/path1.php"};
   update(m1, "", "1", {p1}, {}, {ff1});
 
@@ -2502,14 +2502,14 @@ TEST_F(SymbolMapTest, GetPackageOverrideForPath) {
   auto m1 = make("/var/www");
 
   FileFacts ff1{
-      .package_membership = "foo",
-      .file_attributes = {
-          {.name = "A1", .args = {"1"}}, {.name = "A2", .args = {}}}};
+      .file_attributes =
+          {{.name = "A1", .args = {"1"}}, {.name = "A2", .args = {}}},
+      .package_membership = "foo"};
   fs::path p1{"some/path1.php"};
   FileFacts ff2{
-      .package_membership = "bar",
-      .file_attributes = {
-          {.name = "A1", .args = {"1"}}, {.name = "A2", .args = {}}}};
+      .file_attributes =
+          {{.name = "A1", .args = {"1"}}, {.name = "A2", .args = {}}},
+      .package_membership = "bar"};
   fs::path p2{"some/path2.php"};
   FileFacts ff3{
       .file_attributes = {
