@@ -38,6 +38,10 @@ type scenario = {
   iterations: iteration list;
 }
 
+type initialization =
+  | Full_check
+  | Saved_state
+
 exception Diagnostics_mismatch of string
 
 exception Internal_typechecker_error of string
@@ -135,6 +139,15 @@ let parsing_paths root files =
       Relative_path.create Relative_path.Root (file_path root suffix))
   |> Relative_path.Set.of_list
 
+let parser_options =
+  Parser_options.
+    {
+      default with
+      disable_xhp_element_mangling = false;
+      deregister_php_stdlib = true;
+      use_legacy_experimental_feature_config = false;
+    }
+
 let setup ~root ~hhi ~tmp =
   Unix.putenv "HH_TEST_MODE" "1";
   Printexc.record_backtrace true;
@@ -154,29 +167,20 @@ let setup ~root ~hhi ~tmp =
   in
   let (_ : Shared_mem.handle) = Shared_mem.init ~num_workers:0 shm_config in
   Typing_deps.trace := true;
-  let po =
-    Parser_options.
-      {
-        default with
-        disable_xhp_element_mangling = false;
-        deregister_php_stdlib = true;
-        use_legacy_experimental_feature_config = false;
-      }
-  in
   let tcopt =
     Global_options.set
-      ~po
+      ~po:parser_options
       ~tco_fetch_remote_old_decls:false
       ~tco_populate_member_heaps:false
       Global_options.default
   in
   Hh_server_provider_backend.make
     (Decl_fold_options.from_global_options tcopt)
-    (Decl_parser_options.from_parser_options po)
+    (Decl_parser_options.from_parser_options parser_options)
   |> Provider_backend.set_rust_backend;
   let config =
     Server_config.set_tc_options Server_config.default_config tcopt
-    |> fun config -> Server_config.set_parser_options config po
+    |> fun config -> Server_config.set_parser_options config parser_options
   in
   let genv =
     {
@@ -386,24 +390,28 @@ type child_request = {
   root: string;
   hhi: string;
   tmp: string;
+  saved_state: Scheduled_fanout_saved_state.t option;
   check: child_check;
 }
 
-let run_child ({ root; hhi; tmp; check } : child_request) =
+let run_child ({ root; hhi; tmp; saved_state; check } : child_request) =
   let (genv, env) = setup ~root ~hhi ~tmp in
   let env =
     match check with
     | Incremental { initial_files; iterations } ->
       let env =
-        run_iteration
-          genv
-          env
-          ~root
-          ~check:"baseline"
-          {
-            default_iteration with
-            disk_needs_parsing = List.map initial_files ~f:fst;
-          }
+        match saved_state with
+        | Some saved_state -> Scheduled_fanout_saved_state.load saved_state env
+        | None ->
+          run_iteration
+            genv
+            env
+            ~root
+            ~check:"baseline"
+            {
+              default_iteration with
+              disk_needs_parsing = List.map initial_files ~f:fst;
+            }
       in
       List.foldi iterations ~init:env ~f:(fun index env iteration ->
           run_iteration
@@ -481,7 +489,8 @@ let in_process ~name request =
         ()
       ))
 
-let run ({ initial_files; iterations } as scenario) =
+let run
+    ?(initialization = Full_check) ({ initial_files; iterations } as scenario) =
   if List.is_empty iterations then
     invalid_arg "A scheduled fanout scenario must contain an iteration";
   List.iter iterations ~f:(fun iteration ->
@@ -496,10 +505,20 @@ let run ({ initial_files; iterations } as scenario) =
   let hhi = directory "hhi" in
   let tmp = directory "tmp" in
   write_files root initial_files;
+  let saved_state =
+    match initialization with
+    | Full_check -> None
+    | Saved_state ->
+      Some
+        (Scheduled_fanout_saved_state.create
+           ~root
+           ~parser_options
+           ~directory:(directory "saved_state"))
+  in
   let incremental =
     in_process
       ~name:"incremental"
-      { root; hhi; tmp; check = Incremental scenario }
+      { root; hhi; tmp; saved_state; check = Incremental scenario }
   in
   (* Writes are the only supported disk actions, so these are exactly the files
      in the final repository. Read their actual contents in the fresh child. *)
@@ -520,7 +539,7 @@ let run ({ initial_files; iterations } as scenario) =
   let full =
     in_process
       ~name:"full check"
-      { root; hhi; tmp; check = Fresh_check final_files }
+      { root; hhi; tmp; saved_state; check = Fresh_check final_files }
   in
   if not (List.equal String.equal incremental full) then
     let format diagnostics =
@@ -538,8 +557,8 @@ let run ({ initial_files; iterations } as scenario) =
             (format incremental)
             (format full)))
 
-let run_expect_bug ~bug ~incremental ~full scenario =
+let run_expect_bug ?initialization ~bug ~incremental ~full scenario =
   expect_known_fanout_bug
     ~bug
     ~matches:(matches_diagnostics_mismatch ~incremental ~full)
-    (fun () -> run scenario)
+    (fun () -> run ?initialization scenario)
