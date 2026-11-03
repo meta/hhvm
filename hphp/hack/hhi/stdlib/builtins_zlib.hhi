@@ -86,8 +86,9 @@ function nzuncompress(string $compressed)[]: HH\FIXME\MISSING_RETURN_TYPE;
 <<
   __PHPStdLib,
   __Deprecated(
-    'QuickLZ writes are deprecated. Migrate writers and readers together; '.
-    'see T295342194.',
+    'QuickLZ writes are deprecated. Deploy readers that decode QuickLZ and '.
+    'zstd before switching writers; keep QuickLZ decoding until old data '.
+    'expires. See T295342194.',
   ),
 >>
 function qlzcompress(
