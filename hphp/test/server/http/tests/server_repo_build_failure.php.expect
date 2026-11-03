@@ -1,7 +1,0 @@
-repo build failure throws: bool(true)
-failed build is not reused: bool(true)
-late repo build failure throws: bool(true)
-late failure ran the compiler: bool(true)
-late failure removes repo output: bool(true)
-empty repo directories are removed: bool(true)
-unknown diagnostics are retained: bool(true)
