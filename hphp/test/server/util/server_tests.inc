@@ -6,6 +6,19 @@ function try_unlink(string $s): void {
   }
 }
 
+function repo_build_dir(int $instance_id): string {
+  return ServerUtilServerTests::$LOG_ROOT.'_bytecode'.
+    ServerUtilServerTests::test_run_id().'_'.$instance_id;
+}
+
+function remove_repo_build(string $dir): void {
+  try_unlink($dir.'/hhvm.hhbc');
+  try_unlink($dir.'/hhvm.hhbc.part');
+  if (is_dir($dir) && count(scandir($dir)) === 2) {
+    rmdir($dir);
+  }
+}
+
 function try_readfile(string $s): void {
   if (is_readable($s)) {
     readfile($s);
@@ -17,6 +30,7 @@ abstract final class ServerUtilServerTests {
   public static $DOC_ROOT;
   public static $next_instance_id = 0;
   public static $repo_builds = dict[];
+  public static $repo_cleanup_registered = false;
   public static $request = null;
 
   <<__Memoize>>
@@ -160,33 +174,39 @@ function getServerCmd($serverPort, $adminPort, $debugPort, $home, $root,
   $hhvm = HH\__internal\hhvm_binary();
 
   if (ini_get('hhvm.repo.authoritative')) {
-    if (count(ServerUtilServerTests::$repo_builds) === 0) {
+    if (!ServerUtilServerTests::$repo_cleanup_registered) {
       register_shutdown_function(
-         function() {
-           foreach (ServerUtilServerTests::$repo_builds as $dir) {
-             try_unlink($dir . "/hhvm.hhbc");
-             $contents = scandir($dir);
-             if (HH\Lib\C\is_empty($contents)) {
-               rmdir($dir);
-             }
-           }
-         }
-       );
+        function() {
+          foreach (ServerUtilServerTests::$repo_builds as $dir) {
+            remove_repo_build($dir);
+          }
+        },
+      );
+      ServerUtilServerTests::$repo_cleanup_registered = true;
     }
     $repoKey = 'x'.$root.':'.$repoArgs;
     if (!isset(ServerUtilServerTests::$repo_builds[$repoKey])) {
-      ServerUtilServerTests::$repo_builds[$repoKey] =
-        "{$LOG_ROOT}_bytecode{$test_run_id}_{$instance_id}";
+      ServerUtilServerTests::$repo_builds[$repoKey] = repo_build_dir($instance_id);
       $cmd = "$hhvm --hphp -l1 -o " . ServerUtilServerTests::$repo_builds[$repoKey] .
         " -vParserThreadCount=1" .
         " -vRuntime.ResourceLimit.CoreFileSize=0" .
         " -vRuntime.Eval.EnableLogBridge=false" .
-        " --input-dir $root $repoArgs";
+        " --input-dir $root $repoArgs 2>&1";
 
       tlog('Building repo with command: '.$cmd);
       $output = null;
       $return_var = -1;
-      tlog(exec($cmd, inout $output, inout $return_var));
+      exec($cmd, inout $output, inout $return_var);
+      tlog(implode("\n", $output));
+      if ($return_var !== 0) {
+        // A failed build must not be reused or retried as a server problem.
+        // The compiler can fail after writing its repo, and evicted attempts
+        // miss shutdown cleanup.
+        $attempt = ServerUtilServerTests::$repo_builds[$repoKey];
+        remove_repo_build($attempt);
+        unset(ServerUtilServerTests::$repo_builds[$repoKey]);
+        throw new Exception("Repo build failed with exit status $return_var");
+      }
     }
     $repoConfig =
       " -vRepo.Path=".ServerUtilServerTests::$repo_builds[$repoKey]."/hhvm.hhbc".
@@ -204,7 +224,7 @@ function getServerCmd($serverPort, $adminPort, $debugPort, $home, $root,
     ' -vPidFile=' . escapeshellarg(sys_get_temp_dir().'/'.'www.pid') .
     $portConfig . $srcRootConfig .
     $includePathConfig . $sandboxHomeConfig . $adminPortConfig .
-    $debugPortConfig . $jitConfig . ' ' . $customArgs .
+    $debugPortConfig . $repoConfig . $jitConfig . ' ' . $customArgs .
     " > {$LOG_ROOT}_test_server_stdout$test_run_id.log" .
     " 2> {$LOG_ROOT}_test_server_stderr$test_run_id.log";
 
