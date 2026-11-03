@@ -175,8 +175,7 @@ and instantiate_ subst x =
       (Shape_simple
          {
            s_origin = Missing_origin;
-           s_unknown_value = shape_kind;
-           (* TODO(shapes) s_unknown_value should likely be instantiated *)
+           s_unknown_value = instantiate subst shape_kind;
            s_fields = fdm;
          })
   | Tshape (Shape_splat { ss_elems }) ->
