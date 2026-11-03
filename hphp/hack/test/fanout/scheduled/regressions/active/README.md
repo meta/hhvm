@@ -14,3 +14,4 @@ Each file corresponds to one familly/underlying bug, with one or more repros.
 | Unprocessed declarations used as old | current_decl_used_as_old.ml | Lazy declaration reads can cache unprocessed edits, which declaration comparison then uses as its old baseline. |
 | Private member inheritance effects | private_member_addition.ml | Private member additions and removals outside traits are classified as not affecting descendants, even when they change inherited members. |
 | Required-class member dependencies | require_class_member_dependency.ml | Eager member lookup through a trait's required class omits dependencies needed for member-level fanout. |
+| Duplicate-property initializer dependencies | duplicate_trait_property_initializer.ml | Changes to property initializers can affect duplicate-property warnings in classes using those properties, but declaration comparison does not detect those changes. |
