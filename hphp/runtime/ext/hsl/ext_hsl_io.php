@@ -36,26 +36,4 @@ namespace HH\Lib\_Private\_IO {
   function response_flush(): void;
   <<__Native>>
   function request_read(int $max_bytes): ?string;
-
-  <<__Native>>
-  function request_body_profile(): ?shape(
-    'name' => string,
-    'route' => string,
-    'segments' => vec<string>,
-    'capacity' => int,
-    'queue_high_water_mark' => int,
-    'max_read_bytes' => int,
-    'failure' => ?int,
-  );
-  <<__Native>>
-  function request_body_try_admit(): bool;
-  <<__Native>>
-  function request_body_read(
-    int $max_bytes,
-    int $timeout_ns,
-  ): Awaitable<(int, string)>;
-  <<__Native>>
-  function request_body_abandon(): void;
-  <<__Native>>
-  function request_body_monotonic_ns(): int;
 }

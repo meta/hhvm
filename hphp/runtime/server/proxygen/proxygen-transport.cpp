@@ -18,7 +18,6 @@
 #include "hphp/runtime/base/array-iterator.h"
 #include "hphp/runtime/server/http-stream-transport.h"
 #include "hphp/runtime/server/proxygen/proxygen-server.h"
-#include "hphp/runtime/server/request-body-registry.h"
 #include "hphp/runtime/server/server.h"
 #include "hphp/util/logger.h"
 #include "hphp/util/timer.h"
@@ -27,9 +26,7 @@
 #include <folly/Range.h>
 #include <folly/container/Reserve.h>
 #include <memory>
-#include <optional>
 #include <set>
-#include <utility>
 
 #include <string_view>
 
@@ -68,27 +65,6 @@ static std::set<std::string> s_post_methods{
   "LOCK",
   "UNLOCK",
 };
-
-// Mirrors HttpProtocol::GetVirtualHost and WWW's HTTP_HOST fallback.
-std::optional<HPHP::RequestBodyRegistry::Match> selectRequestBody(
-    const HTTPMessage& request, const std::string& hostHeader,
-    int64_t& maxPost) {
-  auto const& registry = HPHP::RuntimeOption::RequestBodyReaders;
-  if (!registry || registry->empty() ||
-      request.getMethod() != HTTPMethod::POST) {
-    return std::nullopt;
-  }
-  auto const resolved = HPHP::RuntimeOption::VirtualHosts.empty()
-    ? nullptr : HPHP::VirtualHost::Resolve(hostHeader);
-  auto const& vhost = resolved ? *resolved : HPHP::VirtualHost::GetDefault();
-  auto const host =
-    hostHeader.empty() ? vhost.serverName(hostHeader) : hostHeader;
-  std::string_view const vhostName =
-    resolved ? std::string_view{resolved->getName()} : "default";
-  maxPost = vhost.getMaxPostSize();
-  return registry->select(vhostName, host, "POST", request.getURL(),
-                          HPHP::Cfg::Server::Utf8izeReplace);
-}
 }
 
 namespace HPHP {
@@ -108,10 +84,6 @@ ProxygenTransport::ProxygenTransport(ProxygenServer *server,
 
 ProxygenTransport::~ProxygenTransport() {
   VLOG(5) << "destroying ProxygenTransport " << (uint64_t) this;
-  if (m_requestBodyReader) {
-    // Closes body IO only; slot release still requires FINISH.
-    m_requestBodyReader->detached();
-  }
   if (m_enqueued) {
     m_server->decrementEnqueuedCount();
   }
@@ -122,12 +94,10 @@ bool ProxygenTransport::bufferRequest() const {
   return
     (m_method != Transport::Method::POST ||
      Cfg::Server::RequestBodyReadLimit <= 0) &&
-    !isStreamTransport() && !m_requestBodyReader;
+    !isStreamTransport();
 }
 
-bool ProxygenTransport::handlePOST(
-    const proxygen::HTTPHeaders& headers,
-    std::optional<int64_t> selectedMaxPost) {
+bool ProxygenTransport::handlePOST(const proxygen::HTTPHeaders& headers) {
   // Fail early if we have an unexpected Expect header.
   // Note also that whether the client expects a 100 determines the error code:
   // if they expect a 100 and we fail the request for any reason besides an
@@ -161,10 +131,10 @@ bool ProxygenTransport::handlePOST(
     }
   }
 
-  // Selected readers already resolved their virtual host. Legacy requests
-  // resolve it only when Content-Length exceeds the lowest configured limit.
-  m_maxPost = selectedMaxPost.value_or(Cfg::Server::LowestMaxPostSize);
-  if (!selectedMaxPost && content_length > m_maxPost) {
+  // fail fast if the post is too large, but only bother resolving host
+  // if content_length is larger than the minimum setting.
+  m_maxPost = Cfg::Server::LowestMaxPostSize;
+  if (content_length > m_maxPost) {
     auto host = headers.getSingleOrEmpty(HTTP_HEADER_HOST);
     if (auto vhost = VirtualHost::Resolve(host)) {
       m_maxPost = vhost->getMaxPostSize();
@@ -187,128 +157,6 @@ bool ProxygenTransport::handlePOST(
     m_clientTxn->sendHeaders(m_response);
   }
   return true;
-}
-
-void ProxygenTransport::initializeRequestBodyReader(
-    std::shared_ptr<RequestBodyProfile> profile,
-    RequestBodyReader::Metadata metadata) {
-  std::weak_ptr<ProxygenTransport> weak = weak_from_this();
-  RequestBodyReader::Callbacks callbacks;
-  callbacks.pauseIngress = [weak](bool paused) noexcept {
-    // The lock keeps this transport alive across a re-entrant resume.
-    if (auto const self = weak.lock()) self->setReaderIngressPaused(paused);
-  };
-  callbacks.dispatchRead =
-    [weak](size_t maxBytes, RequestBodyReader::Clock::time_point deadline,
-           std::unique_ptr<RequestBodyReadCompletion> completion) {
-      auto self = weak.lock();
-      if (!self) return;
-      auto const worker = self->m_worker;
-      worker->putResponseMessage(ResponseMessage(
-        std::move(self), maxBytes, deadline, std::move(completion)));
-    };
-  callbacks.requestAbandon = [weak]() noexcept {
-    auto self = weak.lock();
-    if (!self) return;
-    auto const worker = self->m_worker;
-    try {
-      worker->putResponseMessage(ResponseMessage(
-        std::move(self), ResponseMessage::Type::ABANDON_REQUEST_BODY));
-    } catch (...) {
-      // FINISH and detach also abandon the reader.
-    }
-  };
-  m_requestBodyReader = std::make_shared<RequestBodyReader>(
-    std::move(profile), m_worker->getEventBase(), std::move(callbacks),
-    std::move(metadata));
-}
-
-void ProxygenTransport::onReaderBody(std::unique_ptr<folly::IOBuf> chain) {
-  auto const self = shared_from_this();
-  auto const length = chain->computeChainDataLength();
-  m_requestBodyLength += length;
-  if (m_requestBodyReader->failure() == RequestBodyReadStatus::Data) {
-    if (!bodyExceedsMaxPost()) {
-      m_requestBodyReader->append(*chain);
-      return;
-    }
-    m_requestBodyReader->fail(RequestBodyReadStatus::BodyTooLarge);
-  }
-  discardReaderBody(length);
-}
-
-bool ProxygenTransport::bodyExceedsMaxPost() const {
-  if (m_maxPost < 0 || m_requestBodyLength <= m_maxPost) return false;
-  Logger::Warning("Request body length of %" PRId64 " now exceeds max POST of "
-                  "size %" PRId64 ".", m_requestBodyLength.load(), m_maxPost);
-  return true;
-}
-
-// Terminal input is never buffered; the allowance counts every discarded
-// callback, whether or not the response has been submitted or delivered.
-void ProxygenTransport::discardReaderBody(size_t bytes) {
-  if (m_bodyLengthPastLimit <= 0 ||
-      bytes >= static_cast<uint64_t>(m_bodyLengthPastLimit)) {
-    m_bodyLengthPastLimit = 0;
-    Logger::Warning("Discarded request body exceeded its allowance, aborting");
-    abort();
-    return;
-  }
-  m_bodyLengthPastLimit -= static_cast<int64_t>(bytes);
-  if (holdsReaderIngressPause()) {
-    m_readerResumeDeferred = true;
-    m_clientTxn->pauseIngress();
-  }
-}
-
-void ProxygenTransport::setReaderIngressPaused(bool paused) {
-  if (!m_clientTxn) return;
-  if (paused) {
-    m_readerResumeDeferred = false;
-    m_clientTxn->pauseIngress();
-  } else if (holdsReaderIngressPause()) {
-    m_readerResumeDeferred = true;
-  } else {
-    m_readerResumeDeferred = false;
-    m_clientTxn->resumeIngress();
-  }
-}
-
-// HTTP/1 owns its connection, so a terminal reader may stay paused until the
-// final response is submitted. Shared connections discard instead.
-bool ProxygenTransport::holdsReaderIngressPause() const {
-  return m_clientTxn &&
-    m_requestBodyReader->failure() != RequestBodyReadStatus::Data &&
-    !m_readerEomSubmitted && !m_readerFinished &&
-    isHTTP1_1CodecProtocol(m_clientTxn->getTransport().getCodec().getProtocol());
-}
-
-void ProxygenTransport::resumeDeferredReaderIngress() {
-  if (!std::exchange(m_readerResumeDeferred, false) || !m_clientTxn) return;
-  m_clientTxn->resumeIngress();
-}
-
-// Called after the final response EOM is submitted to the transaction.
-void ProxygenTransport::beginReaderDrain() {
-  if (!m_requestBodyReader) return;
-  auto const self = shared_from_this();
-  m_readerEomSubmitted = true;
-  m_requestBodyReader->abandon();
-  resumeDeferredReaderIngress();
-}
-
-// FINISH follows request heap cleanup; the reader still waits for native
-// result disposal before returning its slot.
-void ProxygenTransport::finishRequestBody() {
-  if (!m_requestBodyReader) return;
-  auto const self = shared_from_this();
-  m_readerFinished = true;
-  if (!m_readerEomSubmitted && m_clientTxn && !m_egressError) {
-    // No final response can follow FINISH.
-    abort();
-  }
-  m_requestBodyReader->finish();
-  resumeDeferredReaderIngress();
 }
 
 void ProxygenTransport::onHeadersComplete(
@@ -350,9 +198,7 @@ void ProxygenTransport::onHeadersComplete(
       m_requestHeaders[header.c_str()].push_back(val.c_str());
     });
 
-  int64_t readerMaxPost = -1;
-  auto selected = selectRequestBody(*m_request, getHeader("Host"), readerMaxPost);
-  if (!selected && Cfg::Server::AllowNonBlockingPosts &&
+  if (Cfg::Server::AllowNonBlockingPosts &&
       m_method == Transport::Method::POST &&
       m_requestHeaders.contains("NonBlockingPost")) {
     m_streamTransport =
@@ -360,19 +206,10 @@ void ProxygenTransport::onHeadersComplete(
   }
 
   if (m_method == Transport::Method::POST && m_request->isHTTP1_1()) {
-    if (!handlePOST(headers, selected ? std::optional{readerMaxPost}
-                                      : std::nullopt)) {
+    if (!handlePOST(headers)) {
       // We already fully responded.
       return;
     }
-  }
-
-  if (selected) {
-    // Selected readers bypass POST materialization for every HTTP version.
-    m_maxPost = readerMaxPost;
-    initializeRequestBodyReader(
-      std::move(selected->profile),
-      {std::move(selected->path), std::move(selected->segments)});
   }
 
   if (m_shouldRepost) {
@@ -386,11 +223,6 @@ void ProxygenTransport::onHeadersComplete(
 }
 
 void ProxygenTransport::onBody(std::unique_ptr<folly::IOBuf> chain) noexcept {
-  if (m_requestBodyReader) {
-    onReaderBody(std::move(chain));
-    return;
-  }
-
   // If we've already sent a response, allow up to 128k of data to be received
   // before just sending an abort. This gives the client an opportunity to
   // process the response before receiving some form of a reset caused by the
@@ -408,7 +240,10 @@ void ProxygenTransport::onBody(std::unique_ptr<folly::IOBuf> chain) noexcept {
           << chain->computeChainDataLength();
   m_requestBodyLength += chain->computeChainDataLength();
 
-  if (!isStreamTransport() && bodyExceedsMaxPost()) {
+  if (m_maxPost >= 0 && m_requestBodyLength > m_maxPost &&
+      !isStreamTransport()) {
+    Logger::Warning("Request body length of %" PRId64 " now exceeds max POST of"
+                    "size %" PRId64 ".", m_requestBodyLength.load(), m_maxPost);
     sendErrorResponse(413);
     return;
   }
@@ -485,10 +320,6 @@ void ProxygenTransport::onEOM() noexcept {
     return;
   } else {
     requestDoneLocking();
-    if (m_requestBodyReader) {
-      auto const self = shared_from_this();
-      m_requestBodyReader->eof();
-    }
   }
 }
 
@@ -517,7 +348,7 @@ uint16_t ProxygenTransport::getRemotePort() {
 }
 
 const void *ProxygenTransport::getPostData(size_t &size) {
-  if (m_requestBodyReader || m_sendEnded || isStreamTransport()) {
+  if (m_sendEnded || isStreamTransport()) {
     size = 0;
     return 0;
   }
@@ -533,7 +364,6 @@ const void *ProxygenTransport::getPostData(size_t &size) {
 }
 
 bool ProxygenTransport::hasMorePostData() {
-  if (m_requestBodyReader) return false;
   if (bufferRequest()) {
     CHECK(m_clientComplete);
     return false;
@@ -570,10 +400,6 @@ void ProxygenTransport::onStreamReady() {
 }
 
 const void *ProxygenTransport::getMorePostData(size_t &size) {
-  if (m_requestBodyReader) {
-    size = 0;
-    return nullptr;
-  }
   if (bufferRequest()) {
     CHECK(m_clientComplete);
     size = 0;
@@ -741,16 +567,10 @@ void ProxygenTransport::sendErrorResponse(uint32_t code) noexcept {
 void ProxygenTransport::onError(const HTTPException& err) noexcept {
   Logger::Error("HPHP transport error: %s", err.describe().c_str());
 
-  auto const timeout = err.hasProxygenError() &&
-    err.getProxygenError() == ProxygenError::kErrorTimeout;
-  if (timeout && !m_egressError && m_clientTxn &&
-      m_clientTxn->canSendHeaders()) {
-    if (m_requestBodyReader) {
-      // The enqueued request owns the response; this is a body read result.
-      m_requestBodyReader->fail(RequestBodyReadStatus::Timeout);
-    } else {
-      sendErrorResponse(408 /* Request Timeout */);
-    }
+  if (err.hasProxygenError() &&
+        err.getProxygenError() == ProxygenError::kErrorTimeout &&
+        !m_egressError && m_clientTxn && m_clientTxn->canSendHeaders()) {
+    sendErrorResponse(408 /* Request Timeout */);
   } else {
     // We either have an error here that we are not mapping to a http response
     // or m_clientTxn is in a state where it is not able to send response
@@ -762,9 +582,6 @@ void ProxygenTransport::onError(const HTTPException& err) noexcept {
     // but sending abort here guarantees than any subsequent send* calls are
     // going to abort.
     m_egressError = true;
-    if (m_requestBodyReader) {
-      m_requestBodyReader->fail(RequestBodyReadStatus::TransportError);
-    }
   }
 
   requestDoneLocking();
@@ -788,25 +605,6 @@ HTTPTransaction *ProxygenTransport::getTransaction(uint64_t id,
 }
 
 void ProxygenTransport::messageAvailable(ResponseMessage&& message) noexcept {
-  // Reader controls and FINISH must run after detach or an egress error.
-  // message.m_transport keeps this alive across a re-entrant resume.
-  switch (message.m_type) {
-    case ResponseMessage::Type::READ_REQUEST_BODY:
-      if (m_requestBodyReader && message.m_bodyRead) {
-        m_requestBodyReader->read(message.m_readMax, message.m_readDeadline,
-                                  std::move(message.m_bodyRead));
-      }
-      return;
-    case ResponseMessage::Type::ABANDON_REQUEST_BODY:
-      if (m_requestBodyReader) m_requestBodyReader->abandon();
-      return;
-    case ResponseMessage::Type::FINISH:
-      finishRequestBody();
-      return;
-    default:
-      break;
-  }
-
   if (!m_clientTxn) {
     return;
   }
@@ -844,11 +642,8 @@ void ProxygenTransport::messageAvailable(ResponseMessage&& message) noexcept {
       [[fallthrough]];
     case ResponseMessage::Type::EOM:
       txn->sendEOM();
-      beginReaderDrain();
       break;
     case ResponseMessage::Type::FINISH:
-    case ResponseMessage::Type::READ_REQUEST_BODY:
-    case ResponseMessage::Type::ABANDON_REQUEST_BODY:
       break;
     case ResponseMessage::Type::RESUME_INGRESS:
       txn->resumeIngress();
