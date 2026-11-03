@@ -25,7 +25,6 @@ module Dep = struct
 
   type dependency
 
-  (** NOTE: keep in sync with `typing_deps_hash.rs`. *)
   type _ variant =
     | GConst : string -> 'a variant
     | Fun : string -> 'a variant
@@ -62,25 +61,7 @@ module Dep = struct
     | Declares -> Declares
     | File path -> File path
 
-  (** NOTE: keep in sync with `typing_deps_hash.rs`. *)
-  type dep_kind =
-    | KGConst [@value 0]
-    | KFun [@value 1]
-    | KType [@value 2]
-    | KExtends [@value 3]
-    | KConst [@value 5]
-    | KConstructor [@value 6]
-    | KProp [@value 7]
-    | KSProp [@value 8]
-    | KMethod [@value 9]
-    | KSMethod [@value 10]
-    | KAllMembers [@value 11]
-    | KGConstName [@value 12]
-    | KModule [@value 13]
-    | KDeclares [@value 14]
-    | KNotSubtype [@value 15]
-    | KFile [@value 16]
-  [@@deriving enum]
+  include Typing_deps_kind
 
   module Member = struct
     type t =
@@ -151,23 +132,25 @@ module Dep = struct
 
   let to_int hash = hash
 
-  let ordinal_variant (type a) : a variant -> int = function
-    | GConst _ -> 0
-    | Fun _ -> 1
-    | Type _ -> 2
-    | Extends _ -> 3
-    | NotSubtype _ -> 15
-    | Const _ -> 5
-    | Constructor _ -> 6
-    | Prop _ -> 7
-    | SProp _ -> 8
-    | Method _ -> 9
-    | SMethod _ -> 10
-    | AllMembers _ -> 11
-    | GConstName _ -> 12
-    | Module _ -> 13
-    | Declares -> 14
-    | File _ -> 16
+  let dep_kind_of_variant : type a. a variant -> dep_kind = function
+    | GConst _ -> KGConst
+    | GConstName _ -> KGConstName
+    | Const _ -> KConst
+    | Type _ -> KType
+    | Fun _ -> KFun
+    | Prop _ -> KProp
+    | SProp _ -> KSProp
+    | Method _ -> KMethod
+    | SMethod _ -> KSMethod
+    | Constructor _ -> KConstructor
+    | AllMembers _ -> KAllMembers
+    | Extends _ -> KExtends
+    | NotSubtype _ -> KNotSubtype
+    | Module _ -> KModule
+    | Declares -> KDeclares
+    | File _ -> KFile
+
+  let ordinal_variant variant = dep_kind_to_enum (dep_kind_of_variant variant)
 
   let compare_variant (type a) (v1 : a variant) (v2 : a variant) : int =
     match (v1, v2) with
@@ -198,24 +181,6 @@ module Dep = struct
         | GConstName _ | Module _ | Declares | File _ ) ) ->
       ordinal_variant v1 - ordinal_variant v2
 
-  let dep_kind_of_variant : type a. a variant -> dep_kind = function
-    | GConst _ -> KGConst
-    | GConstName _ -> KGConstName
-    | Const _ -> KConst
-    | Type _ -> KType
-    | Fun _ -> KFun
-    | Prop _ -> KProp
-    | SProp _ -> KSProp
-    | Method _ -> KMethod
-    | SMethod _ -> KSMethod
-    | Constructor _ -> KConstructor
-    | AllMembers _ -> KAllMembers
-    | Extends _ -> KExtends
-    | NotSubtype _ -> KNotSubtype
-    | Module _ -> KModule
-    | Declares -> KDeclares
-    | File _ -> KFile
-
   let make_member_dep_from_type_dep (type_dep : t) (member : Member.t) : t =
     let (dep_kind, member_name) = Member.to_dep_kind_and_name member in
     hash2 (dep_kind_to_enum dep_kind) type_dep member_name
@@ -224,7 +189,6 @@ module Dep = struct
   let not_subtype_of_class class_dep =
     hash2 (dep_kind_to_enum KNotSubtype) class_dep ""
 
-  (* Keep in sync with the tags for `DepType` in `typing_deps_hash.rs`. *)
   let rec make : type a. a variant -> t = function
     (* Deps on defs *)
     | GConst name1 -> hash1 (dep_kind_to_enum KGConst) name1

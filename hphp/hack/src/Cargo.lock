@@ -5117,8 +5117,13 @@ checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 name = "typing_deps_hash"
 version = "0.0.0"
 dependencies = [
+ "arena_deserializer",
+ "arena_trait",
+ "eq_modulo_pos",
  "fnv",
+ "no_pos_hash",
  "ocamlrep",
+ "serde",
  "strum",
 ]
 

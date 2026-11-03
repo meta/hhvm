@@ -6,31 +6,10 @@
 use std::hash::Hasher;
 
 use fnv::FnvHasher;
-use ocamlrep::FromOcamlRep;
 
-/// Variant types used in the depgraph table.
-///
-/// NOTE: Keep in sync with the order of the fields in `Typing_deps.ml`.
-#[derive(Copy, Clone, Debug, PartialEq, Eq, strum::EnumString, FromOcamlRep)]
-#[repr(u8)]
-pub enum DepType {
-    KGConst = 0,
-    KFun = 1,
-    KType = 2,
-    KExtends = 3,
-    KConst = 5,
-    KConstructor = 6,
-    KProp = 7,
-    KSProp = 8,
-    KMethod = 9,
-    KSMethod = 10,
-    KAllMembers = 11,
-    KGConstName = 12,
-    KModule = 13,
-    KDeclares = 14,
-    KNotSubtype = 15,
-    KFile = 16,
-}
+mod typing_deps_kind;
+
+pub use typing_deps_kind::DepKind as DepType;
 
 impl DepType {
     pub fn as_u8(self) -> u8 {
@@ -38,25 +17,7 @@ impl DepType {
     }
 
     pub fn from_u8(tag: u8) -> Option<Self> {
-        match tag {
-            0 => Some(DepType::KGConst),
-            1 => Some(DepType::KFun),
-            2 => Some(DepType::KType),
-            3 => Some(DepType::KExtends),
-            5 => Some(DepType::KConst),
-            6 => Some(DepType::KConstructor),
-            7 => Some(DepType::KProp),
-            8 => Some(DepType::KSProp),
-            9 => Some(DepType::KMethod),
-            10 => Some(DepType::KSMethod),
-            11 => Some(DepType::KAllMembers),
-            12 => Some(DepType::KGConstName),
-            13 => Some(DepType::KModule),
-            14 => Some(DepType::KDeclares),
-            15 => Some(DepType::KNotSubtype),
-            16 => Some(DepType::KFile),
-            _ => None,
-        }
+        Self::from_repr(tag)
     }
 }
 
@@ -118,4 +79,19 @@ pub fn hash2(dep_type: DepType, type_hash: u64, name2: &[u8]) -> u64 {
 
 pub fn declares_hash() -> u64 {
     hash1(DepType::KDeclares, &[])
+}
+
+#[cfg(test)]
+mod tests {
+    use ocamlrep::FromOcamlRep;
+    use ocamlrep::Value;
+
+    use super::DepType;
+
+    #[test]
+    fn kconst_ocaml_ordinal_differs_from_hash_tag() {
+        let kind = DepType::from_ocamlrep(Value::int(4)).unwrap();
+        assert_eq!(kind, DepType::KConst);
+        assert_eq!(kind.as_u8(), 5);
+    }
 }

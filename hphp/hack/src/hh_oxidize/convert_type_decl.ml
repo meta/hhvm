@@ -186,6 +186,8 @@ let additional_derives ty : (string option * string) list =
       :: result
     else if String.equal ty "experimental_features::FeatureStatus" then
       (strum, "EnumString") :: result
+    else if String.equal ty "typing_deps_kind::DepKind" then
+      (strum, "EnumString") :: (strum, "FromRepr") :: result
     else
       result
   in

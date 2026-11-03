@@ -79,7 +79,7 @@ module Dep : sig
 
   val dependency_of_variant : 'a variant -> dependency variant
 
-  type dep_kind =
+  type dep_kind = Typing_deps_kind.dep_kind =
     | KGConst
     | KFun
     | KType

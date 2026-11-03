@@ -23,6 +23,7 @@
  (modules
   typing_deps_types
   typing_deps
+  typing_deps_kind
   typing_deps_mode)
  (libraries
   collections
