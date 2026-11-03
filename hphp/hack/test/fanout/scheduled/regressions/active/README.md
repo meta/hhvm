@@ -11,3 +11,4 @@ Each file corresponds to one familly/underlying bug, with one or more repros.
 | Bug family | Repro tests | Underlying bug |
 | --- | --- | --- |
 | Intermediate declaration states | missing_class_after_restore.ml | Fanout compares old and new declarations without accounting for intermediate states observed by dependent checks. |
+| Unprocessed declarations used as old | current_decl_used_as_old.ml | Lazy declaration reads can cache unprocessed edits, which declaration comparison then uses as its old baseline. |
