@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
+#include <string>
+#include <vector>
 
-#include "folly/Format.h"
 #include "folly/container/F14Map.h"
 #include "llvm/DebugInfo/DWARF/DWARFContext.h"
 #include "llvm/DebugInfo/DWARF/DWARFDebugInfoEntry.h"
