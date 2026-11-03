@@ -1,0 +1,13 @@
+# Active fanout bugs
+
+These tests document fanout bugs that have not been fixed yet. Each scenario
+compares incremental diagnostics with a fresh check of the final files.
+`run_expect_bug` accepts the documented difference; when the bug stops
+reproducing, the test fails with instructions to keep the scenario as a normal
+correctness check.
+
+Each file corresponds to one familly/underlying bug, with one or more repros.
+
+| Bug family | Repro tests | Underlying bug |
+| --- | --- | --- |
+| Intermediate declaration states | missing_class_after_restore.ml | Fanout compares old and new declarations without accounting for intermediate states observed by dependent checks. |

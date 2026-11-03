@@ -15,7 +15,9 @@ Tests use the Rust provider and serial execution, with declaration prefetching
 disabled. Temporary Hack sources are parsed and typechecked.
 
 See [scheduled_fanout.mli](scheduled_fanout.mli) for the scenario API. Keep
-harness self-tests separate from bug reproducers under `regressions/`.
+harness self-tests separate from active bug repros under
+`regressions/active/`. See [the active bug index](regressions/active/README.md).
+Fixed regressions belong directly in `regressions/`.
 
 Tests for fanout bugs that have not been fixed yet can use
 `run_expect_bug` to specify the documented diagnostics. If the bug stops

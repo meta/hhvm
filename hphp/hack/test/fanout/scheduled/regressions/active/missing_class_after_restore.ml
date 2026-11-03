@@ -92,6 +92,7 @@ function late_c(): void {
                  The buggy comparison computes no class-change fanout,
                  leaving AUse.php unchecked. *)
               disk_needs_parsing = ["ZC.php"];
+              type_check = [Remaining];
             };
           ];
       }
