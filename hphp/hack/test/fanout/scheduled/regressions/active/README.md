@@ -18,3 +18,4 @@ Each file corresponds to one familly/underlying bug, with one or more repros.
 | Name-suggestion dependencies | unbound_name_case_suggestion.ml | Diagnostics depend on case-insensitive name lookup, but the dependency graph does not track changes to that lookup. |
 | Duplicate member declarations | duplicate_member_declarations.ml | Declaration comparison uses the first duplicate member, while folding takes parts of the effective declaration from the last duplicate. |
 | Naming-winner changes | case_variant_duplicate_winner_flip.ml | A case-insensitive naming conflict can change which definition is visible without changing the exact-name declarations used for fanout comparison. |
+| Unindexed declarations | unindexed_function.ml | Declaration caching can introduce names absent from indexed file information, leaving later invalidation unaware of those entries. |
