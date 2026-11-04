@@ -42,6 +42,24 @@ let shape_key_attribute_error pos cls const_name class_const =
   else
     None
 
+let emit_shape_key_const_value_unresolvable
+    env ~pos ~reason_pos ~class_name ~const_name ~const_kind ~require_error =
+  if require_error then
+    Typing_error_utils.add_typing_error
+      ~env
+      Typing_error.(
+        shape
+        @@ Primary.Shape.Shape_key_const_value_unresolvable
+             { pos; reason_pos; class_name; const_name; const_kind })
+  else
+    Typing_warning_utils.add
+      env
+      Typing_warning.
+        ( pos,
+          Shape_key_const_value_unresolvable,
+          Shape_key_const_value_unresolvable.
+            { class_name; const_name; reason_pos; const_kind } )
+
 let check_shape_key_value env pos c cls cc =
   let open Aast in
   let tcopt = Env.get_tcopt env in
@@ -76,18 +94,43 @@ let check_shape_key_value env pos c cls cc =
         (match recorded_value with
         | Some _ -> None
         | None ->
-          Some
-            (Shape_key_class_const_value_unresolvable
-               {
-                 pos;
-                 value_pos = Aast_utils.get_expr_pos value;
-                 class_name;
-                 const_name;
-               }))
+          emit_shape_key_const_value_unresolvable
+            env
+            ~pos
+            ~reason_pos:(Pos_or_decl.of_raw_pos (Aast_utils.get_expr_pos value))
+            ~class_name
+            ~const_name
+            ~const_kind:`ClassConst
+            ~require_error:true;
+          None)
     in
     Option.iter error ~f:(fun error ->
         Typing_error_utils.add_typing_error ~env @@ Typing_error.shape error)
   end
+
+let check_shape_key_use env pos cls const_name class_const =
+  if Ast_defs.is_c_enum (Cls.kind cls) then begin
+    let tcopt = Env.get_tcopt env in
+    if
+      tcopt.Global_options.po.Parser_options.include_enum_member_values
+      && Option.is_none
+           (Const_value.concrete_value
+              ~member_name:const_name
+              class_const.cc_value)
+    then
+      emit_shape_key_const_value_unresolvable
+        env
+        ~pos
+        ~reason_pos:class_const.cc_pos
+        ~class_name:(Utils.strip_ns class_const.cc_origin)
+        ~const_name
+        ~const_kind:`Enum
+        ~require_error:
+          (Typechecker_options.require_enum_shape_key_be_resolvable tcopt)
+  end else
+    Option.iter
+      (shape_key_attribute_error pos cls const_name class_const)
+      ~f:(Typing_error_utils.add_typing_error ~env)
 
 let check_trait_self_shape_key env (_, pos, field) =
   let key_name =
@@ -165,19 +208,18 @@ let tshape_field_name_with_ty_err env (_, pos, field) =
   let map_pos = Tuple.T2.map_fst ~f:Pos_or_decl.of_raw_pos in
   let class_const_field sid y =
     let field_name = TSFclass_const (sid, map_pos y) in
-    let error =
-      match Env.get_class env (snd sid) with
-      | Decl_entry.Found cls ->
-        Option.bind
-          (Env.get_const env cls (snd y))
-          ~f:(shape_key_attribute_error pos cls (snd y))
-      | Decl_entry.DoesNotExist
-      | Decl_entry.NotYetAvailable ->
-        None
-    in
-    (* A missing attribute does not prevent resolving the key. Preserve normal
-       shape typing and refinement even when this diagnostic is suppressed. *)
-    Option.iter error ~f:(Typing_error_utils.add_typing_error ~env);
+    (match Env.get_class env (snd sid) with
+    | Decl_entry.Found cls ->
+      (match Env.get_const env cls (snd y) with
+      | None -> ()
+      | Some class_const ->
+        (* A missing attribute does not prevent resolving the key. Preserve
+           normal shape typing and refinement even when this diagnostic is
+           suppressed. *)
+        check_shape_key_use env pos cls (snd y) class_const)
+    | Decl_entry.DoesNotExist
+    | Decl_entry.NotYetAvailable ->
+      ());
     Ok field_name
   in
   match field with
@@ -849,11 +891,6 @@ let shape_field_pos = function
   | Ast_defs.SFclass_const ((cls_pos, _), (mem_pos, _)) ->
     Pos.btw cls_pos mem_pos
 
-let check_shape_key_attribute env pos cls const_name class_const =
-  Option.iter
-    (shape_key_attribute_error pos cls const_name class_const)
-    ~f:(Typing_error_utils.add_typing_error ~env)
-
 let check_shape_keys_validity env keys =
   (* If the key is a class constant, get its class name and type. *)
   let get_field_info env key =
@@ -920,7 +957,7 @@ let check_shape_keys_validity env keys =
                         name = cls ^ "::" ^ y;
                       })
           | CCConcrete -> ());
-          check_shape_key_attribute env key_pos cd y class_const;
+          check_shape_key_use env key_pos cd y class_const;
           let ((env, ty_err_opt), ty) =
             Typing_phase.localize_no_subst ~ignore_errors:true env cc_type
           in

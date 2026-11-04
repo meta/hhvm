@@ -119,6 +119,9 @@ module Hhconfig = struct
 
   let check_duplicate_enum_values = key "check_duplicate_enum_values"
 
+  let require_enum_shape_key_be_resolvable =
+    key "require_enum_shape_key_be_resolvable"
+
   let include_enum_member_values = key "include_enum_member_values"
 
   let include_const_shape_key_values = key "include_const_shape_key_values"

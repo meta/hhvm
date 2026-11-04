@@ -1,0 +1,18 @@
+Errors in checked files:
+No errors
+Fun get_derived
+Type DS
+Type Derived
+--
+Errors in checked files:
+derived_computed.php--derived.php [3:36-46] Enum constant `Derived::D` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
+derived_computed.php--enum.php [9:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+derived_computed.php--derived.php [6:11-21] Enum constant `Derived::D` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
+derived_computed.php--enum.php [9:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+Fun get_derived
+Type DS
+Type Derived
+derived.php
+--
+Errors in checked files:
+No errors

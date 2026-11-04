@@ -34,11 +34,12 @@ module Primary : sig
           class_name: string;
           const_name: string;
         }
-      | Shape_key_class_const_value_unresolvable of {
+      | Shape_key_const_value_unresolvable of {
           pos: Pos.t;
-          value_pos: Pos.t;
+          reason_pos: Pos_or_decl.t;
           class_name: string;
           const_name: string;
+          const_kind: [ `Enum | `ClassConst ];
         }
       | Shape_key_class_const_nameof_self_in_trait of {
           pos: Pos.t;

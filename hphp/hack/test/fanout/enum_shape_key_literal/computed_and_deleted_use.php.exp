@@ -1,0 +1,32 @@
+Errors in checked files:
+No errors
+Fun get
+Fun get_derived
+Type Base
+Type DS
+Type Derived
+Type S
+--
+Errors in checked files:
+computed_and_deleted_use.php--derived.php [3:17-27] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
+computed_and_deleted_use.php--enum.php [4:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+computed_and_deleted_use.php--derived.php [6:11-21] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
+computed_and_deleted_use.php--enum.php [4:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+computed_and_deleted_use.php--use.php [3:16-23] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
+computed_and_deleted_use.php--enum.php [4:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+computed_and_deleted_use.php--use.php [6:11-18] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
+computed_and_deleted_use.php--enum.php [4:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+Fun get
+use.php
+--
+Errors in checked files:
+No errors
+Fun get
+Fun get_derived
+Type Base
+Type DS
+Type Derived
+Type S
+--
+Errors in checked files:
+No errors

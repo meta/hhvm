@@ -110,6 +110,8 @@ module Hhconfig : sig
 
   val check_duplicate_enum_values : string
 
+  val require_enum_shape_key_be_resolvable : string
+
   val include_enum_member_values : string
 
   val include_const_shape_key_values : string

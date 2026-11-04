@@ -414,19 +414,27 @@ end = struct
         ~reasons
         ()
 
-    let shape_key_class_const_value_unresolvable
-        pos value_pos class_name const_name =
+    let shape_key_const_value_unresolvable
+        pos reason_pos class_name const_name const_kind =
+      let const_name_coded =
+        Markdown_lite.md_codify (class_name ^ "::" ^ const_name)
+      in
       let claim =
         lazy
           ( pos,
-            "Class constant "
-            ^ Markdown_lite.md_codify (class_name ^ "::" ^ const_name)
-            ^ " marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression"
+            (match const_kind with
+            | `Enum ->
+              "Enum constant " ^ const_name_coded ^ " used as a shape key"
+            | `ClassConst ->
+              "Class constant "
+              ^ const_name_coded
+              ^ " marked with `<<__ShapeKey>>`")
+            ^ " must be initialized with a string or integer literal, or a `nameof` expression"
           )
       and reasons =
         lazy
           [
-            ( Pos_or_decl.of_raw_pos value_pos,
+            ( reason_pos,
               "Class pointers, constant forwarding, and computed expressions are not allowed"
             );
           ]
@@ -596,13 +604,14 @@ end = struct
           decl_pos
           class_name
           const_name
-      | Shape_key_class_const_value_unresolvable
-          { pos; value_pos; class_name; const_name } ->
-        shape_key_class_const_value_unresolvable
+      | Shape_key_const_value_unresolvable
+          { pos; reason_pos; class_name; const_name; const_kind } ->
+        shape_key_const_value_unresolvable
           pos
-          value_pos
+          reason_pos
           class_name
           const_name
+          const_kind
       | Shape_key_class_const_nameof_self_in_trait
           { pos; value_pos; class_name; const_name } ->
         shape_key_class_const_nameof_self_in_trait

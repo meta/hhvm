@@ -1,0 +1,2 @@
+--config require_enum_shape_key_be_resolvable=true
+--config include_enum_member_values=true

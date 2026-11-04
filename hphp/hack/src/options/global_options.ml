@@ -142,6 +142,7 @@ type t = {
   symbol_write_sym_hash_out: bool;
   tco_disallow_discarded_nullable_awaitables: bool;
   tco_check_duplicate_enum_values: bool;
+  tco_require_enum_shape_key_be_resolvable: bool;
   tco_typecheck_sample_rate: float;
   tco_pessimise_builtins: bool;
   tco_enable_no_auto_dynamic: bool;
@@ -257,6 +258,7 @@ let default =
     symbol_write_sym_hash_out = false;
     tco_disallow_discarded_nullable_awaitables = false;
     tco_check_duplicate_enum_values = false;
+    tco_require_enum_shape_key_be_resolvable = false;
     tco_typecheck_sample_rate = 1.0;
     tco_pessimise_builtins = false;
     tco_enable_no_auto_dynamic = false;
@@ -371,6 +373,7 @@ let set
     ?symbol_write_sym_hash_out
     ?tco_disallow_discarded_nullable_awaitables
     ?tco_check_duplicate_enum_values
+    ?tco_require_enum_shape_key_be_resolvable
     ?tco_typecheck_sample_rate
     ?tco_pessimise_builtins
     ?tco_enable_no_auto_dynamic
@@ -572,6 +575,10 @@ let set
       setting
         tco_check_duplicate_enum_values
         options.tco_check_duplicate_enum_values;
+    tco_require_enum_shape_key_be_resolvable =
+      setting
+        tco_require_enum_shape_key_be_resolvable
+        options.tco_require_enum_shape_key_be_resolvable;
     tco_typecheck_sample_rate =
       setting tco_typecheck_sample_rate options.tco_typecheck_sample_rate;
     tco_pessimise_builtins =
