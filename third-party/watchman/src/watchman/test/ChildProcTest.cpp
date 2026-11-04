@@ -108,16 +108,8 @@ void test_empty_piped_stdout(bool threaded) {
 
   // A piped stream that produced nothing is empty; one that was not piped
   // is absent.
-  if (threaded) {
-    ASSERT_TRUE(outputs.first.has_value());
-    EXPECT_TRUE(outputs.first->empty());
-  } else {
-    // FIXME(T296478245): pollingCommunicate(), which communicate() uses on
-    // POSIX, gives std::nullopt for the empty piped stdout, where
-    // threadedCommunicate() gives "". It should give "" too; the next diff
-    // fixes it.
-    EXPECT_FALSE(outputs.first.has_value());
-  }
+  ASSERT_TRUE(outputs.first.has_value());
+  EXPECT_TRUE(outputs.first->empty());
   EXPECT_FALSE(outputs.second.has_value());
 #else
   (void)threaded;

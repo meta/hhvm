@@ -451,7 +451,7 @@ ChildProcess::pollingCommunicate(pipeWriteCallback writeCallback) {
   std::unordered_map<int, std::string> outputs;
 
   for (auto& it : pipes_) {
-    if (it.first != STDIN_FILENO) {
+    if (it.first == STDIN_FILENO) {
       // We only want output streams here
       continue;
     }
