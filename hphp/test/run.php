@@ -325,13 +325,6 @@ function process_opts(
   return $contents;
 }
 
-function read_opts_file(?string $file, ?string $input_dir = null): string {
-  if ($file is null || !file_exists($file)) {
-    return "";
-  }
-  return process_opts(file_get_contents($file), dirname($file), $input_dir);
-}
-
 // Keys understood in a `.config` file.
 const keyset<string> TEST_CONFIG_KEYS = keyset[
   // Blocks of command-line options.
@@ -370,9 +363,6 @@ const keyset<string> TEST_CONFIG_FLAG_KEYS = keyset[
 // Lines whose first non-space character is `;` or `#` are comments.
 <<__Memoize>>
 function parse_config_file(string $file): dict<string, string> {
-  // A directory-level `config.config` supersedes the `config.<key>` sidecar
-  // files that still exist alongside it.
-  $prefix = substr($file, 0, strlen($file) - strlen('.config'));
   $is_dir_config = basename($file) === 'config.config';
 
   $config = dict[];
@@ -409,12 +399,6 @@ function parse_config_file(string $file): dict<string, string> {
     }
     if (C\contains_key($config, $key)) {
       error("$file:$lineno: duplicate key '$key'");
-    }
-    if (is_file("$prefix.$key")) {
-      error(
-        "$file:$lineno: '$key' is set here and in $prefix.$key; ".
-        "remove one of them"
-      );
     }
     $value = rtrim($matches[2]);
     if ($is_dir_config && !C\contains_key(TEST_CONFIG_SUITE_KEYS, $key)) {
@@ -466,8 +450,7 @@ function read_test_value(string $test, string $key): ?string {
 
 // The nearest enclosing `config.config` that defines $key. The search is
 // per-key so a nested `config.config` setting only `opts` does not hide an
-// `hphp_opts` inherited from further up, matching how the sidecar files were
-// looked up.
+// `hphp_opts` inherited from further up.
 function find_dir_config(string $dir, string $key): ?string {
   return find_file_for_dir(
     $dir,
@@ -476,22 +459,20 @@ function find_dir_config(string $dir, string $key): ?string {
   );
 }
 
-// Suite-wide default for $key: the nearest enclosing `config.config` that
-// defines it, else the legacy `config.<key>` file.
+// Suite-wide default for $key from the nearest enclosing `config.config` that
+// defines it.
 function read_dir_opts(
   string $dir,
   string $key,
   ?string $input_dir = null,
 ): string {
   $file = find_dir_config($dir, $key);
-  if ($file is nonnull) {
-    return process_opts(
-      parse_config_file($file)[$key],
-      dirname($file),
-      $input_dir,
-    );
-  }
-  return read_opts_file(find_file_for_dir($dir, "config.$key"), $input_dir);
+  if ($file is null) return "";
+  return process_opts(
+    parse_config_file($file)[$key],
+    dirname($file),
+    $input_dir,
+  );
 }
 
 // Force the `config.config` lookups a worker will do later, so a malformed
@@ -499,13 +480,13 @@ function read_dir_opts(
 // directory because thousands of tests share a handful of config files.
 <<__Memoize>>
 function validate_dir_config(string $dir): void {
-  if (is_file("$dir/config.runif")) {
-    error(
-      "$dir/config.runif is no longer read; move its contents into a 'runif' ".
-      "entry in $dir/config.config"
-    );
-  }
   foreach (TEST_CONFIG_SUITE_KEYS as $key) {
+    if (is_file("$dir/config.$key")) {
+      error(
+        "$dir/config.$key is no longer read; move its contents into a ".
+        "'$key' entry in $dir/config.config"
+      );
+    }
     find_dir_config($dir, $key);
   }
 }
@@ -3012,22 +2993,6 @@ function runif_should_skip_test(
   return shape('valid' => true, 'match' => true);
 }
 
-<<__Memoize>>
-function is_onlyfacebook_dir(string $dir): bool {
-  if (file_exists($dir.'/onlyfacebook')) return true;
-  if ($dir === realpath(test_dir())) return false;
-  $parent = dirname($dir);
-  if ($parent === $dir) return false;
-  return is_onlyfacebook_dir($parent);
-}
-
-// A test is fbcode-only when it carries a "$test.onlyfacebook" marker, or when
-// any directory between it and hphp/test carries an "onlyfacebook" marker.
-function is_onlyfacebook_test(string $test): bool {
-  if (read_test_flag($test, 'onlyfacebook')) return true;
-  return is_onlyfacebook_dir(realpath(dirname($test)));
-}
-
 // should_skip_test_simple handles generating skips in ways that are purely
 // based on options passed to run.php, and test names/exclusion files (eg.
 // norepo).  The benefit of should_skip_test_simple is that it can factor in to
@@ -3036,7 +3001,7 @@ function should_skip_test_simple(
   Options $options,
   string $test,
 ): ?string {
-  if (!$options->facebook_build && is_onlyfacebook_test($test)) {
+  if (!$options->facebook_build && read_test_flag($test, 'onlyfacebook')) {
     return 'skip-onlyfacebook';
   }
 
