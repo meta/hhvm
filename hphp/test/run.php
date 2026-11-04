@@ -1599,8 +1599,8 @@ function hhvm_cmd(
 
   $env = get_test_env($options, $test, $env);
 
-  $in = find_test_ext($test, 'in');
-  if ($in is nonnull) {
+  $in = "$test.in";
+  if (is_file($in)) {
     $cmd .= ' < ' . escapeshellarg($in);
     // If we're piping the input into the command then setup a simple
     // dumb terminal so hhvm doesn't try to control it and pollute the
