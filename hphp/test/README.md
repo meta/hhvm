@@ -111,6 +111,8 @@ Values:
   is skipped unless all of them hold. A line is `os [not] <name>`,
   `file <path>`, `euid [not] root`, `extension <name>` or
   `locale LC_<category> <name>...`, optionally followed by a `#` comment.
+* `sbcc_files` - files to build into the test's SBCC artifact, one per line,
+  relative to the test's `.sbcc_build_root/` directory.
 
 Only `opts`, `hphp_opts` and `runif` may appear in a directory-level
 `config.config`; the rest describe a single test and are rejected there. A

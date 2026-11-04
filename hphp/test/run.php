@@ -341,7 +341,7 @@ const keyset<string> TEST_CONFIG_KEYS = keyset[
   'nojitserialize', 'nobespoke', 'onlyrepo', 'onlyjumpstart', 'onlyfacebook',
   'skip_persistent', 'no_remote', 'uses_loopback', 'serial', 'verify',
   // Free-form values.
-  'env', 'clisrv_env', 'exit_code', 'runif',
+  'env', 'clisrv_env', 'exit_code', 'runif', 'sbcc_files',
 ];
 
 // Keys that may also appear in a directory-level `config.config`, supplying a
@@ -1120,16 +1120,17 @@ function find_debug_config(string $test, string $name): string {
 ///////////////////////////////////////////////////////////////////////////////
 // SBCC test metadata helpers.
 //
-// SBCC tests use runner-owned metadata files to declare build or fixture
-// inputs. The runner materializes the .sbcc artifact before HHVM starts,
-// parallel to how repo-mode tests build .hhbc before runtime.
+// SBCC tests declare their build inputs in a `sbcc_files` entry in the test's
+// `.config`, or use a committed `.sbcc_fixture`. The runner materializes the
+// .sbcc artifact before HHVM starts, parallel to how repo-mode tests build .hhbc
+// before runtime.
 
 function sbcc_enabled(string $test): bool {
-  return is_file("$test.sbcc_files") || is_file("$test.sbcc_fixture");
+  return sbcc_uses_builder($test) || is_file("$test.sbcc_fixture");
 }
 
 function sbcc_uses_builder(string $test): bool {
-  return is_file("$test.sbcc_files");
+  return read_test_value($test, 'sbcc_files') is nonnull;
 }
 
 function sbcc_binary_routes(): dict<string, string> {
@@ -1224,10 +1225,12 @@ function sbcc_mode_setup_impl(Options $options, string $test): (string, bool) {
     // Record the actual run root path for hhvm_cmd to use.
     file_put_contents("$working_dir/sbcc_run_root_path", $run_root);
 
-    // Copy file list.
-    $file_list_src = "$test.sbcc_files";
+    // Write file list.
     $file_list = "$working_dir/sbcc_files.txt";
-    copy($file_list_src, $file_list);
+    file_put_contents(
+      $file_list,
+      (read_test_value($test, 'sbcc_files') ?? '')."\n",
+    );
 
     // Read optional builder opts.
     $sbcc_opts = trim(read_test_opts($test, 'sbcc_opts', null, false));
