@@ -1,14 +1,8 @@
 # Named Parameters
 
-:::warning
-This feature is currently in [experimental mode](/hack/experimental-features/introduction/), under feature flag _"named_parameters"_.
-:::
-
 When defining a Hack function or method, you can mark a parameter as named, using the `named` keyword. Callers of the function then must include the name of the parameter. Named parameters can make your APIs safer and easier to read:
 
 ```hack
-<<file: __EnableUnstableFeatures('named_parameters')>>
-
 function send_message(
     string $body,
     named string $host,
@@ -35,8 +29,6 @@ especially optional or "configuration-like" parameters such as booleans,
 nullable values, and multiple parameters of the same type.
 
 ```hack
-<<file: __EnableUnstableFeatures('named_parameters')>>
-
 function schedule_retry(
     string $job,
     named int $delay_ms = 1000,
@@ -81,8 +73,6 @@ are more efficient than the shape-based pattern.
 **GOOD** (named parameters):
 
 ```hack
-<<file: __EnableUnstableFeatures('named_parameters')>>
-
 function schedule_retry(
     string $job,
     named int $delay_ms = 1000,
