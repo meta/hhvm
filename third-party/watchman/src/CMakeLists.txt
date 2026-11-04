@@ -98,7 +98,6 @@ project(${PACKAGE_NAME} CXX C)
 include(GoogleTest)
 enable_testing()
 
-include(FBThriftCppLibrary)
 include(CheckFunctionExists)
 include(CheckIncludeFiles)
 include(CheckStructHasMember)
@@ -307,7 +306,7 @@ find_package(fmt CONFIG REQUIRED)
 fb_find_or_fetch(fizz)
 fb_find_or_fetch(wangle)
 fb_find_or_fetch(FBThrift)
-include_directories(${FBTHRIFT_INCLUDE_DIR})
+include_directories(${THRIFT_INCLUDE_DIR})
 fb_find_or_fetch(fb303)
 include_directories(${FB303_INCLUDE_DIR})
 fb_find_or_fetch(edencommon)
@@ -448,7 +447,7 @@ if (ENABLE_EDEN_SUPPORT)
   target_link_libraries(
     third_party_deps
     INTERFACE
-    FBThrift::thriftcpp2
+    thrift::rpc
     cpptoml
   )
 endif()
@@ -532,23 +531,26 @@ add_library(testsupport STATIC ${testsupport_sources})
 target_link_libraries(testsupport log string jansson third_party_deps)
 
 if (ENABLE_EDEN_SUPPORT)
-  add_fbthrift_cpp_library(
+  thrift_add_library(
     eden_config_thrift
     eden/fs/config/eden_config.thrift
+    LANGUAGE cpp2
   )
-  add_fbthrift_cpp_library(
+  thrift_add_library(
     eden_service_thrift
     eden/fs/service/eden.thrift
+    LANGUAGE cpp2
     SERVICES
       EdenService
     DEPENDS
       eden_config_thrift
-      edencommon::edencommon_utils
       fb303::fb303_thrift_cpp
   )
-  add_fbthrift_cpp_library(
+  target_link_libraries(eden_service_thrift PUBLIC edencommon::edencommon_utils)
+  thrift_add_library(
     streamingeden_thrift
     eden/fs/service/streamingeden.thrift
+    LANGUAGE cpp2
     SERVICES
       StreamingEdenService
     DEPENDS
