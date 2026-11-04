@@ -95,6 +95,43 @@ TEST(ChildProcess, stresstest_pipe_output) {
   EXPECT_TRUE(okay);
 }
 
+void test_empty_piped_stdout(bool threaded) {
+#ifndef _WIN32
+  Options opts;
+  opts.pipeStdout();
+  ChildProcess proc({"true"}, std::move(opts));
+
+  auto noInput = [](watchman::FileDescriptor&) { return true; };
+  auto outputs =
+      threaded ? proc.threadedCommunicate(noInput) : proc.communicate(noInput);
+  proc.wait();
+
+  // A piped stream that produced nothing is empty; one that was not piped
+  // is absent.
+  if (threaded) {
+    ASSERT_TRUE(outputs.first.has_value());
+    EXPECT_TRUE(outputs.first->empty());
+  } else {
+    // FIXME(T296478245): pollingCommunicate(), which communicate() uses on
+    // POSIX, gives std::nullopt for the empty piped stdout, where
+    // threadedCommunicate() gives "". It should give "" too; the next diff
+    // fixes it.
+    EXPECT_FALSE(outputs.first.has_value());
+  }
+  EXPECT_FALSE(outputs.second.has_value());
+#else
+  (void)threaded;
+#endif
+}
+
+TEST(ChildProcess, emptyPipedStdoutThreaded) {
+  test_empty_piped_stdout(true);
+}
+
+TEST(ChildProcess, emptyPipedStdoutNotThreaded) {
+  test_empty_piped_stdout(false);
+}
+
 TEST(ChildProcess, inputThreaded) {
   test_pipe_input(true);
 }
