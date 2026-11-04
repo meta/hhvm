@@ -91,7 +91,7 @@ class TestFishy(WatchmanTestCase.WatchmanTestCase):
 
     def test_notify_dir(self) -> None:
         root = self.mkdtemp()
-        self.watchmanCommand("watch", root)
+        watch = self.watchmanCommand("watch", root)
         os.mkdir(os.path.join(root, "wtest"))
         os.mkdir(os.path.join(root, "wtest", "dir"))
         self.touchRelative(root, "wtest", "1")
@@ -100,20 +100,23 @@ class TestFishy(WatchmanTestCase.WatchmanTestCase):
             root, ["wtest", "wtest/1", "wtest/2", "wtest/dir"], cursor="n:foo"
         )
 
+        def assertChangedSinceFoo(expected: list[str]) -> None:
+            files = self.watchmanCommand(
+                "query", root, {"fields": ["name"], "since": "n:foo"}
+            )["files"]
+            if watch["watcher"] == "kqueue+fsevents":
+                # A sync can end before FSEvents has reported every earlier
+                # change in wtest, so files that changed before n:foo can be
+                # reported again.
+                self.assertFileListContains(files, expected)
+            else:
+                self.assertFileListsEqual(files, expected)
+
         os.rmdir(os.path.join(root, "wtest/dir"))
-        files = self.watchmanCommand(
-            "query", root, {"fields": ["name"], "since": "n:foo"}
-        )["files"]
-        self.assertFileListsEqual(files, ["wtest", "wtest/dir"])
+        assertChangedSinceFoo(["wtest", "wtest/dir"])
 
         os.unlink(os.path.join(root, "wtest/2"))
-        files = self.watchmanCommand(
-            "query", root, {"fields": ["name"], "since": "n:foo"}
-        )["files"]
-        self.assertFileListsEqual(files, ["wtest", "wtest/2"])
+        assertChangedSinceFoo(["wtest", "wtest/2"])
 
         os.unlink(os.path.join(root, "wtest/1"))
-        files = self.watchmanCommand(
-            "query", root, {"fields": ["name"], "since": "n:foo"}
-        )["files"]
-        self.assertFileListsEqual(files, ["wtest", "wtest/1"])
+        assertChangedSinceFoo(["wtest", "wtest/1"])
