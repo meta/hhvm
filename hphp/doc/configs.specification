@@ -218,6 +218,16 @@ The format can be found in hphp/tools/configs/generate_configs.rs
   Allow POST requests containing NonBlockingPost header to start execution
   without waiting for the entire POST body.
 
+- std::vector<std::string> Server.RequiredRequestHeaders = {}, UNKNOWN
+
+  Proxygen rejects requests missing any of these headers with HTTP 403.
+  Header names are case-insensitive; values are not checked. Empty disables.
+
+- std::vector<std::string> Server.RequiredRequestHeadersPathWhitelist = {}, UNKNOWN
+
+  Exact, case-sensitive URL paths exempt from RequiredRequestHeaders.
+  Query strings are ignored. No prefix matching or URL decoding.
+
 - bool Server.EnableSSL = false, UNKNOWN
 - int Server.SSLPort = 443, UNKNOWN
 - int Server.SSLPortFd = -1, UNKNOWN, nobind

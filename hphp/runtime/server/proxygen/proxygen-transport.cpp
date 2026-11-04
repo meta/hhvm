@@ -192,6 +192,19 @@ void ProxygenTransport::onHeadersComplete(
   }
 
   const auto& headers = m_request->getHeaders();
+  const auto& whitelist = Cfg::Server::RequiredRequestHeadersPathWhitelist;
+  if (!Cfg::Server::RequiredRequestHeaders.empty() &&
+      std::find(whitelist.begin(), whitelist.end(),
+                m_request->getPathAsStringPiece()) == whitelist.end())
+      [[unlikely]] {
+    for (const auto& header : Cfg::Server::RequiredRequestHeaders) {
+      if (!headers.exists(header)) {
+        sendErrorResponse(403);
+        return;
+      }
+    }
+  }
+
   m_proxygenHeaders = &headers;
   folly::grow_capacity_by(m_requestHeaders, headers.size());
   headers.forEach([&] (const std::string &header, const std::string &val) {
