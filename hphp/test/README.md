@@ -38,6 +38,9 @@ These are the allowed extensions:
 * `.php` - The source of the test.
 * `.php.expect` - The exact string expected output.
 * `.php.expectf` - The exact string expected output with formatting characters.
+* `.php.expect-repo` / `.php.expectf-repo` - Used instead of the above in repo
+  mode (`-r`). With a `repo_expect` entry in `.php.config`, they hold the
+  output of building the repo rather than of running the test.
 * `.php.out` - When you run the test, the output will be stored here.
 * `.php.config` - Runtime and compiler options for the test. Holds the `opts` and `hphp_opts` entries; see "The `.php.config` File" below.
 * `.php.cli_args` - Command line arguments to the test file (e.g., `$argv` options).
@@ -115,6 +118,9 @@ Values:
   `locale LC_<category> <name>...`, optionally followed by a `#` comment.
 * `sbcc_files` - files to build into the test's SBCC artifact, one per line,
   relative to the test's `.sbcc_build_root/` directory.
+* `repo_expect` - `hphpc` or `hhbbc`: in repo mode, don't run the test; instead
+  compare the output of that repo build step against `.php.expectf-repo`. Used
+  for tests where hphpc or hhbbc is expected to fail.
 
 Only `opts`, `hphp_opts`, `runif`, `set_input_dir`, `nomultireq` and
 `nodumphhas` may appear in a directory-level `config.config`; the rest describe

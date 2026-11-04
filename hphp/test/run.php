@@ -65,12 +65,6 @@ function get_expect_file_and_type(
     'expectf',
   ];
   if ($options->repo) {
-    if (file_exists($test . '.hphpc_assert')) {
-      return vec[$test . '.hphpc_assert', 'expectf'];
-    }
-    if (file_exists($test . '.hhbbc_assert')) {
-      return vec[$test . '.hhbbc_assert', 'expectf'];
-    }
     foreach ($types as $type) {
       $fname = "$test.$type-repo";
       if (file_exists($fname)) {
@@ -342,7 +336,7 @@ const keyset<string> TEST_CONFIG_KEYS = keyset[
   'skip_persistent', 'no_remote', 'uses_loopback', 'serial', 'verify',
   'set_input_dir',
   // Free-form values.
-  'env', 'clisrv_env', 'exit_code', 'runif', 'sbcc_files',
+  'env', 'clisrv_env', 'exit_code', 'runif', 'sbcc_files', 'repo_expect',
 ];
 
 // Keys that may also appear in a directory-level `config.config`, supplying a
@@ -424,6 +418,11 @@ function parse_config_file(string $file): dict<string, string> {
     if (C\contains_key(TEST_CONFIG_FLAG_KEYS, $key) &&
         $value !== 'true' && $value !== 'false') {
       error("$file:$lineno: '$key' must be 'true' or 'false', got '$value'");
+    }
+    if ($key === 'repo_expect' && $value !== 'hphpc' && $value !== 'hhbbc') {
+      error(
+        "$file:$lineno: 'repo_expect' must be 'hphpc' or 'hhbbc', got '$value'"
+      );
     }
     $config[$key] = $value;
   }
@@ -4110,10 +4109,13 @@ function run_repo_test(
   vec<string> $hhvm,
   dict<string, mixed> $hhvm_env,
 ): mixed {
-  if (file_exists($test . '.hphpc_assert')) {
+  // With `repo_expect`, the test checks the output of building the repo (from
+  // hphpc, or from hhbbc) against `<test>.expect[f]-repo` instead of running.
+  $repo_expect = read_test_value($test, 'repo_expect');
+  if ($repo_expect === 'hphpc') {
     $hphp = hphp_cmd($options, $test);
     return run_foreach_config($options, $test, vec[$hphp], $hhvm_env, true);
-  } else if (file_exists($test . '.hhbbc_assert')) {
+  } else if ($repo_expect === 'hhbbc') {
     $hphp = hphp_cmd($options, $test);
     if (repo_separate($options, $test)) {
       list($output, $success) = exec_with_timeout($hphp);
