@@ -19,3 +19,4 @@ Each file corresponds to one familly/underlying bug, with one or more repros.
 | Duplicate member declarations | duplicate_member_declarations.ml | Declaration comparison uses the first duplicate member, while folding takes parts of the effective declaration from the last duplicate. |
 | Naming-winner changes | case_variant_duplicate_winner_flip.ml | A case-insensitive naming conflict can change which definition is visible without changing the exact-name declarations used for fanout comparison. |
 | Unindexed declarations | unindexed_function.ml | Declaration caching can introduce names absent from indexed file information, leaving later invalidation unaware of those entries. |
+| Stale inherited declarations | mixed_decl_versions.ml | Folded declarations can retain information from an intermediate ancestor version that comparison of the old and new shallow declarations does not detect. |
