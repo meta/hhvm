@@ -1,9 +1,0 @@
-Encode Equal Len 10: 2,4,4,4,4,2,2,2,2,2
-Decode Equal [1,3,5,7,9,10,11,12,13,14]
-Encode Equal Len 10: 1,2,2,2,2,1,1,1,1,1
-Decode Equal [1,3,5,7,9,10,11,12,13,14]
-Encode Equal Len 14: 2,4,4,4,4,4,4,2,132,60,143,255,251,40
-Decode Equal [1,3,5,7,9,11,13,14,300,16777216]
-Encode Equal Len 14: 1,2,2,2,2,2,2,1,130,30,135,255,253,84
-Decode Equal [1,3,5,7,9,11,13,14,300,16777216]
-input must be sorted

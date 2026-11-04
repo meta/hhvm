@@ -1,6 +1,0 @@
-Test 1: First call with endpoint1 + configName1: true
-Test 2: Second call with endpoint1 + configName1: false
-Test 3: First call with endpoint2 + configName1: true
-Test 4: First call with endpoint1 + configName2: true
-Test 5: Second call with endpoint2 + configName1: false
-Test 6: Second call with endpoint1 + configName2: false
