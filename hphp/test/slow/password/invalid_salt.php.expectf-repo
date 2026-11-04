@@ -1,2 +1,0 @@
-
-Warning: password_hash(): Non-string salt parameter supplied in %s on line %d

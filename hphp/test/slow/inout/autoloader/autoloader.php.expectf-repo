@@ -1,6 +1,0 @@
-string(4) "hit1"
-string(4) "hit2"
-string(4) "hit3"
-
-Fatal error: Uncaught exception 'InvalidArgumentException' with message 'partial() does not expect parameter 1 to be inout, but the call was annotated with 'inout'' in %s/autoloader.php:11
-%a

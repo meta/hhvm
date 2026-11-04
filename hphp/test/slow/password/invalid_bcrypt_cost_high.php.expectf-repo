@@ -1,2 +1,0 @@
-
-Warning: password_hash(): Invalid bcrypt cost parameter specified: 32 in %s on line %d

@@ -1,3 +1,0 @@
-I'm %s/exclude/basic.inc.php
-I'm access_test_package_override_2 in %s/exclude/intern/package-override-2.inc.php
-I'm access_test_symbolrefs_2 in %s/exclude/intern/symbolrefs.inc.php 
