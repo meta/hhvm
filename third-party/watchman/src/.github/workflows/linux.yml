@@ -74,11 +74,12 @@ jobs:
       run: cmake --build _build -j "$(nproc)"
 
     # Like getdeps' test step, retry failures: the integration tests' timing
-    # varies on loaded machines.
+    # varies on loaded machines. A hung test fails after 10 minutes instead
+    # of holding the job until its timeout.
     - name: Test
       run: >
         ctest --test-dir _build --output-on-failure -j "$(nproc)"
-        --repeat until-pass:3
+        --repeat until-pass:3 --timeout 600
 
     - name: Install packaging tools
       run: sudo --preserve-env=http_proxy apt-get install -y dpkg-dev rpm zip
