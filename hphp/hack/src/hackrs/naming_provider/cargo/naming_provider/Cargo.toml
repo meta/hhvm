@@ -15,5 +15,5 @@ anyhow = "1.0.104"
 hh24_types = { path = "../../../../utils/hh24_types" }
 names = { path = "../../../../naming/names_rust" }
 oxidized = { path = "../../../../oxidized" }
-parking_lot = { version = "0.12.1", features = ["arc_lock", "send_guard"] }
+parking_lot = { version = "0.12.1", features = ["arc_lock", "send_guard", "serde"] }
 pos = { path = "../../../pos/cargo/pos" }
