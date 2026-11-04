@@ -952,7 +952,10 @@ fn p_shape_field<'a>(node: S<'a>, env: &mut Env<'a>) -> Result<ast::ShapeElement
             // (i.e. `?'x' => nothing`): the field is definitely not present.
             let name = p_shape_field_name(&c.name, env)?;
             let pos = p_pos(node, env);
-            let hint = ast::Hint::new(pos, ast::Hint_::Hnothing);
+            let hint = ast::Hint::new(
+                pos.clone(),
+                ast::Hint_::Happly(ast::Id(pos, special_typehints::NOTHING.to_owned()), vec![]),
+            );
             Ok(ast::ShapeElement::SEField(ast::ShapeFieldInfo {
                 optional: true,
                 hint,
