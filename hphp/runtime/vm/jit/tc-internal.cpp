@@ -340,9 +340,6 @@ TranslationResult::Scope shouldTranslateNoSizeLimit(SrcKey sk, TransKind kind,
   return TranslationResult::Scope::Success;
 }
 
-// After DataBlockFull exception is raised consecutively this number of times,
-// we consider TC as being full.
-static constexpr size_t kConsecutiveTransBlocksFull = 3;
 static std::atomic<bool> s_TCisFull{false};
 
 TranslationResult::Scope shouldTranslate(SrcKey sk, TransKind kind,
