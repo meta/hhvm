@@ -1,1 +1,0 @@
-os not WIN # Output tested contains chars that are not shown the same on windows concole (ESC and co)

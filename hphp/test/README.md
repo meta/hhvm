@@ -107,9 +107,14 @@ Values:
   `clisrv_env` replaces `env` in CLI-server mode. `__DIR__` expands to the
   test's directory. A bare name with no `=` unsets that variable.
 * `exit_code` - the exit status the test is expected to produce.
+* `runif` - conditions the test needs in order to run, one per line; the test
+  is skipped unless all of them hold. A line is `os [not] <name>`,
+  `file <path>`, `euid [not] root`, `extension <name>` or
+  `locale LC_<category> <name>...`, optionally followed by a `#` comment.
 
-Only `opts` and `hphp_opts` may appear in a directory-level `config.config`;
-the rest describe a single test and are rejected there.
+Only `opts`, `hphp_opts` and `runif` may appear in a directory-level
+`config.config`; the rest describe a single test and are rejected there. A
+test's own `runif` replaces the suite's rather than adding to it.
 
 An entry with an empty value is still meaningful: as with the old sidecar
 files, a test that sets `opts` at all is excluded from server mode.

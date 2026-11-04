@@ -1,2 +1,0 @@
-os not WIN # skip on windows until #63688 was fixed
-locale LC_NUMERIC de_DE.UTF-8 de_DE de german ge de_DE.ISO-8859-1

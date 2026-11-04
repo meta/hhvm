@@ -1,5 +1,5 @@
 <?hh
-// Note that this directory also has a config.runif file that gates this test
+// Note that this directory's config.config also has a runif entry that gates this test
 <<__EntryPoint>> function skipif(): void {
   require_once('connect.inc');
   require_once('skipifbindfailure.inc');

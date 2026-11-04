@@ -1,1 +1,0 @@
-os not Darwin # inet_pton behaves differently on Darwin

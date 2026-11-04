@@ -1,2 +1,0 @@
-os not WIN # no link()/symlink() on Windows
-extension posix

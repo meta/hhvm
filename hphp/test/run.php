@@ -341,13 +341,14 @@ const keyset<string> TEST_CONFIG_KEYS = keyset[
   'nojitserialize', 'nobespoke', 'onlyrepo', 'onlyjumpstart', 'onlyfacebook',
   'skip_persistent', 'no_remote', 'uses_loopback', 'serial', 'verify',
   // Free-form values.
-  'env', 'clisrv_env', 'exit_code',
+  'env', 'clisrv_env', 'exit_code', 'runif',
 ];
 
 // Keys that may also appear in a directory-level `config.config`, supplying a
 // default for every test in the suite. Everything else describes a single test
 // and is rejected there.
-const keyset<string> TEST_CONFIG_SUITE_KEYS = keyset['opts', 'hphp_opts'];
+const keyset<string> TEST_CONFIG_SUITE_KEYS =
+  keyset['opts', 'hphp_opts', 'runif'];
 
 // Keys holding a boolean rather than a value.
 const keyset<string> TEST_CONFIG_FLAG_KEYS = keyset[
@@ -443,6 +444,16 @@ function read_test_config(string $test): dict<string, string> {
   return is_file($file) ? parse_config_file($file) : dict[];
 }
 
+// The `runif` rules for $test: its own entry, else the nearest enclosing
+// `config.config` that defines one. A test's entry replaces the suite's rather
+// than adding to it.
+function read_test_runif(string $test): ?string {
+  $runif = read_test_value($test, 'runif');
+  if ($runif is nonnull) return $runif;
+  $file = find_dir_config(dirname($test), 'runif');
+  return $file is null ? null : parse_config_file($file)['runif'];
+}
+
 // Read a boolean entry (see TEST_CONFIG_FLAG_KEYS) from `<test>.config`.
 function read_test_flag(string $test, string $key): bool {
   return idx(read_test_config($test), $key) === 'true';
@@ -453,20 +464,26 @@ function read_test_value(string $test, string $key): ?string {
   return idx(read_test_config($test), $key);
 }
 
+// The nearest enclosing `config.config` that defines $key. The search is
+// per-key so a nested `config.config` setting only `opts` does not hide an
+// `hphp_opts` inherited from further up, matching how the sidecar files were
+// looked up.
+function find_dir_config(string $dir, string $key): ?string {
+  return find_file_for_dir(
+    $dir,
+    'config.config',
+    $f ==> C\contains_key(parse_config_file($f), $key),
+  );
+}
+
 // Suite-wide default for $key: the nearest enclosing `config.config` that
-// defines it, else the legacy `config.<key>` file. The search is per-key so a
-// nested `config.config` setting only `opts` does not hide an `hphp_opts`
-// inherited from further up, matching how the sidecar files were looked up.
+// defines it, else the legacy `config.<key>` file.
 function read_dir_opts(
   string $dir,
   string $key,
   ?string $input_dir = null,
 ): string {
-  $file = find_file_for_dir(
-    $dir,
-    'config.config',
-    $f ==> C\contains_key(parse_config_file($f), $key),
-  );
+  $file = find_dir_config($dir, $key);
   if ($file is nonnull) {
     return process_opts(
       parse_config_file($file)[$key],
@@ -482,8 +499,14 @@ function read_dir_opts(
 // directory because thousands of tests share a handful of config files.
 <<__Memoize>>
 function validate_dir_config(string $dir): void {
+  if (is_file("$dir/config.runif")) {
+    error(
+      "$dir/config.runif is no longer read; move its contents into a 'runif' ".
+      "entry in $dir/config.config"
+    );
+  }
   foreach (TEST_CONFIG_SUITE_KEYS as $key) {
-    read_dir_opts($dir, $key);
+    find_dir_config($dir, $key);
   }
 }
 
@@ -2725,11 +2748,11 @@ function child_main(
  * one to run arbitrary code it can only skip based on pre-defined reasons
  * understood by the test runner.
  *
- * The .runif file should consist of one or more lines made up of words
- * separated by spaces, optionally followed by a comment starting with #.
- * Empty lines (or lines with only comments) are ignored. The first word
- * determines the interpretation of the rest. The .runif file will allow the
- * test to run if all the non-empty lines 'match'.
+ * The `runif` entry in a test's `.config` (or a suite's `config.config`)
+ * should consist of one or more lines made up of words separated by spaces,
+ * optionally followed by a comment starting with #. The first word determines
+ * the interpretation of the rest. The entry will allow the test to run if all
+ * the non-empty lines 'match'.
  *
  * Currently supported operations:
  *   os [not] <os_name> # matches if we are (or are not) on the named OS
@@ -2750,9 +2773,9 @@ function child_main(
  *   valid, match, skip_reason # valid will be true, match will be false
  */
 type RunifResult = shape(
-  'valid' => bool, // was the runif file valid
+  'valid' => bool, // was the runif entry valid
   ?'error' => string, // if !valid, what was the problem
-  ?'match' => bool, // did the line match/did all the lines in the file match
+  ?'match' => bool, // did the line match/did all the lines in the entry match
   ?'skip_reason' => string, // if !match, the skip reason to use
 );
 
@@ -2934,12 +2957,11 @@ function runif_should_skip_test(
   Options $options,
   string $test,
 ): RunifResult {
-  $runif_path = find_test_ext($test, 'runif');
-  if ($runif_path is null) return shape('valid' => true, 'match' => true);
+  $runif = read_test_runif($test);
+  if ($runif is null) return shape('valid' => true, 'match' => true);
 
   $file_empty = true;
-  $contents = file($runif_path, FILE_IGNORE_NEW_LINES);
-  foreach ($contents as $line) {
+  foreach (explode("\n", $runif) as $line) {
     $line = preg_replace('/[#].*$/', '', $line); // remove comment
     $line = trim($line);
     if ($line === '') continue;
@@ -2983,7 +3005,7 @@ function runif_should_skip_test(
       return $result;
     }
   }
-  if ($file_empty) return shape('valid' => false, 'error' => 'empty runif file');
+  if ($file_empty) return shape('valid' => false, 'error' => 'empty runif entry');
   return shape('valid' => true, 'match' => true);
 }
 
@@ -4041,7 +4063,7 @@ function run_test(Options $options, string $test): mixed {
     $result = runif_should_skip_test($options, $test);
     if (!$result['valid']) {
       invariant(Shapes::keyExists($result, 'error'), 'missing runif error');
-      Status::writeDiff($test, 'Invalid .runif file: ' . $result['error']);
+      Status::writeDiff($test, 'Invalid runif entry: ' . $result['error']);
       return false;
     }
     if (!($result['match'] ?? false)) {

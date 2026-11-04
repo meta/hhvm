@@ -1,3 +1,0 @@
-# Unix locale name only, not available on windows (and crashes with VC6)
-os not WIN
-locale LC_CTYPE fr_FR.ISO8859-1 fr_FR

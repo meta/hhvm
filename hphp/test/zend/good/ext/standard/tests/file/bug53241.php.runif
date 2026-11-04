@@ -1,3 +1,0 @@
-# unfortunately no standard function does a cast to FILE*, so we need
-# curl to test this
-extension curl

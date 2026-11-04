@@ -1,1 +1,0 @@
-os not WIN # lstat() not available on Windows
