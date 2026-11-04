@@ -741,7 +741,7 @@ void optimizeBeforePersistentConstantUnitLoads(ConstantDependency dependency) {
   std::vector<std::string> savedUnits{"caller.php", "constant.php"};
   if (throughCallTarget) savedUnits.push_back("callee.php");
   std::sort(savedUnits.begin(), savedUnits.end());
-  auto const checkpointPath = root + "cont-prof-1-100.cprof";
+  auto const checkpointPath = root + "jit.cprof";
   ASSERT_TRUE(writeContProfCheckpointFile(checkpointPath, {record}, savedUnits));
   auto const input = readContProfCheckpointDirectory(directory.path().native());
   ASSERT_TRUE(input);

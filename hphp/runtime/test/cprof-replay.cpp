@@ -29,14 +29,14 @@
 namespace HPHP::jit::cprof {
 namespace {
 
-TEST(ContProfReplay, AbandonedAttemptDiscardsCheckpointsAndSkipsReplay) {
+TEST(ContProfReplay, AbandonedAttemptDiscardsOnlyAggregateAndSkipsReplay) {
   folly::test::TemporaryDirectory directory{"cont-prof-replay"};
   auto const path = directory.path().native();
-  auto const checkpoint = (directory.path() / "cont-prof-1-1.cprof").native();
+  auto const checkpoint = (directory.path() / "jit.cprof").native();
   auto const nested = (directory.path() / "cont-prof-3-3.cprof").native();
   for (auto const name : {
-    "cont-prof-1-1.cprof", "cont-prof-2-2.cprof",
-    "cont-prof-5-5.cprof.tmp", "unrelated"
+    "jit.cprof", "cont-prof-1-1.cprof", "cont-prof-2-2.cprof",
+    "jit.cprof.tmp", "cont-prof-5-5.cprof.tmp", "unrelated"
   }) {
     ASSERT_TRUE(folly::writeFile(
       std::string{"checkpoint"}, (directory.path() / name).c_str()
@@ -65,8 +65,10 @@ TEST(ContProfReplay, AbandonedAttemptDiscardsCheckpointsAndSkipsReplay) {
     remaining.insert(entry.path().filename().native());
   }
   std::set<std::string> const expected{
+    "cont-prof-1-1.cprof", "cont-prof-2-2.cprof",
     "cont-prof-3-3.cprof", "cont-prof-4-4.cprof",
-    "cont-prof-5-5.cprof.tmp", "cont-prof-replay.lock", "unrelated"
+    "cont-prof-5-5.cprof.tmp", "cont-prof-replay.lock",
+    "jit.cprof.tmp", "unrelated"
   };
   EXPECT_EQ(expected, remaining);
   EXPECT_TRUE(std::filesystem::exists(nested + "/cont-prof-6-6.cprof"));
@@ -83,10 +85,48 @@ TEST(ContProfReplay, AbandonedAttemptDiscardsCheckpointsAndSkipsReplay) {
   EXPECT_TRUE(std::filesystem::exists(checkpoint));
 }
 
+TEST(ContProfReplay, AbandonedAttemptWithoutRegularCheckpointClearsMarker) {
+  using FileType = std::filesystem::file_type;
+  for (auto const type : {
+    FileType::not_found, FileType::directory, FileType::symlink
+  }) {
+    SCOPED_TRACE(static_cast<int>(type));
+    folly::test::TemporaryDirectory directory{"cont-prof-replay"};
+    auto const path = directory.path().native();
+    auto const checkpoint = (directory.path() / "jit.cprof").native();
+    auto const legacy = (directory.path() / "cont-prof-1-1.cprof").native();
+    ASSERT_TRUE(folly::writeFile(std::string{"checkpoint"}, legacy.c_str()));
+    if (type == FileType::directory) {
+      ASSERT_TRUE(std::filesystem::create_directory(checkpoint));
+    } else if (type == FileType::symlink) {
+      std::filesystem::create_symlink(legacy, checkpoint);
+    }
+
+    {
+      ContProfReplayGuard replay{path};
+      ASSERT_TRUE(replay.active());
+    }
+    {
+      ContProfReplayGuard replay{path};
+      EXPECT_FALSE(replay.active());
+      EXPECT_FALSE(replay.complete());
+    }
+    EXPECT_EQ(type, std::filesystem::symlink_status(checkpoint).type());
+    EXPECT_TRUE(std::filesystem::exists(legacy));
+    EXPECT_EQ(0, std::filesystem::file_size(
+      (directory.path() / "cont-prof-replay.lock").native()
+    ));
+
+    ContProfReplayGuard replay{path};
+    ASSERT_TRUE(replay.active());
+    EXPECT_TRUE(replay.complete());
+  }
+}
+
 TEST(ContProfReplay, SuccessfulCompletionAllowsLaterReplay) {
   folly::test::TemporaryDirectory directory{"cont-prof-replay"};
   auto const path = directory.path().native();
-  auto const checkpoint = (directory.path() / "cont-prof-1-1.cprof").native();
+  auto const checkpoint = (directory.path() / "jit.cprof").native();
   ASSERT_TRUE(folly::writeFile(std::string{"checkpoint"}, checkpoint.c_str()));
 
   for (int attempt = 0; attempt < 2; ++attempt) {
@@ -124,7 +164,7 @@ TEST(ContProfReplay, FailedCleanupLeavesMarkerForNextStartup) {
 
   folly::test::TemporaryDirectory directory{"cont-prof-replay"};
   auto const path = directory.path().native();
-  auto const checkpoint = (directory.path() / "cont-prof-1-1.cprof").native();
+  auto const checkpoint = (directory.path() / "jit.cprof").native();
   ASSERT_TRUE(folly::writeFile(std::string{"checkpoint"}, checkpoint.c_str()));
 
   {
@@ -161,7 +201,7 @@ TEST(ContProfReplay, FailedCleanupLeavesMarkerForNextStartup) {
 TEST(ContProfReplay, ContendedAttemptDoesNotChangeOwner) {
   folly::test::TemporaryDirectory directory{"cont-prof-replay"};
   auto const path = directory.path().native();
-  auto const checkpoint = (directory.path() / "cont-prof-1-1.cprof").native();
+  auto const checkpoint = (directory.path() / "jit.cprof").native();
   ASSERT_TRUE(folly::writeFile(std::string{"checkpoint"}, checkpoint.c_str()));
 
   {

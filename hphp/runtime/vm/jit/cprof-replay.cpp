@@ -94,19 +94,17 @@ ContProfReplayGuard::ContProfReplayGuard(
     }
     if (status.st_size != 0) {
       s_replayAbandoned->increment();
+      auto const checkpoint =
+        std::filesystem::path{directory} / kContProfCheckpointFilename;
       Logger::Warning(
         "cont-prof replay skipped: previous replay did not complete. "
-        "Discarding checkpoints in %s",
-        directory.c_str()
+        "Discarding checkpoint %s",
+        checkpoint.c_str()
       );
-      for (auto const& entry : std::filesystem::directory_iterator{directory}) {
-        if (!isContProfCheckpointFilename(entry.path().filename().native())) {
-          continue;
-        }
-        if (!std::filesystem::is_regular_file(entry.symlink_status())) continue;
-        if (std::filesystem::remove(entry.path())) {
-          s_replayFilesDeleted->increment();
-        }
+      auto const checkpointStatus = std::filesystem::symlink_status(checkpoint);
+      if (std::filesystem::is_regular_file(checkpointStatus) &&
+          std::filesystem::remove(checkpoint)) {
+        s_replayFilesDeleted->increment();
       }
       clearReplayMarker(file.fd());
       return;

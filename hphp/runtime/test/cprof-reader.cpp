@@ -16,7 +16,6 @@
 
 #include "hphp/runtime/vm/jit/cprof-reader.h"
 
-#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -275,13 +274,14 @@ TEST(ContProfReader, RejectsInvalidDirectory) {
   auto const path = (directory.path() / "missing").native();
 
   EXPECT_FALSE(readContProfCheckpointDirectory(path));
+  ASSERT_TRUE(writeTextFile(path, "not a directory"));
+  EXPECT_FALSE(readContProfCheckpointDirectory(path));
 }
 
 TEST(ContProfReader, IgnoresSymlinkedCheckpoints) {
   folly::test::TemporaryDirectory directory{"hhvm_cont_prof_reader"};
   auto const target = (directory.path() / "checkpoint-data").native();
-  auto const link =
-    (directory.path() / "cont-prof-1-100.cprof").native();
+  auto const link = (directory.path() / "jit.cprof").native();
 
   ASSERT_TRUE(writeContProfCheckpointFile(
     target,
@@ -300,80 +300,60 @@ TEST(ContProfReader, IgnoresSymlinkedCheckpoints) {
   EXPECT_TRUE(result->records.empty());
 }
 
-TEST(ContProfReader, SelectsBestCanonicalRecords) {
+TEST(ContProfReader, ReadsNamedCheckpointAndIgnoresLegacyFiles) {
   folly::test::TemporaryDirectory directory{"hhvm_cont_prof_reader"};
   auto const path = [&](const char* filename) {
     return (directory.path() / filename).native();
   };
-
-  auto const olderAlpha = makeRecord("alpha", 1, 100, 7, 1);
-  auto const lowerBeta = makeRecord("beta", 2, 100, 7, 1);
-  auto const olderGamma = makeRecord("gamma", 3, 100, 11, 2);
-
-  auto const newerAlpha = makeRecord("alpha", 1, 200, 5, 2);
-  auto const higherBeta = makeRecord("beta", 2, 100, 11, 2);
-  auto const laterGamma = makeRecord("gamma", 3, 100, 11, 1);
-
+  auto const alpha = makeRecord("alpha", 1, 100, 7);
+  auto const beta = makeRecord("beta", 2, 200, 11);
   ASSERT_TRUE(writeContProfCheckpointFile(
     path("cont-prof-1-100.cprof"),
-    {olderAlpha, lowerBeta, olderGamma},
-    {"src/old-dependency.php", "src/shared.php"}
+    {makeRecord("alpha", 1, 300, 13), makeRecord("gamma", 3, 300, 13)},
+    {"src/legacy.php"}
   ));
   ASSERT_TRUE(writeContProfCheckpointFile(
-    path("cont-prof-2-200.cprof"),
-    {newerAlpha, higherBeta, laterGamma},
-    {"src/new-dependency.php", "src/shared.php"}
+    path("jit.cprof"),
+    {alpha, beta},
+    {"src/b.php", "src/a.php", "src/b.php"}
   ));
-
-  ASSERT_TRUE(writeTextFile(path("cont-prof-4-400.cprof"), "not a checkpoint"));
   ASSERT_TRUE(writeTextFile(path("notes.txt"), "ignored"));
 
   auto const result =
     readContProfCheckpointDirectory(directory.path().native());
   ASSERT_TRUE(result);
-
-  std::vector<ContProfProfileRecord> const expected{
-    newerAlpha,
-    higherBeta,
-    laterGamma,
-  };
-  EXPECT_EQ(2, result->filesRead);
-  EXPECT_EQ(6, result->recordsDecoded);
+  EXPECT_EQ(1, result->filesRead);
+  EXPECT_EQ(2, result->recordsDecoded);
+  std::vector<ContProfProfileRecord> const expected{alpha, beta};
   EXPECT_EQ(expected, result->records);
-  std::vector<std::string> const unitPaths{
-    "src/new-dependency.php", "src/old-dependency.php", "src/shared.php",
-  };
+  std::vector<std::string> const unitPaths{"src/a.php", "src/b.php"};
   EXPECT_EQ(unitPaths, result->unitPaths);
 }
 
-TEST(ContProfReader, ExcludesManifestOfFileBeyondRecordBudget) {
-  folly::test::TemporaryDirectory directory{"hhvm_cont_prof_reader_budget"};
-  constexpr size_t recordsPerFile = 100'000;
-  std::vector<ContProfProfileRecord> records;
-  records.reserve(recordsPerFile);
-  for (size_t i = 0; i < recordsPerFile; ++i) {
-    records.push_back(makeRecord(std::to_string(1'000'000 + i), 1, 100, 7));
-  }
+TEST(ContProfReader, DoesNotFallBackToLegacyCheckpoints) {
+  folly::test::TemporaryDirectory directory{"hhvm_cont_prof_reader"};
+  ASSERT_TRUE(writeContProfCheckpointFile(
+    (directory.path() / "cont-prof-1-100.cprof").native(),
+    {makeRecord("alpha", 1, 100, 7)}, {"src/legacy.php"}
+  ));
 
-  auto const now = std::filesystem::file_time_type::clock::now();
-  for (int i = 0; i < 3; ++i) {
-    auto const path = (directory.path() /
-      ("cont-prof-1-" + std::to_string(i) + ".cprof")).native();
-    if (i == 2) records.resize(1);
-    ASSERT_TRUE(writeContProfCheckpointFile(
-      path, records, {"src/dep" + std::to_string(i) + ".php"}
-    ));
-    std::filesystem::last_write_time(path, now - std::chrono::seconds{i});
-  }
-
-  auto const result =
+  auto result =
     readContProfCheckpointDirectory(directory.path().native());
   ASSERT_TRUE(result);
-  EXPECT_EQ(2, result->filesRead);
-  EXPECT_EQ(2 * recordsPerFile, result->recordsDecoded);
-  EXPECT_EQ(recordsPerFile, result->records.size());
-  std::vector<std::string> const unitPaths{"src/dep0.php", "src/dep1.php"};
-  EXPECT_EQ(unitPaths, result->unitPaths);
+  EXPECT_EQ(0, result->filesRead);
+  EXPECT_EQ(0, result->recordsDecoded);
+  EXPECT_TRUE(result->records.empty());
+  EXPECT_TRUE(result->unitPaths.empty());
+
+  ASSERT_TRUE(writeTextFile(
+    (directory.path() / "jit.cprof").native(), "not a checkpoint"
+  ));
+  result = readContProfCheckpointDirectory(directory.path().native());
+  ASSERT_TRUE(result);
+  EXPECT_EQ(0, result->filesRead);
+  EXPECT_EQ(0, result->recordsDecoded);
+  EXPECT_TRUE(result->records.empty());
+  EXPECT_TRUE(result->unitPaths.empty());
 }
 
 TEST(ContProfReader, ChecksFunctionKey) {

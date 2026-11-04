@@ -20,7 +20,6 @@
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include <folly/Range.h>
@@ -29,9 +28,7 @@
 
 namespace HPHP::jit::cprof {
 
-constexpr size_t kMaxContProfCheckpointFiles = 5;
-
-bool isContProfCheckpointFilename(std::string_view filename);
+constexpr auto kContProfCheckpointFilename = "jit.cprof";
 
 /* Whether the process-wide checkpoint writer is accepting profile data. */
 bool contProfActive();
@@ -63,12 +60,6 @@ bool writeContProfCheckpointFile(
   const std::string& path,
   const std::vector<ContProfProfileRecord>& records,
   const std::vector<std::string>& unitPaths = {});
-
-/*
- * After a successful write, retain the newest checkpoints including currentPath.
- * Pruning is best-effort across writers and skips symlinked checkpoint entries.
- */
-bool pruneContProfCheckpointFiles(const std::string& currentPath);
 
 /* Read the checkpoint at path; nullopt if missing or malformed. */
 std::optional<ContProfCheckpoint>

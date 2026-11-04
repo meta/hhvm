@@ -1323,6 +1323,12 @@ TEST_F(ContProfCaptureTest, ReplacesRetainedRecordAndRewritesCheckpoint) {
   EXPECT_EQ(retained, snapshotContProfProfileRecords());
 
   folly::test::TemporaryDirectory directory{"cont-prof-refresh"};
+  auto const untouched = {"cont-prof-1-1.cprof", "jit.prof", "jit.cprof.tmp"};
+  for (auto const name : untouched) {
+    ASSERT_TRUE(writeContProfCheckpointFile(
+      (directory.path() / name).native(), {original}
+    ));
+  }
   auto const server = std::exchange(Cfg::Server::Mode, true);
   auto const enabled = std::exchange(Cfg::Jit::ContProfCaptureEnabled, true);
   auto const interval = std::exchange(
@@ -1360,7 +1366,10 @@ TEST_F(ContProfCaptureTest, ReplacesRetainedRecordAndRewritesCheckpoint) {
   ASSERT_GE(writes(), writesBefore + 2);
   auto const first = readContProfCheckpointDirectory(directory.path().native());
   ASSERT_TRUE(first);
+  EXPECT_EQ(1, first->filesRead);
   EXPECT_EQ(retained, first->records);
+  auto const checkpoint = (directory.path() / "jit.cprof").native();
+  ASSERT_TRUE(readContProfCheckpointFile(checkpoint));
 
   auto const transId = addProfileTranslation(
     profData, SrcKey{refreshFunc(), 0, false, SrcKey::FuncEntryTag{}}, 3, 7
@@ -1395,6 +1404,23 @@ TEST_F(ContProfCaptureTest, ReplacesRetainedRecordAndRewritesCheckpoint) {
   ASSERT_TRUE(last);
   EXPECT_EQ(fresh, last->records);
   EXPECT_GT(writes(), writesBeforeStop);
+
+  startContProfCheckpointWriter();
+  ASSERT_TRUE(contProfActive());
+  stopContProfCheckpointWriter();
+  auto const restarted =
+    readContProfCheckpointDirectory(directory.path().native());
+  ASSERT_TRUE(restarted);
+  EXPECT_EQ(1, restarted->filesRead);
+  EXPECT_EQ(fresh, restarted->records);
+  ASSERT_TRUE(readContProfCheckpointFile(checkpoint));
+  for (auto const name : untouched) {
+    auto const unchanged = readContProfCheckpointFile(
+      (directory.path() / name).native()
+    );
+    ASSERT_TRUE(unchanged);
+    EXPECT_EQ(std::vector<ContProfProfileRecord>{original}, unchanged->records);
+  }
 }
 
 }

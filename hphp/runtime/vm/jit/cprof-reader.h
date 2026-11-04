@@ -33,18 +33,17 @@ struct Func;
 namespace HPHP::jit::cprof {
 
 struct ContProfCheckpointReadResult {
-  // Only files/records admitted under the aggregate record limit. Reader work
-  // counters also include a decoded file which would exceed that limit.
+  // Zero when no usable checkpoint was found, otherwise one.
   size_t filesRead{};
   size_t recordsDecoded{};
   std::vector<ContProfProfileRecord> records;
-  // Sorted union of manifests from admitted files, including superseded records.
+  // Canonical unit manifest from the checkpoint.
   std::vector<std::string> unitPaths;
 };
 
 /*
- * Read the newest checkpoints and retain the best record for each function
- * key. Unreadable or malformed files are skipped.
+ * Read jit.cprof from directory. A missing, unreadable, or malformed checkpoint
+ * produces an empty result; directory or metadata errors return nullopt.
  */
 std::optional<ContProfCheckpointReadResult>
 readContProfCheckpointDirectory(const std::string& directory);

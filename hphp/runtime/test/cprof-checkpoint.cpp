@@ -283,84 +283,6 @@ TEST(ContProfCheckpoint, SelectsHottestRecordsWithinLimit) {
   EXPECT_EQ(records, decoded->records);
 }
 
-TEST(ContProfCheckpoint, PrunesOnlyOldCheckpointsAndPreservesCurrent) {
-  folly::test::TemporaryDirectory temp{"cont-prof-checkpoint-retention"};
-  std::filesystem::path const directoryPath{temp.path().native()};
-  std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
-  auto const start = std::filesystem::file_time_type::clock::now();
-  std::vector<std::filesystem::path> checkpoints;
-  for (size_t i = 0; i < 22; ++i) {
-    auto const path = directoryPath /
-      ("cont-prof-1-" + std::to_string(1022 - i) + ".cprof");
-    ASSERT_TRUE(writeContProfCheckpointFile(path.native(), records));
-    std::filesystem::last_write_time(path, start + std::chrono::seconds{i});
-    checkpoints.push_back(path);
-  }
-
-  std::vector<std::string> expected{
-    "notes.txt",
-    "cont-prof-1.cprof",
-    "cont-prof-1-100.cprof.tmp",
-    "cont-prof--100.cprof",
-    "cont-prof-1-x.cprof",
-    "cont-prof-1-100-200.cprof",
-  };
-  for (auto const& name : expected) {
-    auto const path = directoryPath / name;
-    ASSERT_TRUE(writeContProfCheckpointFile(path.native(), records));
-    std::filesystem::last_write_time(path, start - std::chrono::seconds{1});
-  }
-
-  auto const directory = directoryPath / "cont-prof-2-100.cprof";
-  ASSERT_TRUE(std::filesystem::create_directory(directory));
-  ASSERT_TRUE(writeContProfCheckpointFile(
-    (directory / "nested.cprof").native(), records
-  ));
-  expected.push_back(directory.filename().native());
-
-  auto const symlink = directoryPath / "cont-prof-3-100.cprof";
-  std::filesystem::create_symlink(directoryPath / "notes.txt", symlink);
-  expected.push_back(symlink.filename().native());
-
-  ASSERT_TRUE(pruneContProfCheckpointFiles(checkpoints.front().native()));
-
-  // The oldest file belongs to this writer; fill the remaining slots by recency.
-  expected.push_back(checkpoints.front().filename().native());
-  auto const first = checkpoints.size() - (kMaxContProfCheckpointFiles - 1);
-  for (size_t i = first; i < checkpoints.size(); ++i) {
-    expected.push_back(checkpoints[i].filename().native());
-  }
-  std::sort(expected.begin(), expected.end());
-  EXPECT_EQ(expected, directoryEntries(directoryPath));
-  expectCheckpointRecords(checkpoints.front().native(), records);
-  expectCheckpointRecords((directory / "nested.cprof").native(), records);
-  EXPECT_TRUE(std::filesystem::is_symlink(symlink));
-
-  EXPECT_TRUE(pruneContProfCheckpointFiles(checkpoints.front().native()));
-  EXPECT_EQ(expected, directoryEntries(directoryPath));
-}
-
-TEST(ContProfCheckpoint, PruningRequiresCurrentCheckpointInDirectory) {
-  folly::test::TemporaryDirectory temp{"cont-prof-checkpoint-retention-failure"};
-  std::filesystem::path const directoryPath{temp.path().native()};
-  std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
-  for (size_t i = 0; i < 21; ++i) {
-    auto const path = directoryPath /
-      ("cont-prof-1-" + std::to_string(1000 + i) + ".cprof");
-    ASSERT_TRUE(writeContProfCheckpointFile(path.native(), records));
-  }
-  auto const expected = directoryEntries(directoryPath);
-  auto const missing = (directoryPath / "cont-prof-2-100.cprof").native();
-
-  EXPECT_FALSE(pruneContProfCheckpointFiles(missing));
-  EXPECT_EQ(expected, directoryEntries(directoryPath));
-
-  EXPECT_FALSE(pruneContProfCheckpointFiles(
-    (directoryPath / "missing/cont-prof-1-1000.cprof").native()
-  ));
-  EXPECT_EQ(expected, directoryEntries(directoryPath));
-}
-
 void writeRetainedCheckpointGeneration(
   const std::string& directory,
   size_t generation
@@ -391,15 +313,8 @@ void writeRetainedCheckpointGeneration(
 
   auto const records = snapshotContProfProfileRecords();
   ASSERT_EQ(generation + 1, records.size());
-  auto const path = directory + "/cont-prof-1-" +
-    std::to_string(1000 + generation) + ".cprof";
+  auto const path = directory + "/jit.cprof";
   ASSERT_TRUE(writeContProfCheckpointFile(path, records));
-  std::filesystem::last_write_time(
-    path,
-    std::filesystem::file_time_type::clock::now() +
-      std::chrono::seconds{generation}
-  );
-  ASSERT_TRUE(pruneContProfCheckpointFiles(path));
   expectCheckpointRecords(path, records);
 }
 
@@ -449,13 +364,10 @@ TEST(ContProfCheckpoint, CarriesOriginalThroughTwentyFiveProcessGenerations) {
     }, testing::ExitedWithCode(0), "");
   }
 
-  EXPECT_FALSE(std::filesystem::exists(
-    directory + "/cont-prof-1-1000.cprof"
-  ));
-  EXPECT_EQ(kMaxContProfCheckpointFiles, directoryEntries(directory).size());
+  EXPECT_EQ(std::vector<std::string>{"jit.cprof"}, directoryEntries(directory));
   auto const input = readContProfCheckpointDirectory(directory);
   ASSERT_TRUE(input);
-  EXPECT_EQ(kMaxContProfCheckpointFiles, input->filesRead);
+  EXPECT_EQ(1, input->filesRead);
   ASSERT_EQ(generations, input->records.size());
   auto const original = makeRecord("rotation_original", 1, 7);
   EXPECT_NE(input->records.end(), std::find(
