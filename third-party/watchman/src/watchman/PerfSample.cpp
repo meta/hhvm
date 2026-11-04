@@ -85,12 +85,12 @@ void processSamples(
     std::string encoded_sample = json_dumps(samples.front(), 0);
     samples.erase(samples.begin()); // O(N^2)
 
-    if (encoded_sample.size() > argv_limit) {
+    if (encoded_sample.size() + 1 > argv_limit) {
       single_large_sample(std::move(encoded_sample));
     } else {
+      size_t arg_size = encoded_sample.size() + 1;
       std::vector<std::string> args;
       args.push_back(std::move(encoded_sample));
-      size_t arg_size = encoded_sample.size() + 1;
 
       while (args.size() < maximum_batch_size && samples.size() > 0) {
         encoded_sample = json_dumps(samples[0], 0);

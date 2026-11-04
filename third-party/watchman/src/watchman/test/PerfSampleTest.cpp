@@ -83,7 +83,7 @@ TEST(Perf, sample_batches_are_limited_if_total_size_exceeds_argv_limit) {
   EXPECT_EQ("{\"value\": 5}", calls[2][0]);
 }
 
-TEST(Perf, first_sample_counts_as_one_byte_toward_argv_limit) {
+TEST(Perf, first_sample_counts_toward_argv_limit) {
   std::vector<json_ref> samples = {
       make_sample(1),
       make_sample(2),
@@ -102,17 +102,12 @@ TEST(Perf, first_sample_counts_as_one_byte_toward_argv_limit) {
       },
       unexpected_stdin_callback);
 
-  // FIXME(T296478235): the first two samples share a 26-byte batch because
-  // processSamples() reads the first sample's size after moving it out, so it
-  // counts as 1 byte. Each sample should get its own batch ({1}, {2}, {3});
-  // the next diff fixes it and renames this test to
-  // first_sample_counts_toward_argv_limit.
   std::vector<std::vector<std::string>> expected = {
-      {"{\"value\": 1}", "{\"value\": 2}"}, {"{\"value\": 3}"}};
+      {"{\"value\": 1}"}, {"{\"value\": 2}"}, {"{\"value\": 3}"}};
   EXPECT_EQ(expected, calls);
 }
 
-TEST(Perf, sample_filling_argv_limit_without_its_nul_is_passed_in_argv) {
+TEST(Perf, sample_filling_argv_limit_without_its_nul_is_passed_in_stdin) {
   std::vector<json_ref> samples = {make_sample(1)};
 
   std::vector<std::vector<std::string>> arg_calls;
@@ -130,14 +125,8 @@ TEST(Perf, sample_filling_argv_limit_without_its_nul_is_passed_in_argv) {
         stdin_calls.push_back(std::move(stdin_str));
       });
 
-  // FIXME(T296478235): the single-sample check leaves out the NUL, so the
-  // sample goes into argv at 13 bytes, over the limit of 12. It should go to
-  // stdin instead; the next diff fixes it and renames this test to
-  // sample_filling_argv_limit_without_its_nul_is_passed_in_stdin.
-  std::vector<std::vector<std::string>> expected_arg_calls = {
-      {"{\"value\": 1}"}};
-  EXPECT_EQ(expected_arg_calls, arg_calls);
-  EXPECT_EQ(0, stdin_calls.size());
+  EXPECT_EQ(0, arg_calls.size());
+  EXPECT_EQ(std::vector<std::string>{"{\"value\": 1}"}, stdin_calls);
 }
 
 TEST(Perf, sample_fitting_argv_limit_with_its_nul_is_passed_in_argv) {
