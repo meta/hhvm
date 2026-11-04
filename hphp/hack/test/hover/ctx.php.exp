@@ -18,3 +18,5 @@ If you're looking for `C\none`, use `!C\any`.
 
 Time complexity: O(n)
 Space complexity: O(1)
+
+@source hphp/hsl/src/c/introspect.php:28

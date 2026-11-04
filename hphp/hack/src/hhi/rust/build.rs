@@ -24,8 +24,9 @@ fn main() {
             if ext != "php" && ext != "hack" {
                 continue;
             }
+            let source_path = path.strip_prefix(root_path).ok().and_then(Path::to_str);
             let mut out: Vec<u8> = Vec::new();
-            if generate_hhi_lib::run(&mut out, path).is_ok() {
+            if generate_hhi_lib::run(&mut out, path, source_path).is_ok() {
                 rerun_if_changed(path);
                 contents.push((path.to_path_buf(), String::from_utf8(out).unwrap()));
             }

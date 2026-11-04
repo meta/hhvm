@@ -11,10 +11,15 @@ use std::path::PathBuf;
 struct Opts {
     /// The Hack source file to generate an HHI file for.
     filename: PathBuf,
+
+    /// Record where each function is implemented in its docblock, as
+    /// `@source <SOURCE_PATH>:<line>`.
+    #[clap(long)]
+    source_path: Option<String>,
 }
 
 fn main() -> anyhow::Result<()> {
     let opts = <Opts as clap::Parser>::parse();
     let mut stdout = std::io::BufWriter::new(std::io::stdout().lock());
-    generate_hhi_lib::run(&mut stdout, &opts.filename)
+    generate_hhi_lib::run(&mut stdout, &opts.filename, opts.source_path.as_deref())
 }
