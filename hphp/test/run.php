@@ -1129,17 +1129,12 @@ function find_debug_config(string $test, string $name): string {
 ///////////////////////////////////////////////////////////////////////////////
 // SBCC test metadata helpers.
 //
-// SBCC tests declare their build inputs in a `sbcc_files` entry in the test's
-// `.config`, or use a committed `.sbcc_fixture`. The runner materializes the
-// .sbcc artifact before HHVM starts, parallel to how repo-mode tests build .hhbc
-// before runtime.
+// A test is an SBCC test when its `.config` has a `sbcc_files` entry listing
+// the files to build. The runner builds the .sbcc artifact from the test's
+// `.sbcc_build_root/` before HHVM starts, parallel to how repo-mode tests build
+// .hhbc before runtime.
 
-<<__Memoize>>
 function sbcc_enabled(string $test): bool {
-  return sbcc_uses_builder($test) || is_file("$test.sbcc_fixture");
-}
-
-function sbcc_uses_builder(string $test): bool {
   return read_test_value($test, 'sbcc_files') is nonnull;
 }
 
@@ -1203,125 +1198,96 @@ function sbcc_mode_setup(Options $options, string $test): (string, bool) {
 function sbcc_mode_setup_impl(Options $options, string $test): (string, bool) {
   $working_dir = Status::getTestWorkingDir($test);
 
-  if (sbcc_uses_builder($test)) {
-    // Build-backed test: build .sbcc from source files.
-    $build_root_src = "$test.sbcc_build_root";
-    if (!is_dir($build_root_src)) {
-      return tuple("SBCC: missing .sbcc_build_root/ for $test", false);
-    }
-
-    $build_root = sbcc_working_build_root($test);
-    $run_root = sbcc_working_run_root($test);
-
-    // Clean and copy build root.
-    $rm_out = vec[];
-    $rm_ret = 0;
-    exec('rm -rf '.escapeshellarg($build_root).' '.escapeshellarg($run_root),
-         inout $rm_out, inout $rm_ret);
-    sbcc_copy_tree($build_root_src, $build_root);
-
-    // Copy run root (or reuse build root for runtime).
-    // When no separate run root is specified, the build root IS the run root.
-    // This ensures RepoOptions::forFile() resolves identically and mangled
-    // SHA1s match between builder and runtime.
-    $run_root_src = "$test.sbcc_run_root";
-    if (is_dir($run_root_src)) {
-      sbcc_copy_tree($run_root_src, $run_root);
-    } else {
-      // No separate run root — use the build root for runtime too.
-      $run_root = $build_root;
-    }
-
-    // Record the actual run root path for hhvm_cmd to use.
-    file_put_contents("$working_dir/sbcc_run_root_path", $run_root);
-
-    // Write file list.
-    $file_list = "$working_dir/sbcc_files.txt";
-    file_put_contents(
-      $file_list,
-      (read_test_value($test, 'sbcc_files') ?? '')."\n",
-    );
-
-    // Read optional builder opts.
-    $sbcc_opts = trim(read_test_opts($test, 'sbcc_opts', null, false));
-
-    // Build the .sbcc artifact.
-    // The builder must use the same config values that affect
-    // mangleUnitSha1() (CONFIGS_FOR_UNITCACHEFLAGS). Pass the same -v
-    // flags that hhvm_cmd_impl adds to runtime, plus the suite-wide opts
-    // from the test directory tree.
-    $config_v_flags = vec[
-      '-v', 'Eval.EnableIntrinsicsExtension=true',
-      '-v', 'Eval.FoldLazyClassKeys=false',
-    ];
-    // Also pass the suite-wide opts (e.g. -vEval.AllowHhas=true).
-    // These are in "-vName=Value" format — convert to "-v Name=Value".
-    foreach (preg_split('/\s+/', read_dir_opts(dirname($test), 'opts')) as $opt) {
-      $m = vec[];
-      if (preg_match_with_matches('/^-v(.+)$/', $opt, inout $m) === 1) {
-        $config_v_flags[] = '-v';
-        $config_v_flags[] = $m[1];
-      }
-    }
-
-    $artifact = sbcc_working_artifact($test);
-    $builder = sbcc_build_binary();
-    invariant($builder is nonnull, 'SBCC builder availability checked earlier');
-    $cmd_parts = vec[];
-    $cmd_parts[] = escapeshellarg($builder);
-    $cmd_parts[] = '--output';
-    $cmd_parts[] = escapeshellarg($artifact);
-    $cmd_parts[] = '--root';
-    $cmd_parts[] = escapeshellarg($build_root.'/');
-    $cmd_parts[] = '--file-list';
-    $cmd_parts[] = escapeshellarg($file_list);
-    $cmd_parts[] = '--skip-missing';
-    foreach ($config_v_flags as $flag) {
-      $cmd_parts[] = $flag;
-    }
-    if ($sbcc_opts !== '') {
-      $cmd_parts[] = $sbcc_opts;
-    }
-    $cmd_parts[] = '2>&1';
-    $cmd = implode(' ', $cmd_parts);
-
-    $output = vec[];
-    $ret = 0;
-    exec($cmd, inout $output, inout $ret);
-    $output_str = implode("\n", $output);
-
-    if ($ret !== 0 || !is_file($artifact)) {
-      return tuple("SBCC build failed (exit=".(int)$ret."):\n$output_str", false);
-    }
-
-    return tuple($output_str, true);
-
-  } else {
-    // Fixture-backed test: copy committed fixture.
-    $fixture_src = "$test.sbcc_fixture";
-    if (!is_file($fixture_src)) {
-      return tuple("SBCC: missing .sbcc_fixture for $test", false);
-    }
-
-    $run_root_src = "$test.sbcc_run_root";
-    if (!is_dir($run_root_src)) {
-      return tuple("SBCC: missing .sbcc_run_root/ for $test", false);
-    }
-
-    $run_root = sbcc_working_run_root($test);
-    $rm_out2 = vec[];
-    $rm_ret2 = 0;
-    exec('rm -rf '.escapeshellarg($run_root), inout $rm_out2, inout $rm_ret2);
-    sbcc_copy_tree($run_root_src, $run_root);
-
-    $artifact = sbcc_working_artifact($test);
-    copy($fixture_src, $artifact);
-
-    // Record the actual run root path for hhvm_cmd to use.
-    file_put_contents("$working_dir/sbcc_run_root_path", $run_root);
-
-    return tuple("", true);
+  $build_root_src = "$test.sbcc_build_root";
+  if (!is_dir($build_root_src)) {
+    return tuple("SBCC: missing .sbcc_build_root/ for $test", false);
   }
+
+  $build_root = sbcc_working_build_root($test);
+  $run_root = sbcc_working_run_root($test);
+
+  // Clean and copy build root.
+  $rm_out = vec[];
+  $rm_ret = 0;
+  exec('rm -rf '.escapeshellarg($build_root).' '.escapeshellarg($run_root),
+       inout $rm_out, inout $rm_ret);
+  sbcc_copy_tree($build_root_src, $build_root);
+
+  // Copy run root (or reuse build root for runtime).
+  // When no separate run root is specified, the build root IS the run root.
+  // This ensures RepoOptions::forFile() resolves identically and mangled
+  // SHA1s match between builder and runtime.
+  $run_root_src = "$test.sbcc_run_root";
+  if (is_dir($run_root_src)) {
+    sbcc_copy_tree($run_root_src, $run_root);
+  } else {
+    // No separate run root — use the build root for runtime too.
+    $run_root = $build_root;
+  }
+
+  // Record the actual run root path for hhvm_cmd to use.
+  file_put_contents("$working_dir/sbcc_run_root_path", $run_root);
+
+  // Write file list.
+  $file_list = "$working_dir/sbcc_files.txt";
+  file_put_contents(
+    $file_list,
+    (read_test_value($test, 'sbcc_files') ?? '')."\n",
+  );
+
+  // Read optional builder opts.
+  $sbcc_opts = trim(read_test_opts($test, 'sbcc_opts', null, false));
+
+  // Build the .sbcc artifact.
+  // The builder must use the same config values that affect
+  // mangleUnitSha1() (CONFIGS_FOR_UNITCACHEFLAGS). Pass the same -v
+  // flags that hhvm_cmd_impl adds to runtime, plus the suite-wide opts
+  // from the test directory tree.
+  $config_v_flags = vec[
+    '-v', 'Eval.EnableIntrinsicsExtension=true',
+    '-v', 'Eval.FoldLazyClassKeys=false',
+  ];
+  // Also pass the suite-wide opts (e.g. -vEval.AllowHhas=true).
+  // These are in "-vName=Value" format — convert to "-v Name=Value".
+  foreach (preg_split('/\s+/', read_dir_opts(dirname($test), 'opts')) as $opt) {
+    $m = vec[];
+    if (preg_match_with_matches('/^-v(.+)$/', $opt, inout $m) === 1) {
+      $config_v_flags[] = '-v';
+      $config_v_flags[] = $m[1];
+    }
+  }
+
+  $artifact = sbcc_working_artifact($test);
+  $builder = sbcc_build_binary();
+  invariant($builder is nonnull, 'SBCC builder availability checked earlier');
+  $cmd_parts = vec[];
+  $cmd_parts[] = escapeshellarg($builder);
+  $cmd_parts[] = '--output';
+  $cmd_parts[] = escapeshellarg($artifact);
+  $cmd_parts[] = '--root';
+  $cmd_parts[] = escapeshellarg($build_root.'/');
+  $cmd_parts[] = '--file-list';
+  $cmd_parts[] = escapeshellarg($file_list);
+  $cmd_parts[] = '--skip-missing';
+  foreach ($config_v_flags as $flag) {
+    $cmd_parts[] = $flag;
+  }
+  if ($sbcc_opts !== '') {
+    $cmd_parts[] = $sbcc_opts;
+  }
+  $cmd_parts[] = '2>&1';
+  $cmd = implode(' ', $cmd_parts);
+
+  $output = vec[];
+  $ret = 0;
+  exec($cmd, inout $output, inout $ret);
+  $output_str = implode("\n", $output);
+
+  if ($ret !== 0 || !is_file($artifact)) {
+    return tuple("SBCC build failed (exit=".(int)$ret."):\n$output_str", false);
+  }
+
+  return tuple($output_str, true);
 }
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -4080,11 +4046,11 @@ function run_test(Options $options, string $test): mixed {
     }
   }
 
-  if (sbcc_uses_builder($test) && sbcc_build_binary() is null) {
+  if (sbcc_enabled($test) && sbcc_build_binary() is null) {
     return 'skip-sbcc-build';
   }
 
-  // SBCC pre-test setup: build or copy the .sbcc artifact before HHVM starts.
+  // SBCC pre-test setup: build the .sbcc artifact before HHVM starts.
   if (sbcc_enabled($test)) {
     list($sbcc_output, $sbcc_success) = sbcc_mode_setup($options, $test);
     if (!$sbcc_success) {
