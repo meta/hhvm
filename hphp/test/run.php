@@ -247,8 +247,15 @@ function check_for_multiple_default_binaries(): void {
 }
 
 function hhvm_path(): string {
-  $file = "";
   $hhvm_bin = getenv("HHVM_BIN");
+  return hhvm_path_for($hhvm_bin is string ? $hhvm_bin : null);
+}
+
+// Memoized on $hhvm_bin rather than on nothing because `HHVM_BIN` is set from
+// `--hhvm-binary-path` after the first lookup.
+<<__Memoize>>
+function hhvm_path_for(?string $hhvm_bin): string {
+  $file = "";
   if ($hhvm_bin is string) {
     $file = realpath($hhvm_bin);
   } else {
@@ -424,15 +431,6 @@ function parse_config_file(string $file): dict<string, string> {
 
 <<__Memoize>>
 function read_test_config(string $test): dict<string, string> {
-  // The per-test sidecar files are gone; refuse to silently ignore a stale one.
-  foreach (TEST_CONFIG_KEYS as $key) {
-    if (is_file("$test.$key")) {
-      error(
-        "$test.$key is no longer read; move its contents into a '$key' ".
-        "entry in $test.config"
-      );
-    }
-  }
   $file = "$test.config";
   return is_file($file) ? parse_config_file($file) : dict[];
 }
@@ -443,8 +441,8 @@ function read_test_config(string $test): dict<string, string> {
 function read_test_runif(string $test): ?string {
   $runif = read_test_value($test, 'runif');
   if ($runif is nonnull) return $runif;
-  $file = find_dir_config(dirname($test), 'runif');
-  return $file is null ? null : parse_config_file($file)['runif'];
+  $entry = find_dir_config(dirname($test), 'runif');
+  return $entry is null ? null : $entry[1];
 }
 
 // Read a boolean entry (see TEST_CONFIG_FLAG_KEYS) from `<test>.config`.
@@ -457,15 +455,34 @@ function read_test_value(string $test, string $key): ?string {
   return idx(read_test_config($test), $key);
 }
 
-// The nearest enclosing `config.config` that defines $key. The search is
-// per-key so a nested `config.config` setting only `opts` does not hide an
-// `hphp_opts` inherited from further up.
-function find_dir_config(string $dir, string $key): ?string {
-  return find_file_for_dir(
-    $dir,
-    'config.config',
-    $f ==> C\contains_key(parse_config_file($f), $key),
-  );
+// The suite-wide entries in effect for $dir: every enclosing `config.config` up
+// to hphp_home() merged, the nearest one winning per key, so a nested
+// `config.config` setting only `opts` does not hide an `hphp_opts` inherited
+// from further up. Each key maps to the file that set it and its value.
+// Memoized per directory and built from the parent's result, so each
+// directory's `config.config` is looked at once per run.
+<<__Memoize>>
+function suite_config(string $dir): dict<string, (string, string)> {
+  if (walk_includes_dir($dir)) {
+    $parent = walk_parent_dir($dir);
+    $config = $parent is null ? suite_config('/') : suite_config($parent);
+    $file = "$dir/config.config";
+  } else {
+    // Past the end of the walk, fall back to the test root's `config.config`.
+    $config = dict[];
+    $file = test_dir().'/config.config';
+  }
+  if (is_file($file)) {
+    foreach (parse_config_file($file) as $key => $value) {
+      $config[$key] = tuple($file, $value);
+    }
+  }
+  return $config;
+}
+
+// The `config.config` that sets $key for $dir and the value it sets.
+function find_dir_config(string $dir, string $key): ?(string, string) {
+  return idx(suite_config($dir), $key);
 }
 
 // Suite-wide default for $key from the nearest enclosing `config.config` that
@@ -475,29 +492,16 @@ function read_dir_opts(
   string $key,
   ?string $input_dir = null,
 ): string {
-  $file = find_dir_config($dir, $key);
-  if ($file is null) return "";
-  return process_opts(
-    parse_config_file($file)[$key],
-    dirname($file),
-    $input_dir,
-  );
+  $entry = find_dir_config($dir, $key);
+  if ($entry is null) return "";
+  list($file, $value) = $entry;
+  return process_opts($value, dirname($file), $input_dir);
 }
 
 // Force the `config.config` lookups a worker will do later, so a malformed
-// suite-wide file is reported during test collection instead. Memoized per
-// directory because thousands of tests share a handful of config files.
-<<__Memoize>>
+// suite-wide file is reported during test collection instead.
 function validate_dir_config(string $dir): void {
-  foreach (TEST_CONFIG_SUITE_KEYS as $key) {
-    if (is_file("$dir/config.$key")) {
-      error(
-        "$dir/config.$key is no longer read; move its contents into a ".
-        "'$key' entry in $dir/config.config"
-      );
-    }
-    find_dir_config($dir, $key);
-  }
+  suite_config($dir);
 }
 
 // Read an option block for $test from `<test>.config`. When $dir_fallback is
@@ -1059,54 +1063,51 @@ function find_test_ext(
   return find_file_for_dir(dirname($test), "{$configName}.{$ext}");
 }
 
-// Find $name in $dir or the nearest enclosing directory. $accept lets a caller
-// keep searching upwards past a file that exists but isn't the one it wants.
-function find_file_for_dir(
-  string $dir,
-  string $name,
-  ?(function(string): bool) $accept = null,
-): ?string {
+// Whether a search for config files looks in $dir. The filesystem root is
+// never searched.
+<<__Memoize>>
+function walk_includes_dir(string $dir): bool {
+  return is_dir($dir) && realpath($dir) !== '/';
+}
+
+// The next directory up from $dir when searching for config files, or null
+// once $dir is hphp_home(): tests are only configured from inside the source
+// tree, which covers both `hphp/test` and the extensions' `test` folders.
+<<__Memoize>>
+function walk_parent_dir(string $dir): ?string {
+  if (realpath($dir) === hphp_home()) return null;
   // Handle the case where the $dir might come in as '.' because you
   // are running the test runner on a file from the same directory as
   // the test e.g., './mytest.php'. dirname() will give you the '.' when
   // you actually have a lot of path to traverse upwards like
   // /home/you/code/tests/mytest.php. Don't use realpath() to get that because
   // it will mess up relative paths.
-  $depth = count(explode('/', realpath($dir))) - 1;
-  for (; $dir !== '/' && is_dir($dir) && $depth !== 0; $depth--) {
+  if ($dir === '.' || substr($dir, -2) === '..') return $dir.'/..';
+  return dirname($dir);
+}
+
+// Find $name in $dir or the nearest enclosing directory up to hphp_home(),
+// falling back to the test root. Memoized, and built from the parent's result, so each directory
+// is checked for $name once per run.
+<<__Memoize>>
+function find_file_for_dir(string $dir, string $name): ?string {
+  if (walk_includes_dir($dir)) {
     $file = "$dir/$name";
-    if (is_file($file) && ($accept is null || $accept($file))) {
-      return $file;
-    }
-    if ($dir === '.' || substr($dir, -2) === '..') {
-      $dir = $dir . '/..';
-    } else {
-      $dir = dirname($dir);
-    }
+    if (is_file($file)) return $file;
+    $parent = walk_parent_dir($dir);
+    if ($parent is nonnull) return find_file_for_dir($parent, $name);
   }
   $file = test_dir().'/'.$name;
-  if (file_exists($file) && ($accept is null || $accept($file))) {
-    return $file;
-  }
-  return null;
+  return file_exists($file) ? $file : null;
 }
 
 // The directory of the nearest enclosing `config.config` that sets
 // `set_input_dir = true`, which becomes the root that test paths are made
 // relative to.
 function find_set_input_dir(string $dir): ?string {
-  $marker = find_file_for_dir($dir, '.set_input_dir');
-  if ($marker is nonnull) {
-    error(
-      "$marker is no longer read; add 'set_input_dir = true' to ".
-      dirname($marker)."/config.config instead"
-    );
-  }
-  $file = find_dir_config($dir, 'set_input_dir');
-  if ($file is null || parse_config_file($file)['set_input_dir'] !== 'true') {
-    return null;
-  }
-  return dirname($file);
+  $entry = find_dir_config($dir, 'set_input_dir');
+  if ($entry is null || $entry[1] !== 'true') return null;
+  return dirname($entry[0]);
 }
 
 function find_debug_config(string $test, string $name): string {
@@ -1125,6 +1126,7 @@ function find_debug_config(string $test, string $name): string {
 // .sbcc artifact before HHVM starts, parallel to how repo-mode tests build .hhbc
 // before runtime.
 
+<<__Memoize>>
 function sbcc_enabled(string $test): bool {
   return sbcc_uses_builder($test) || is_file("$test.sbcc_fixture");
 }

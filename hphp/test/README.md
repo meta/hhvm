@@ -125,8 +125,7 @@ An entry with an empty value is still meaningful: as with the old sidecar
 files, a test that sets `opts` at all is excluded from server mode.
 
 The per-test `.php.opts` and `.php.hphp_opts` sidecar files these entries
-replaced are no longer read at all. Leaving one next to a test is an error
-rather than a silent no-op, so a stale file gets noticed.
+replaced are no longer read at all.
 
 Suite-wide defaults live in a per-directory `config.config` file using the
 same format. A test's own `.php.config` overrides the directory default for
