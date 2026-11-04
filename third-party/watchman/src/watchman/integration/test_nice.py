@@ -29,6 +29,11 @@ class TestNice(unittest.TestCase):
         self.assertRegex(stderr, "refusing to start")
 
     def test_failing_to_start_when_nice_foreground(self) -> None:
+        # `nice` adds 10, and watchman only refuses to start above 0.
+        if os.nice(0) + 10 <= 0:
+            self.skipTest(
+                f"nice can't lower watchman below the default from {os.nice(0)}"
+            )
         inst = WatchmanInstance.Instance()
         stdout, stderr = inst.commandViaCLI(
             ["--foreground", "version"], prefix=["nice"]

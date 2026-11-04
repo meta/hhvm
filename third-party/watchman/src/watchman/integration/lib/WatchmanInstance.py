@@ -215,7 +215,14 @@ class _Instance:
         proc = subprocess.Popen(
             args, env=env, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        return proc.communicate()
+        try:
+            return proc.communicate(timeout=60)
+        except subprocess.TimeoutExpired as e:
+            proc.kill()
+            stdout, stderr = proc.communicate()
+            raise AssertionError(
+                f"{args} didn't exit within 60s\nstdout: {stdout!r}\nstderr: {stderr!r}"
+            ) from e
 
     def start(self, extra_env=None) -> None:
         startFseventsd()
