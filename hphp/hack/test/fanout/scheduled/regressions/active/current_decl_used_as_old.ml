@@ -65,6 +65,7 @@ function g(): int {
                  lookup of f. Only disk changes: A is not queued for parsing
                  until the next iteration, and naming still reflects old A. *)
               after_indexing = [Write_file ("A.php", string_definition)];
+              after_redeclaring = [];
               type_check =
                 [
                   (* 4. Checking C lazily reads A and caches f(): string.
@@ -137,6 +138,7 @@ class Caller extends Superclass {
             (* First iteration: folding Child loads the changed parent before
                its own change notification has been processed. *)
             {
+              default_iteration with
               (* 2. Queue only a comment-only edit to Child. Redeclaration will
                  fold its class, which has not yet been loaded in this process. *)
               before_type_check =

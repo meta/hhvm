@@ -70,6 +70,7 @@ function caller(): int {
                 [Write_file ("Producer.php", producer_with_temporary_function)]
               else
                 []);
+            after_redeclaring = [];
             type_check =
               [
                 (* Let a consumer observe the temporary cached g, then undo
@@ -155,6 +156,7 @@ let scenario ~transient ~use =
                F.php caches it, although it has no naming entry. *)
             after_indexing =
               [Write_file ("F.php", "<?hh\n// edit\n" ^ transient)];
+            after_redeclaring = [];
             type_check =
               [
                 Check
@@ -296,6 +298,7 @@ let run ~temporary_function ~index_temporary ~repair_files =
                 []
               else
                 [Write_file ("Producer.php", temporary_function)]);
+            after_redeclaring = [];
             type_check =
               [
                 Check

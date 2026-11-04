@@ -36,14 +36,93 @@ let test_change_after_indexing () =
             before_type_check = [Write_file ("value.php", string_definition)];
             disk_needs_parsing = ["value.php"];
             after_indexing = [Write_file ("value.php", bool_definition)];
+            type_check = [Remaining];
           };
           {
             Scheduled_fanout.default_iteration with
             disk_needs_parsing = ["value.php"];
+            type_check = [Remaining];
           };
         ];
     };
   true
+
+(** A save after z.php is redeclared must be visible when value.php is
+    redeclared next. Its changed signature must fan out to the caller, so both
+    incremental and fresh checking report the incompatible return type. *)
+let test_change_between_redeclarations () =
+  Scheduled_fanout.run
+    {
+      initial_files =
+        ("z.php", "<?hh\nfunction z(): void {}\n") :: initial_files;
+      iterations =
+        [
+          {
+            Scheduled_fanout.default_iteration with
+            disk_needs_parsing = ["z.php"; "value.php"];
+            after_redeclaring =
+              [("z.php", [Write_file ("value.php", string_definition)])];
+            type_check = [Remaining];
+          };
+        ];
+    };
+  true
+
+(** The hook must run after its own file's declarations are cached. Changing
+    value's signature there leaves its already cached int declaration visible
+    to the caller. The expected mismatch distinguishes this from a hook that
+    runs before redeclaration or invalidates the cache when it writes. *)
+let test_redecl_hook_runs_after_file () =
+  let scenario =
+    Scheduled_fanout.
+      {
+        initial_files;
+        iterations =
+          [
+            {
+              default_iteration with
+              disk_needs_parsing = ["value.php"; "caller.php"];
+              after_redeclaring =
+                [("value.php", [Write_file ("value.php", string_definition)])];
+              type_check = [Remaining];
+            };
+          ];
+      }
+  in
+  match Scheduled_fanout.run scenario with
+  | () -> failwith "Expected the redeclaration hook to run after caching value"
+  | exception Scheduled_fanout.Diagnostics_mismatch _ -> true
+
+(** A file created only by a redeclaration hook must participate in the fresh
+    check, even though the incremental run never received its notification. *)
+let test_full_check_includes_file_added_after_redecl () =
+  let scenario =
+    Scheduled_fanout.
+      {
+        initial_files = [("value.php", int_definition)];
+        iterations =
+          [
+            {
+              default_iteration with
+              disk_needs_parsing = ["value.php"];
+              after_redeclaring =
+                [
+                  ( "value.php",
+                    [
+                      Write_file
+                        ( "new.php",
+                          "<?hh\nfunction broken(): int { return 'wrong'; }\n"
+                        );
+                    ] );
+                ];
+              type_check = [Remaining];
+            };
+          ];
+      }
+  in
+  match Scheduled_fanout.run scenario with
+  | () -> failwith "Expected the fresh check to include the new file"
+  | exception Scheduled_fanout.Diagnostics_mismatch _ -> true
 
 (** Indexing must have captured the file's names before the hook writes a new
     function. Checking its AST without a naming entry produces an internal
@@ -69,6 +148,7 @@ let test_indexing_precedes_hook () =
                     ( "definitions.php",
                       "<?hh\nfunction added(): int { return 1; }\n" );
                 ];
+              type_check = [Remaining];
             };
           ];
       }
@@ -92,6 +172,7 @@ let test_detects_unreported_change () =
             {
               default_iteration with
               after_indexing = [Write_file ("value.php", string_definition)];
+              type_check = [Remaining];
             };
           ];
       }
@@ -193,6 +274,7 @@ let test_full_check_includes_new_file () =
                     ( "new.php",
                       "<?hh\nfunction broken(): int { return 'wrong'; }\n" );
                 ];
+              type_check = [Remaining];
             };
           ];
       }
@@ -353,8 +435,13 @@ let test_rejects_transient_internal_error () =
                     ( "value.php",
                       "<?hh\nfunction renamed(): int { return 1; }\n" );
                 ];
+              type_check = [Remaining];
             };
-            { default_iteration with disk_needs_parsing = ["value.php"] };
+            {
+              default_iteration with
+              disk_needs_parsing = ["value.php"];
+              type_check = [Remaining];
+            };
           ];
       }
   in
@@ -373,7 +460,8 @@ let test_accepts_experimental_feature_error () =
   Scheduled_fanout.run
     {
       initial_files = [("const.php", "<?hh\n<<__Const>> class C {}\n")];
-      iterations = [Scheduled_fanout.default_iteration];
+      iterations =
+        [{ Scheduled_fanout.default_iteration with type_check = [Remaining] }];
     };
   true
 
@@ -401,6 +489,7 @@ let test_initialized_parent () =
             Scheduled_fanout.default_iteration with
             before_type_check = [Write_file ("value.php", string_definition)];
             disk_needs_parsing = ["value.php"];
+            type_check = [Remaining];
           };
         ];
     };
@@ -411,6 +500,10 @@ let () =
   Unit_test.run_all
     [
       ("change_after_indexing", test_change_after_indexing);
+      ("change_between_redeclarations", test_change_between_redeclarations);
+      ("redecl_hook_runs_after_file", test_redecl_hook_runs_after_file);
+      ( "full_check_includes_file_added_after_redecl",
+        test_full_check_includes_file_added_after_redecl );
       ("indexing_precedes_hook", test_indexing_precedes_hook);
       ("detects_unreported_change", test_detects_unreported_change);
       ( "expected_bug_accepts_internal_error",

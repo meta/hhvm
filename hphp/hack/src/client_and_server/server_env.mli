@@ -206,6 +206,10 @@ end
 type type_check_testing_hooks = {
   after_indexing: unit -> unit;
       (** Called from [Server_type_check.type_check_core] after [indexing] *)
+  after_file_redecl: Relative_path.t -> unit;
+      (** Called from [Decl_redecl_service.redeclare_files] after a file's declarations are parsed
+          and its classes folded, before the next file or declaration comparison. Only called
+          when redeclaration runs in-process rather than in workers. *)
   before_file_checks: Relative_path.t list -> unit;
       (** Called at entry to [Typing_check_service.go_with_interrupt] with its input file list in
           order. *)

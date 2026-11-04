@@ -23,11 +23,16 @@ end
 (** Oldify any defs in [defs] which aren't already in
 [previously_oldified_defs], then determines which symbols need to be
 re-typechecked as a result of comparing the current versions of the symbols
-to their old versions. *)
+to their old versions.
+
+When [type_check_testing_hooks] is provided, its [after_file_redecl] hook is
+invoked after each file's declarations are computed and before comparison,
+only when redeclaration runs in-process rather than in workers. *)
 val redo_type_decl :
   Provider_context.t ->
   during_init:bool ->
   Multi_worker.worker list option ->
+  type_check_testing_hooks:Server_env.type_check_testing_hooks option ->
   bucket_size:int ->
   get_classes_in_file ->
   previously_oldified_defs:File_info.names ->

@@ -329,6 +329,7 @@ type init_env = {
 
 type type_check_testing_hooks = {
   after_indexing: unit -> unit;
+  after_file_redecl: Relative_path.t -> unit;
   before_file_checks: Relative_path.t list -> unit;
   after_file_check: Relative_path.t -> unit;
 }

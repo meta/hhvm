@@ -267,6 +267,7 @@ let do_redecl
   let { Decl_redecl_service.old_decl_missing_count; fanout } =
     Cgroup_profiler.step_start_end cgroup_steps "redecl" @@ fun _cgroup_step ->
     Decl_redecl_service.redo_type_decl
+      ~type_check_testing_hooks:env.type_check_testing_hooks
       ~bucket_size
       ctx
       ~during_init:false

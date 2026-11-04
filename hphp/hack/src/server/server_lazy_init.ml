@@ -527,6 +527,7 @@ let get_files_to_recheck
     ~defs:old_dirty_names;
   let { Decl_redecl_service.fanout; _ } =
     Decl_redecl_service.redo_type_decl
+      ~type_check_testing_hooks:None
       ~bucket_size
       ctx
       ~during_init:true

@@ -57,6 +57,7 @@ function late_c(): void {
               (* 2. Remove C from disk after indexing. Naming still says that
                  C lives here, but subsequent declaration reads find no C. *)
               after_indexing = [Write_file ("ZC.php", "<?hh\n")];
+              after_redeclaring = [];
               type_check =
                 [
                   (* 3. Redeclaration sees the cached old C and no current C,
@@ -131,6 +132,7 @@ function use_c(): void {
             (* First iteration: C disappears after indexing and stays absent
                until every selected file has finished checking. *)
             {
+              default_iteration with
               (* 2. Index C with its name and signature still present. *)
               before_type_check =
                 [Write_file ("ZC.php", class_contents_plus_comment)];

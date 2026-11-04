@@ -103,14 +103,21 @@ let compare_modules_and_get_fanout
  *)
 (*****************************************************************************)
 
+let invoke_testing_hook_after_file_redecl
+    (hooks : Server_env.type_check_testing_hooks option)
+    (file : Relative_path.t) =
+  Option.iter hooks ~f:(fun hooks -> hooks.Server_env.after_file_redecl file)
+
 (** Compute decls in files. Return errors raised during decling. *)
-let redeclare_files ctx filel =
-  List.iter filel ~f:(fun fn -> Decl.make_env ~sh:Shared_mem.Uses ctx fn)
+let redeclare_files ~type_check_testing_hooks ctx filel =
+  List.iter filel ~f:(fun fn ->
+      Decl.make_env ~sh:Shared_mem.Uses ctx fn;
+      invoke_testing_hook_after_file_redecl type_check_testing_hooks fn)
 
 (** Invalidate local caches and compute decls in files. Return errors raised during decling. *)
-let decl_files ctx filel =
+let decl_files ~type_check_testing_hooks ctx filel =
   Shared_mem.invalidate_local_caches ();
-  redeclare_files ctx filel
+  redeclare_files ~type_check_testing_hooks ctx filel
 
 let compare_decls_and_get_fanout
     ctx
@@ -177,7 +184,9 @@ let compare_decls_and_get_fanout
 
 (** Invalidate local caches and compute decls in files. Return the file count. *)
 let decl_files_job ctx filel =
-  try (List.length filel, decl_files ctx filel) with
+  try
+    (List.length filel, decl_files ~type_check_testing_hooks:None ctx filel)
+  with
   | exn ->
     let e = Exception.wrap exn in
     Printf.printf "Error: %s\n" (Exception.get_ctor_string e);
@@ -582,6 +591,7 @@ let redo_type_decl
     (ctx : Provider_context.t)
     ~during_init
     (workers : Multi_worker.worker list option)
+    ~(type_check_testing_hooks : Server_env.type_check_testing_hooks option)
     ~(bucket_size : int)
     (get_classes : Relative_path.t -> S_set.t)
     ~(previously_oldified_defs : File_info.names)
@@ -615,7 +625,7 @@ let redo_type_decl
   let (fanout_acc, old_decl_missing_count) =
     (* If there aren't enough files, let's do this ourselves ... it's faster! *)
     if List.length fnl < 10 then
-      let () = decl_files ctx fnl in
+      let () = decl_files ~type_check_testing_hooks ctx fnl in
       let (fanout, old_decl_missing_count) =
         compare_decls_and_get_fanout ctx defs fnl
       in

@@ -22,6 +22,7 @@ type iteration = {
   before_type_check: action list;
   disk_needs_parsing: string list;
   after_indexing: action list;
+  after_redeclaring: (string * action list) list;
   type_check: type_check_step list;
 }
 
@@ -30,6 +31,7 @@ let default_iteration =
     before_type_check = [];
     disk_needs_parsing = [];
     after_indexing = [];
+    after_redeclaring = [];
     type_check = [Remaining];
   }
 
@@ -274,8 +276,27 @@ let split_type_check_schedule steps =
   split [] steps
 
 let run_iteration genv env ~root ~check iteration =
-  let { before_type_check; disk_needs_parsing; after_indexing; type_check } =
+  let {
+    before_type_check;
+    disk_needs_parsing;
+    after_indexing;
+    after_redeclaring;
+    type_check;
+  } =
     iteration
+  in
+  let pending_redecls =
+    ref
+      (List.fold
+         after_redeclaring
+         ~init:Relative_path.Map.empty
+         ~f:(fun pending (file, actions) ->
+           let path =
+             Relative_path.create Relative_path.Root (file_path root file)
+           in
+           if Relative_path.Map.mem pending path then
+             invalid_arg ("Duplicate scheduled file redeclaration: " ^ file);
+           Relative_path.Map.add pending ~key:path ~data:actions))
   in
   let (scheduled_checks, check_remaining) =
     split_type_check_schedule type_check
@@ -300,6 +321,7 @@ let run_iteration genv env ~root ~check iteration =
   let type_check_testing_hooks =
     if
       List.is_empty after_indexing
+      && List.is_empty after_redeclaring
       && List.is_empty scheduled_checks
       && check_remaining
     then
@@ -309,6 +331,14 @@ let run_iteration genv env ~root ~check iteration =
         Server_env.
           {
             after_indexing = (fun () -> run_actions root after_indexing);
+            after_file_redecl =
+              (fun path ->
+                match Relative_path.Map.find_opt !pending_redecls path with
+                | None -> ()
+                | Some actions ->
+                  run_actions root actions;
+                  pending_redecls :=
+                    Relative_path.Map.remove !pending_redecls path);
             before_file_checks =
               (fun paths ->
                 let selected = Relative_path.Set.of_list paths in
@@ -376,6 +406,9 @@ let run_iteration genv env ~root ~check iteration =
     @@ Server_type_check.type_check genv env (Unix.gettimeofday ())
   in
   reject_internal_errors ~check env;
+  if not (Relative_path.Map.is_empty !pending_redecls) then
+    failwith
+      "Typechecking returned before all scheduled redeclaration hooks ran";
   if not (List.is_empty !pending_checks) then
     failwith "Typechecking returned before all scheduled file checks completed";
   { env with Server_env.type_check_testing_hooks = None }
@@ -550,9 +583,18 @@ let run
     initial_files
     @ List.concat_map
         iterations
-        ~f:(fun { before_type_check; after_indexing; type_check; _ } ->
+        ~f:(fun
+             {
+               before_type_check;
+               after_indexing;
+               after_redeclaring;
+               type_check;
+               _;
+             }
+           ->
           before_type_check
           @ after_indexing
+          @ List.concat_map after_redeclaring ~f:snd
           @ List.concat_map type_check ~f:(function
                 | Check { after_check; _ } -> after_check
                 | Remaining -> [])

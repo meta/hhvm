@@ -179,6 +179,7 @@ let compute_fanout
     Fanout.t =
   let { Decl_redecl_service.fanout; _ } =
     Decl_redecl_service.redo_type_decl
+      ~type_check_testing_hooks:None
       ctx
       ~during_init:false
       None

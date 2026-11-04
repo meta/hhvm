@@ -36,6 +36,12 @@ type iteration = {
           already pending in the previous iteration's environment are retained. *)
   after_indexing: action list;
       (** Actions performed after indexing returns, before naming begins. *)
+  after_redeclaring: (string * action list) list;
+      (** Actions after the named file's declarations are parsed and its classes
+          folded, before comparison. Names must be unique and actually redeclared.
+          This does not change the server's redeclaration order. These hooks only
+          run when fewer than ten files are redeclared; otherwise, the harness
+          reports that the scheduled redeclaration hooks did not run. *)
   type_check: type_check_step list;
       (** The expected file checking order for this invocation. [Remaining] may
           occur only at the end. Without it, [Check] entries must cover every
