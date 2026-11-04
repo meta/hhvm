@@ -348,8 +348,9 @@ const keyset<string> TEST_CONFIG_KEYS = keyset[
 // Keys that may also appear in a directory-level `config.config`, supplying a
 // default for every test in the suite. Everything else describes a single test
 // and is rejected there.
-const keyset<string> TEST_CONFIG_SUITE_KEYS =
-  keyset['opts', 'hphp_opts', 'runif', 'set_input_dir'];
+const keyset<string> TEST_CONFIG_SUITE_KEYS = keyset[
+  'opts', 'hphp_opts', 'runif', 'set_input_dir', 'nomultireq', 'nodumphhas',
+];
 
 // Keys that only make sense for a whole suite and are rejected in a test's own
 // `.config`.
@@ -483,6 +484,13 @@ function suite_config(string $dir): dict<string, (string, string)> {
 // The `config.config` that sets $key for $dir and the value it sets.
 function find_dir_config(string $dir, string $key): ?(string, string) {
   return idx(suite_config($dir), $key);
+}
+
+// Read a boolean entry (see TEST_CONFIG_FLAG_KEYS) from the enclosing
+// `config.config` files.
+function read_dir_flag(string $dir, string $key): bool {
+  $entry = find_dir_config($dir, $key);
+  return $entry is nonnull && $entry[1] === 'true';
 }
 
 // Suite-wide default for $key from the nearest enclosing `config.config` that
@@ -3037,7 +3045,7 @@ function should_skip_test_simple(
 
   if ($options->hhbbc2 || $options->hhas_round_trip) {
     if (read_test_flag($test, 'nodumphhas') ||
-        file_exists(dirname($test).'/nodumphhas')) {
+        read_dir_flag(dirname($test), 'nodumphhas')) {
       return 'skip-nodumphhas';
     }
     if (read_test_flag($test, 'verify')) {
@@ -3050,7 +3058,7 @@ function should_skip_test_simple(
       return 'skip-verify';
     }
     if (read_test_flag($test, 'nomultireq') ||
-        file_exists(dirname($test).'/nomultireq')) {
+        read_dir_flag(dirname($test), 'nomultireq')) {
       return 'skip-multi-req';
     }
     if (!Str\is_empty(find_debug_config($test, 'hphpd.ini'))) {

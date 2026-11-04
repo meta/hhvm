@@ -116,9 +116,9 @@ Values:
 * `sbcc_files` - files to build into the test's SBCC artifact, one per line,
   relative to the test's `.sbcc_build_root/` directory.
 
-Only `opts`, `hphp_opts`, `runif` and `set_input_dir` may appear in a
-directory-level `config.config`; the rest describe a single test and are
-rejected there. A test's own `runif` replaces the suite's rather than adding to
+Only `opts`, `hphp_opts`, `runif`, `set_input_dir`, `nomultireq` and
+`nodumphhas` may appear in a directory-level `config.config`; the rest describe
+a single test and are rejected there. A test's own `runif` replaces the suite's rather than adding to
 it.
 
 An entry with an empty value is still meaningful: as with the old sidecar
