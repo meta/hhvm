@@ -100,6 +100,8 @@ Booleans, written as `key = true` or `key = false`:
 * `uses_loopback` - needs loopback networking.
 * `serial` - run in the serial bucket, never in parallel.
 * `verify` - run under `-m verify`.
+* `set_input_dir` - only in `config.config`: test paths are made relative to
+  this directory, which repo mode also uses as `Server.SourceRoot`.
 
 Values:
 
@@ -114,9 +116,10 @@ Values:
 * `sbcc_files` - files to build into the test's SBCC artifact, one per line,
   relative to the test's `.sbcc_build_root/` directory.
 
-Only `opts`, `hphp_opts` and `runif` may appear in a directory-level
-`config.config`; the rest describe a single test and are rejected there. A
-test's own `runif` replaces the suite's rather than adding to it.
+Only `opts`, `hphp_opts`, `runif` and `set_input_dir` may appear in a
+directory-level `config.config`; the rest describe a single test and are
+rejected there. A test's own `runif` replaces the suite's rather than adding to
+it.
 
 An entry with an empty value is still meaningful: as with the old sidecar
 files, a test that sets `opts` at all is excluded from server mode.

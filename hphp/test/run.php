@@ -333,6 +333,7 @@ const keyset<string> TEST_CONFIG_KEYS = keyset[
   'norepo', 'noserver', 'nowebserver', 'nomultireq', 'nodumphhas',
   'nojitserialize', 'nobespoke', 'onlyrepo', 'onlyjumpstart', 'onlyfacebook',
   'skip_persistent', 'no_remote', 'uses_loopback', 'serial', 'verify',
+  'set_input_dir',
   // Free-form values.
   'env', 'clisrv_env', 'exit_code', 'runif', 'sbcc_files',
 ];
@@ -341,13 +342,18 @@ const keyset<string> TEST_CONFIG_KEYS = keyset[
 // default for every test in the suite. Everything else describes a single test
 // and is rejected there.
 const keyset<string> TEST_CONFIG_SUITE_KEYS =
-  keyset['opts', 'hphp_opts', 'runif'];
+  keyset['opts', 'hphp_opts', 'runif', 'set_input_dir'];
+
+// Keys that only make sense for a whole suite and are rejected in a test's own
+// `.config`.
+const keyset<string> TEST_CONFIG_SUITE_ONLY_KEYS = keyset['set_input_dir'];
 
 // Keys holding a boolean rather than a value.
 const keyset<string> TEST_CONFIG_FLAG_KEYS = keyset[
   'norepo', 'noserver', 'nowebserver', 'nomultireq', 'nodumphhas',
   'nojitserialize', 'nobespoke', 'onlyrepo', 'onlyjumpstart', 'onlyfacebook',
   'skip_persistent', 'no_remote', 'uses_loopback', 'serial', 'verify',
+  'set_input_dir',
 ];
 
 // Parse a `.config` file, which replaces the per-key sidecar option files.
@@ -403,6 +409,9 @@ function parse_config_file(string $file): dict<string, string> {
     $value = rtrim($matches[2]);
     if ($is_dir_config && !C\contains_key(TEST_CONFIG_SUITE_KEYS, $key)) {
       error("$file:$lineno: '$key' applies to a single test, not a suite");
+    }
+    if (!$is_dir_config && C\contains_key(TEST_CONFIG_SUITE_ONLY_KEYS, $key)) {
+      error("$file:$lineno: '$key' applies to a suite, not a single test");
     }
     if (C\contains_key(TEST_CONFIG_FLAG_KEYS, $key) &&
         $value !== 'true' && $value !== 'false') {
@@ -1082,12 +1091,22 @@ function find_file_for_dir(
   return null;
 }
 
-function find_set_input_dir(string $test): ?string {
-  $set_input_dir = find_file_for_dir($test, ".set_input_dir");
-  if ($set_input_dir is nonnull) {
-    return dirname($set_input_dir);
+// The directory of the nearest enclosing `config.config` that sets
+// `set_input_dir = true`, which becomes the root that test paths are made
+// relative to.
+function find_set_input_dir(string $dir): ?string {
+  $marker = find_file_for_dir($dir, '.set_input_dir');
+  if ($marker is nonnull) {
+    error(
+      "$marker is no longer read; add 'set_input_dir = true' to ".
+      dirname($marker)."/config.config instead"
+    );
   }
-  return null;
+  $file = find_dir_config($dir, 'set_input_dir');
+  if ($file is null || parse_config_file($file)['set_input_dir'] !== 'true') {
+    return null;
+  }
+  return dirname($file);
 }
 
 function find_debug_config(string $test, string $name): string {
