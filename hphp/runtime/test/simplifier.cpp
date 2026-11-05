@@ -15,7 +15,10 @@
 */
 #include <gtest/gtest.h>
 
+#include <folly/ScopeGuard.h>
+
 #include "hphp/runtime/base/array-init.h"
+#include "hphp/runtime/base/bespoke-array.h"
 
 #include "hphp/runtime/vm/jit/block.h"
 #include "hphp/runtime/vm/jit/ir-unit.h"
@@ -23,6 +26,9 @@
 
 #include "hphp/runtime/test/match.h"
 #include "hphp/runtime/test/test-context.h"
+
+#include "hphp/util/configs/jit.h"
+#include "hphp/util/configs/repo.h"
 
 #define EXPECT_SINGLE_OP(result, opc) \
   EXPECT_EQ(nullptr, (result).dst); \
@@ -192,6 +198,43 @@ TEST(Simplifier, Count) {
     EXPECT_NO_CHANGE(result);
   }
 
+}
+
+TEST(Simplifier, TypeConstantLoadsRetainLayoutChecks) {
+  auto const oldMode = Cfg::Eval::BespokeArrayLikeMode;
+  auto const oldRepo = Cfg::Repo::Authoritative;
+  auto const oldPGO = Cfg::Jit::PGO;
+  auto const oldRequest = Cfg::Jit::RetranslateAllRequest;
+  auto const oldSeconds = Cfg::Jit::RetranslateAllSeconds;
+  SCOPE_EXIT {
+    Cfg::Eval::BespokeArrayLikeMode = oldMode;
+    Cfg::Repo::Authoritative = oldRepo;
+    Cfg::Jit::PGO = oldPGO;
+    Cfg::Jit::RetranslateAllRequest = oldRequest;
+    Cfg::Jit::RetranslateAllSeconds = oldSeconds;
+  };
+  Cfg::Eval::BespokeArrayLikeMode = 2;
+  Cfg::Repo::Authoritative = true;
+  Cfg::Jit::PGO = true;
+  Cfg::Jit::RetranslateAllRequest = 1;
+  Cfg::Jit::RetranslateAllSeconds = 1;
+  ASSERT_TRUE(allowBespokeArrayLikes());
+
+  IRUnit unit{test_context};
+  auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+  auto const cls = unit.gen(Conjure, bcctx, TCls)->dst();
+  auto const name = unit.cns(makeStaticString("T"));
+  for (auto const op : {LdTypeCns, LdTypeCnsNoThrow}) {
+    SCOPED_TRACE(opcodeName(op));
+    auto const value = unit.gen(op, bcctx, cls, name)->dst();
+    EXPECT_EQ(TStaticDict, value->type());
+    auto const check = unit.gen(
+      CheckType, bcctx, TStaticDict.narrowToVanilla(),
+      unit.defBlock(), value
+    );
+    auto const result = simplify(unit, check);
+    EXPECT_NO_CHANGE(result);
+  }
 }
 
 TEST(Simplifier, LdObjClass) {

@@ -1057,13 +1057,13 @@ To string conversions:
   Loads the resolved type constant in the slot `slot' on S0. The type constant
   is assumed to be present and resolved.
 
-| LdTypeCns, D(StaticDict), S(Cls) S(Str), NF
+| LdTypeCns, D(StaticDict), S(Cls) S(Str), LA
 
   Loads type constant with name S1 from class S0, performing any necessary
   resolution. Raises an error if no such constant could be found, if S0::S1 is
   not a type constant, if resolution fails, or if S0::S1 is abstract.
 
-| LdTypeCnsNoThrow, D(StaticDict), S(Cls) S(Str), NF
+| LdTypeCnsNoThrow, D(StaticDict), S(Cls) S(Str), LA
 
   Loads type constant with name S1 from class S0, performing any necessary
   resolution. If no such constant can be found, if S0::S1 is not a type
