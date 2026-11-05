@@ -220,6 +220,14 @@ class MysqlPooledHolder : public ConnectionHolder {
     return good_for_;
   }
 
+  [[nodiscard]] bool cryptoAuthTokensExpired(
+      std::chrono::system_clock::time_point now =
+          std::chrono::system_clock::now()) const {
+    const auto& expiration =
+        pool_key_.getConnectionOptions().getCryptoAuthTokenExpiration();
+    return expiration && *expiration <= now;
+  }
+
   void setOwnerPool(std::weak_ptr<ConnectionPool<Client>> pool) {
     // In case this connection belonged to a pool before
     removeFromPool();
@@ -786,7 +794,15 @@ class ConnectionPool
     while (true) {
       auto conn = any_database ? conn_storage_.popInstanceConnection(pool_key)
                                : conn_storage_.popConnection(pool_key);
-      if (conn == nullptr || !validate || isUsableOnCheckout(*conn)) {
+      if (conn == nullptr) {
+        return conn;
+      }
+      // Connections authenticated with expired crypto auth tokens are never
+      // reused, even when checkout validation is off.
+      if (conn->cryptoAuthTokensExpired()) {
+        continue;
+      }
+      if (!validate || isUsableOnCheckout(*conn)) {
         return conn;
       }
       stats()->incrValidationDiscards();
@@ -866,6 +882,10 @@ class ConnectionPool
     // Only called internally, this doesn't need to check if it's shutting
     // down
     validateCorrectThread();
+    // A brand new connection still goes to the operation that asked for it.
+    if (!brand_new && mysql_conn->cryptoAuthTokensExpired()) {
+      return;
+    }
     if (brand_new && expirationPolicy() == ExpirationPolicy::Age) {
       // TODO add noise to expiration age
       mysql_conn->setLifeDuration(ageTimeout());
@@ -874,6 +894,9 @@ class ConnectionPool
     VLOG(11) << "New connection ready to be used";
     auto pool_op = conn_storage_.popOperation(mysql_conn->getPoolKey());
     if (pool_op == nullptr) {
+      if (mysql_conn->cryptoAuthTokensExpired()) {
+        return;
+      }
       VLOG(11) << "No operations waiting for Connection, enqueueing it";
       conn_storage_.queueConnection(std::move(mysql_conn));
     } else {

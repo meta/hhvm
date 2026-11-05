@@ -209,6 +209,19 @@ class ConnectionOptions {
     return crypt_auth_token_list_;
   }
 
+  // When the crypto auth tokens expire. A connection pool does not hand out a
+  // connection opened with these options after this time.
+  ConnectionOptions& setCryptoAuthTokenExpiration(
+      std::chrono::system_clock::time_point expiration) {
+    crypt_auth_token_expiration_ = expiration;
+    return *this;
+  }
+
+  const folly::Optional<std::chrono::system_clock::time_point>&
+  getCryptoAuthTokenExpiration() const {
+    return crypt_auth_token_expiration_;
+  }
+
  private:
   Duration connection_timeout_;
   folly::Optional<Duration> connection_tcp_timeout_;
@@ -222,6 +235,8 @@ class ConnectionOptions {
   folly::Optional<uint8_t> dscp_;
   folly::Optional<std::string> sni_servername_;
   folly::Optional<std::string> crypt_auth_token_list_;
+  folly::Optional<std::chrono::system_clock::time_point>
+      crypt_auth_token_expiration_;
   bool reset_conn_before_close_ = false;
   bool delayed_reset_conn_ = false;
   bool change_user_ = false;

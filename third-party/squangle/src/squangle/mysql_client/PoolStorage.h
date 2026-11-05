@@ -154,12 +154,14 @@ class PoolStorageData {
     stock_.push(key, std::move(newConn), conn_limit_);
   }
 
-  // Checks and removes the connection that reached their idle time or age
-  // limit.
+  // Checks and removes the connections that reached their idle time or age
+  // limit, or whose crypto auth tokens have expired.
   auto cleanupConnections() {
     Timepoint now = std::chrono::steady_clock::now();
+    auto wallNow = std::chrono::system_clock::now();
     return stock_.cleanup([&](const auto& conn) {
-      return isExpired(*conn, max_idle_time_, now);
+      return isExpired(*conn, max_idle_time_, now) ||
+          conn->cryptoAuthTokensExpired(wallNow);
     });
   }
 

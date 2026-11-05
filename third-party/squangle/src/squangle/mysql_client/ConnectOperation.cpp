@@ -49,6 +49,9 @@ void ConnectOperationImpl::setConnectionOptions(
   if (auto cats = conn_opts.getCryptoAuthTokenList()) {
     setCryptoAuthTokenList(*std::move(cats));
   }
+  if (auto expiration = conn_opts.getCryptoAuthTokenExpiration()) {
+    conn_options_.setCryptoAuthTokenExpiration(*expiration);
+  }
 }
 
 const ConnectionOptions& ConnectOperationImpl::getConnectionOptions() const {
