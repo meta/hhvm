@@ -1670,7 +1670,6 @@ ALWAYS_INLINE Array maybeResolveAndErrorOnTypeStructure(
   if (op == TypeStructResolveOp::Resolve) {
     auto const result = resolveAndVerifyTypeStructureHelper(1, vmStack().topC(),
                                                             suppress, isOrAsOp);
-    if (arr == result) return ArrNR(arr);
     return Array::attach(result);
 
   }
@@ -1737,7 +1736,7 @@ OPTBLD_INLINE void iopCombineAndResolveTypeStruct(uint32_t n) {
     resolveAndVerifyTypeStructureHelper(n, vmStack().topC(), false, false);
   vmStack().popC(); // pop the first TS
   vmStack().ndiscard(n-1);
-  vmStack().pushArrayLike(resolved);
+  vmStack().pushArrayLikeNoRc(resolved);
 }
 
 OPTBLD_INLINE void iopRecordReifiedGeneric() {

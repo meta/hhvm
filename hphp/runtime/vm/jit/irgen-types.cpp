@@ -1353,7 +1353,7 @@ void emitThrowAsTypeStructException(IRGS& env, AsTypeStructExceptionKind kind) {
       }
     }
     auto const ts = resolveTypeStructImpl(env, true, false, 1, true);
-    return {ts, nullptr};
+    return {ts, makeCatchBlock(env, [&]{ decRef(env, ts); })};
   }();
   // No need to decref inputs as this instruction will throw
   if (kind == AsTypeStructExceptionKind::Error) {
@@ -1678,6 +1678,7 @@ void emitVerifyRetTypeTS(IRGS& env) {
     // Meaning we did not not guard on the stack input correctly
     PUNT(VerifyRetTypeTS-UnguardedObj);
   }
+  decRef(env, ts);
 }
 
 void emitVerifyTypeTS(IRGS& env) {
@@ -1726,6 +1727,7 @@ void emitVerifyParamTypeTS(IRGS& env, int32_t paramId) {
     // Meaning we did not not guard on the stack input correctly
     PUNT(VerifyReifiedLocalType-UnguardedObj);
   }
+  decRef(env, ts);
 }
 
 void emitOODeclExists(IRGS& env, OODeclExistsOp subop) {

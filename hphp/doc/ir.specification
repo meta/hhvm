@@ -645,11 +645,12 @@ To string conversions:
   Returns whether t instanceof S0 returns true when t is of the given type.
 
 | ResolveTypeStruct<class,suppress,offset,size,isOrAsOp>,
-|   D(Dict), S(StkPtr) S(Cls|Nullptr), LA
+|   D(Dict), S(StkPtr) S(Cls|Nullptr), PRc|LA
 
   Applies class/alias resolution on the type structure that is at the stack
   offset given by S0 and offset. If size > 1, combine the type structures on
-  the stack into the first one's denoted holes. Returns a copy.
+  the stack into the first one's denoted holes. Returns a copy, which the
+  caller owns.
   S1 is the calling class, used to resolve the this typehint.
   If isOrAsOp is set, raises an error if S0 contains traits, function types or
   typevars.
