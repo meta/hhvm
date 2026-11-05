@@ -505,6 +505,7 @@ target_link_libraries(jansson string third_party_deps)
 
 list(APPEND testsupport_sources
 watchman/ChildProcess.cpp
+watchman/Clock.cpp
 watchman/fs/FileDescriptor.cpp
 watchman/fs/FileInformation.cpp
 watchman/fs/FSDetect.cpp
@@ -759,6 +760,7 @@ t_test(art watchman/test/ArtTest.cpp)
 t_test(bser watchman/test/BserTest.cpp)
 t_test(cache watchman/test/CacheTest.cpp)
 t_test(childproc watchman/test/ChildProcTest.cpp)
+t_test(clockspec watchman/test/ClockSpecTest.cpp)
 t_test(fsdetect watchman/test/FSDetectTest.cpp)
 t_test(ignore watchman/test/IgnoreTest.cpp)
 # Linking this test needs the targets graph to be cleaned up.
