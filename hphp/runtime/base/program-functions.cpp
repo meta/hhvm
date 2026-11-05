@@ -1023,26 +1023,7 @@ hugifyText(char* from, char* to) {
 }
 
 static void pagein_self(void) {
-#if defined(USE_JEMALLOC)
-  bool background_threads = false;
-  if (mallctlRead<bool, true>("background_thread", &background_threads)) {
-    background_threads = false;
-    Logger::Warning("Failed to determine jemalloc background thread state");
-  }
-  if (background_threads &&
-      mallctlWrite<bool, true>("background_thread", false)) {
-    Logger::Warning("Failed to disable jemalloc background threads");
-  }
-  SCOPE_EXIT {
-    if (background_threads &&
-        mallctlWrite<bool, true>("background_thread", true)) {
-      Logger::Warning("Failed to enable jemalloc background threads");
-    }
-  };
-#endif
-
-  // Other than the jemalloc background threads, which should've been stopped by
-  // now, the only thread allowed here is the current one.  Check that and alarm
+  // The only thread allowed here is the current one. Check that and alarm
   // people when they accidentally created threads before this point.
   int numTry = 0;
   while (Process::GetNumThreads() > 1) {
@@ -1212,6 +1193,12 @@ static int start_server(const std::string &username) {
   BootStats::markStart("pagein_self");
   pagein_self();
   BootStats::mark("pagein_self");
+
+#if defined(USE_JEMALLOC)
+  if (mallctlWrite<bool, true>("background_thread", true)) {
+    Logger::Warning("Failed to enable jemalloc background threads");
+  }
+#endif
 
   set_execution_mode(ExecutionMode::SERVER);
 

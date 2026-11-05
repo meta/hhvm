@@ -977,6 +977,7 @@ extern "C" {
 #if USE_JEMALLOC
   // MALLOC_CONF
   const char* malloc_conf = "narenas:8,lg_tcache_max:16"
+    ",background_thread:false"
     ",metadata_thp:disabled,bin_shards:1-256:16|320-14336:4|4096-4096:16"
     ;
 #endif
