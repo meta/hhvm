@@ -49,8 +49,18 @@ namespace {
   function hphp_clear_unflushed(): HH\FIXME\MISSING_RETURN_TYPE;
   <<__PHPStdLib>>
   function hphp_debug_caller_identifier()[leak_safe]: string;
+  /**
+   * `class` is a name, not a pointer: load it with `HH\classname_to_class()`;
+   * it is absent for closures and functions. With no caller (an entry point,
+   * shutdown function or exception handler), file/function are '' and line 0.
+   */
   <<__PHPStdLib>>
-  function hphp_debug_caller_info()[leak_safe]: HH\FIXME\MISSING_RETURN_TYPE;
+  function hphp_debug_caller_info()[leak_safe]: shape(
+    ?'class' => classname<mixed>,
+    'file' => string,
+    'function' => string,
+    'line' => int,
+  );
   <<__PHPStdLib>>
   function hphp_debug_backtrace_hash(int $options = 0)[leak_safe]: int;
   <<__PHPStdLib>>

@@ -248,6 +248,8 @@ function hphp_clear_unflushed(): void;
  *    contain keys 'file', 'function', 'line' and optionally 'class' which
  *    indicate the filename, function, line number and class name (if in class
  *    context) of the callsite that invoked the current function or method.
+ *    With no caller (a sync entry point, a shutdown function, an exception
+ *    handler), 'file' and 'function' are '' and 'line' is 0.
  */
 <<__Native, __EagerVMSync>>
 function hphp_debug_caller_info()[leak_safe]: darray<string, mixed>;

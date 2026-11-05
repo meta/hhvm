@@ -1,0 +1,56 @@
+File "hphp_debug_caller_info.php", line 7, characters 3-16:
+  ~shape(?'class' => classname<mixed>, 'file' => string, 'function' => string, 'line' => int)
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<mixed>` [2]
+-> But got `string` [3]
+->   via this generic `Tv` [4]
+->   by the definition of `classname` [5]
+->   by the definition of `typename` [6]
+
+hphp_debug_caller_info.php:10:17
+ 1 | <?hh
+ 2 | 
+ 3 | function takes_class(class<mixed> $c): void {}
+   |                      ^^^^^^^^^^^^ [2]
+ 4 | 
+ 5 | function caller_info_fields(): void {
+   :
+ 8 |   $class = Shapes::idx($info, 'class');
+ 9 |   if ($class is nonnull) {
+10 |     takes_class($class);
+   |                 ^^^^^^ [1]
+11 |     takes_class(HH\classname_to_class($class));
+12 |   }
+
+stdlib/builtins_error.hhi:59:17
+57 |   <<__PHPStdLib>>
+58 |   function hphp_debug_caller_info()[leak_safe]: shape(
+59 |     ?'class' => classname<mixed>,
+   |                 ^^^^^^^^^^^^^^^^ [3]
+60 |     'file' => string,
+61 |     'function' => string,
+
+Shapes.hhi:45:10
+43 |       arraykey $index,
+44 |       ?Tv $default = null,
+45 |     )[]: Tv;
+   |          ^^ [4]
+46 | 
+47 |     /**
+
+classname.hhi:21:28
+12 |    */
+13 |   <<__NoAutoDynamic>>
+14 |   newtype typename<+T> as string = string;
+   |                           ^^^^^^ [6]
+15 | 
+16 |   /**
+   :
+19 |    * package boundaries. */
+20 |   <<__NoAutoDynamic>>
+21 |   newtype classname<+T> as typename<T> = typename<T>;
+   |                            ^^^^^^^^^^^ [5]
+22 | 
+23 |   /**
+
+1 error found

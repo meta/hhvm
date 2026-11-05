@@ -86,6 +86,37 @@ ArrayData* debug_backtrace_jit(int64_t options) {
   return HHVM_FN(debug_backtrace)(options).detach();
 }
 
+namespace {
+
+constexpr auto s_file_idx = 0;
+constexpr auto s_line_idx = 1;
+constexpr auto s_class_idx = 2;
+constexpr auto s_function_idx = 3;
+
+RuntimeStruct* caller_info_struct() {
+  static const RuntimeStruct::FieldIndexVector s_fields = {
+    {s_file_idx, s_file},
+    {s_line_idx, s_line},
+    {s_class_idx, s_class},
+    {s_function_idx, s_function},
+  };
+  static auto const s_struct =
+    RuntimeStruct::registerRuntimeStruct(s_hphp_debug_caller_info, s_fields);
+  return s_struct;
+}
+
+// Returned when the callee is the bottom frame, so the result always has
+// 'file', 'function' and 'line'.
+Array caller_info_placeholder() {
+  StructDictInit init(caller_info_struct(), 3);
+  init.set(s_file_idx, s_file, empty_string_variant());
+  init.set(s_function_idx, s_function, empty_string_variant());
+  init.set(s_line_idx, s_line, 0);
+  return init.toArray();
+}
+
+}
+
 bool hphp_debug_caller_info_impl(
     Array& result, bool& skipped, const Func* func, Offset offset) {
   if (!skipped && func->isSkipFrame()) return false;
@@ -100,18 +131,7 @@ bool hphp_debug_caller_info_impl(
   auto const line = func->getLineNumber(offset);
   if (line == -1) return false;
 
-  static constexpr auto s_file_idx = 0;
-  static constexpr auto s_line_idx = 1;
-  static constexpr auto s_class_idx = 2;
-  static constexpr auto s_function_idx = 3;
-  static const RuntimeStruct::FieldIndexVector s_fields = {
-    {s_file_idx, s_file},
-    {s_line_idx, s_line},
-    {s_class_idx, s_class},
-    {s_function_idx, s_function},
-  };
-  static auto const s_struct =
-    RuntimeStruct::registerRuntimeStruct(s_hphp_debug_caller_info, s_fields);
+  auto const s_struct = caller_info_struct();
 
   auto const cls = func->cls();
   auto const path = func->originalUnit() ?
@@ -141,15 +161,18 @@ bool hphp_debug_caller_info_impl(
  * This function returns an array containing keys "file", "function", "line" and
  * optionally "class" which indicate the filename, function, line number and
  * class name (if in class context) where the "caller" called the "callee".
+ * If the callee is the bottom frame (a sync entry point, a shutdown function,
+ * an exception handler), there is no caller: "file" and "function" are empty
+ * and "line" is 0.
  */
 ArrayRet HHVM_FUNCTION(hphp_debug_caller_info) {
-  Array result = empty_dict_array();
+  Array result;
   bool skipped = false;
   walkStack([&] (const BTFrame& frm) {
     return hphp_debug_caller_info_impl(
         result, skipped, frm.func(), frm.bcOff());
   });
-  return result;
+  return result.isNull() ? caller_info_placeholder() : result;
 }
 
 
