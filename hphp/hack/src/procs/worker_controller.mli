@@ -72,11 +72,8 @@ val get_handle_UNSAFE : worker -> ('a, 'b) handle option
 (* Mark the worker as free *)
 val mark_free : worker -> unit
 
-(* If the worker isn't prespawned, spawn the worker *)
+(** Get the worker process handle. *)
 val spawn : worker -> (void, Worker.request) Daemon.handle
-
-(* If the worker isn't prespawned, close the worker *)
-val close : worker -> (void, Worker.request) Daemon.handle -> unit
 
 type call_wrapper = { wrap: 'x 'b. ('x -> 'b) -> 'x -> 'b }
 

@@ -75,8 +75,6 @@ let () =
          (failure_to_string failure))
   | _ -> None
 
-let use_prespawned = true
-
 (* The maximum amount of workers *)
 let max_workers = 1000
 
@@ -118,9 +116,7 @@ type worker = {
   (* If the worker is currently busy, handle of the job it's execuing *)
   mutable handle: 'a 'b. ('a, 'b) handle option;
   (* On Unix, a reference to the 'prespawned' worker. *)
-  prespawned: (void, request) Daemon.handle option;
-  (* On Windows, a function to spawn a worker. *)
-  spawn: unit -> (void, request) Daemon.handle;
+  prespawned: (void, request) Daemon.handle;
 }
 
 (*****************************************************************************
@@ -173,14 +169,7 @@ let mark_free w =
   w.busy <- false;
   w.handle <- None
 
-(* If the worker isn't prespawned, spawn the worker *)
-let spawn w =
-  match w.prespawned with
-  | None -> w.spawn ()
-  | Some handle -> handle
-
-(* If the worker isn't prespawned, close the worker *)
-let close w h = if Option.is_none w.prespawned then Daemon.close h
+let spawn w = w.prespawned
 
 (* If there is a call_wrapper, apply it and create the Request *)
 let wrap_request w f x metadata_in =
@@ -211,12 +200,7 @@ let workers = ref []
 let make_one ?call_wrapper controller_fd spawn id =
   if id >= max_workers then failwith "Too many workers";
 
-  let prespawned =
-    if not use_prespawned then
-      None
-    else
-      Some (spawn ())
-  in
+  let prespawned = spawn () in
   let worker =
     {
       call_wrapper;
@@ -226,7 +210,6 @@ let make_one ?call_wrapper controller_fd spawn id =
       handle = None;
       force_quit = false;
       prespawned;
-      spawn;
     }
   in
   workers := worker :: !workers;
@@ -243,16 +226,12 @@ let make
     ~gc_control
     ~heap_handle : worker list =
   let setup_controller_fd () =
-    if use_prespawned then
-      let (parent_fd, child_fd) = Unix.pipe () in
-      (* parent_fd is only used in this process. Don't leak it to children.
-       * This will auto-close parent_fd in children created with Daemon.spawn
-       * since Daemon.spawn uses exec. *)
-      let () = Unix.set_close_on_exec parent_fd in
-      (Some parent_fd, Some child_fd)
-    else
-      (* We don't use the side channel on Windows. *)
-      (None, None)
+    let (parent_fd, child_fd) = Unix.pipe () in
+    (* parent_fd is only used in this process. Don't leak it to children.
+     * This will auto-close parent_fd in children created with Daemon.spawn
+     * since Daemon.spawn uses exec. *)
+    let () = Unix.set_close_on_exec parent_fd in
+    (parent_fd, child_fd)
   in
   let spawn worker_id name child_fd () =
     Shared_mem.clear_close_on_exec heap_handle;
@@ -283,7 +262,11 @@ let make
     let (controller_fd, child_fd) = setup_controller_fd () in
     let name = Printf.sprintf Worker_utils.worker_name_fmt n nbr_procs pid in
     made_workers :=
-      make_one ?call_wrapper controller_fd (spawn n name child_fd) n
+      make_one
+        ?call_wrapper
+        (Some controller_fd)
+        (spawn n name (Some child_fd))
+        n
       :: !made_workers
   done;
   !made_workers
@@ -298,8 +281,7 @@ let call ?(call_id = 0) w (type a b) (f : a -> b) (x : a) : (a, b) handle =
     Printf.ksprintf failwith "force quit worker (%d)" (worker_id w);
   mark_busy w;
 
-  (* Spawn the worker, if not prespawned. *)
-  let ({ Daemon.pid = worker_pid; channels = (inc, outc) } as h) = spawn w in
+  let { Daemon.pid = worker_pid; channels = (inc, outc) } = spawn w in
   let infd = Daemon.descr_of_in_channel inc in
   let outfd = Daemon.descr_of_out_channel outc in
   let worker_failed pid_stat controller_fd =
@@ -357,7 +339,6 @@ let call ?(call_id = 0) w (type a b) (f : a -> b) (x : a) : (a, b) handle =
         let ({ stats; log_globals } : metadata_out) =
           Marshal_tools.from_fd_with_preamble infd
         in
-        close w h;
         Measure.merge (Measure.deserialize stats);
         Hack_event_logger.deserialize_globals log_globals;
         data)
@@ -521,7 +502,7 @@ let get_call_id h = snd (fst !h)
 let force_quit w =
   if not (is_force_quit w) then (
     w.force_quit <- true;
-    Option.iter ~f:Daemon.force_quit w.prespawned
+    Daemon.force_quit w.prespawned
   )
 
 let force_quit_all () = List.iter ~f:force_quit !workers
