@@ -535,13 +535,15 @@ pub const type_alias_to_type_constant: Error =
 pub const interface_with_memoize: Error =
     Cow::Borrowed("`__Memoize` is not allowed on interface methods");
 pub const nested_concurrent_blocks: Error = Cow::Borrowed("`concurrent` blocks cannot be nested.");
+pub const empty_concurrent_block: Error =
+    Cow::Borrowed("Expected at least one statement in a `concurrent` block.");
 pub const fewer_than_two_statements_in_concurrent_block: Error = Cow::Borrowed(concat!(
     "Expected 2 or more statements in concurrent block. `concurrent` wrapping ",
     "nothing or a single statement is not useful or already implied.",
 ));
 pub const invalid_syntax_concurrent_block: Error = Cow::Borrowed(concat!(
-    "`concurrent` block must contain a compound statement of two or ",
-    "more expression statements, IE concurrent `{ <expr>; <expr>; }`.",
+    "`concurrent` block must contain a compound statement of one or ",
+    "more expression statements, IE concurrent `{ <expr>; }`.",
 ));
 pub const statement_without_await_in_concurrent_block: Error =
     Cow::Borrowed("Statement without an `await` in a concurrent block");

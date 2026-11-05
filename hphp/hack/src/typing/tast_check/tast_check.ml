@@ -42,6 +42,7 @@ let warning_checks =
     (module Equality_check);
     (module Duplicate_properties);
     (module Redundant_nullsafe);
+    (module Redundant_concurrent);
     (module Set_or_keyset_array_get);
     (module Tany_check);
     (module Dynamic_call_check);

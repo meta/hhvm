@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<fd535e9cc4fa7a333d584ec021d93210>>
+// @generated SignedSource<<4490dacb3a49834423330450fb93c959>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -111,6 +111,8 @@ pub struct ParserOptions {
     /// DSL's shape wrapper type a transparent type alias, after which the unwrap call no longer
     /// typechecks.
     pub expression_tree_shape_no_unwrap: bool,
+    /// Allow a [concurrent] block with a single statement in the typechecker.
+    pub allow_single_statement_concurrent: bool,
 }
 
 /// Options passed to the Rust parser-error checker. Oxidised into FfiT.
@@ -147,4 +149,5 @@ pub struct FfiT {
     pub consider_unspecified_experimental_features_released: bool,
     pub ignore_string_methods: bool,
     pub enable_intrinsics_extension: bool,
+    pub allow_single_statement_concurrent: bool,
 }

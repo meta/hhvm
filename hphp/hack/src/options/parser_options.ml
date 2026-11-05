@@ -41,6 +41,7 @@ type t = {
   ignore_string_methods: bool;
   enable_intrinsics_extension: bool;
   expression_tree_shape_no_unwrap: bool;
+  allow_single_statement_concurrent: bool;
 }
 [@@deriving show, eq]
 
@@ -78,6 +79,7 @@ let default =
     ignore_string_methods = true;
     enable_intrinsics_extension = false;
     expression_tree_shape_no_unwrap = false;
+    allow_single_statement_concurrent = false;
   }
 
 (* Options passed to the Rust parser-error checker. Oxidised into FfiT. *)
@@ -98,6 +100,7 @@ type ffi_t = {
   consider_unspecified_experimental_features_released: bool;
   ignore_string_methods: bool;
   enable_intrinsics_extension: bool;
+  allow_single_statement_concurrent: bool;
 }
 
 let to_rust_ffi_t (po : t) : ffi_t =
@@ -120,4 +123,5 @@ let to_rust_ffi_t (po : t) : ffi_t =
       po.consider_unspecified_experimental_features_released;
     ignore_string_methods = po.ignore_string_methods;
     enable_intrinsics_extension = po.enable_intrinsics_extension;
+    allow_single_statement_concurrent = po.allow_single_statement_concurrent;
   }

@@ -1468,10 +1468,16 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 seq.append(stmts);
                 tmps.extend(con.iter().map(|(lid, _)| lid.clone()));
 
-                let stmt = Stmt::new(pos.clone(), Stmt_::mk_block(None, Block(seq)));
-                let awaitall_stmt =
-                    Stmt::new(pos.clone(), Stmt_::mk_awaitall(con, Block(vec![stmt])));
-                *elem = Stmt::new(pos, Stmt_::mk_block(Some(tmps), Block(vec![awaitall_stmt])));
+                let body = if con.is_empty() {
+                    seq
+                } else {
+                    let stmt = Stmt::new(pos.clone(), Stmt_::mk_block(None, Block(seq)));
+                    vec![Stmt::new(
+                        pos.clone(),
+                        Stmt_::mk_awaitall(con, Block(vec![stmt])),
+                    )]
+                };
+                *elem = Stmt::new(pos, Stmt_::mk_block(Some(tmps), Block(body)));
                 Ok(())
             }
             Stmt_::Concurrent(Block(stmts)) => {

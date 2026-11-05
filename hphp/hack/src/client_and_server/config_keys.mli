@@ -52,6 +52,8 @@ module Hhconfig : sig
 
   val expression_tree_shape_no_unwrap : string
 
+  val allow_single_statement_concurrent : string
+
   val everything_sdt : string
 
   val forget_static_prop_refinements_by_name : string

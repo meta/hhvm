@@ -1,1 +1,1 @@
-(4,3)-(4,16) Expected 2 or more statements in concurrent block. `concurrent` wrapping nothing or a single statement is not useful or already implied.
+(4,3)-(4,16) Expected at least one statement in a `concurrent` block.

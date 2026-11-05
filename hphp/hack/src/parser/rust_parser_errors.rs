@@ -5786,7 +5786,14 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
             };
             if let CompoundStatement(x) = &x.statement.children {
                 let statement_list = || syntax_to_list_no_separators(&x.statements);
-                if statement_list().nth(1).is_none() {
+                if statement_list().next().is_none() {
+                    self.errors
+                        .push(make_error_from_node(node, errors::empty_concurrent_block))
+                } else if statement_list().nth(1).is_none()
+                    && matches!(self.env.mode, Mode::ForTypecheck)
+                    && !self.env.parser_options.allow_single_statement_concurrent
+                {
+                    // Typechecker-only gate so HHVM ships first; remove after rollout.
                     self.errors.push(make_error_from_node(
                         node,
                         errors::fewer_than_two_statements_in_concurrent_block,

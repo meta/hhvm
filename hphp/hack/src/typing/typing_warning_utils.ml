@@ -1017,6 +1017,21 @@ module Shape_key_const_value_unresolvable = struct
   let quickfixes _ = []
 end
 
+module Redundant_concurrent = struct
+  type t = unit
+
+  let codes = [Codes.RedundantConcurrent]
+
+  let code () = Codes.RedundantConcurrent
+
+  let claim () =
+    "A `concurrent` block containing a single statement is redundant. Concurrency within a statement is already implied by `await`."
+
+  let reasons () = []
+
+  let quickfixes () = []
+end
+
 let module_of (type a x) (kind : (x, a) Typing_warning.kind) :
     (module Warning with type t = x) =
   match kind with
@@ -1054,6 +1069,7 @@ let module_of (type a x) (kind : (x, a) Typing_warning.kind) :
     (module Redundant_require_this_as)
   | Typing_warning.Shape_key_const_value_unresolvable ->
     (module Shape_key_const_value_unresolvable)
+  | Typing_warning.Redundant_concurrent -> (module Redundant_concurrent)
 
 let module_of_migrated
     (type x) (kind : (x, Typing_warning.migrated) Typing_warning.kind) :
@@ -1085,6 +1101,7 @@ let is_type_dependent (type a x) (kind : (x, a) Typing_warning.kind) : bool =
   | Typing_warning.Consistent_construct_abstract_final -> false
   | Typing_warning.Redundant_require_this_as -> false
   | Typing_warning.Shape_key_const_value_unresolvable -> false
+  | Typing_warning.Redundant_concurrent -> false
   (* Type-dependent: rely on type precision that could differ under dynamic *)
   | Typing_warning.Is_as_always -> true
   | Typing_warning.Non_disjoint_check -> true

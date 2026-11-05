@@ -1,4 +1,4 @@
-error: Parsing[1002] `concurrent` block must contain a compound statement of two or more expression statements, IE concurrent `{ <expr>; <expr>; }`. [1]
+error: Parsing[1002] `concurrent` block must contain a compound statement of one or more expression statements, IE concurrent `{ <expr>; }`. [1]
 
 concurrent_non_expr_stmt.php:8:5
  6 |   concurrent {

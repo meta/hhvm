@@ -1,2 +1,2 @@
 (5,5)-(8,6) `concurrent` blocks cannot be nested.
-(5,5)-(8,6) `concurrent` block must contain a compound statement of two or more expression statements, IE concurrent `{ <expr>; <expr>; }`.
+(5,5)-(8,6) `concurrent` block must contain a compound statement of one or more expression statements, IE concurrent `{ <expr>; }`.

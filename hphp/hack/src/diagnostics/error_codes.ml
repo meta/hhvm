@@ -892,6 +892,7 @@ module Warning = struct
     | ReadonlyPropertyOverride [@value 12045]
     (* | ShapeKeyClassConstValueUnresolvableDEPRECATED [@value 12046] *)
     | ShapeKeyEnumConstValueUnresolvable [@value 12047]
+    | RedundantConcurrent [@value 12048]
   (* Add new Warning codes here! Comment out when deprecating. *)
   [@@deriving enum, ord, show { with_path = false }]
 end

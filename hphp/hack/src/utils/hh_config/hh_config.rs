@@ -327,6 +327,10 @@ impl HhConfig {
                 "expression_tree_shape_no_unwrap",
                 default.expression_tree_shape_no_unwrap,
             )?,
+            allow_single_statement_concurrent: hhconfig.get_bool_or(
+                "allow_single_statement_concurrent",
+                default.allow_single_statement_concurrent,
+            )?,
         };
         let rollouts = SavedStateRollouts::make(
             current_rolled_out_flag_idx,

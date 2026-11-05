@@ -1,0 +1,1 @@
+--config allow_single_statement_concurrent=true

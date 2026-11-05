@@ -1,1 +1,1 @@
-(4,3)-(4,32) `concurrent` block must contain a compound statement of two or more expression statements, IE concurrent `{ <expr>; <expr>; }`.
+(4,3)-(4,32) `concurrent` block must contain a compound statement of one or more expression statements, IE concurrent `{ <expr>; }`.

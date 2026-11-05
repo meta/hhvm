@@ -1,0 +1,27 @@
+warning: Warn[12048] A `concurrent` block containing a single statement is redundant. Concurrency within a statement is already implied by `await`. [1]
+
+concurrent_single.php:8:3
+ 6 | 
+ 7 | async function single_await(): Awaitable<void> {
+ 8 |   concurrent {
+   |   ^^^^^^^^^^^^ [1]
+ 9 |     await value();
+   |     ^^^^^^^^^^^^^^ [1]
+10 |   }
+   |   ^ [1]
+11 | }
+
+error: Parsing[1002] Expected 2 or more statements in concurrent block. `concurrent` wrapping nothing or a single statement is not useful or already implied. [1]
+
+concurrent_single.php:8:3
+ 6 | 
+ 7 | async function single_await(): Awaitable<void> {
+ 8 |   concurrent {
+   |   ^^^^^^^^^^^^ [1]
+ 9 |     await value();
+   |     ^^^^^^^^^^^^^^ [1]
+10 |   }
+   |   ^ [1]
+11 | }
+
+2 errors found

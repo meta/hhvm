@@ -51,6 +51,7 @@ ocaml_ffi! {
             consider_unspecified_experimental_features_released,
             ignore_string_methods,
             enable_intrinsics_extension,
+            allow_single_statement_concurrent,
         } = options;
         // Only the options relevant to parser errors are populated; the rest retain their defaults.
         let parser_options = ParserOptions {
@@ -67,6 +68,7 @@ ocaml_ffi! {
             consider_unspecified_experimental_features_released,
             ignore_string_methods,
             enable_intrinsics_extension,
+            allow_single_statement_concurrent,
             ..ParserOptions::default()
         };
         let (tree, _arena) = unsafe {

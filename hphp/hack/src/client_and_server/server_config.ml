@@ -423,6 +423,9 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
         expression_tree_shape_no_unwrap =
           bool_opt Config_keys.Hhconfig.expression_tree_shape_no_unwrap config
           >?? po_opt.expression_tree_shape_no_unwrap;
+        allow_single_statement_concurrent =
+          bool_opt Config_keys.Hhconfig.allow_single_statement_concurrent config
+          >?? po_opt.allow_single_statement_concurrent;
       }
   in
   Global_options.set

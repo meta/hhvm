@@ -76,6 +76,8 @@ type t = {
           argument of the shape ops (`shapeAt`/`shapeIdx`/`shapePut`). Used to roll out making the
           DSL's shape wrapper type a transparent type alias, after which the unwrap call no longer
           typechecks. *)
+  allow_single_statement_concurrent: bool;
+      (** Allow a [concurrent] block with a single statement in the typechecker. *)
 }
 [@@deriving show, eq]
 
@@ -99,6 +101,7 @@ type ffi_t = {
   consider_unspecified_experimental_features_released: bool;
   ignore_string_methods: bool;
   enable_intrinsics_extension: bool;
+  allow_single_statement_concurrent: bool;
 }
 
 val to_rust_ffi_t : t -> ffi_t

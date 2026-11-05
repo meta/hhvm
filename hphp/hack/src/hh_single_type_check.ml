@@ -872,6 +872,8 @@ let parse_options () =
         enable_intrinsics_extension = default.enable_intrinsics_extension;
         expression_tree_shape_no_unwrap =
           default.expression_tree_shape_no_unwrap;
+        allow_single_statement_concurrent =
+          default.allow_single_statement_concurrent;
       }
   in
 

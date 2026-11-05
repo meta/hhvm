@@ -318,5 +318,6 @@ type (_, _) kind =
   | Redundant_require_this_as : (Redundant_require_this_as.t, warn) kind
   | Shape_key_const_value_unresolvable
       : (Shape_key_const_value_unresolvable.t, warn) kind
+  | Redundant_concurrent : (unit, warn) kind
 
 type ('x, 'a) t = Pos.t * ('x, 'a) kind * 'x

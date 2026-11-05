@@ -53,6 +53,9 @@ module Hhconfig = struct
 
   let expression_tree_shape_no_unwrap = key "expression_tree_shape_no_unwrap"
 
+  let allow_single_statement_concurrent =
+    key "allow_single_statement_concurrent"
+
   let everything_sdt = key "everything_sdt"
 
   let forget_static_prop_refinements_by_name =
