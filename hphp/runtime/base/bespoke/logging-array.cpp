@@ -149,7 +149,7 @@ ArrayData* makeArrayOfSelectedLayout(ArrayData* ad) {
     return ad;
   }
   FTRACE(2, "  Using bespoke layout: {}\n", layout->describe());
-  ad->decReleaseCheck();
+  ad->decRefAndRelease();
   return bespoke;
 }
 

@@ -1,5 +1,6 @@
 ?Bound<T> param: no leak
 Box<T> param: no leak
+Bound<T> return: no leak
 Reified<T> return: no leak
 reified function ?Bound<T> param: no leak
 ?Bound<T> param, null passed: no leak

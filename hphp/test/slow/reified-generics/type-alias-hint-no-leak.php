@@ -54,7 +54,7 @@ function main(): void {
 
   check('?Bound<T> param', () ==> $reified->takesShape($bound));
   check('Box<T> param', () ==> $reified->takesBox(vec[5]));
-  // check('Bound<T> return', () ==> { $reified->returnsShape(5); });
+  check('Bound<T> return', () ==> { $reified->returnsShape(5); });
   check('Reified<T> return', () ==> { $reified->returnsSelf(); });
   check('reified function ?Bound<T> param', () ==> reified_function<int>($bound));
 
