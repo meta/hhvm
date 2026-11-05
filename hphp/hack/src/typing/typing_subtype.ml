@@ -10141,6 +10141,12 @@ end = struct
         (LoclType ty_sub)
         htmty
     | (r_sub, Tunion ty_subs) ->
+      (* Remove this_ty if it equal to the subtype; this avoids a loop. Note
+         that `ty_equal` already uses physical equality to short circuit
+         structural equality so this should be cheap in practice *)
+      let this_ty =
+        Option.filter this_ty ~f:(fun this_ty -> not (ty_equal this_ty ty_sub))
+      in
       Common.simplify_union_l
         ~subtype_env
         ~this_ty
