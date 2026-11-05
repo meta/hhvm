@@ -111,6 +111,12 @@ Opcode promoteBinaryDoubles(IRGS& env, Op op, SSATmp*& src1, SSATmp*& src2) {
 
 namespace {
 
+Type interpBinaryArithResult(Op op, Type lhs, Type rhs) {
+  auto const numeric = TInt | TDbl;
+  if (!lhs.maybe(numeric) || !rhs.maybe(numeric)) return TBottom;
+  return op == Op::Mod ? TInt : numeric;
+}
+
 void binaryBitOp(IRGS& env, Op op) {
   auto const type2 = topC(env, BCSPRelOffset{0})->type();
   auto const type1 = topC(env, BCSPRelOffset{1})->type();
@@ -128,7 +134,7 @@ void binaryArith(IRGS& env, Op op) {
   auto const type2 = topC(env, BCSPRelOffset{0})->type();
   auto const type1 = topC(env, BCSPRelOffset{1})->type();
   if (!areBinaryArithTypesSupported(op, type1, type2)) {
-    interpOne(env, TBottom, 2);
+    interpOne(env, interpBinaryArithResult(op, type1, type2), 2);
     return;
   }
 
@@ -803,7 +809,7 @@ void emitDiv(IRGS& env) {
   auto const dividendType = topC(env, BCSPRelOffset{1})->type();
 
   if (!areBinaryArithTypesSupported(Op::Div, divisorType, dividendType)) {
-    interpOne(env, TBottom, 2);
+    interpOne(env, interpBinaryArithResult(Op::Div, divisorType, dividendType), 2);
     return;
   }
 
@@ -878,7 +884,7 @@ void emitMod(IRGS& env) {
   auto const rightTy = topC(env, BCSPRelOffset{1})->type();
 
   if (!areBinaryArithTypesSupported(Op::Mod, leftTy, rightTy)) {
-    interpOne(env, TBottom, 2);
+    interpOne(env, interpBinaryArithResult(Op::Mod, leftTy, rightTy), 2);
     return;
   }
 
