@@ -3334,13 +3334,4 @@ service EdenService extends fb303_core.BaseService {
    * can be cancelled.
    */
   GetActiveRequestsResponse getActiveRequests() throws (1: EdenError ex);
-
-  /**
-   * Debug endpoint to test the structured error logging pipeline end-to-end.
-   * Throws a test exception, catches it, and logs it via ErrorLogger to
-   * edenfs_errors through XplatLogger. Returns true if the event was logged,
-   * false if error logging is not configured or disabled.
-   * Use: eden debug thrift debugLogError
-   */
-  bool debugLogError() throws (1: EdenError ex);
 }
