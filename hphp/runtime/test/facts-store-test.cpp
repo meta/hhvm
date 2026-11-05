@@ -24,6 +24,7 @@
 #include <folly/portability/GTest.h>
 #include <folly/testing/TestUtil.h>
 
+#include "hphp/runtime/ext/facts/exception.h"
 #include "hphp/runtime/ext/facts/facts-store.h"
 #include "hphp/runtime/ext/facts/sqlite-autoload-db.h"
 #include "hphp/runtime/ext/facts/sqlite-key.h"
@@ -81,6 +82,28 @@ TEST(FactsStoreTest, EmptyUpdatesAdvanceAndPersistClock) {
 
   store = make_watcher_facts(root, openDb, watcher, false, {}, {}, {});
   ASSERT_NO_THROW(store->ensureUpdated());
+}
+
+TEST(FactsStoreTest, SubscriptionNotificationAfterCloseIsIgnored) {
+  folly::test::TemporaryDirectory temp{"facts-close"};
+  const std::filesystem::path root{temp.path().native()};
+  const auto key = SQLiteKey::readWriteCreate(
+      root / "autoload.sqlite", static_cast<::gid_t>(-1), 0644);
+  const auto openDb = [key]() -> std::shared_ptr<AutoloadDB> {
+    return SQLiteAutoloadDB::get(key);
+  };
+
+  auto watcher = std::make_shared<testing::StrictMock<MockWatcher>>();
+  std::function<void(Watcher::Delta&&)> notify;
+  EXPECT_CALL(*watcher, subscribe).WillOnce(testing::SaveArg<1>(&notify));
+
+  auto store = make_watcher_facts(root, openDb, watcher, true, {}, {}, {});
+  store->close();
+
+  // FIXME: A notification that arrives after close() throws out of the
+  // subscription callback. This should be EXPECT_NO_THROW, with no call to
+  // getChanges().
+  EXPECT_THROW(notify(Watcher::Delta{}), UpdateExc);
 }
 
 } // namespace

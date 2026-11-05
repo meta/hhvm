@@ -16,6 +16,8 @@
 
 #include <exception>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <folly/futures/Future.h>
 #include <folly/portability/GMock.h>
@@ -220,6 +222,42 @@ TEST(WatchmanWatcherTest, HgTransactionUpdate) {
     EXPECT_FALSE(delta.m_fresh);
     EXPECT_TRUE(delta.m_files.empty());
   });
+}
+
+TEST(WatchmanWatcherTest, subscriptionsFromEachStoreShareOneQuery) {
+  auto mockWatchman = std::make_shared<MockWatchman>();
+  std::vector<folly::dynamic> subscribedQueries;
+  EXPECT_CALL(*mockWatchman, subscribe)
+      .Times(2)
+      .WillRepeatedly(WithArg<0>([&](const folly::dynamic& queryObj) {
+        subscribedQueries.push_back(queryObj);
+      }));
+
+  // Every FactsStore for a root makes its own watcher and subscribes with its
+  // own clock.
+  folly::dynamic queryExpr =
+      folly::dynamic::object("expression", folly::dynamic::array("type", "f"))(
+          "suffix", folly::dynamic::array("php"));
+  make_watchman_watcher(queryExpr, mockWatchman, {})
+      ->subscribe(Clock{.m_clock = "c:1"}, [](Watcher::Delta&&) {});
+  make_watchman_watcher(queryExpr, mockWatchman, {})
+      ->subscribe(Clock{.m_clock = "c:2"}, [](Watcher::Delta&&) {});
+
+  auto expectedQuery = [](std::string since) -> folly::dynamic {
+    return folly::dynamic::object(
+        "expression", folly::dynamic::array("type", "f"))(
+        "fields", folly::dynamic::array("name", "exists", "content.sha1hex"))(
+        "since", std::move(since));
+  };
+  // FIXME: Each store's clock is part of its subscription query, so every
+  // store adds a watchman subscription that HHVM re-sends with its old clock on
+  // every reconnect, and after a watchman restart, watchman answers each of
+  // those clocks by walking the whole repo. Both stores should send
+  // `queryExpr` with the fields and `"empty_on_fresh_instance": true` instead,
+  // and no `since`.
+  EXPECT_THAT(
+      subscribedQueries,
+      ElementsAre(expectedQuery("c:1"), expectedQuery("c:2")));
 }
 
 } // namespace
