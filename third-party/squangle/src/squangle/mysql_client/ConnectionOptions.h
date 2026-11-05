@@ -205,7 +205,7 @@ class ConnectionOptions {
     return *this;
   }
 
-  const folly::Optional<std::string> getCryptoAuthTokenList() const {
+  const folly::Optional<std::string>& getCryptoAuthTokenList() const {
     return crypt_auth_token_list_;
   }
 

@@ -18,16 +18,21 @@ namespace facebook::common::mysql_client {
 class PoolKey {
  public:
   // Hashes Connections and Operations waiting for connections based on basic
-  // Connection info (ConnectionKey) and Connection Attributes.
+  // Connection info (ConnectionKey), Connection Attributes and the crypto auth
+  // token list.
   PoolKey(
       std::shared_ptr<const ConnectionKey> conn_key,
       ConnectionOptions conn_opts)
       : connKey_(std::move(conn_key)), connOptions_(std::move(conn_opts)) {
     // The attributes are an unordered map, so equal sets of attributes have to
     // hash equally in whatever order they iterate.
-    options_hash_ = folly::hash::commutative_hash_combine_range(
-        connOptions_.getAttributes().begin(),
-        connOptions_.getAttributes().end());
+    const auto& cats = connOptions_.getCryptoAuthTokenList();
+    options_hash_ = folly::hash::hash_combine(
+        folly::hash::commutative_hash_combine_range(
+            connOptions_.getAttributes().begin(),
+            connOptions_.getAttributes().end()),
+        cats.has_value(),
+        cats.value_or(""));
     partial_hash_ =
         folly::hash::hash_combine(connKey_->partial_hash(), options_hash_);
     full_hash_ = folly::hash::hash_combine(connKey_->hash(), options_hash_);
@@ -35,7 +40,7 @@ class PoolKey {
 
   [[nodiscard]] bool operator==(const PoolKey& rhs) const noexcept {
     return full_hash_ == rhs.full_hash_ && options_hash_ == rhs.options_hash_ &&
-        *connKey_ == *rhs.connKey_;
+        *connKey_ == *rhs.connKey_ && sameCryptoAuthTokens(rhs);
   }
 
   [[nodiscard]] bool operator!=(const PoolKey& rhs) const noexcept {
@@ -45,7 +50,7 @@ class PoolKey {
   [[nodiscard]] bool partialCompare(const PoolKey& rhs) const noexcept {
     return partial_hash_ == rhs.partial_hash_ &&
         options_hash_ == rhs.options_hash_ &&
-        connKey_->partialEqual(*rhs.connKey_);
+        connKey_->partialEqual(*rhs.connKey_) && sameCryptoAuthTokens(rhs);
   }
 
   [[nodiscard]] std::shared_ptr<const ConnectionKey> getConnectionKey()
@@ -74,6 +79,14 @@ class PoolKey {
   }
 
  private:
+  // A connection keeps the identity its crypto auth tokens authenticated for
+  // its whole life, so it may only be handed to a caller presenting the exact
+  // same tokens. Compare the tokens themselves; equal hashes are not enough.
+  [[nodiscard]] bool sameCryptoAuthTokens(const PoolKey& rhs) const noexcept {
+    return connOptions_.getCryptoAuthTokenList() ==
+        rhs.connOptions_.getCryptoAuthTokenList();
+  }
+
   std::shared_ptr<const ConnectionKey> connKey_;
   ConnectionOptions connOptions_;
 

@@ -83,6 +83,25 @@ TEST(PoolKeyTest, DifferentAttributesGiveDifferentKeys) {
   EXPECT_TRUE(keyFor(one) != keyFor(other));
 }
 
+TEST(PoolKeyTest, CryptoAuthTokensMustMatchExactly) {
+  auto withTokens = [](const std::string& tokens) {
+    return keyFor(optionsWithAttributes().setCryptoAuthTokenList(tokens));
+  };
+  const auto base = withTokens("token-a");
+
+  EXPECT_TRUE(base == withTokens("token-a"));
+  EXPECT_TRUE(base.partialCompare(withTokens("token-a")));
+
+  for (const auto& other :
+       {keyFor(optionsWithAttributes()),
+        withTokens("token-b"),
+        withTokens("")}) {
+    EXPECT_TRUE(base != other);
+    EXPECT_FALSE(base.partialCompare(other));
+    EXPECT_FALSE(other.partialCompare(base));
+  }
+}
+
 TEST(PoolKeyTest, StorageFindsAWaitingOperationByAnEqualKey) {
   auto pool = SyncConnectionPool::makePool(std::make_shared<SyncMysqlClient>());
   const auto connKey = MockMysqlClient::createTestConnectionKey();
