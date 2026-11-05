@@ -984,10 +984,15 @@ void checkSerializeOptProf() {
     // PGO/CSPGO profile so that it can serialize that code to the jumpstart
     // file on disk.
     if (use_roar) {
-      if (__roar_api_cspgo_enabled()) {
-        __roar_api_wait_for_cspgo_profile();
-      } else if (__roar_api_pgo_enabled()) {
-        __roar_api_wait_for_pgo_profile();
+      // Don't wait for ROAR if there's no pending warmup. This takes care of
+      // the case where ROAR jumpstarted and therefore no profile will be
+      // generated.
+      if (__roar_api_pending_warmups() != 0) {
+        if (__roar_api_cspgo_enabled()) {
+          __roar_api_wait_for_cspgo_profile();
+        } else if (__roar_api_pgo_enabled()) {
+          __roar_api_wait_for_pgo_profile();
+        }
       }
       __roar_api_finalize_jumpstart_serialization();
     }
