@@ -10,6 +10,7 @@ function get_hhvm_bin {
         "$script_dir/../../buck-out/gen/hphp/hhvm/hhvm/hhvm"
         "$script_dir/../../../buck-out/v2/gen/fbcode/hphp/hhvm/out/hhvm"
         "$script_dir/../hhvm/hhvm"
+        "$script_dir/../../_build/hphp/hhvm/hhvm"
         "/usr/local/hphpi/bin/hhvm"
     )
 

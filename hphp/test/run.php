@@ -155,7 +155,7 @@ function hhvm_binary_routes(): dict<string, string> {
   return dict[
     "buck"    => "/buck-out/gen/hphp/hhvm/hhvm",
     "buck2"   => "/../buck-out/v2/gen/fbcode/hphp/hhvm/out",
-    "cmake"   => "/hphp/hhvm"
+    "cmake"   => "/_build/hphp/hhvm"
   ];
 }
 
