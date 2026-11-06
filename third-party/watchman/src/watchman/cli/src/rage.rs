@@ -79,7 +79,7 @@ struct WatchmanRage {
 
 impl WatchmanRage {
     async fn new() -> Self {
-        let hostname = System::host_name();
+        let hostname = System::host_name().ok();
         let stream = Stream::new(hostname);
 
         Self { stream }
