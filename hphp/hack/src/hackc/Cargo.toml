@@ -47,7 +47,7 @@ naming_provider = { path = "../hackrs/naming_provider/cargo/naming_provider" }
 options = { path = "compile/cargo/options" }
 oxidized = { path = "../oxidized" }
 panic-message = "0.3"
-parking_lot = { version = "0.12.1", features = ["arc_lock", "send_guard", "serde"] }
+parking_lot = { version = "0.13.0", features = ["arc_lock", "send_guard", "serde"] }
 parser_core_types = { path = "../parser/cargo/core_types" }
 pos = { path = "../hackrs/pos/cargo/pos" }
 positioned_by_ref_parser = { path = "../parser/api/cargo/positioned_by_ref_parser" }

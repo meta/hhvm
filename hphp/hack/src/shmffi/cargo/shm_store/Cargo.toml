@@ -26,7 +26,7 @@ measure = { path = "../../../utils/rust/measure" }
 ocaml_blob = { path = "../ocaml_blob" }
 ocamlrep = { version = "0.1.0", git = "https://github.com/facebook/ocamlrep/", branch = "main" }
 ocamlrep_marshal = { version = "0.1.0", git = "https://github.com/facebook/ocamlrep/", branch = "main" }
-parking_lot = { version = "0.12.1", features = ["arc_lock", "send_guard", "serde"] }
+parking_lot = { version = "0.13.0", features = ["arc_lock", "send_guard", "serde"] }
 pos = { path = "../../../hackrs/pos/cargo/pos" }
 serde = { version = "1.0.229", features = ["derive", "rc"] }
 shmffi = { path = "../shmffi" }
