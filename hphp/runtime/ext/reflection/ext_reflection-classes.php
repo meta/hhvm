@@ -1311,10 +1311,15 @@ namespace HH {
     ?'generic_types' => varray,
     // for shapes
     ?'fields' => darray,
+    ?'allows_unknown_fields' => bool,
+    ?'optional_shape_field' => bool,
     // name for generics (type variables)
     ?'name' => string,
     // for type aliases
     ?'alias' => string,
+    ?'opaque' => bool,
+    ?'typevars' => string,
+    ?'typevar_types' => darray,
     // if the type is exact (i.e., not a subtype)
     ?'exact' => bool,
     // if the type is a like-type

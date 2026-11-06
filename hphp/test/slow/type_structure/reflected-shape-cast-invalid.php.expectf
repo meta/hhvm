@@ -1,0 +1,13 @@
+
+Warning: Runtime type-check: Expected bool at ["optional_shape_field"], got string in %s on line %d
+
+Warning: Runtime type-check: Expected bool at ["allows_unknown_fields"], got string in %s on line %d
+
+Warning: Runtime type-check: Expected bool at ["opaque"], got string in %s on line %d
+
+Warning: Runtime type-check: Expected string at ["typevars"], got HH\vec in %s on line %d
+
+Warning: Runtime type-check: Expected HH\darray at ["typevar_types"], got HH\vec in %s on line %d
+
+Warning: Runtime type-check: Expected shape('kind' => HH\TypeStructureKind, ?'nullable' => bool, ?'classname' => string, ?'elem_types' => HH\varray, ?'param_types' => HH\varray, ?'return_type' => mixed, ?'variadic_type' => mixed, ?'generic_types' => HH\varray, ?'fields' => HH\darray, ?'allows_unknown_fields' => bool, ?'optional_shape_field' => bool, ?'name' => string, ?'alias' => string, ?'opaque' => bool, ?'typevars' => string, ?'typevar_types' => HH\darray, ?'exact' => bool, ?'like' => bool), got HH\dict in %s on line %d
+done
