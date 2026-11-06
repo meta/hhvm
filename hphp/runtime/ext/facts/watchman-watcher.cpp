@@ -201,10 +201,18 @@ struct WatchmanWatcher final
   }
 
   void subscribe(
-      const Clock& lastClock,
+      const Clock& /* lastClock */,
       std::function<void(Delta&& callback)> callback) override {
+    // Subscribers only use a notification to start an update, which queries
+    // from their own clock. Without a `since`, stores with the same root and
+    // query send the same subscription, so they share one watchman
+    // subscription. The subscription starts as a fresh instance, and
+    // `empty_on_fresh_instance` keeps watchman from walking the whole repo to
+    // answer it.
+    auto queryExpr = m_queryExpr;
+    queryExpr["empty_on_fresh_instance"] = true;
     m_watchmanClient->subscribe(
-        addWatchmanSince(m_queryExpr, lastClock),
+        queryExpr,
         [cb = std::move(callback)](folly::Try<folly::dynamic>&& results) {
           if (results.hasValue()) {
             cb(parseWatchmanResults({}, std::move(results.value())));

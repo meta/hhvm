@@ -1083,12 +1083,19 @@ struct FactsStoreImpl final
             rareSboxEvent("facts-store", "subscribe weakThis==null", "");
             return;
           }
-          timeSboxEvent(
-              Cfg::Autoload::PerfSampleRate,
-              "facts-store",
-              "subscribe update",
-              "",
-              [&] { sharedThis->update(); });
+          try {
+            timeSboxEvent(
+                Cfg::Autoload::PerfSampleRate,
+                "facts-store",
+                "subscribe update",
+                "",
+                [&] { sharedThis->update(); });
+          } catch (const UpdateExc& e) {
+            // The store closed after watchman sent this notification. Don't
+            // let that stop the notification from reaching the other stores
+            // that share this subscription.
+            XLOGF(INFO, "Ignoring subscription result: {}", e.what());
+          }
         });
   }
 

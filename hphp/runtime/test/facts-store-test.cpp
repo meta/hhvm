@@ -24,7 +24,6 @@
 #include <folly/portability/GTest.h>
 #include <folly/testing/TestUtil.h>
 
-#include "hphp/runtime/ext/facts/exception.h"
 #include "hphp/runtime/ext/facts/facts-store.h"
 #include "hphp/runtime/ext/facts/sqlite-autoload-db.h"
 #include "hphp/runtime/ext/facts/sqlite-key.h"
@@ -100,10 +99,7 @@ TEST(FactsStoreTest, SubscriptionNotificationAfterCloseIsIgnored) {
   auto store = make_watcher_facts(root, openDb, watcher, true, {}, {}, {});
   store->close();
 
-  // FIXME: A notification that arrives after close() throws out of the
-  // subscription callback. This should be EXPECT_NO_THROW, with no call to
-  // getChanges().
-  EXPECT_THROW(notify(Watcher::Delta{}), UpdateExc);
+  EXPECT_NO_THROW(notify(Watcher::Delta{}));
 }
 
 } // namespace

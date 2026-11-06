@@ -78,6 +78,8 @@ struct Watcher {
   /**
    * Subscribe to the filesystem. Whenever the filesystem changes, this Watcher
    * will send a Delta object describing the change to the given callback.
+   * A fresh Delta from a subscription may list no files, so use it only as a
+   * signal to call getChanges().
    */
   virtual void subscribe(
       const Clock& lastClock,

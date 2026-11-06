@@ -16,7 +16,6 @@
 
 #include <exception>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include <folly/futures/Future.h>
@@ -243,21 +242,37 @@ TEST(WatchmanWatcherTest, subscriptionsFromEachStoreShareOneQuery) {
   make_watchman_watcher(queryExpr, mockWatchman, {})
       ->subscribe(Clock{.m_clock = "c:2"}, [](Watcher::Delta&&) {});
 
-  auto expectedQuery = [](std::string since) -> folly::dynamic {
-    return folly::dynamic::object(
-        "expression", folly::dynamic::array("type", "f"))(
-        "fields", folly::dynamic::array("name", "exists", "content.sha1hex"))(
-        "since", std::move(since));
-  };
-  // FIXME: Each store's clock is part of its subscription query, so every
-  // store adds a watchman subscription that HHVM re-sends with its old clock on
-  // every reconnect, and after a watchman restart, watchman answers each of
-  // those clocks by walking the whole repo. Both stores should send
-  // `queryExpr` with the fields and `"empty_on_fresh_instance": true` instead,
-  // and no `since`.
-  EXPECT_THAT(
-      subscribedQueries,
-      ElementsAre(expectedQuery("c:1"), expectedQuery("c:2")));
+  folly::dynamic expectedQuery =
+      folly::dynamic::object("expression", folly::dynamic::array("type", "f"))(
+          "suffix", folly::dynamic::array("php"))(
+          "fields", folly::dynamic::array("name", "exists", "content.sha1hex"))(
+          "empty_on_fresh_instance", true);
+  EXPECT_THAT(subscribedQueries, ElementsAre(expectedQuery, expectedQuery));
+}
+
+TEST(WatchmanWatcherTest, emptyFreshInstanceReachesSubscriber) {
+  auto mockWatchman = std::make_shared<MockWatchman>();
+  auto watcher =
+      make_watchman_watcher(folly::dynamic::object(), mockWatchman, {});
+
+  // What watchman sends a new subscription that has
+  // `"empty_on_fresh_instance": true`.
+  EXPECT_CALL(*mockWatchman, subscribe)
+      .WillOnce(WithArg<1>([](watchman::SubscriptionCallback&& cb) {
+        folly::dynamic msg =
+            folly::dynamic::object("clock", "c:1")("is_fresh_instance", true)(
+                "files", folly::dynamic::array())("subscription", "sub1");
+        cb(folly::Try{std::move(msg)});
+      }));
+
+  std::vector<Watcher::Delta> deltas;
+  watcher->subscribe(Clock{}, [&](Watcher::Delta&& delta) {
+    deltas.push_back(std::move(delta));
+  });
+
+  ASSERT_EQ(deltas.size(), 1);
+  EXPECT_TRUE(deltas[0].m_fresh);
+  EXPECT_TRUE(deltas[0].m_files.empty());
 }
 
 } // namespace
