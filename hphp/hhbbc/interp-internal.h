@@ -455,13 +455,9 @@ bool shouldAttemptToFold(ISS& env, const php::Func* func, const FCallArgs& fca,
     return false;
   }
 
-  if (maybeDynamic &&
-      context.couldBe(BCls) &&
-      Cfg::Eval::CanReportStrictDynamicReference &&
-      (!is_specialized_cls(context) ||
-       dcls_of(context).cls().mightBeInStrictPackage())) {
-    return false;
-  }
+  // A class from a string is loaded by name, which checks its module and
+  // package and may raise a notice whose sample rate HHBBC doesn't know.
+  if (maybeDynamic && context.couldBe(BCls)) return false;
 
   if (func->userAttributes.count(s___NEVER_INLINE.get())) {
     return false;
