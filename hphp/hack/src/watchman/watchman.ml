@@ -1361,7 +1361,10 @@ module Process (Exec : Watchman_sig.Exec) = struct
 end
 
 include
-  (val if Injector_config.use_test_stubbing then
+  (val if
+         Injector_config.use_test_stubbing
+         && not (Injector_config.Exclusions.exclude_watchman ())
+       then
          (module Watchman_mock : Watchman_sig.S)
        else
          (module Watchman_actual : Watchman_sig.S))

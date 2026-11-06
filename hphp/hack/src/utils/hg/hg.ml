@@ -344,7 +344,10 @@ module Hg_mock = struct
 end
 
 include
-  (val if Injector_config.use_test_stubbing then
+  (val if
+         Injector_config.use_test_stubbing
+         && not (Injector_config.Exclusions.exclude_hg ())
+       then
          (module Hg_mock : Hg_sig.S)
        else
          (module Hg_actual : Hg_sig.S))

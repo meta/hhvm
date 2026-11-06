@@ -19,7 +19,12 @@ type edenfs_watcher_error = Edenfs_watcher_types.edenfs_watcher_error
 type changes = Edenfs_watcher_types.changes [@@deriving show]
 
 let require_test_stubbing () =
-  if not Injector_config.use_test_stubbing then failwith "not implemented"
+  if
+    not
+      (Injector_config.use_test_stubbing
+      && not (Injector_config.Exclusions.exclude_edenfs_watcher ()))
+  then
+    failwith "not implemented"
 
 (** Dune cannot link the real Eden watcher, but tests use its mocking interface. *)
 module Mocking = struct

@@ -328,6 +328,7 @@
   server_idle_gc
   test_client_provider)
  (libraries
+  injector_config
   libancillary
   monitor_rpc
   relative_path

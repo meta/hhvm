@@ -1350,7 +1350,10 @@ module TestMocking = struct
 end
 
 module Mocking =
-  (val if Injector_config.use_test_stubbing then
+  (val if
+         Injector_config.use_test_stubbing
+         && not (Injector_config.Exclusions.exclude_typing_check_service ())
+       then
          (module TestMocking : Mocking_sig)
        else
          (module NoMocking : Mocking_sig))

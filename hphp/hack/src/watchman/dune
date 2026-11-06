@@ -8,6 +8,7 @@
   hg
   hg_states
   hh_json
+  injector_config
   logging_common
   sys_utils
   utils_core)
