@@ -61,9 +61,10 @@ struct StaticWatcher : public Watcher {
         });
   }
 
-  void subscribe(
-      const Clock& _lastClock,
-      std::function<void(Delta&&)> _callback) override {}
+  std::unique_ptr<Subscription> subscribe(
+      std::function<void(Delta&&)> _callback) override {
+    return nullptr;
+  }
 
   const std::vector<std::filesystem::path> m_paths;
 };

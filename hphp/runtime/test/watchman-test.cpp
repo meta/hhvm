@@ -41,7 +41,7 @@
 #include "hphp/runtime/base/watchman.h"
 #include "hphp/util/optional.h"
 
-using ::testing::UnorderedElementsAre;
+using ::testing::ElementsAre;
 
 namespace HPHP {
 namespace {
@@ -264,10 +264,11 @@ TEST(WatchmanTest, reconnectSkipsReleasedSubscriptions) {
   FakeWatchman fake;
   auto watchman = connect(fake);
 
-  watchman->subscribe(
+  auto live = watchman->subscribe(
       queryFor("live.php"), [](folly::Try<folly::dynamic>&&) {});
-  watchman->subscribe(
+  auto released = watchman->subscribe(
       queryFor("released.php"), [](folly::Try<folly::dynamic>&&) {});
+  released.reset();
 
   // A failed query makes WatchmanImpl reconnect and re-send its subscriptions
   // on the new connection, ahead of the retried query.
@@ -275,12 +276,7 @@ TEST(WatchmanTest, reconnectSkipsReleasedSubscriptions) {
   watchman->query(queryFor("query.php")).get();
 
   ASSERT_EQ(fake.connectionCount(), 2);
-  // FIXME: There's no way to release a subscription, so every query HHVM ever
-  // subscribed to is re-sent on every reconnect. After releasing the
-  // "released.php" subscription, only "live.php" should be re-sent.
-  EXPECT_THAT(
-      fake.subscriptions(1),
-      UnorderedElementsAre(queryFor("live.php"), queryFor("released.php")));
+  EXPECT_THAT(fake.subscriptions(1), ElementsAre(queryFor("live.php")));
 }
 
 TEST(WatchmanTest, releasedSubscriptionGetsNoNotifications) {
@@ -289,12 +285,15 @@ TEST(WatchmanTest, releasedSubscriptionGetsNoNotifications) {
 
   int liveNotifications = 0;
   int releasedNotifications = 0;
-  watchman->subscribe(queryFor("a.php"), [&](folly::Try<folly::dynamic>&&) {
-    ++liveNotifications;
-  });
-  watchman->subscribe(queryFor("a.php"), [&](folly::Try<folly::dynamic>&&) {
-    ++releasedNotifications;
-  });
+  auto live =
+      watchman->subscribe(queryFor("a.php"), [&](folly::Try<folly::dynamic>&&) {
+        ++liveNotifications;
+      });
+  auto released =
+      watchman->subscribe(queryFor("a.php"), [&](folly::Try<folly::dynamic>&&) {
+        ++releasedNotifications;
+      });
+  released.reset();
   // Callbacks run on WatchmanImpl's executor in order, so a round trip through
   // it means the subscription went out and its notification was handled.
   watchman->getClock().get();
@@ -303,9 +302,26 @@ TEST(WatchmanTest, releasedSubscriptionGetsNoNotifications) {
 
   EXPECT_EQ(fake.subscriptions(0), std::vector{queryFor("a.php")});
   EXPECT_EQ(liveNotifications, 1);
-  // FIXME: There's no way to release a subscription. After releasing the
-  // second one, it should get no notifications.
-  EXPECT_EQ(releasedNotifications, 1);
+  EXPECT_EQ(releasedNotifications, 0);
+}
+
+TEST(WatchmanTest, resubscribingReusesWatchmanSubscription) {
+  FakeWatchman fake;
+  auto watchman = connect(fake);
+
+  int notifications = 0;
+  watchman->subscribe(queryFor("a.php"), [](folly::Try<folly::dynamic>&&) {})
+      .reset();
+  auto subscription =
+      watchman->subscribe(queryFor("a.php"), [&](folly::Try<folly::dynamic>&&) {
+        ++notifications;
+      });
+  watchman->getClock().get();
+  fake.notifySubscribers(0);
+  watchman->getClock().get();
+
+  EXPECT_EQ(fake.subscriptions(0), std::vector{queryFor("a.php")});
+  EXPECT_EQ(notifications, 1);
 }
 
 } // namespace

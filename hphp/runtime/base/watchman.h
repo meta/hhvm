@@ -43,6 +43,13 @@ using WatchmanProfiler = void (*)(
  */
 class Watchman {
 public:
+  /**
+   * A subscription that lasts until this object is destroyed.
+   */
+  struct Subscription {
+    virtual ~Subscription() = default;
+  };
+
   virtual ~Watchman();
 
   /**
@@ -70,9 +77,12 @@ public:
 
   /**
    * Invoke the given callback whenever the given Watchman query
-   * returns new results.
+   * returns new results, until the returned Subscription is destroyed.
+   *
+   * A notification that's already being delivered can still reach the
+   * callback after the Subscription is destroyed.
    */
-  virtual void subscribe(
+  [[nodiscard]] virtual std::unique_ptr<Subscription> subscribe(
       const folly::dynamic& queryObj,
       watchman::SubscriptionCallback&& callback) = 0;
 };

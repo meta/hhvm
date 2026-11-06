@@ -578,6 +578,7 @@ struct FactsStoreImpl final
 
   void close() override {
     m_closing = true;
+    m_subscription.reset();
     auto updateFut = m_updateFuture.wlock();
     try {
       updateFut->getFuture().wait();
@@ -1071,9 +1072,8 @@ struct FactsStoreImpl final
     if (!m_watcher) {
       return;
     }
-    auto clock = getClock();
-    m_watcher->subscribe(
-        clock, [weakThis = weak_from_this()](Watcher::Delta&& delta) {
+    m_subscription = m_watcher->subscribe(
+        [weakThis = weak_from_this()](Watcher::Delta&& delta) {
           XLOGF(
               INFO,
               "Subscription result: {} paths received.",
@@ -1535,6 +1535,7 @@ struct FactsStoreImpl final
   fs::path m_root;
   SymbolMap m_symbolMap;
   std::shared_ptr<Watcher> m_watcher;
+  std::unique_ptr<Watcher::Subscription> m_subscription;
   Optional<std::filesystem::path> m_suppressionFilePath;
 
   template <SymKind k, typename TLambda>

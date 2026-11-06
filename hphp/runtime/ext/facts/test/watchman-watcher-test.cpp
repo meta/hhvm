@@ -46,11 +46,19 @@ struct MockWatchman final : public Watchman {
   MOCK_METHOD(folly::SemiFuture<watchman::Clock>, getClock, (), (override));
 
   MOCK_METHOD(
-      void,
+      std::unique_ptr<Subscription>,
       subscribe,
       (const folly::dynamic& queryObj,
        watchman::SubscriptionCallback&& callback),
       (override));
+};
+
+struct FakeSubscription final : Watchman::Subscription {
+  explicit FakeSubscription(bool& released) : m_released{released} {}
+  ~FakeSubscription() override {
+    m_released = true;
+  }
+  bool& m_released;
 };
 
 TEST(WatchmanWatcherTest, sinceAndClockArePassedThrough) {
@@ -196,8 +204,11 @@ TEST(WatchmanWatcherTest, HgTransactionUpdate) {
   // Invoke the subscribe callback with a {"state-enter": "hg.transaction"}
   // message
   EXPECT_CALL(*mockWatchman, subscribe)
-      .WillOnce(WithArg<1>([&](watchman::SubscriptionCallback&& cb) {
-        // clang-format off
+      .WillOnce(
+          WithArg<1>(
+              [&](watchman::SubscriptionCallback&& cb)
+                  -> std::unique_ptr<Watchman::Subscription> {
+                // clang-format off
         folly::dynamic msg = folly::dynamic::object
 	  ("clock", "2")
 	  ("version", "2022-05-06T03:03:19Z")
@@ -210,12 +221,12 @@ TEST(WatchmanWatcherTest, HgTransactionUpdate) {
 	  ("state-enter", "hg.transaction")
 	  ("unilateral", true)
 	  ("subscription", "sub1");
-        // clang-format on
-        cb(folly::Try{std::move(msg)});
-      }));
+                // clang-format on
+                cb(folly::Try{std::move(msg)});
+                return nullptr;
+              }));
 
-  Clock oldClock{.m_clock = "1"};
-  watcher->subscribe(oldClock, [&](Watcher::Delta&& delta) {
+  auto subscription = watcher->subscribe([&](Watcher::Delta&& delta) {
     EXPECT_FALSE(delta.m_lastClock);
     EXPECT_EQ(delta.m_newClock, Clock{.m_clock = "2"});
     EXPECT_FALSE(delta.m_fresh);
@@ -228,19 +239,22 @@ TEST(WatchmanWatcherTest, subscriptionsFromEachStoreShareOneQuery) {
   std::vector<folly::dynamic> subscribedQueries;
   EXPECT_CALL(*mockWatchman, subscribe)
       .Times(2)
-      .WillRepeatedly(WithArg<0>([&](const folly::dynamic& queryObj) {
-        subscribedQueries.push_back(queryObj);
-      }));
+      .WillRepeatedly(
+          WithArg<0>(
+              [&](const folly::dynamic& queryObj)
+                  -> std::unique_ptr<Watchman::Subscription> {
+                subscribedQueries.push_back(queryObj);
+                return nullptr;
+              }));
 
-  // Every FactsStore for a root makes its own watcher and subscribes with its
-  // own clock.
+  // Every FactsStore for a root makes its own watcher and subscribes.
   folly::dynamic queryExpr =
       folly::dynamic::object("expression", folly::dynamic::array("type", "f"))(
           "suffix", folly::dynamic::array("php"));
-  make_watchman_watcher(queryExpr, mockWatchman, {})
-      ->subscribe(Clock{.m_clock = "c:1"}, [](Watcher::Delta&&) {});
-  make_watchman_watcher(queryExpr, mockWatchman, {})
-      ->subscribe(Clock{.m_clock = "c:2"}, [](Watcher::Delta&&) {});
+  auto first = make_watchman_watcher(queryExpr, mockWatchman, {})
+                   ->subscribe([](Watcher::Delta&&) {});
+  auto second = make_watchman_watcher(queryExpr, mockWatchman, {})
+                    ->subscribe([](Watcher::Delta&&) {});
 
   folly::dynamic expectedQuery =
       folly::dynamic::object("expression", folly::dynamic::array("type", "f"))(
@@ -258,21 +272,40 @@ TEST(WatchmanWatcherTest, emptyFreshInstanceReachesSubscriber) {
   // What watchman sends a new subscription that has
   // `"empty_on_fresh_instance": true`.
   EXPECT_CALL(*mockWatchman, subscribe)
-      .WillOnce(WithArg<1>([](watchman::SubscriptionCallback&& cb) {
-        folly::dynamic msg =
-            folly::dynamic::object("clock", "c:1")("is_fresh_instance", true)(
-                "files", folly::dynamic::array())("subscription", "sub1");
-        cb(folly::Try{std::move(msg)});
-      }));
+      .WillOnce(
+          WithArg<1>(
+              [](watchman::SubscriptionCallback&& cb)
+                  -> std::unique_ptr<Watchman::Subscription> {
+                folly::dynamic msg = folly::dynamic::object("clock", "c:1")(
+                    "is_fresh_instance", true)(
+                    "files", folly::dynamic::array())("subscription", "sub1");
+                cb(folly::Try{std::move(msg)});
+                return nullptr;
+              }));
 
   std::vector<Watcher::Delta> deltas;
-  watcher->subscribe(Clock{}, [&](Watcher::Delta&& delta) {
-    deltas.push_back(std::move(delta));
-  });
+  auto subscription = watcher->subscribe(
+      [&](Watcher::Delta&& delta) { deltas.push_back(std::move(delta)); });
 
   ASSERT_EQ(deltas.size(), 1);
   EXPECT_TRUE(deltas[0].m_fresh);
   EXPECT_TRUE(deltas[0].m_files.empty());
+}
+
+TEST(WatchmanWatcherTest, releasingSubscriptionReleasesWatchmanSubscription) {
+  auto mockWatchman = std::make_shared<MockWatchman>();
+  auto watcher =
+      make_watchman_watcher(folly::dynamic::object(), mockWatchman, {});
+
+  bool released = false;
+  EXPECT_CALL(*mockWatchman, subscribe).WillOnce([&](auto&&, auto&&) {
+    return std::make_unique<FakeSubscription>(released);
+  });
+
+  auto subscription = watcher->subscribe([](Watcher::Delta&&) {});
+  EXPECT_FALSE(released);
+  subscription.reset();
+  EXPECT_TRUE(released);
 }
 
 } // namespace

@@ -35,10 +35,18 @@ namespace {
 struct MockWatcher : Watcher {
   MOCK_METHOD(folly::SemiFuture<Delta>, getChanges, (Clock), (override));
   MOCK_METHOD(
-      void,
+      std::unique_ptr<Subscription>,
       subscribe,
-      (const Clock&, std::function<void(Delta&&)>),
+      (std::function<void(Delta&&)>),
       (override));
+};
+
+struct FakeSubscription final : Watcher::Subscription {
+  explicit FakeSubscription(bool& released) : m_released{released} {}
+  ~FakeSubscription() override {
+    m_released = true;
+  }
+  bool& m_released;
 };
 
 TEST(FactsStoreTest, EmptyUpdatesAdvanceAndPersistClock) {
@@ -94,12 +102,37 @@ TEST(FactsStoreTest, SubscriptionNotificationAfterCloseIsIgnored) {
 
   auto watcher = std::make_shared<testing::StrictMock<MockWatcher>>();
   std::function<void(Watcher::Delta&&)> notify;
-  EXPECT_CALL(*watcher, subscribe).WillOnce(testing::SaveArg<1>(&notify));
+  EXPECT_CALL(*watcher, subscribe)
+      .WillOnce([&](std::function<void(Watcher::Delta&&)> callback) {
+        notify = std::move(callback);
+        return std::unique_ptr<Watcher::Subscription>{};
+      });
 
   auto store = make_watcher_facts(root, openDb, watcher, true, {}, {}, {});
   store->close();
 
   EXPECT_NO_THROW(notify(Watcher::Delta{}));
+}
+
+TEST(FactsStoreTest, CloseReleasesSubscription) {
+  folly::test::TemporaryDirectory temp{"facts-close"};
+  const std::filesystem::path root{temp.path().native()};
+  const auto key = SQLiteKey::readWriteCreate(
+      root / "autoload.sqlite", static_cast<::gid_t>(-1), 0644);
+  const auto openDb = [key]() -> std::shared_ptr<AutoloadDB> {
+    return SQLiteAutoloadDB::get(key);
+  };
+
+  bool released = false;
+  auto watcher = std::make_shared<testing::StrictMock<MockWatcher>>();
+  EXPECT_CALL(*watcher, subscribe).WillOnce([&](auto&&) {
+    return std::make_unique<FakeSubscription>(released);
+  });
+
+  auto store = make_watcher_facts(root, openDb, watcher, true, {}, {}, {});
+  EXPECT_FALSE(released);
+  store->close();
+  EXPECT_TRUE(released);
 }
 
 } // namespace

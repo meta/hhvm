@@ -16,7 +16,9 @@
 
 #include <exception>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include <folly/json/dynamic.h>
 #include <folly/init/Init.h>
@@ -42,6 +44,8 @@ int main(int argc, char** argv) {
     sock = {{argv[2]}};
   }
 
+  auto watchman = Watchman::get(root, sock);
+  std::vector<std::unique_ptr<Watchman::Subscription>> subscriptions;
   std::string clock;
 
   std::string line;
@@ -61,8 +65,8 @@ int main(int argc, char** argv) {
         std::cout << "No query to subscribe to." << std::endl;
         continue;
       }
-      Watchman::get(root, sock)
-          ->subscribe(queryObj, [](folly::Try<folly::dynamic>&& results) {
+      subscriptions.push_back(watchman->subscribe(
+          queryObj, [](folly::Try<folly::dynamic>&& results) {
             if (results.hasValue()) {
               std::cout << "Subscription got: "
                         << folly::toPrettyJson(results.value()) << std::endl;
@@ -70,7 +74,7 @@ int main(int argc, char** argv) {
               std::cout << "Subscription error: " << results.exception()
                         << std::endl;
             }
-          });
+          }));
       std::cout << "Subscribed using query " << folly::toPrettyJson(queryObj)
                 << std::endl;
       continue;
@@ -89,7 +93,7 @@ int main(int argc, char** argv) {
       continue;
     }
     try {
-      folly::dynamic res = Watchman::get(root, sock)->query(queryObj).get();
+      folly::dynamic res = watchman->query(queryObj).get();
       std::cout << folly::toPrettyJson(res) << std::endl;
       clock = res["clock"].asString();
     } catch (const folly::AsyncSocketException& e) {

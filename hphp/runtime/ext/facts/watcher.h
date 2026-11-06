@@ -18,6 +18,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -76,13 +77,21 @@ struct Watcher {
   virtual folly::SemiFuture<Delta> getChanges(Clock lastClock) = 0;
 
   /**
-   * Subscribe to the filesystem. Whenever the filesystem changes, this Watcher
-   * will send a Delta object describing the change to the given callback.
-   * A fresh Delta from a subscription may list no files, so use it only as a
-   * signal to call getChanges().
+   * A subscription that lasts until this object is destroyed.
    */
-  virtual void subscribe(
-      const Clock& lastClock,
+  struct Subscription {
+    virtual ~Subscription() = default;
+  };
+
+  /**
+   * Subscribe to the filesystem. Whenever the filesystem changes, this Watcher
+   * will send a Delta object describing the change to the given callback,
+   * until the returned Subscription is destroyed. A Delta that's already being
+   * delivered can still reach the callback after that. A fresh Delta from a
+   * subscription may list no files, so use it only as a signal to call
+   * getChanges().
+   */
+  [[nodiscard]] virtual std::unique_ptr<Subscription> subscribe(
       std::function<void(Delta&&)> callback) = 0;
 };
 

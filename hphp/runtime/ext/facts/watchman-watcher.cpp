@@ -173,6 +173,14 @@ folly::dynamic addWatchmanSince(folly::dynamic query, const Clock& clock) {
   return query;
 }
 
+struct WatchmanSubscription final : Watcher::Subscription {
+  explicit WatchmanSubscription(
+      std::unique_ptr<Watchman::Subscription> subscription)
+      : m_subscription{std::move(subscription)} {}
+
+  std::unique_ptr<Watchman::Subscription> m_subscription;
+};
+
 /**
  * A Watcher which listens to a Watchman server.
  */
@@ -200,8 +208,7 @@ struct WatchmanWatcher final
         std::move(lastClock), std::move(queryExpr), m_opts.m_retries);
   }
 
-  void subscribe(
-      const Clock& /* lastClock */,
+  std::unique_ptr<Subscription> subscribe(
       std::function<void(Delta&& callback)> callback) override {
     // Subscribers only use a notification to start an update, which queries
     // from their own clock. Without a `since`, stores with the same root and
@@ -211,7 +218,7 @@ struct WatchmanWatcher final
     // answer it.
     auto queryExpr = m_queryExpr;
     queryExpr["empty_on_fresh_instance"] = true;
-    m_watchmanClient->subscribe(
+    return std::make_unique<WatchmanSubscription>(m_watchmanClient->subscribe(
         queryExpr,
         [cb = std::move(callback)](folly::Try<folly::dynamic>&& results) {
           if (results.hasValue()) {
@@ -220,7 +227,7 @@ struct WatchmanWatcher final
             Logger::FWarning(
                 "Watchman subscription error: {}", results.exception().what());
           }
-        });
+        }));
   }
 
  private:
