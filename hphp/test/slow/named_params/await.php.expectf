@@ -1,0 +1,2 @@
+
+Fatal error: `await` cannot be used in this location in %s/test/slow/named_params/await.php on line 5

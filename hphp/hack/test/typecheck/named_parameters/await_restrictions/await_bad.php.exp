@@ -1,0 +1,2 @@
+ERROR: File "await_bad.php", line 5, characters 58-68:
+`await` cannot be used in this location (Parsing[1002])
