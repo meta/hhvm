@@ -75,7 +75,14 @@ val mark_free : worker -> unit
 (** Get the worker process handle. *)
 val spawn : worker -> (void, Worker.request) Daemon.handle
 
-type call_wrapper = { wrap: 'x 'b. ('x -> 'b) -> 'x -> 'b }
+(** [prepare] runs in the calling process for every request. The returned data
+    is marshalled with the request; [wrap data f x] runs in the worker. *)
+type 'data wrapper = {
+  prepare: unit -> 'data;
+  wrap: 'x 'b. 'data -> ('x -> 'b) -> 'x -> 'b;
+}
+
+type call_wrapper = Call_wrapper : 'data wrapper -> call_wrapper
 
 type 'a entry_state = 'a * Gc.control * Shared_mem.handle * int
 

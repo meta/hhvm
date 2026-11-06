@@ -37,7 +37,12 @@ let catch_and_classify_exceptions : 'x 'b. ('x -> 'b) -> 'x -> 'b =
 
 let make ~longlived_workers ~nbr_procs gc_control heap_handle ~logging_init =
   Multi_worker.make
-    ~call_wrapper:{ Worker_controller.wrap = catch_and_classify_exceptions }
+    ~call_wrapper:
+      (Worker_controller.Call_wrapper
+         {
+           prepare = (fun () -> ());
+           wrap = (fun () f x -> catch_and_classify_exceptions f x);
+         })
     ~saved_state:(Server_global_state.save ~logging_init)
     ~entry
     ~longlived_workers

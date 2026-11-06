@@ -80,7 +80,12 @@ let max_workers = 1000
 
 type void (* an empty type *)
 
-type call_wrapper = { wrap: 'x 'b. ('x -> 'b) -> 'x -> 'b }
+type 'data wrapper = {
+  prepare: unit -> 'data;
+  wrap: 'x 'b. 'data -> ('x -> 'b) -> 'x -> 'b;
+}
+
+type call_wrapper = Call_wrapper : 'data wrapper -> call_wrapper
 
 (*****************************************************************************
  * Everything we need to know about a worker.
@@ -98,8 +103,8 @@ type worker = {
   (* The call wrapper will wrap any workload sent to the worker (via "call"
    * below) before invoking the workload.
    *
-   * That is, when calling the worker with workload `f x`, it will be wrapped
-   * as `wrap (f x)`.
+   * For each call, `prepare ()` runs in the calling process. Its result is sent
+   * with the request, and `wrap data f x` runs in the worker.
    *
    * This allows universal handling of workload at the time we create the actual
    * workers. For example, this can be useful to handle exceptions uniformly
@@ -174,7 +179,9 @@ let spawn w = w.prespawned
 (* If there is a call_wrapper, apply it and create the Request *)
 let wrap_request w f x metadata_in =
   match w.call_wrapper with
-  | Some { wrap } -> Request ((fun { send } -> send (wrap f x)), metadata_in)
+  | Some (Call_wrapper { prepare; wrap }) ->
+    let data = prepare () in
+    Request ((fun { send } -> send (wrap data f x)), metadata_in)
   | None -> Request ((fun { send } -> send (f x)), metadata_in)
 
 type 'a entry_state = 'a * Gc.control * Shared_mem.handle * int
@@ -385,7 +392,13 @@ let call ?(call_id = 0) w (type a b) (f : a -> b) (x : a) : (a, b) handle =
   in
   let job = { result; infd; worker = w; wait_for_cancel } in
   let metadata_in = { log_globals = Hack_event_logger.serialize_globals () } in
-  let (request : Worker.request) = wrap_request w f x metadata_in in
+  let (request : Worker.request) =
+    try wrap_request w f x metadata_in with
+    | exn ->
+      let exn = Exception.wrap exn in
+      mark_free w;
+      Exception.reraise exn
+  in
   (* Send the job to the worker. *)
   let () =
     try

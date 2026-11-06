@@ -75,7 +75,12 @@ let init
   let (ctx, state) = init_state ~root ~popt ~tcopt ~deps_mode in
   let workers =
     Multi_worker.make
-      ~call_wrapper:{ Worker_controller.wrap = catch_and_classify_exceptions }
+      ~call_wrapper:
+        (Worker_controller.Call_wrapper
+           {
+             prepare = (fun () -> ());
+             wrap = (fun () f x -> catch_and_classify_exceptions f x);
+           })
       ~longlived_workers:false
       ~saved_state:state
       ~entry
