@@ -48,6 +48,7 @@ WatchmanProfiler s_profiler = nullptr;
 struct WatchData {
   std::shared_ptr<watchman::WatchmanClient> m_client;
   watchman::WatchPathPtr m_watchPath;
+  uint64_t m_connectionId;
 };
 
 class WatchmanImpl final : public Watchman,
@@ -77,8 +78,8 @@ public:
         folly::toJson(queryObj));
     auto data = m_data.lock();
     auto const id = data->m_nextCallbackId++;
-    auto const [it, inserted] = data->m_callbacks.try_emplace(queryObj);
-    it->second.emplace(id, std::move(callback));
+    auto const [it, inserted] = data->m_queries.try_emplace(queryObj);
+    it->second.m_callbacks.emplace(id, std::move(callback));
     // A query keeps its entry, and its subscription on the current
     // connection, until the next reconnect even after its last callback is
     // released, so only a new entry needs a new subscription.
@@ -89,8 +90,12 @@ public:
             if (!sharedThis) {
               return;
             }
-            sharedThis->clientSubscribe(
-                *watchData.m_client, watchData.m_watchPath, queryObj);
+            auto data = sharedThis->m_data.lock();
+            auto const it = data->m_queries.find(queryObj);
+            if (watchData.m_connectionId == data->m_connectionId &&
+                it != data->m_queries.end()) {
+              sharedThis->subscribeOnce(watchData, queryObj, it->second);
+            }
           });
     }
     return std::make_unique<SubscriptionImpl>(weak_from_this(), queryObj, id);
@@ -107,11 +112,13 @@ public:
         folly::getCPUExecutor().get());
 
     auto connectFuture = client->connect();
+    auto const connectionId = ++m_data.lock()->m_connectionId;
     auto watchFuture =
         std::move(connectFuture)
             .via(&m_exec)
             .thenValue([weakThis = weak_from_this(),
-                        client = std::move(client)](folly::dynamic&&) mutable {
+                        client = std::move(client),
+                        connectionId](folly::dynamic&&) mutable {
               auto sharedThis = weakThis.lock();
               if (!sharedThis) {
                 throw std::bad_weak_ptr();
@@ -119,9 +126,10 @@ public:
               auto watchPathFuture = client->watch(sharedThis->m_path.native());
               return std::move(watchPathFuture)
                   .via(&sharedThis->m_exec)
-                  .thenValue([client = std::move(client)](
+                  .thenValue([client = std::move(client), connectionId](
                                  watchman::WatchPathPtr&& watchPath) mutable {
-                    return WatchData{std::move(client), std::move(watchPath)};
+                    return WatchData{
+                        std::move(client), std::move(watchPath), connectionId};
                   });
             })
             .thenValue([weakThis = weak_from_this()](WatchData&& watchData) {
@@ -130,12 +138,14 @@ public:
                 throw std::bad_weak_ptr();
               }
               auto data = sharedThis->m_data.lock();
-              folly::erase_if(data->m_callbacks, [](auto const& entry) {
-                return entry.second.empty();
+              if (watchData.m_connectionId != data->m_connectionId) {
+                return std::move(watchData);
+              }
+              folly::erase_if(data->m_queries, [](auto const& entry) {
+                return entry.second.m_callbacks.empty();
               });
-              for (auto const& [queryObj, _] : data->m_callbacks) {
-                sharedThis->clientSubscribe(
-                    *watchData.m_client, watchData.m_watchPath, queryObj);
+              for (auto& [queryObj, query] : data->m_queries) {
+                sharedThis->subscribeOnce(watchData, queryObj, query);
               }
               return std::move(watchData);
             });
@@ -146,6 +156,13 @@ public:
   }
 
 private:
+  // Each query shares one watchman subscription between its callbacks.
+  struct QueryData {
+    std::map<uint64_t, watchman::SubscriptionCallback> m_callbacks;
+    // The connection the query was last subscribed on, or 0.
+    uint64_t m_connectionId{0};
+  };
+
   struct SubscriptionImpl final : Subscription {
     SubscriptionImpl(
         std::weak_ptr<WatchmanImpl> watchman,
@@ -174,8 +191,9 @@ private:
         folly::toJson(queryObj));
     // Destroy the callback after unlocking, since destroying what it owns can
     // re-enter this object.
-    auto callback = m_data.withLock(
-        [&](auto& data) { return data.m_callbacks.at(queryObj).extract(id); });
+    auto callback = m_data.withLock([&](auto& data) {
+      return data.m_queries.at(queryObj).m_callbacks.extract(id);
+    });
   }
 
   folly::SemiFuture<folly::dynamic>
@@ -250,9 +268,9 @@ private:
     std::vector<watchman::SubscriptionCallback> callbacks =
         m_data.withLock([&](auto& data) {
           std::vector<watchman::SubscriptionCallback> result;
-          auto const& callbacksIt = data.m_callbacks.find(queryObj);
-          if (callbacksIt != data.m_callbacks.end()) {
-            for (auto const& [_, callback] : callbacksIt->second) {
+          auto const& queryIt = data.m_queries.find(queryObj);
+          if (queryIt != data.m_queries.end()) {
+            for (auto const& [_, callback] : queryIt->second.m_callbacks) {
               result.push_back(callback);
             }
           }
@@ -273,6 +291,20 @@ private:
       auto cb = *it;
       cb(std::move(results));
     }
+  }
+
+  // A query added while a connection is being set up reaches both
+  // reconnect()'s loop and subscribe()'s continuation, so subscribe each query
+  // only once per connection.
+  void subscribeOnce(
+      const WatchData& watchData,
+      const folly::dynamic& queryObj,
+      QueryData& query) {
+    if (query.m_connectionId == watchData.m_connectionId) {
+      return;
+    }
+    query.m_connectionId = watchData.m_connectionId;
+    clientSubscribe(*watchData.m_client, watchData.m_watchPath, queryObj);
   }
 
   folly::SemiFuture<watchman::SubscriptionPtr> clientSubscribe(
@@ -318,12 +350,11 @@ private:
     // This future must complete before you can perform query() or subscribe()
     // operations on the given repo.
     folly::FutureSplitter<WatchData> m_watchFuture;
-    // Each query shares one watchman subscription between its callbacks.
-    hphp_hash_map<
-        folly::dynamic,
-        std::map<uint64_t, watchman::SubscriptionCallback>>
-        m_callbacks;
+    hphp_hash_map<folly::dynamic, QueryData> m_queries;
     uint64_t m_nextCallbackId{0};
+    // The latest reconnect()'s connection. Only it subscribes, since it
+    // replaces any earlier one.
+    uint64_t m_connectionId{0};
   };
   folly::Synchronized<Data, std::mutex> m_data;
 };

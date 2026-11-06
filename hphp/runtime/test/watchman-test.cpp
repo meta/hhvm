@@ -292,11 +292,7 @@ TEST(WatchmanTest, subscribingWhileConnectingSubscribesOnce) {
   fake.releaseWatchProject();
   std::move(clock).get();
 
-  // FIXME: reconnect() and subscribe() both send a query added while the
-  // connection is being set up. It should be subscribed once.
-  EXPECT_EQ(
-      fake.subscriptions(0),
-      (std::vector{queryFor("a.php"), queryFor("a.php")}));
+  EXPECT_EQ(fake.subscriptions(0), std::vector{queryFor("a.php")});
 }
 
 TEST(WatchmanTest, releasingWhileConnectingSubscribesNothing) {
@@ -311,9 +307,7 @@ TEST(WatchmanTest, releasingWhileConnectingSubscribesNothing) {
   fake.releaseWatchProject();
   std::move(clock).get();
 
-  // FIXME: subscribe() still sends a query that reconnect() dropped because
-  // its callbacks were released. Nothing should be subscribed.
-  EXPECT_EQ(fake.subscriptions(0), std::vector{queryFor("a.php")});
+  EXPECT_TRUE(fake.subscriptions(0).empty());
 }
 
 TEST(WatchmanTest, reconnectSkipsReleasedSubscriptions) {
