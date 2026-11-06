@@ -1,7 +1,8 @@
 # Active fanout bugs
 
-These tests document fanout bugs that have not been fixed yet. Each scenario
-compares incremental diagnostics with a fresh check of the final files.
+These tests document fanout bugs that have not been fixed yet. Most scenarios
+compare incremental diagnostics with a fresh check of the final files; others
+expect a specific internal typechecker error.
 `run_expect_bug` accepts the documented difference; when the bug stops
 reproducing, the test fails with instructions to keep the scenario as a normal
 correctness check.
@@ -20,3 +21,4 @@ Each file corresponds to one familly/underlying bug, with one or more repros.
 | Naming-winner changes | case_variant_duplicate_winner_flip.ml | A case-insensitive naming conflict can change which definition is visible without changing the exact-name declarations used for fanout comparison. |
 | Unindexed declarations | unindexed_function.ml | Declaration caching can introduce names absent from indexed file information, leaving later invalidation unaware of those entries. |
 | Stale inherited declarations | mixed_decl_versions.ml | Folded declarations can retain information from an intermediate ancestor version that comparison of the old and new shallow declarations does not detect. |
+| Inheritance dependencies | missing_inheritance_dependency.ml | Inheritance dependencies recorded during typechecking can lag behind the relationships used by declarations, so ancestor changes can miss descendant invalidation and fanout. |
