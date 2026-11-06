@@ -15,31 +15,38 @@ module MakeType = Typing_make_type
 module SN = Naming_special_names
 
 let rec partition_union ~f env tyl =
-  match tyl with
-  | [] -> ([], [])
-  | t :: tyl ->
-    let (_, t) = Env.expand_type env t in
-    (match get_node t with
-    | Tunion tyl' when not (List.is_empty tyl') ->
-      partition_union ~f env (tyl' @ tyl)
-    | _ ->
-      let (dyns, nondyns) = partition_union ~f env tyl in
+  (* Tail-recursive: unions can have very many members, so recursing once per
+     member can overflow the stack. *)
+  let rec aux ((dyns, nondyns) as acc) tyl =
+    match tyl with
+    | [] -> acc
+    | t :: tyl ->
+      let (_, t) = Env.expand_type env t in
       (match get_node t with
-      | Tnewtype (n, [ty1], _) when String.equal n SN.Classes.cSupportDyn ->
-        (match strip_union ~f env [ty1] with
-        | None -> (dyns, t :: nondyns)
-        | Some (sub_dyns, sub_non_dyns) ->
-          let sd tyl =
-            MakeType.supportdyn
-              (get_reason ty1)
-              (MakeType.union (get_reason ty1) tyl)
-          in
-          (sd sub_dyns :: dyns, sd sub_non_dyns :: nondyns))
+      | Tunion tyl' when not (List.is_empty tyl') -> aux acc (tyl' @ tyl)
       | _ ->
-        if f t then
-          (t :: dyns, nondyns)
-        else
-          (dyns, t :: nondyns)))
+        let acc =
+          match get_node t with
+          | Tnewtype (n, [ty1], _) when String.equal n SN.Classes.cSupportDyn ->
+            (match strip_union ~f env [ty1] with
+            | None -> (dyns, t :: nondyns)
+            | Some (sub_dyns, sub_non_dyns) ->
+              let sd tys =
+                MakeType.supportdyn
+                  (get_reason ty1)
+                  (MakeType.union (get_reason ty1) tys)
+              in
+              (sd sub_dyns :: dyns, sd sub_non_dyns :: nondyns))
+          | _ ->
+            if f t then
+              (t :: dyns, nondyns)
+            else
+              (dyns, t :: nondyns)
+        in
+        aux acc tyl)
+  in
+  let (dyns, nondyns) = aux ([], []) tyl in
+  (List.rev dyns, List.rev nondyns)
 
 and strip_union ~f env tyl =
   let (dyns, nondyns) = partition_union ~f env tyl in
