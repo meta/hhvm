@@ -6463,27 +6463,36 @@ struct Index::IndexData {
     CompactVector<Type>
   > closureUseVars;
 
-  struct ClsConstTypesHasher {
-    bool operator()(const std::pair<const php::Class*, SString>& k) const {
+  // Key for clsConstLookupCache: the class, the constant name, and
+  // whether non-regular subclasses are included.
+  struct ClsConstLookupKey {
+    const php::Class* cls;
+    SString name;
+    bool nonRegular;
+  };
+  struct ClsConstLookupKeyHasher {
+    size_t operator()(const ClsConstLookupKey& k) const {
       return folly::hash::hash_combine(
-        pointer_hash<php::Class>{}(k.first),
-        pointer_hash<StringData>{}(k.second)
+        pointer_hash<php::Class>{}(k.cls),
+        pointer_hash<StringData>{}(k.name),
+        k.nonRegular
       );
     }
   };
-  struct ClsConstTypesEquals {
-    bool operator()(const std::pair<const php::Class*, SString>& a,
-                    const std::pair<const php::Class*, SString>& b) const {
-      return a.first == b.first && a.second == b.second;
+  struct ClsConstLookupKeyEquals {
+    bool operator()(const ClsConstLookupKey& a,
+                    const ClsConstLookupKey& b) const {
+      return a.cls == b.cls && a.name == b.name &&
+        a.nonRegular == b.nonRegular;
     }
   };
 
   // Cache for lookup_class_constant
   folly_concurrent_hash_map_simd<
-    std::pair<const php::Class*, SString>,
+    ClsConstLookupKey,
     ClsConstLookupResult,
-    ClsConstTypesHasher,
-    ClsConstTypesEquals
+    ClsConstLookupKeyHasher,
+    ClsConstLookupKeyEquals
   > clsConstLookupCache;
 
   bool useClassDependencies{};
@@ -24282,8 +24291,9 @@ ClsConstLookupResult Index::lookup_class_constant(Context ctx,
     // there's little point.
     auto const cinfo = dcls.cls().cinfo();
     if (!cinfo) return conservative();
-    if (auto const it =
-        m_data->clsConstLookupCache.find(std::make_pair(cinfo->cls, sname));
+    if (auto const it = m_data->clsConstLookupCache.find(
+          {cinfo->cls, sname, dcls.containsNonRegular()}
+        );
         it != m_data->clsConstLookupCache.end()) {
       ITRACE(4, "cache hit: {}\n", show(it->second));
       return it->second;
@@ -24312,7 +24322,9 @@ ClsConstLookupResult Index::lookup_class_constant(Context ctx,
     auto const cinfo = dcls.cls().cinfo();
     assertx(cinfo);
     m_data->clsConstLookupCache.emplace(
-      std::make_pair(cinfo->cls, sname),
+      IndexData::ClsConstLookupKey{
+        cinfo->cls, sname, dcls.containsNonRegular()
+      },
       *result
     );
   }
