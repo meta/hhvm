@@ -216,6 +216,64 @@ TEST(RefcountOpts, RetainPayloadAcrossOwnerReleaseWithPhi) {
 }
 
 /*
+ *         wh = LdLoc 0
+ *     result = LdWHResult<Obj|InitNull> wh
+ *                    IncRef result
+ *                    DecRef wh
+ *              CheckType<Obj> result
+ *                  /             \
+ *           obj: Obj             null: InitNull
+ *           IncRef obj           (nothing)
+ *                  \             /
+ *                   p = phi(obj, null)
+ *                       DecRef p
+ *                       StLoc 1, p
+ *
+ * WHResult unpacking a concurrent block: the wait handle may hold the result's
+ * only reference, and the local it was moved from still supports it because
+ * the store clearing that local was sunk. Releasing the wait handle must not
+ * precede the increment retaining the result.
+ */
+TEST(RefcountOpts, RetainAwaitedResultAcrossWaitHandleRelease) {
+  IRUnit unit{test_context};
+  BCContext const bcctx{BCMarker::Dummy(), 0};
+  auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+  auto const wh = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
+  auto const result = unit.gen(LdWHResult, bcctx, TObj | TInitNull, wh->dst());
+  auto const retain = unit.gen(IncRef, bcctx, result->dst());
+  auto const release = unit.gen(DecRef, bcctx, DecRefData{}, wh->dst());
+  auto const counted = unit.defBlock();
+  auto const uncounted = unit.defBlock();
+  auto const join = unit.defBlock();
+  auto const check =
+    unit.gen(CheckType, bcctx, TObj, uncounted, result->dst());
+  check->setNext(counted);
+  unit.entry()->push_back({fp, wh, result, retain, release, check});
+  auto const inc = unit.gen(IncRef, bcctx, check->dst());
+  counted->push_back({inc, unit.gen(Jmp, bcctx, join, check->dst())});
+  auto const null = unit.gen(AssertType, bcctx, TInitNull, result->dst());
+  uncounted->push_back({null, unit.gen(Jmp, bcctx, join, null->dst())});
+  auto const label = unit.defLabel(1, join, bcctx);
+  retypeDests(label, &unit);
+  auto const dec = unit.gen(DecRef, bcctx, DecRefData{}, label->dst(0));
+  join->push_back({
+    dec, unit.gen(StLoc, bcctx, LocalId{1}, fp->dst(), label->dst(0)),
+    unit.gen(Unreachable, bcctx, ASSERT_REASON)
+  });
+
+  optimizeRefcounts(unit);
+
+  // Keep the retain before releasing the wait handle. Only the later
+  // increment can be cancelled against the final decrement.
+  EXPECT_EQ(IncRef, retain->op());
+  EXPECT_EQ(DecRef, release->op());
+  EXPECT_EQ(Nop, inc->op());
+  EXPECT_EQ(Nop, dec->op());
+  EXPECT_EQ(Nop, counted->front().op());
+  EXPECT_TRUE(checkCfg(unit));
+}
+
+/*
  *       a: Obj, unknown refcount
  *       b = LdLoc 0; StLoc 0, null
  *                 IncRef a
