@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/facebook/watchman"
+    "url": "https://github.com/meta/watchman"
   },
   "keywords": [
     "bser",
@@ -24,9 +24,9 @@
   "author": "Wez Furlong <wez@fb.com> (http://wezfurlong.org)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/facebook/watchman/issues"
+    "url": "https://github.com/meta/watchman/issues"
   },
-  "homepage": "https://facebook.github.io/watchman/docs/bser.html",
+  "homepage": "https://meta.github.io/watchman/docs/bser.html",
   "dependencies": {
     "node-int64": "^0.4.0"
   }

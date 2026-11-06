@@ -1,18 +1,18 @@
 # fb-watchman
 
 `fb-watchman` is a filesystem watcher that uses the
-[Watchman](https://facebook.github.io/watchman/) file watching service from
+[Watchman](https://meta.github.io/watchman/) file watching service from
 Facebook.
 
 Watchman provides file change notification services using very
 efficient recursive watches and also allows more advanced change matching and
 filesystem tree querying operations using
-[a powerful expression syntax](https://facebook.github.io/watchman/docs/file-query.html#expressions).
+[a powerful expression syntax](https://meta.github.io/watchman/docs/file-query.html#expressions).
 
 ## Install
 
 You should [install Watchman](
-https://facebook.github.io/watchman/docs/install.html) to make the most of this
+https://meta.github.io/watchman/docs/install.html) to make the most of this
 module.
 
 Then simply:
@@ -31,4 +31,4 @@ $ npm install fb-watchman
 
 ## How do I use it?
 
-[Read the NodeJS watchman documentation](https://facebook.github.io/watchman/docs/nodejs.html)
+[Read the NodeJS watchman documentation](https://meta.github.io/watchman/docs/nodejs.html)

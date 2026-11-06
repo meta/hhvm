@@ -5,7 +5,7 @@ authors = ["Wez Furlong"]
 edition = "2021"
 description = "a client for the Watchman file watching service"
 documentation = "https://docs.rs/watchman_client"
-repository = "https://github.com/facebook/watchman/"
+repository = "https://github.com/meta/watchman/"
 license = "MIT"
 exclude = ["examples/*"]
 

@@ -16,7 +16,7 @@ We actively welcome your pull requests.
 6. If you haven't already, complete the Contributor License Agreement ("CLA").
 
 ## Getting Started
-For more information on how to get started please see [contributing guide](https://facebook.github.io/watchman/docs/contributing).
+For more information on how to get started please see [contributing guide](https://meta.github.io/watchman/docs/contributing).
 
 ## Contributor License Agreement ("CLA")
 In order to accept your pull request, we need you to submit a CLA. You only need

@@ -5,7 +5,7 @@ category: Queries
 
 _Since 2021.08.30_
 
-[Git support](https://github.com/facebook/watchman/pull/934) has been added 🎊
+[Git support](https://github.com/meta/watchman/pull/934) has been added 🎊
 
 _Since 4.9._
 

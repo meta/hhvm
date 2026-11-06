@@ -211,7 +211,7 @@ class Client extends EventEmitter {
       } else if (error.code === 'ENOENT' || error.errno === 'ENOENT') {
         error.message =
           'Watchman was not found in PATH.  See ' +
-          'https://facebook.github.io/watchman/docs/install.html ' +
+          'https://meta.github.io/watchman/docs/install.html ' +
           'for installation instructions';
       }
       console.error('Watchman: ', error.message);

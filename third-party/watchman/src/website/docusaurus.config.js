@@ -25,13 +25,13 @@ const CATEGORY_ORDER = [
 module.exports = {
   title: 'Watchman',
   tagline: 'A file watching service',
-  url: 'https://facebook.github.io',
+  url: 'https://meta.github.io',
   baseUrl: '/watchman/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'throw',
   trailingSlash: false,
   favicon: 'img/favicon.png',
-  organizationName: 'facebook',
+  organizationName: 'meta',
   projectName: 'watchman',
 
   presets: [
@@ -44,7 +44,7 @@ module.exports = {
           editUrl: fbContent({
             internal:
               'https://www.internalfb.com/code/fbsource/fbcode/watchman/oss/website',
-            external: 'https://github.com/facebook/watchman/tree/main/website',
+            external: 'https://github.com/meta/watchman/tree/main/website',
           }),
           // Add support for category
           async sidebarItemsGenerator({
@@ -162,7 +162,7 @@ module.exports = {
             activeBaseRegex: 'watchman/support',
           },
           {
-            href: 'https://github.com/facebook/watchman',
+            href: 'https://github.com/meta/watchman',
             position: 'right',
             className: 'header-github-link',
             'aria-label': 'GitHub repository',
@@ -181,7 +181,7 @@ module.exports = {
               },
               {
                 label: 'GitHub',
-                to: 'https://github.com/facebook/watchman',
+                to: 'https://github.com/meta/watchman',
               },
               {
                 label: 'Getting Support',

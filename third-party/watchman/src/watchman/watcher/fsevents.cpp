@@ -817,8 +817,8 @@ Watcher::ConsumeNotifyRet FSEventsWatcher::consumeNotify(
         // an event to consider it for examination.
         //
         // Note these two issues:
-        // - https://github.com/facebook/watchman/issues/305
-        // - https://github.com/facebook/watchman/issues/307
+        // - https://github.com/meta/watchman/issues/305
+        // - https://github.com/meta/watchman/issues/307
         //
         // Watchman does not guarantee minimal notifications, but limiting
         // the event types above should avoid unnecessary results in

@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * Encoder for the BSER binary JSON format used by the Watchman service:
  *
- * https://facebook.github.io/watchman/docs/bser.html
+ * https://meta.github.io/watchman/docs/bser.html
  */
 public class BserSerializer {
   private static final int INITIAL_BUFFER_SIZE = 8192;

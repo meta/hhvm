@@ -58,7 +58,7 @@ parser.add_argument(
     help="""
 Comma separated list of file information fields to return.
 The default is just the name.  For a list of possible fields, see:
-https://facebook.github.io/watchman/docs/cmd/query.html#available-fields
+https://meta.github.io/watchman/docs/cmd/query.html#available-fields
 """,
 )
 parser.add_argument(

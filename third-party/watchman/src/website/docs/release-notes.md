@@ -11,7 +11,7 @@ supported _capabilities_ and our backwards compatibility guidelines in the
 
 We focus on the highlights only in these release notes. For a full history that
 includes all of the gory details, please see
-[the commit history on GitHub](https://github.com/facebook/watchman/commits/main).
+[the commit history on GitHub](https://github.com/meta/watchman/commits/main).
 
 ### Watchman v2020.07.13.00
 
@@ -164,7 +164,7 @@ Whoops, we never got around to tagging this beyond a release candidate tag!
   socket permissions. The new but not yet documented configuration options
   `sock_group` and `sock_access` can be used to control this new behavior.
 - Added support for inetd-style socket activation of the watchman service.
-  [this commit includes a sample configuration for systemd](https://github.com/facebook/watchman/commit/2985377eaf8c8538b28fae9add061b67991a87c2).
+  [this commit includes a sample configuration for systemd](https://github.com/meta/watchman/commit/2985377eaf8c8538b28fae9add061b67991a87c2).
 - Added the `symlink_target` field to the stored metadata for files. This holds
   the text of the symbolic link for symlinks. You can test whether it is
   supported by a watchman server using the capability name

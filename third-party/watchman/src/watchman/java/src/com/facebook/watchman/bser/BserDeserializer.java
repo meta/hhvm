@@ -37,7 +37,7 @@ import com.facebook.watchman.Deserializer;
 /**
  * Decoder for the BSER binary JSON format used by the Watchman service:
  *
- * https://facebook.github.io/watchman/docs/bser.html
+ * https://meta.github.io/watchman/docs/bser.html
  */
 public class BserDeserializer implements Deserializer {
   public enum KeyOrdering {

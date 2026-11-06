@@ -389,7 +389,7 @@ mode_t cfg_get_perms(const char* name, bool write_bits, bool execute_bits) {
 const char* cfg_get_trouble_url() {
   return cfg_get_string(
       "troubleshooting_url",
-      "https://facebook.github.io/watchman/docs/troubleshooting.html");
+      "https://meta.github.io/watchman/docs/troubleshooting.html");
 }
 
 namespace watchman {

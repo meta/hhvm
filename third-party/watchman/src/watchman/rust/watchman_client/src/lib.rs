@@ -873,7 +873,7 @@ impl Client {
     /// The optional `metadata` will be published to all subscribers of the
     /// root and made visible via `SubscriptionData::StateEnter::metadata`.
     ///
-    /// See also: <https://facebook.github.io/watchman/docs/cmd/state-enter.html>
+    /// See also: <https://meta.github.io/watchman/docs/cmd/state-enter.html>
     pub async fn state_enter(
         &self,
         root: &ResolvedRoot,
@@ -902,7 +902,7 @@ impl Client {
     /// The optional `metadata` will be published to all subscribers of the
     /// root and made visible via `SubscriptionData::StateLeave::metadata`.
     ///
-    /// See also: <https://facebook.github.io/watchman/docs/cmd/state-leave.html>
+    /// See also: <https://meta.github.io/watchman/docs/cmd/state-leave.html>
     pub async fn state_leave(
         &self,
         root: &ResolvedRoot,
@@ -1133,8 +1133,8 @@ impl Client {
     /// a given point in time you should use a sync cookie.
     ///
     /// ## See also:
-    ///  * <https://facebook.github.io/watchman/docs/cmd/clock.html>
-    ///  * <https://facebook.github.io/watchman/docs/cookies.html>
+    ///  * <https://meta.github.io/watchman/docs/cmd/clock.html>
+    ///  * <https://meta.github.io/watchman/docs/cookies.html>
     pub async fn clock(
         &self,
         root: &ResolvedRoot,

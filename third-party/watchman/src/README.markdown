@@ -11,7 +11,7 @@ also trigger actions (such as rebuilding assets) when matching files change.
 
 ## Documentation
 
-Head on over to https://facebook.github.io/watchman/
+Head on over to https://meta.github.io/watchman/
 
 ## License
 
@@ -25,7 +25,7 @@ Watchman is primarily maintained by the source control team at Meta Platforms, I
 
 * Windows and macOS builds
 * Linux builds on recent Ubuntu and Fedora releases
-* Watchman's [compatibility commitment](https://facebook.github.io/watchman/docs/compatibility.html)
+* Watchman's [compatibility commitment](https://meta.github.io/watchman/docs/compatibility.html)
 * Python, Rust, and JavaScript clients
 
 Support for additional operating systems, release packaging, and language bindings is community-maintained:
@@ -34,7 +34,7 @@ Support for additional operating systems, release packaging, and language bindin
 * FreeBSD
 * Solaris
 
-Please submit a [GitHub issue](https://github.com/facebook/watchman/issues/) to report any troubles.
+Please submit a [GitHub issue](https://github.com/meta/watchman/issues/) to report any troubles.
 
 ## Contributing
 

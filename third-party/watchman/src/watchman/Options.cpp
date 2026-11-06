@@ -293,7 +293,7 @@ void print_command_list_for_help(FILE* where) {
   fprintf(
       where,
       "\n"
-      "See https://github.com/facebook/watchman#watchman for more help\n"
+      "See https://github.com/meta/watchman#watchman for more help\n"
       "\n"
       "Watchman, by Wez Furlong.\n"
       "Copyright (c) Meta Platforms, Inc.\n");

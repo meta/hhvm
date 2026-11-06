@@ -378,7 +378,7 @@ VALUE watchman_load_hash(char** ptr, char* end) {
  * Templated arrays are arrays of hashes which have repetitive key information
  * pulled out into a separate "headers" prefix.
  *
- * @see https://facebook.github.io/watchman/docs/bser.html
+ * @see https://meta.github.io/watchman/docs/bser.html
  */
 VALUE watchman_load_template(char** ptr, char* end) {
   int64_t header_items_count, i, row_count;

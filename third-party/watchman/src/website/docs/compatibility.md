@@ -43,5 +43,5 @@ this more closely matches our internal processes than manually managing version
 numbers.
 
 You'll notice that both the
-[tags on GitHub](https://github.com/facebook/watchman/tags) and the version
+[tags on GitHub](https://github.com/meta/watchman/tags) and the version
 reported by `watchman version` are date based.

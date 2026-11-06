@@ -231,4 +231,4 @@ to maintain the socket and defer activating the watchman service until a client
 is ready to connect. This is most practically beneficial when used together with
 `systemd`.
 
-[This commit includes a sample configuration for systemd](https://github.com/facebook/watchman/commit/2985377eaf8c8538b28fae9add061b67991a87c2).
+[This commit includes a sample configuration for systemd](https://github.com/meta/watchman/commit/2985377eaf8c8538b28fae9add061b67991a87c2).

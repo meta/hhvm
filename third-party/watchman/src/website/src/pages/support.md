@@ -21,4 +21,4 @@ http://stackoverflow.com/questions/ask?tags=watchman)
 
 If you've found a bug, or haven't had any success in reaching out through the
 channels above, please [file an issue in our tracker](
-https://github.com/facebook/watchman/issues/new)
+https://github.com/meta/watchman/issues/new)

@@ -92,7 +92,7 @@ message(STATUS "PACKAGE_VERSION=${PACKAGE_VERSION}, BUILD_INFO=${BUILD_INFO}")
 set(PACKAGE_NAME      "watchman")
 set(PACKAGE_STRING    "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_TARNAME   "${PACKAGE_NAME}-${PACKAGE_VERSION}")
-set(PACKAGE_BUGREPORT "https://github.com/facebook/watchman/issues")
+set(PACKAGE_BUGREPORT "https://github.com/meta/watchman/issues")
 project(${PACKAGE_NAME} CXX C)
 
 include(GoogleTest)

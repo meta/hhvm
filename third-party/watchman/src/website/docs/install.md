@@ -32,14 +32,14 @@ the list above.
 ### Prebuilt Binaries
 
 1. Download and extract the windows release from the
-   [latest release](https://github.com/facebook/watchman/releases/latest)
+   [latest release](https://github.com/meta/watchman/releases/latest)
 2. It will be named something like `watchman-vYYYY.MM.DD.00-windows.zip`
 3. It contains a `bin` folder. Move that somewhere appropriate and update your
    `PATH` environment to reference that location.
 
 If you encounter issues with the Windows version of watchman, please report them
 via GitHub!
-[You can find the list of known Windows issues here](https://github.com/facebook/watchman/issues?utf8=%E2%9C%93&q=is%3Aopen+Windows).
+[You can find the list of known Windows issues here](https://github.com/meta/watchman/issues?utf8=%E2%9C%93&q=is%3Aopen+Windows).
 
 ### Installing via Chocolatey
 
@@ -87,7 +87,7 @@ $ sudo port install watchman
 ### Prebuilt Binaries
 
 1. Download and extract the macOS release from the
-   [latest release](https://github.com/facebook/watchman/releases/latest)
+   [latest release](https://github.com/meta/watchman/releases/latest)
 2. It will be named something like `watchman-vYYYY.MM.DD.00-macos.zip`
 
 ```bash
@@ -119,7 +119,7 @@ missing security, bug, and performance fixes.
 The .rpm works on Fedora 40, RHEL 10 and newer.
 
 1. From the
-   [latest release](https://github.com/facebook/watchman/releases/latest),
+   [latest release](https://github.com/meta/watchman/releases/latest),
    download the .rpm
 2. `sudo dnf install ./watchman-$VERSION-1.x86_64.rpm`
 3. Confirm successful installation by running `watchman version`
@@ -132,7 +132,7 @@ missing security, bug, and performance fixes.
 The .deb works on Ubuntu 24.04, Debian 13 and newer.
 
 1. From the
-   [latest release](https://github.com/facebook/watchman/releases/latest),
+   [latest release](https://github.com/meta/watchman/releases/latest),
    download the .deb
 2. `sudo apt install ./watchman_vYYYY.MM.DD.00_amd64.deb`
 3. Confirm successful installation by running `watchman version`
@@ -140,8 +140,8 @@ The .deb works on Ubuntu 24.04, Debian 13 and newer.
 ### <a name="building-from-source"></a> Building from Source
 
 Download a
-[source snapshot from the latest release](https://github.com/facebook/watchman/releases/latest)
-or [clone from GitHub](https://github.com/facebook/watchman/).
+[source snapshot from the latest release](https://github.com/meta/watchman/releases/latest)
+or [clone from GitHub](https://github.com/meta/watchman/).
 
 ```bash
 $ cd watchman
@@ -174,7 +174,7 @@ each week and assigns a tag based on the date. That process is in a beta state;
 some or all of the binaries may not be present for any given tag.
 
 1. Download and extract the release for your system from the
-   [latest release](https://github.com/facebook/watchman/releases/latest)
+   [latest release](https://github.com/meta/watchman/releases/latest)
 2. It will be named something like `watchman-vYYYY.MM.DD.00-linux.zip`
 
 ```bash

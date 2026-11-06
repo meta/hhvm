@@ -31,7 +31,7 @@ class TestTrigger(WatchmanTestCase.WatchmanTestCase):
                 return True
         return False
 
-    # https://github.com/facebook/watchman/issues/141
+    # https://github.com/meta/watchman/issues/141
     def test_triggerIssue141(self) -> None:
         root = self.mkdtemp()
         self.touchRelative(root, "foo.js")

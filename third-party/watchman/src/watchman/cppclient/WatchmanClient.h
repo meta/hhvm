@@ -147,7 +147,7 @@ struct WatchmanClient {
 
   /**
    * Establishes a connection, returning version and capability information per
-   * https://facebook.github.io/watchman/docs/cmd/version.html#capabilities
+   * https://meta.github.io/watchman/docs/cmd/version.html#capabilities
    */
   folly::SemiFuture<folly::dynamic> connect(
       folly::dynamic versionArgs = folly::dynamic::object()(
@@ -171,7 +171,7 @@ struct WatchmanClient {
    * Execute a watchman command, yielding the command response.
    * cmd is typically an array.
    * See
-   * https://facebook.github.io/watchman/docs/socket-interface.html#watchman-protocol
+   * https://meta.github.io/watchman/docs/socket-interface.html#watchman-protocol
    * for the conventions.
    *
    * Errors, both at the transport layer and at the watchman protocol layer
@@ -187,7 +187,7 @@ struct WatchmanClient {
    * preferred way to create a WatchPath instance unless you want to explicitly
    * avoid sharing Watchman tree configurations between independent watchers.
    *
-   * See https://facebook.github.io/watchman/docs/cmd/watch-project.html for
+   * See https://meta.github.io/watchman/docs/cmd/watch-project.html for
    * details.
    */
   folly::SemiFuture<WatchPathPtr> watch(std::string_view path);
@@ -230,7 +230,7 @@ struct WatchmanClient {
   /**
    * Returns a future which completes when all outstanding Watchman updates have
    * been received or a timeout occurs.
-   * See https://facebook.github.io/watchman/docs/cmd/flush-subscriptions.html
+   * See https://meta.github.io/watchman/docs/cmd/flush-subscriptions.html
    */
   folly::SemiFuture<folly::dynamic> flushSubscription(
       SubscriptionPtr subscription,

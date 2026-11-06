@@ -35,8 +35,8 @@ keywords = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/facebook/watchman"
-Issues = "https://github.com/facebook/watchman/issues"
+Homepage = "https://github.com/meta/watchman"
+Issues = "https://github.com/meta/watchman/issues"
 
 
 [build-system]

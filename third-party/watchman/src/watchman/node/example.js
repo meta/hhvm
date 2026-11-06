@@ -65,10 +65,10 @@ client.command(['watch-project', process.cwd()], function(error, resp) {
   }
 
   // Subscribe to notifications about .js files
-  // https://facebook.github.io/watchman/docs/cmd/subscribe.html
+  // https://meta.github.io/watchman/docs/cmd/subscribe.html
   client.command(['subscribe', root, 'mysubscription', {
       // Match any .js file under process.cwd()
-      // https://facebook.github.io/watchman/docs/file-query.html#expressions
+      // https://meta.github.io/watchman/docs/file-query.html#expressions
       // Has more on the supported expression syntax
       expression: ["allof",
           ["match", "*.js"],

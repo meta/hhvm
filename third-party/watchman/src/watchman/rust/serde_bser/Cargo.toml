@@ -3,9 +3,9 @@ name = "serde_bser"
 version = "0.4.0"
 authors = ["Rain <rain1@fb.com>", "Wez Furlong"]
 edition = "2021"
-description = "Implements the Watchman BSER encoding for serde. https://facebook.github.io/watchman/docs/bser.html"
+description = "Implements the Watchman BSER encoding for serde. https://meta.github.io/watchman/docs/bser.html"
 documentation = "https://docs.rs/serde_bser"
-repository = "https://github.com/facebook/watchman/"
+repository = "https://github.com/meta/watchman/"
 license = "MIT"
 
 [dependencies]

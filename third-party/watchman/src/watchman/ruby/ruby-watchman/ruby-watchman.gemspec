@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.description   = <<-DESC.gsub(/^\s+/, '')
     A fast implementation of the Watchman binary protocol written in C.
   DESC
-  s.homepage      = 'https://github.com/facebook/watchman/tree/main/ruby/ruby-watchman'
+  s.homepage      = 'https://github.com/meta/watchman/tree/main/watchman/ruby/ruby-watchman'
   s.license       = 'BSD'
   s.extensions    = 'ext/ruby-watchman/extconf.rb'
 

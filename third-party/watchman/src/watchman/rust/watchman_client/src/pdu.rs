@@ -119,7 +119,7 @@ pub struct WatchProjectResponse {
 
 /// When using the `path` generator, this specifies a path to be
 /// examined.
-/// <https://facebook.github.io/watchman/docs/file-query.html#path-generator>
+/// <https://meta.github.io/watchman/docs/file-query.html#path-generator>
 #[derive(Serialize, Clone, Debug)]
 #[serde(untagged)]
 pub enum PathGeneratorElement {
@@ -228,7 +228,7 @@ impl From<SyncTimeout> for i64 {
 /// 3. Result rendering
 ///
 /// The generation phase is explained in detail here:
-/// <https://facebook.github.io/watchman/docs/file-query.html#generators>
+/// <https://meta.github.io/watchman/docs/file-query.html#generators>
 ///
 /// Note that it is legal to combine multiple generators but that it
 /// is often undesirable to do so.
@@ -236,7 +236,7 @@ impl From<SyncTimeout> for i64 {
 /// being used to iterate all known files.
 ///
 /// The filtration and expression syntax is explained here:
-/// <https://facebook.github.io/watchman/docs/file-query.html#expressions>
+/// <https://meta.github.io/watchman/docs/file-query.html#expressions>
 #[derive(Serialize, Default, Clone, Debug)]
 pub struct QueryRequestCommon {
     /// If set, enables the glob generator and specifies a set of globs
@@ -257,7 +257,7 @@ pub struct QueryRequestCommon {
     pub glob_includedotfiles: bool,
 
     /// If set, enables the use of the `path` generator.
-    /// <https://facebook.github.io/watchman/docs/file-query.html#path-generator>
+    /// <https://meta.github.io/watchman/docs/file-query.html#path-generator>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<Vec<PathGeneratorElement>>,
 
@@ -267,7 +267,7 @@ pub struct QueryRequestCommon {
     /// filesystem walk, so it is strongly recommended that you scope this to
     /// a relatively shallow subdirectory.
     ///
-    /// <https://facebook.github.io/watchman/docs/file-query.html#suffix-generator>
+    /// <https://meta.github.io/watchman/docs/file-query.html#suffix-generator>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<Vec<PathBuf>>,
 
@@ -276,7 +276,7 @@ pub struct QueryRequestCommon {
     /// changes.
     /// You will typically thread the QueryResult.clock field back to a subsequent
     /// since query to process the continuity of matching file changes.
-    /// <https://facebook.github.io/watchman/docs/file-query.html#since-generator>
+    /// <https://meta.github.io/watchman/docs/file-query.html#since-generator>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub since: Option<Clock>,
 
@@ -335,7 +335,7 @@ pub struct QueryRequestCommon {
     /// appear to be case insensitive.
     /// This can improve performance of directory traversal in queries by turning
     /// O(directory-size) operations into an O(1) hash lookup.
-    /// <https://facebook.github.io/watchman/docs/cmd/query.html#case-sensitivity>
+    /// <https://meta.github.io/watchman/docs/cmd/query.html#case-sensitivity>
     #[serde(default, skip_serializing_if = "is_false")]
     pub case_sensitive: bool,
 
@@ -354,8 +354,8 @@ pub struct QueryRequestCommon {
     /// disabled and save approximately ~15ms of latency per query.
     ///
     /// ## See also:
-    /// * <https://facebook.github.io/watchman/docs/cookies.html>
-    /// * <https://facebook.github.io/watchman/docs/cmd/query.html#synchronization-timeout-since-21>
+    /// * <https://meta.github.io/watchman/docs/cookies.html>
+    /// * <https://meta.github.io/watchman/docs/cmd/query.html#synchronization-timeout-since-21>
     #[serde(skip_serializing_if = "SyncTimeout::is_default", default)]
     pub sync_timeout: SyncTimeout,
 
@@ -376,7 +376,7 @@ pub struct QueryRequestCommon {
     /// Controls the duration that the server will wait to obtain a lock on the
     /// filesystem view.
     /// You should not normally need to change this.
-    /// <https://facebook.github.io/watchman/docs/cmd/query.html#lock-timeout>
+    /// <https://meta.github.io/watchman/docs/cmd/query.html#lock-timeout>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lock_timeout: Option<i64>,
 
@@ -454,7 +454,7 @@ pub struct SubscribeRequest {
     /// changes.
     /// You will typically thread the QueryResult.clock field back to a subsequent
     /// since query to process the continuity of matching file changes.
-    /// <https://facebook.github.io/watchman/docs/file-query.html#since-generator>
+    /// <https://meta.github.io/watchman/docs/file-query.html#since-generator>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub since: Option<Clock>,
 
@@ -498,7 +498,7 @@ pub struct SubscribeRequest {
     /// appear to be case insensitive.
     /// This can improve performance of directory traversal in queries by turning
     /// O(directory-size) operations into an O(1) hash lookup.
-    /// <https://facebook.github.io/watchman/docs/cmd/query.html#case-sensitivity>
+    /// <https://meta.github.io/watchman/docs/cmd/query.html#case-sensitivity>
     #[serde(default, skip_serializing_if = "is_false")]
     pub case_sensitive: bool,
 
@@ -506,19 +506,19 @@ pub struct SubscribeRequest {
     /// the control files at the start of a version control operation. You may specify
     /// that you want this behavior by passing the defer_vcs flag to your
     /// subscription command invocation
-    /// <https://facebook.github.io/watchman/docs/cmd/subscribe.html#filesystem-settling>
+    /// <https://meta.github.io/watchman/docs/cmd/subscribe.html#filesystem-settling>
     #[serde(default, skip_serializing_if = "is_false")]
     pub defer_vcs: bool,
 
     /// The `defer` field specifies a list of state names for which the subscriber
     /// wishes to defer the notification stream.
-    /// <https://facebook.github.io/watchman/docs/cmd/subscribe.html#defer>
+    /// <https://meta.github.io/watchman/docs/cmd/subscribe.html#defer>
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub defer: Vec<&'static str>,
 
     /// The `drop` field specifies a list of state names for which the subscriber
     /// wishes to discard the notification stream.
-    /// <https://facebook.github.io/watchman/docs/cmd/subscribe.html#drop>
+    /// <https://meta.github.io/watchman/docs/cmd/subscribe.html#drop>
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub drop: Vec<&'static str>,
 }
@@ -559,7 +559,7 @@ pub struct SubscribeResponse {
 /// The `trigger` command request.
 ///
 /// The fields are explained in detail here:
-/// <https://facebook.github.io/watchman/docs/cmd/trigger#extended-syntax>
+/// <https://meta.github.io/watchman/docs/cmd/trigger#extended-syntax>
 #[derive(Deserialize, Serialize, Default, Clone, Debug)]
 pub struct TriggerRequest {
     /// Defines the name of the trigger.
@@ -610,7 +610,7 @@ pub struct TriggerRequest {
 
     /// Since 3.4. Evaluates triggers with respect to a path within a watched root.
     ///
-    /// See <https://facebook.github.io/watchman/docs/cmd/trigger#relative-roots>
+    /// See <https://meta.github.io/watchman/docs/cmd/trigger#relative-roots>
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relative_root: Option<PathBuf>,
 }
@@ -701,7 +701,7 @@ pub struct GetAssertedStatesResponse {
 ///
 /// A clock can also encoded metadata describing the state of source
 /// control to work with source control aware queries:
-/// <https://facebook.github.io/watchman/docs/scm-query.html>
+/// <https://meta.github.io/watchman/docs/scm-query.html>
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum Clock {
@@ -719,7 +719,7 @@ pub enum Clock {
 /// In particular, there is no defined way for a client to reason
 /// about the relationship between any two ClockSpec's.
 ///
-/// <https://facebook.github.io/watchman/docs/clockspec.html>
+/// <https://meta.github.io/watchman/docs/clockspec.html>
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum ClockSpec {
@@ -791,7 +791,7 @@ impl From<ClockSpec> for Value {
 
 /// Holds extended clock data that includes source control aware
 /// query metadata.
-/// <https://facebook.github.io/watchman/docs/scm-query.html>
+/// <https://meta.github.io/watchman/docs/scm-query.html>
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct FatClockData {
     pub clock: ClockSpec,
@@ -801,7 +801,7 @@ pub struct FatClockData {
 
 /// Holds extended clock data that includes source control aware
 /// query metadata.
-/// <https://facebook.github.io/watchman/docs/scm-query.html>
+/// <https://meta.github.io/watchman/docs/scm-query.html>
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ScmAwareClockData {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -817,7 +817,7 @@ pub struct ScmAwareClockData {
 
 /// Holds extended clock data that includes source control aware
 /// query metadata.
-/// <https://facebook.github.io/watchman/docs/scm-query.html>
+/// <https://meta.github.io/watchman/docs/scm-query.html>
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct SavedStateClockData {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -850,7 +850,7 @@ pub enum ContentSha1Hex {
 /// Encodes the file type field returned in query results and
 /// specified in expression terms.
 ///
-/// <https://facebook.github.io/watchman/docs/expr/type.html>
+/// <https://meta.github.io/watchman/docs/expr/type.html>
 ///
 /// Use this in your query file struct like this:
 ///

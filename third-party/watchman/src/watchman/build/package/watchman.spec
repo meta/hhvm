@@ -3,7 +3,7 @@ Version: %{version}
 Release: 1%{?dist}
 License: MIT
 Summary: A file watching service
-URL: https://facebook.github.io/watchman/
+URL: https://meta.github.io/watchman/
 
 %description
 

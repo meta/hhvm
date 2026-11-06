@@ -9,7 +9,7 @@ with no specific encoding; this matches the convention employed by most operatin
 system filename storage.
 
 For more details about the serialization scheme see
-[Watchman's docs](https://facebook.github.io/watchman/docs/bser.html).
+[Watchman's docs](https://meta.github.io/watchman/docs/bser.html).
 
 ## API
 

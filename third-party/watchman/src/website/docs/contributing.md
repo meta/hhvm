@@ -39,7 +39,7 @@ The build time dependencies can be installed by running
 the example below:
 
 ```bash
-$ git clone https://github.com/facebook/watchman.git
+$ git clone https://github.com/meta/watchman.git
 $ cd watchman
 $ ./autogen.sh
 $ make
