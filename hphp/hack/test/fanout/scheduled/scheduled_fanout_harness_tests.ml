@@ -180,15 +180,25 @@ let test_detects_unreported_change () =
   let expected = ("caller.php", 4110, "Invalid return type") in
   Scheduled_fanout.run_expect_bug
     ~bug:"unreported edit harness control"
-    ~incremental:[]
-    ~full:[expected]
+    ~expectation:(Diagnostics { incremental = []; full = [expected] })
     scenario;
+  (* An internal-error expectation must reject an otherwise matching
+     diagnostic discrepancy. *)
+  (match
+     Scheduled_fanout.run_expect_bug
+       ~bug:"internal error harness control"
+       ~expectation:(Internal_error "Expected internal typechecker error")
+       scenario
+   with
+  | () ->
+    failwith "Expected a diagnostic mismatch to reject internal-error mode"
+  | exception Scheduled_fanout.Diagnostics_mismatch _ -> ());
   (* Expecting another occurrence must not accept the single actual error. *)
   match
     Scheduled_fanout.run_expect_bug
       ~bug:"extra diagnostic harness control"
-      ~incremental:[]
-      ~full:[expected; expected]
+      ~expectation:
+        (Diagnostics { incremental = []; full = [expected; expected] })
       scenario
   with
   | () -> failwith "Expected rejection of a different diagnostic count"
@@ -445,13 +455,29 @@ let test_rejects_transient_internal_error () =
           ];
       }
   in
-  match Scheduled_fanout.run scenario with
-  | () ->
-    failwith "Expected the first iteration's internal error to be rejected"
-  | exception Scheduled_fanout.Internal_typechecker_error message ->
-    if not (String.is_substring message ~substring:"during iteration 1;") then
-      failwith ("Expected rejection after the first iteration: " ^ message);
-    true
+  let message =
+    match Scheduled_fanout.run scenario with
+    | () ->
+      failwith "Expected the first iteration's internal error to be rejected"
+    | exception Scheduled_fanout.Internal_typechecker_error message ->
+      if not (String.is_substring message ~substring:"during iteration 1;") then
+        failwith ("Expected rejection after the first iteration: " ^ message);
+      message
+  in
+  Scheduled_fanout.run_expect_bug
+    ~bug:"known internal error harness control"
+    ~expectation:(Internal_error message)
+    scenario;
+  (* The same failure must propagate when a different message is expected. *)
+  match
+    Scheduled_fanout.run_expect_bug
+      ~bug:"different internal error harness control"
+      ~expectation:(Internal_error (message ^ " Different failure."))
+      scenario
+  with
+  | () -> failwith "Expected rejection of a different internal error"
+  | exception Scheduled_fanout.Internal_typechecker_error actual ->
+    String.equal message actual
 
 (** Unsupported experimental features are ordinary source errors, even though
     they share code zero with InternalError. Matching __Const diagnostics must
@@ -495,6 +521,104 @@ let test_initialized_parent () =
     };
   true
 
+(** Verify that a repaired middle file is retried without requeueing, its old
+    error disappears, its action is skipped, and later checks and actions run. *)
+let test_cancelled_check_is_retried () =
+  let open Scheduled_fanout in
+  run_expect_bug
+    ~bug:"cancelled middle check harness control"
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [];
+           full = [("third.php", 4110, "Invalid return type")];
+         })
+    {
+      (* The middle file starts broken so retrying it must clear an old error. *)
+      initial_files =
+        [
+          ("first.php", "<?hh\nfunction first(): void {}\n");
+          ("second.php", "<?hh\nfunction second(): int { return 'wrong'; }\n");
+          ("third.php", "<?hh\nfunction third(): int { return 1; }\n");
+        ];
+      iterations =
+        [
+          {
+            default_iteration with
+            before_type_check =
+              [
+                Write_file
+                  ("second.php", "<?hh\nfunction second(): int { return 1; }\n");
+              ];
+            disk_needs_parsing = ["first.php"; "second.php"; "third.php"];
+            type_check =
+              [
+                Check { file = "first.php"; after_check = [] };
+                Check
+                  {
+                    file = "second.php";
+                    (* This error-producing action must be skipped. *)
+                    after_check =
+                      [
+                        Write_file
+                          ( "sentinel.php",
+                            "<?hh\nfunction sentinel(): int { return 'wrong'; }\n"
+                          );
+                      ];
+                  };
+                Check
+                  {
+                    file = "third.php";
+                    (* The deliberate unreported error proves this action ran:
+                       only the fresh check should report it. *)
+                    after_check =
+                      [
+                        Write_file
+                          ( "third.php",
+                            "<?hh\nfunction third(): int { return 'wrong'; }\n"
+                          );
+                      ];
+                  };
+                Remaining;
+              ];
+            cancelled_checks = ["second.php"];
+          };
+          (* No manual requeue: the cancelled middle file is still pending. *)
+          { default_iteration with type_check = [Remaining] };
+        ];
+    };
+  true
+
+(** A scenario ending with a cancelled check is unfinished. Reject it before
+    comparing stale diagnostics against the freshly checked final files. *)
+let test_rejects_unfinished_cancelled_check () =
+  let open Scheduled_fanout in
+  let scenario =
+    {
+      initial_files;
+      iterations =
+        [
+          {
+            default_iteration with
+            disk_needs_parsing = ["caller.php"];
+            type_check = [Remaining];
+            cancelled_checks = ["caller.php"];
+          };
+        ];
+    }
+  in
+  match run scenario with
+  | () -> failwith "Expected rejection of an unfinished cancelled check"
+  | exception Invalid_argument message ->
+    if
+      not
+        (String.is_substring
+           message
+           ~substring:"pending parsing or typechecking: caller.php")
+    then
+      failwith message;
+    true
+
 let () =
   Daemon.check_entry_point ();
   Unit_test.run_all
@@ -522,5 +646,8 @@ let () =
       ("rejects_transient_internal_error", test_rejects_transient_internal_error);
       ( "accepts_experimental_feature_error",
         test_accepts_experimental_feature_error );
+      ("cancelled_check_is_retried", test_cancelled_check_is_retried);
+      ( "rejects_unfinished_cancelled_check",
+        test_rejects_unfinished_cancelled_check );
       ("initialized_parent", test_initialized_parent);
     ]

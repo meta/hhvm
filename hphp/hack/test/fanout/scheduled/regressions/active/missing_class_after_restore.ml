@@ -58,6 +58,7 @@ function late_c(): void {
                  C lives here, but subsequent declaration reads find no C. *)
               after_indexing = [Write_file ("ZC.php", "<?hh\n")];
               after_redeclaring = [];
+              cancelled_checks = [];
               type_check =
                 [
                   (* 3. Redeclaration sees the cached old C and no current C,
@@ -100,8 +101,12 @@ function late_c(): void {
   in
   Scheduled_fanout.run_expect_bug
     ~bug:"missing-class recovery after local cache refill"
-    ~incremental:[("AUse.php", 4107, "Unbound name (typing): `C`")]
-    ~full:[]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [("AUse.php", 4107, "Unbound name (typing): `C`")];
+           full = [];
+         })
     scenario;
   true
 
@@ -162,8 +167,12 @@ function use_c(): void {
      AUse.php's false "Unbound name (typing): C" diagnostic behind. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"missing-class recovery with remote old declarations"
-    ~incremental:[("AUse.php", 4107, "Unbound name (typing): `C`")]
-    ~full:[]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [("AUse.php", 4107, "Unbound name (typing): `C`")];
+           full = [];
+         })
     ~initialization:Saved_state
     ~remote_old_decls:class_contents
     scenario;

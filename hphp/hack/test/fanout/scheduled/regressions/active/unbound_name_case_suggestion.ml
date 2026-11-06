@@ -43,8 +43,13 @@ function u(): void {
      the error without the suggestion. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"F15: unbound-name case suggestions"
-    ~incremental:[("U.php", 2049, "Unbound name: `Foo` (an object type)")]
-    ~full:[("U.php", 2006, "Could not find `Foo`.")]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental =
+             [("U.php", 2049, "Unbound name: `Foo` (an object type)")];
+           full = [("U.php", 2006, "Could not find `Foo`.")];
+         })
     scenario;
   true
 

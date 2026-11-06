@@ -24,6 +24,7 @@ type iteration = {
   after_indexing: action list;
   after_redeclaring: (string * action list) list;
   type_check: type_check_step list;
+  cancelled_checks: string list;
 }
 
 let default_iteration =
@@ -33,6 +34,7 @@ let default_iteration =
     after_indexing = [];
     after_redeclaring = [];
     type_check = [Remaining];
+    cancelled_checks = [];
   }
 
 type scenario = {
@@ -47,6 +49,13 @@ type initialization =
 exception Diagnostics_mismatch of string
 
 exception Internal_typechecker_error of string
+
+type bug_expectation =
+  | Diagnostics of {
+      incremental: (string * int * string) list;
+      full: (string * int * string) list;
+    }
+  | Internal_error of string
 
 let expect_known_fanout_bug
     ~(bug : string) ~(matches : exn -> bool) (check : unit -> unit) =
@@ -282,6 +291,7 @@ let run_iteration genv env ~root ~check iteration =
     after_indexing;
     after_redeclaring;
     type_check;
+    cancelled_checks;
   } =
     iteration
   in
@@ -316,6 +326,12 @@ let run_iteration genv env ~root ~check iteration =
             ("Duplicate scheduled file check: " ^ Relative_path.suffix path);
         Relative_path.Set.add paths path)
   in
+  let cancelled_file_checks = parsing_paths root cancelled_checks in
+  if
+    (not (Relative_path.Set.is_empty cancelled_file_checks))
+    && Injector_config.Exclusions.exclude_typing_check_service ()
+  then
+    failwith "cancelled_checks requires typechecking cancellation mocking";
   run_actions root before_type_check;
   let pending_checks = ref scheduled_checks in
   let type_check_testing_hooks =
@@ -324,6 +340,7 @@ let run_iteration genv env ~root ~check iteration =
       && List.is_empty after_redeclaring
       && List.is_empty scheduled_checks
       && check_remaining
+      && Relative_path.Set.is_empty cancelled_file_checks
     then
       None
     else
@@ -346,6 +363,11 @@ let run_iteration genv env ~root ~check iteration =
                     if not (Relative_path.Set.mem selected path) then
                       failwith
                         ("Scheduled file is absent from the fanout: "
+                        ^ Relative_path.suffix path));
+                Relative_path.Set.iter cancelled_file_checks ~f:(fun path ->
+                    if not (Relative_path.Set.mem selected path) then
+                      failwith
+                        ("Cancelled file is absent from the fanout: "
                         ^ Relative_path.suffix path));
                 let remaining =
                   List.filter paths ~f:(fun path ->
@@ -373,8 +395,12 @@ let run_iteration genv env ~root ~check iteration =
                        "Expected file checks [%s], got [%s]"
                        (names expected_paths)
                        (names paths)));
-                if not (List.is_empty scheduled_checks) then
-                  pending_checks := checks);
+                pending_checks :=
+                  List.filter checks ~f:(fun (path, _) ->
+                      not (Relative_path.Set.mem cancelled_file_checks path));
+                Relative_path.Set.iter
+                  cancelled_file_checks
+                  ~f:Typing_check_service.TestMocking.set_is_cancelled);
             after_file_check =
               (fun path ->
                 match !pending_checks with
@@ -411,6 +437,11 @@ let run_iteration genv env ~root ~check iteration =
       "Typechecking returned before all scheduled redeclaration hooks ran";
   if not (List.is_empty !pending_checks) then
     failwith "Typechecking returned before all scheduled file checks completed";
+  Relative_path.Set.iter cancelled_file_checks ~f:(fun path ->
+      if not (Relative_path.Set.mem env.Server_env.needs_recheck path) then
+        failwith
+          ("Cancelled check was not retained for retry: "
+          ^ Relative_path.suffix path));
   { env with Server_env.type_check_testing_hooks = None }
 
 let diagnostics env =
@@ -471,10 +502,18 @@ let run_child
         ~check:"fresh full check"
         { default_iteration with disk_needs_parsing = files }
   in
-  diagnostics env
+  let unfinished_paths =
+    Relative_path.Set.union env.disk_needs_parsing env.needs_recheck
+    |> Relative_path.Set.elements
+    |> List.map ~f:Relative_path.suffix
+  in
+  (diagnostics env, unfinished_paths)
 
 let child_entry :
-    (child_request, unit, (string list, string) result) Daemon.entry =
+    ( child_request,
+      unit,
+      (string list * string list, string) result )
+    Daemon.entry =
   Daemon.register_entry_point "scheduled_fanout" (fun request (_, output) ->
       let result =
         try Ok (run_child request) with
@@ -482,7 +521,8 @@ let child_entry :
       in
       Daemon.to_channel output result)
 
-(** Runs a check in an isolated child process and returns its diagnostics.
+(** Runs a check in an isolated child process and returns its diagnostics and
+    unfinished paths.
     Propagates internal typechecker errors and child process failures. *)
 let in_process ~name request =
   (* Daemon restarts this test binary at child_entry with the serialized
@@ -565,7 +605,7 @@ let run
            ~parser_options
            ~directory:(directory "saved_state"))
   in
-  let incremental =
+  let (incremental, unfinished_paths) =
     in_process
       ~name:"incremental"
       {
@@ -577,6 +617,10 @@ let run
         check = Incremental scenario;
       }
   in
+  if not (List.is_empty unfinished_paths) then
+    invalid_arg
+      ("Scenario ends with pending parsing or typechecking: "
+      ^ String.concat ~sep:", " unfinished_paths);
   (* Writes are the only supported disk actions, so these are exactly the files
      in the final repository. Read their actual contents in the fresh child. *)
   let final_files =
@@ -602,7 +646,7 @@ let run
     |> List.map ~f:fst
     |> List.dedup_and_sort ~compare:String.compare
   in
-  let full =
+  let (full, _) =
     in_process
       ~name:"full check"
       {
@@ -630,9 +674,16 @@ let run
             (format incremental)
             (format full)))
 
-let run_expect_bug
-    ?initialization ?remote_old_decls ~bug ~incremental ~full scenario =
-  expect_known_fanout_bug
-    ~bug
-    ~matches:(matches_diagnostics_mismatch ~incremental ~full)
-    (fun () -> run ?initialization ?remote_old_decls scenario)
+let run_expect_bug ?initialization ?remote_old_decls ~bug ~expectation scenario
+    =
+  let matches =
+    match expectation with
+    | Diagnostics { incremental; full } ->
+      matches_diagnostics_mismatch ~incremental ~full
+    | Internal_error expected ->
+      (function
+      | Internal_typechecker_error actual -> String.equal expected actual
+      | _ -> false)
+  in
+  expect_known_fanout_bug ~bug ~matches (fun () ->
+      run ?initialization ?remote_old_decls scenario)

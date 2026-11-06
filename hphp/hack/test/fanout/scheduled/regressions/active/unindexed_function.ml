@@ -71,6 +71,7 @@ function caller(): int {
               else
                 []);
             after_redeclaring = [];
+            cancelled_checks = [];
             type_check =
               [
                 (* Let a consumer observe the temporary cached g, then undo
@@ -115,12 +116,17 @@ function caller(): int {
 let test_temporary_function_removed_with_caller_recheck () =
   Scheduled_fanout.run_expect_bug
     ~bug:"F6: unindexed function removal"
-    ~incremental:[("Caller.php", 2049, "Unbound name: `g` (a global function)")]
-    ~full:
-      [
-        ("Caller.php", 4107, "Unbound name (typing): `g`");
-        ("Caller.php", 2049, "Unbound name: `g` (a global function)");
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental =
+             [("Caller.php", 2049, "Unbound name: `g` (a global function)")];
+           full =
+             [
+               ("Caller.php", 4107, "Unbound name (typing): `g`");
+               ("Caller.php", 2049, "Unbound name: `g` (a global function)");
+             ];
+         })
     (temporary_function_scenario ~add_after_indexing:true ~recheck_caller:true);
   true
 
@@ -157,6 +163,7 @@ let scenario ~transient ~use =
             after_indexing =
               [Write_file ("F.php", "<?hh\n// edit\n" ^ transient)];
             after_redeclaring = [];
+            cancelled_checks = [];
             type_check =
               [
                 Check
@@ -186,16 +193,20 @@ let scenario ~transient ~use =
 let test_transient_function_remains_cached () =
   Scheduled_fanout.run_expect_bug
     ~bug:"F6: unindexed function and constant removal"
-    ~incremental:
-      [
-        ("U.php", 4110, "Invalid return type");
-        ("U.php", 2049, "Unbound name: `g` (a global function)");
-      ]
-    ~full:
-      [
-        ("U.php", 4107, "Unbound name (typing): `g`");
-        ("U.php", 2049, "Unbound name: `g` (a global function)");
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental =
+             [
+               ("U.php", 4110, "Invalid return type");
+               ("U.php", 2049, "Unbound name: `g` (a global function)");
+             ];
+           full =
+             [
+               ("U.php", 4107, "Unbound name (typing): `g`");
+               ("U.php", 2049, "Unbound name: `g` (a global function)");
+             ];
+         })
     (scenario
        ~transient:"function g(): string { return ''; }\n"
        ~use:"<?hh\nfunction u(): int {\n  return g();\n}\n");
@@ -209,16 +220,20 @@ let test_transient_function_remains_cached () =
 let test_transient_constant_remains_cached () =
   Scheduled_fanout.run_expect_bug
     ~bug:"F6: unindexed function and constant removal"
-    ~incremental:
-      [
-        ("U.php", 4110, "Invalid return type");
-        ("U.php", 2049, "Unbound name: `K` (a global constant)");
-      ]
-    ~full:
-      [
-        ("U.php", 4106, "Unbound global constant (Typing)");
-        ("U.php", 2049, "Unbound name: `K` (a global constant)");
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental =
+             [
+               ("U.php", 4110, "Invalid return type");
+               ("U.php", 2049, "Unbound name: `K` (a global constant)");
+             ];
+           full =
+             [
+               ("U.php", 4106, "Unbound global constant (Typing)");
+               ("U.php", 2049, "Unbound name: `K` (a global constant)");
+             ];
+         })
     (scenario
        ~transient:"const string K = '';\n"
        ~use:"<?hh\nfunction u(): int {\n  return K;\n}\n");
@@ -299,6 +314,7 @@ let run ~temporary_function ~index_temporary ~repair_files =
               else
                 [Write_file ("Producer.php", temporary_function)]);
             after_redeclaring = [];
+            cancelled_checks = [];
             type_check =
               [
                 Check

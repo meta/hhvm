@@ -81,6 +81,7 @@ function use_d(): string {
               type_check = [Check { file = "P.php"; after_check = [] }];
             };
             {
+              default_iteration with
               (* Redeclaration visits ZChild.php before P.php. Folding C loads
                  its parent D, whose file is outside this batch, so direct
                  oldification and cleanup do not remove D's folded entry. *)
@@ -125,8 +126,9 @@ function use_d(): string {
   in
   Scheduled_fanout.run_expect_bug
     ~bug:"F8: mixed declaration versions"
-    ~incremental:[]
-    ~full:[("Use.php", 4110, "Invalid return type")]
+    ~expectation:
+      (Diagnostics
+         { incremental = []; full = [("Use.php", 4110, "Invalid return type")] })
     scenario;
   true
 

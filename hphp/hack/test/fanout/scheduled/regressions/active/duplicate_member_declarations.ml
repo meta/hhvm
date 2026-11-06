@@ -50,17 +50,21 @@ let test_second_constant_type_changed () =
   in
   Scheduled_fanout.run_expect_bug
     ~bug:"F18: duplicate member declarations"
-    ~incremental:
-      [
-        ("C.php", 1002, "Cannot redeclare `C::K`");
-        ("C.php", 1002, "Cannot redeclare `C::K`");
-      ]
-    ~full:
-      [
-        ("C.php", 1002, "Cannot redeclare `C::K`");
-        ("C.php", 1002, "Cannot redeclare `C::K`");
-        ("U.php", 4110, "Invalid return type");
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental =
+             [
+               ("C.php", 1002, "Cannot redeclare `C::K`");
+               ("C.php", 1002, "Cannot redeclare `C::K`");
+             ];
+           full =
+             [
+               ("C.php", 1002, "Cannot redeclare `C::K`");
+               ("C.php", 1002, "Cannot redeclare `C::K`");
+               ("U.php", 4110, "Invalid return type");
+             ];
+         })
     scenario;
   (* 3. A fresh check reports U's invalid return type. The incremental check
      does not recheck U.php. With a single declaration, changing its type
@@ -103,8 +107,9 @@ let test_constant_last_removed () =
   in
   Scheduled_fanout.run_expect_bug
     ~bug:"F18: duplicate member removal"
-    ~incremental:[]
-    ~full:[("U.php", 4110, "Invalid return type")]
+    ~expectation:
+      (Diagnostics
+         { incremental = []; full = [("U.php", 4110, "Invalid return type")] })
     scenario;
   (* 3. A fresh check reports that U returns an int where a string is
      required. The incremental check reports no diagnostics. Explicitly

@@ -20,9 +20,9 @@ harness self-tests separate from active bug repros under
 Fixed regressions belong directly in `regressions/`.
 
 Tests for fanout bugs that have not been fixed yet can use
-`run_expect_bug` to specify the documented diagnostics. If the bug stops
-reproducing, the test fails with instructions to remove the wrapper and keep
-the correctness check.
+`run_expect_bug` to specify the expected diagnostic difference or internal
+typechecker error. If the bug stops reproducing, the test fails with instructions
+to remove the wrapper and keep the correctness check.
 
 Run the harness self-tests with:
 

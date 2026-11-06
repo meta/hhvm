@@ -52,14 +52,18 @@ let test_initializer_becomes_class_constant () =
      constant. The incremental check does not recheck C.php. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"F14: duplicate trait property initializers"
-    ~incremental:[]
-    ~full:
-      [
-        ( "C.php",
-          12008,
-          "Property `x`, defined in T0, is inherited multiple times by class `C` and one of its instances is initialised with a class or enum constant"
-        );
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [];
+           full =
+             [
+               ( "C.php",
+                 12008,
+                 "Property `x`, defined in T0, is inherited multiple times by class `C` and one of its instances is initialised with a class or enum constant"
+               );
+             ];
+         })
     scenario;
   true
 

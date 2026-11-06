@@ -62,12 +62,16 @@ function u(): void {
      check does not. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"F16: case-variant naming winner changes"
-    ~incremental:[("F.php", 2012, "Name already bound: `Foo`")]
-    ~full:
-      [
-        ("U.php", 2006, "Could not find `Foo`.");
-        ("F.php", 2012, "Name already bound: `Foo`");
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [("F.php", 2012, "Name already bound: `Foo`")];
+           full =
+             [
+               ("U.php", 2006, "Could not find `Foo`.");
+               ("F.php", 2012, "Name already bound: `Foo`");
+             ];
+         })
     scenario;
   true
 

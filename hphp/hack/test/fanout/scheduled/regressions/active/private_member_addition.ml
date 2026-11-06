@@ -57,8 +57,12 @@ class ParentClass {
      discover the same error without a separate edit to Child. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"F1: private member additions"
-    ~incremental:[]
-    ~full:[("Child.php", 4514, "Cannot override or shadow `target`")]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [];
+           full = [("Child.php", 4514, "Cannot override or shadow `target`")];
+         })
     scenario;
   true
 
@@ -110,12 +114,18 @@ class C {
      incremental check does not recheck D.php and reports nothing. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"F1: private member additions"
-    ~incremental:[]
-    ~full:
-      [
-        ("D.php", 4284, "Member `$p` may not override `__LSB` member of parent");
-        ("D.php", 12021, "Static property is overridden: `$p`");
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [];
+           full =
+             [
+               ( "D.php",
+                 4284,
+                 "Member `$p` may not override `__LSB` member of parent" );
+               ("D.php", 12021, "Static property is overridden: `$p`");
+             ];
+         })
     scenario;
   true
 
@@ -173,12 +183,17 @@ class ParentClass extends GrandparentClass {
      Child has no target method. The incremental check must report both. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"F1: private member additions"
-    ~incremental:[("Parent.php", 4113, "This member visibility is: `private`")]
-    ~full:
-      [
-        ("Use.php", 4053, "No instance method `target` in `ChildClass`");
-        ("Parent.php", 4113, "This member visibility is: `private`");
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental =
+             [("Parent.php", 4113, "This member visibility is: `private`")];
+           full =
+             [
+               ("Use.php", 4053, "No instance method `target` in `ChildClass`");
+               ("Parent.php", 4113, "This member visibility is: `private`");
+             ];
+         })
     scenario;
   true
 

@@ -66,6 +66,7 @@ function g(): int {
                  until the next iteration, and naming still reflects old A. *)
               after_indexing = [Write_file ("A.php", string_definition)];
               after_redeclaring = [];
+              cancelled_checks = [];
               type_check =
                 [
                   (* 4. Checking C lazily reads A and caches f(): string.
@@ -90,8 +91,9 @@ function g(): int {
      incremental diagnostics empty. Require that documented difference. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"T290084171: current declarations used as old"
-    ~incremental:[]
-    ~full:[("B.php", 4110, "Invalid return type")]
+    ~expectation:
+      (Diagnostics
+         { incremental = []; full = [("B.php", 4110, "Invalid return type")] })
     ~initialization:Saved_state
     scenario;
   true
@@ -183,8 +185,12 @@ class Superclass {
      leaves incremental diagnostics empty. Require that documented difference. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"T290084171: current declarations used as old"
-    ~incremental:[]
-    ~full:[("caller.php", 4110, "Invalid return type")]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental = [];
+           full = [("caller.php", 4110, "Invalid return type")];
+         })
     ~initialization:Saved_state
     scenario;
   true

@@ -46,9 +46,14 @@ type iteration = {
       (** The expected file checking order for this invocation. [Remaining] may
           occur only at the end. Without it, [Check] entries must cover every
           selected file. The expanded schedule must match the server's order. *)
+  cancelled_checks: string list;
+      (** Selected files whose checks are skipped in this invocation and
+          reported as cancelled. Their [after_check] actions do not run. The
+          server retains these files for retry in the next iteration. *)
 }
 
-(** No actions or additional parsing inputs, and [type_check = [Remaining]].
+(** No actions, additional parsing inputs, or cancellations, and
+    [type_check = [Remaining]].
     The default iteration still runs one invocation. *)
 val default_iteration : iteration
 
@@ -103,6 +108,7 @@ val expect_known_fanout_bug :
     clear them or the final comparison can accept matching internal errors.
     Raises [Diagnostics_mismatch] on disagreement, or fails if a child fails.
     Diagnostics are compared without temporary root paths or ordering.
+    Rejects scenarios that end with pending parsing or typechecking work.
     Saved-state runs apply the same saved warning hashes to the independent
     full check so both executions use the same warning suppression policy.
 
@@ -115,11 +121,20 @@ val expect_known_fanout_bug :
 val run :
   ?initialization:initialization -> ?remote_old_decls:string -> scenario -> unit
 
-(** Run a scenario that reproduces a known bug, requiring exactly the listed
-    incremental and fresh-check diagnostics. Each tuple is the repository-relative
-    filename, error code, and primary message. Positions and reason messages are
-    ignored; diagnostic order does not matter and duplicate entries are retained.
+type bug_expectation =
+  | Diagnostics of {
+      incremental: (string * int * string) list;
+      full: (string * int * string) list;
+    }
+      (** Exact incremental and fresh-check diagnostics. Each tuple is the
+          repository-relative filename, error code, and primary message. Positions
+          and reason messages are ignored; diagnostic order does not matter and
+          duplicate entries are retained. *)
+  | Internal_error of string
+      (** Exact internal typechecker error message. Diagnostic mismatches still
+          propagate in this mode. *)
 
+(** Run a scenario that reproduces a known bug, requiring [expectation].
     Runner settings are passed through to [run].
 
     Unmatched diagnostic differences and internal errors propagate. If the checks
@@ -128,7 +143,6 @@ val run_expect_bug :
   ?initialization:initialization ->
   ?remote_old_decls:string ->
   bug:string ->
-  incremental:(string * int * string) list ->
-  full:(string * int * string) list ->
+  expectation:bug_expectation ->
   scenario ->
   unit

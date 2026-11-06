@@ -63,22 +63,28 @@ trait T implements I {
      with I. The incremental check misses this error on T.php. *)
   Scheduled_fanout.run_expect_bug
     ~bug:"F11: required-class member dependencies"
-    ~incremental:
-      [
-        ( "C.php",
-          4341,
-          "The method `m` is not compatible with the overridden method" );
-      ]
-    ~full:
-      [
-        ( "T.php",
-          4341,
-          "Some members in class `T` are incompatible with those declared in type `I`"
-        );
-        ( "C.php",
-          4341,
-          "The method `m` is not compatible with the overridden method" );
-      ]
+    ~expectation:
+      (Diagnostics
+         {
+           incremental =
+             [
+               ( "C.php",
+                 4341,
+                 "The method `m` is not compatible with the overridden method"
+               );
+             ];
+           full =
+             [
+               ( "T.php",
+                 4341,
+                 "Some members in class `T` are incompatible with those declared in type `I`"
+               );
+               ( "C.php",
+                 4341,
+                 "The method `m` is not compatible with the overridden method"
+               );
+             ];
+         })
     scenario;
   true
 
