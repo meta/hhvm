@@ -17,6 +17,7 @@ pub use pos::pos_span_raw;
 pub use pos::pos_span_tiny;
 pub use rc_pos as pos;
 
+mod direct_decl_parser_types;
 mod manual;
 
 pub use manual::aast;

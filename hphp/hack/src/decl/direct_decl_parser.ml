@@ -7,12 +7,9 @@
 
 open Hh_prelude
 
-(* NB: Must keep in sync with Rust type
-   oxidized::direct_decl_parser::Decls *)
 type decls = (string * Shallow_decl_defs.decl) list [@@deriving show]
 
-(* NB: Must keep in sync with Rust type
-   oxidized::direct_decl_parser::ParsedFile *)
+(** See .mli *)
 type parsed_file = {
   pf_mode: File_info.mode option;
   pf_file_attributes: Typing_defs.user_attribute list;
@@ -24,12 +21,16 @@ type parsed_file = {
   pf_package_membership: string option;
 }
 
-(* NB: Must keep in sync with ToOcamlRep impl of Rust type rust_decl_ffi::OcamlParsedFileWithHashes *)
+(* Not oxidised: the Rust record uses native hash types and hand-written
+   serialisation to OCaml Int64 without a temporary Rust vector. Avoid
+   special-case generator mappings here; keep the FFI layout in sync manually
+   with rust_decl_ffi::OcamlParsedFileWithHashes::to_ocamlrep. *)
 type parsed_file_with_hashes = {
   pfh_mode: File_info.mode option;
   pfh_hash: File_info.pfh_hash;
   pfh_decls: (string * Shallow_decl_defs.decl * File_info.Decl_hash.t) list;
 }
+[@@oxidize.exclude]
 
 external parse_decls :
   Decl_parser_options.t -> Relative_path.t -> string -> parsed_file

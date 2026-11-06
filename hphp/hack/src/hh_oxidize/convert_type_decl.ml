@@ -151,6 +151,7 @@ let derive_copy ty = Convert_type.is_copy (Rust_type.rust_simple_type ty)
 let derive_default (ty : label) =
   List.mem
     [
+      "direct_decl_parser::Decls";
       "map_reduce_ffi::MapReduceFfi";
       "package_info::PackageInfo";
       "scoured_comments::ScouredComments";
@@ -216,7 +217,9 @@ end = struct
     (* And Global_options is used in SavedEnv. *)
     | "tast::SavedEnv" -> ["Eq"; "EqModuloPos"; "Hash"; "NoPosHash"; "Ord"]
     | "tast::ByNames" -> ["Eq"; "EqModuloPos"; "Hash"; "NoPosHash"; "Ord"]
-    | "ast_defs::Id" -> ["Debug"]
+    | "ast_defs::Id"
+    | "direct_decl_parser::Decls" ->
+      ["Debug"]
     | "typing_defs_core::Ty" -> ["Eq"; "PartialEq"; "Ord"; "PartialOrd"]
     | "typing_defs_core::Ty_" -> ["Debug"]
     | "file_info::Change" -> ["EqModuloPos"]
@@ -347,6 +350,7 @@ let newtypes =
     ("aast_defs", "FinallyBlock");
     ("aast_defs", "Program");
     ("aast_defs", "UserAttributes");
+    ("direct_decl_parser", "Decls");
     ("file_info", "HashType");
   ]
 

@@ -8,15 +8,27 @@
 
 type decls = (string * Shallow_decl_defs.decl) list [@@deriving show]
 
+(** WARNING: This type has not undergone the processing that you often expect in the typechecker,
+    e.g. deregistering PHPStdLib symbols, or putting into forward lexical order, or removing
+    duplicates. It's often a good idea to use ParsedFileWithHashes instead (or rather, one of
+    its wrappers). *)
 type parsed_file = {
-  pf_mode: File_info.mode option;
+  pf_mode: File_info.mode option;  (** Was the file Hack or HHI? *)
   pf_file_attributes: Typing_defs.user_attribute list;
   pf_function_attributes: (string * Typing_defs.user_attribute list) list;
+      (** User attributes on top-level functions, keyed by elaborated name. *)
   pf_decls: decls;
   pf_disable_xhp_element_mangling: bool;
+      (** How did the parser handle xhp elements? This is a copy of
+          the setting from DeclParserOptions, for use when converting
+          Decls to Facts. *)
   pf_has_first_pass_parse_errors: bool;
+      (** True if the FFP detected parse errors while parsing. Other parse errors
+          are detected in a second pass over the CST, and this field does not
+          indicate whether errors would be detected in that second pass. *)
   pf_module_membership: string option;
-  pf_package_membership: string option;
+      (** The module this file is a part of, if any. *)
+  pf_package_membership: string option;  (** The package this file is part of. *)
 }
 
 type parsed_file_with_hashes = {

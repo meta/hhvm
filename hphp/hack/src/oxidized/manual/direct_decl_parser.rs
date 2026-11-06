@@ -3,52 +3,14 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 
-use no_pos_hash::NoPosHash;
-use ocamlrep::FromOcamlRep;
-use ocamlrep::ToOcamlRep;
-use serde::Deserialize;
-use serde::Serialize;
 pub use shallow_decl_defs::Decl;
 
+pub use crate::direct_decl_parser_types::Decls;
+pub use crate::direct_decl_parser_types::ParsedFile;
 use crate::file_info;
 use crate::file_info::NameType;
 use crate::shallow_decl_defs;
 use crate::typing_defs;
-
-/// WARNING: This type has not undergone the processing that you often expect in the typechecker,
-/// e.g. deregistering PHPStdLib symbols, or putting into forward lexical order, or removing
-/// duplicates. It's often a good idea to use ParsedFileWithHashes instead (or rather, one of
-/// its wrappers).
-/// NB: Must keep in sync with OCaml type Direct_decl_parser.parsed_file
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[derive(Deserialize, FromOcamlRep, NoPosHash, Serialize, ToOcamlRep)]
-pub struct ParsedFile {
-    /// Was the file Hack or HHI?
-    pub mode: Option<file_info::Mode>,
-
-    pub file_attributes: Vec<typing_defs::UserAttribute>,
-
-    /// User attributes on top-level functions, keyed by elaborated name.
-    pub function_attributes: Vec<(String, Vec<typing_defs::UserAttribute>)>,
-
-    pub decls: Decls,
-
-    /// How did the parser handle xhp elements? This is a copy of
-    /// the setting from DeclParserOptions, for use when converting
-    /// Decls to Facts.
-    pub disable_xhp_element_mangling: bool,
-
-    /// True if the FFP detected parse errors while parsing. Other parse errors
-    /// are detected in a second pass over the CST, and this field does not
-    /// indicate whether errors would be detected in that second pass.
-    pub has_first_pass_parse_errors: bool,
-
-    /// The module this file is a part of, if any.
-    pub module_membership: Option<String>,
-
-    // The package this file is part of
-    pub package_membership: Option<String>,
-}
 
 /// This is a store of decls. It allows iteration of decls in forward lexical order,
 /// and you can .rev() to iterate in reverse lexical order.
@@ -145,11 +107,6 @@ impl IntoIterator for ParsedFileWithHashes {
         self.decls.into_iter().rev()
     }
 }
-
-// NB: Must keep in sync with OCaml type Direct_decl_parser.decls
-#[derive(Clone, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[derive(Deserialize, FromOcamlRep, NoPosHash, Serialize, ToOcamlRep)]
-pub struct Decls(pub Vec<(String, Decl)>);
 
 /// WARNING! These decls do not respect the `deregister_php_stdlib` flag in .hhconfig,
 /// and are in reverse declaration order, and have not been de-duped. You should

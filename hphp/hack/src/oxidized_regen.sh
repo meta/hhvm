@@ -191,6 +191,7 @@ mv hphp/hack/src/oxidized/lib.rs.tmp hphp/hack/src/oxidized/lib.rs
 grep "^pub mod " hphp/hack/src/oxidized/gen/mod.rs | sed 's/^pub mod /pub use r#gen::/' >> hphp/hack/src/oxidized/lib.rs
 
 summary "Write individually-converted oxidized files"
+run_hh_oxidize hphp/hack/src/decl/direct_decl_parser.ml > hphp/hack/src/oxidized/direct_decl_parser_types.rs
 run_hh_oxidize hphp/hack/src/deps/file_info.ml > hphp/hack/src/deps/rust/file_info.rs
 run_hh_oxidize hphp/hack/src/deps/typing_deps_kind.ml > hphp/hack/src/deps/typing_deps_kind.rs
 run_hh_oxidize hphp/hack/src/utils/core/prim_defs.ml > hphp/hack/src/deps/rust/prim_defs.rs
