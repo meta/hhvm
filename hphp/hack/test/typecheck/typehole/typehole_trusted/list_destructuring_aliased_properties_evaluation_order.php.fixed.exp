@@ -1,0 +1,25 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `arraykey` [3]
+-> All the local information about `$b->i` has been invalidated by this assignment.
+This is a limitation of the type-checker; use a local if that's the problem. [4]
+
+list_destructuring_aliased_properties_evaluation_order.php:11:13
+ 2 | 
+ 3 | class C {
+ 4 |   public arraykey $i = 0;
+   |          ^^^^^^^^ [3]
+ 5 | }
+ 6 | 
+ 7 | function takes_int(int $_): void {}
+   |                    ^^^ [2]
+ 8 | 
+ 9 | function assign_both(C $a, C $b): void {
+10 |   list($a->i, $b->i) = tuple('str', 1);
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
+11 |   takes_int($b->i);
+   |             ^^^^^ [1]
+12 | }
+13 | 
+
+1 error found

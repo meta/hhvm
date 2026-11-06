@@ -643,6 +643,8 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt Config_keys.Hhconfig.private_member_variance_check config)
     ?tco_ban_memoize_erased_generic_return:
       (bool_opt Config_keys.Hhconfig.ban_memoize_erased_generic_return config)
+    ?tco_list_assign_right_to_left:
+      (bool_opt Config_keys.Hhconfig.list_assign_right_to_left config)
     options
 
 let warn_on_did_you_mean

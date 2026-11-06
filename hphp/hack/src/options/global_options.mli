@@ -311,6 +311,8 @@ type t = {
       (** Error when a private member that mentions a variant class type parameter is written or called through a receiver other than `$this`. *)
   tco_ban_memoize_erased_generic_return: bool;
       (** Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics. *)
+  tco_list_assign_right_to_left: bool;
+      (** Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right. *)
 }
 [@@deriving eq, show]
 
@@ -426,6 +428,7 @@ val set :
   ?tco_missing_targs_as_fresh_generics:bool ->
   ?tco_private_member_variance_check:bool ->
   ?tco_ban_memoize_erased_generic_return:bool ->
+  ?tco_list_assign_right_to_left:bool ->
   t ->
   t
 

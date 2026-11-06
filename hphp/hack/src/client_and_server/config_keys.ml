@@ -70,6 +70,8 @@ module Hhconfig = struct
 
   let keep_user_attributes = key "keep_user_attributes"
 
+  let list_assign_right_to_left = key "list_assign_right_to_left"
+
   let missing_targs_as_fresh_generics = key "missing_targs_as_fresh_generics"
 
   let package_support_multifile_tests = key "package_support_multifile_tests"

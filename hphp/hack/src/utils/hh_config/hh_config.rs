@@ -639,6 +639,10 @@ impl HhConfig {
                 "ban_memoize_erased_generic_return",
                 default.tco_ban_memoize_erased_generic_return,
             )?,
+            tco_list_assign_right_to_left: hhconfig.get_bool_or(
+                "list_assign_right_to_left",
+                default.tco_list_assign_right_to_left,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

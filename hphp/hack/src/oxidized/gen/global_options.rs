@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<5811b32d6f74cc0a001b5ab789086edd>>
+// @generated SignedSource<<88fb6d012a26fe739d13ce51e530803b>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -421,4 +421,6 @@ pub struct GlobalOptions {
     pub tco_private_member_variance_check: bool,
     /// Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics.
     pub tco_ban_memoize_erased_generic_return: bool,
+    /// Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right.
+    pub tco_list_assign_right_to_left: bool,
 }

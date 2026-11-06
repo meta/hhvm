@@ -1,0 +1,17 @@
+error: Typing[4337] Invalid assignment to an `inout` parameter [1]
+-> Expected `int` (`inout` parameter) [2]
+-> But got `string` [3]
+
+list_destructuring_evaluation_order_T82969450.php:6:3
+2 | // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+3 | 
+4 | function foo(inout int $a): void {
+  |                    ^^^ [2]
+5 |   // list() is evaluated right-to-left in PHP/Hack, so $a is "foo".
+6 |   list($a, $a) = Pair {"foo", 1};
+  |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+  |                        ^^^^^ [3]
+7 | }
+8 | 
+
+1 error found

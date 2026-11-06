@@ -13446,6 +13446,13 @@ end = struct
     let ty_mismatch = mk_ty_mismatch_opt ty2 ty1 ty_err_opt in
     (env, te1, ty2, ty_mismatch)
 
+  (* HHVM writes a list()'s elements right to left. *)
+  let list_writes_in_order env l =
+    if TCO.list_assign_right_to_left (Env.get_tcopt env) then
+      List.rev l
+    else
+      l
+
   let rec assign_with_subtype_err_
       ?expr_for_string_check p ur env (e1 : Nast.expr) pos2 ty2 =
     match e1 with
@@ -13536,19 +13543,21 @@ end = struct
         in
         let env = Env.set_tyvar_variance_i env destructure_ty in
         let lty2 = LoclType ty2 in
-        let assign_accumulate (env, tel, errs) (lvalue : Nast.expr) ty2 =
-          let (env, te, _, err_opt) = assign p env lvalue pos2 ty2 in
-          (env, te :: tel, err_opt :: errs)
-        in
         let type_list_elem env =
-          let (env, reversed_tel, rev_subtype_errs) =
-            List.fold2_exn el tyl ~init:(env, [], []) ~f:assign_accumulate
+          let (env, results) =
+            List.map_env
+              env
+              (list_writes_in_order env (List.zip_exn el tyl))
+              ~f:(fun env ((lvalue : Nast.expr), ty2) ->
+                let (env, te, _, err_opt) = assign p env lvalue pos2 ty2 in
+                (env, (te, err_opt)))
+          in
+          let (tel, subtype_errs) =
+            List.unzip (list_writes_in_order env results)
           in
           let (_, p1, _) = e1 in
-          let (env, te, ty) =
-            make_result env p1 (Aast.List (List.rev reversed_tel)) ty2
-          in
-          (env, te, ty, List.rev rev_subtype_errs)
+          let (env, te, ty) = make_result env p1 (Aast.List tel) ty2 in
+          (env, te, ty, subtype_errs)
         in
 
         (* Here we attempt to unify the type of the rhs we assigning with

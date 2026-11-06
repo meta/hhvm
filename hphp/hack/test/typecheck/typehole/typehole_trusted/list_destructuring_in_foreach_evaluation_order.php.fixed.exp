@@ -1,0 +1,19 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+list_destructuring_in_foreach_evaluation_order.php:7:15
+1 | <?hh
+2 | 
+3 | function takes_int(int $_): void {}
+  |                    ^^^ [2]
+4 | 
+5 | function destructure_each(vec<(string, int)> $v): void {
+  |                                ^^^^^^ [3]
+6 |   foreach ($v as list($a, $a)) {
+7 |     takes_int($a);
+  |               ^^ [1]
+8 |   }
+9 | }
+
+1 error found
