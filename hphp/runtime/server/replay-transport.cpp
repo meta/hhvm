@@ -41,6 +41,7 @@ void ReplayTransport::recordInput(Transport* transport, const char *filename) {
 
   hdf["cmd"] = static_cast<int>(transport->getMethod());
   hdf["url"] = transport->getUrl();
+  hdf["https"] = transport->isSSL();
   hdf["remote_host"] = transport->getRemoteHost();
   hdf["remote_port"] = transport->getRemotePort();
 
@@ -82,6 +83,7 @@ void ReplayTransport::replayInput(Hdf hdf) {
 }
 
 void ReplayTransport::replayInputImpl() {
+  m_isSSL = Config::GetBool(m_ini, m_hdf, "https", false, false);
   OptString postData = StringUtil::UUDecode(Config::GetString(m_ini, m_hdf, "post",
                                                               "", false));
   m_postData = std::string(postData.data(), postData.size());
