@@ -20,6 +20,7 @@
 
 #include <atomic>
 #include <filesystem>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -93,6 +94,17 @@ struct FakeWatchman {
 
   void failNextQuery() {
     m_failNextQuery = true;
+  }
+
+  /**
+   * Hold back watch-project replies until releaseWatchProject().
+   */
+  void holdWatchProject() {
+    m_holdWatchProject = true;
+  }
+
+  void releaseWatchProject() {
+    m_watchProjectRelease.set_value();
   }
 
   size_t connectionCount() const {
@@ -191,6 +203,9 @@ struct FakeWatchman {
           std::lock_guard g{m_mutex};
           connection.m_commands.push_back(command);
         }
+        if (command[0] == "watch-project" && m_holdWatchProject) {
+          m_watchProjectReleased.wait();
+        }
         connection.send(respond(command));
       }
     }
@@ -243,6 +258,10 @@ struct FakeWatchman {
   int m_listenFd{-1};
   std::thread m_acceptThread;
   std::atomic<bool> m_failNextQuery{false};
+  std::atomic<bool> m_holdWatchProject{false};
+  std::promise<void> m_watchProjectRelease;
+  std::shared_future<void> m_watchProjectReleased{
+      m_watchProjectRelease.get_future().share()};
   mutable std::mutex m_mutex;
   std::vector<std::shared_ptr<Connection>> m_connections;
 };
@@ -258,6 +277,43 @@ std::shared_ptr<Watchman> connect(const FakeWatchman& fake) {
   // Finish connecting before subscribing.
   watchman->getClock().get();
   return watchman;
+}
+
+TEST(WatchmanTest, subscribingWhileConnectingSubscribesOnce) {
+  FakeWatchman fake;
+  fake.holdWatchProject();
+  auto watchman =
+      Watchman::get(fake.root(), Optional<std::string>{fake.socketPath()});
+
+  auto subscription = watchman->subscribe(
+      queryFor("a.php"), [](folly::Try<folly::dynamic>&&) {});
+  // Queue the clock request behind subscribe()'s continuation.
+  auto clock = watchman->getClock();
+  fake.releaseWatchProject();
+  std::move(clock).get();
+
+  // FIXME: reconnect() and subscribe() both send a query added while the
+  // connection is being set up. It should be subscribed once.
+  EXPECT_EQ(
+      fake.subscriptions(0),
+      (std::vector{queryFor("a.php"), queryFor("a.php")}));
+}
+
+TEST(WatchmanTest, releasingWhileConnectingSubscribesNothing) {
+  FakeWatchman fake;
+  fake.holdWatchProject();
+  auto watchman =
+      Watchman::get(fake.root(), Optional<std::string>{fake.socketPath()});
+
+  watchman->subscribe(queryFor("a.php"), [](folly::Try<folly::dynamic>&&) {})
+      .reset();
+  auto clock = watchman->getClock();
+  fake.releaseWatchProject();
+  std::move(clock).get();
+
+  // FIXME: subscribe() still sends a query that reconnect() dropped because
+  // its callbacks were released. Nothing should be subscribed.
+  EXPECT_EQ(fake.subscriptions(0), std::vector{queryFor("a.php")});
 }
 
 TEST(WatchmanTest, reconnectSkipsReleasedSubscriptions) {
