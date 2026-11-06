@@ -333,6 +333,9 @@ type t = {
       (** Use Provider_backend.Rust_provider_backend as the global provider
        * backend, servicing File_provider, Naming_provider, and Decl_provider
        * using the hackrs implementation. *)
+  set_global_provider_backend_in_workers: bool;
+      (** This just exists to safely roll out a fix: If true, we transfer the current value of
+       *  Provider_backend.get () over from the main process when launching workers *)
   isolation_allow_decl_repackaging: bool;
       (** Allow --validate-isolation to rebuild decls under a synthesized
        * package. While it runs, the candidate's symbols are absent from the

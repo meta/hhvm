@@ -97,6 +97,9 @@ type rollout_flags = {
           Use Provider_backend.Rust_provider_backend as the global provider
           backend, servicing File_provider, Naming_provider, and Decl_provider
           queries using the hackrs implementation. *)
+  set_global_provider_backend_in_workers: bool;
+      (** This just exists to safely roll out a fix: If true, we transfer the current value of
+       *  Provider_backend.get () over from the main process when launching workers *)
   use_distc: bool;
       (** POC: @bobren, use hh_distc instead of hulk for remote typechecking *)
   enable_fanout_aware_distc: bool;

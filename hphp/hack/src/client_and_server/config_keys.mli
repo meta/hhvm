@@ -433,6 +433,8 @@ module Hhconf : sig
 
   val rust_provider_backend : string
 
+  val set_global_provider_backend_in_workers : string
+
   val isolation_allow_decl_repackaging : string
 
   (* saved state *)

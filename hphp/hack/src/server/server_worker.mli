@@ -11,6 +11,7 @@ open Hh_prelude
 
 val make :
   longlived_workers:bool ->
+  set_global_provider_backend_in_workers:bool ->
   nbr_procs:int ->
   Gc.control ->
   Shared_mem.handle ->

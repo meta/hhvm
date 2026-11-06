@@ -1366,6 +1366,8 @@ let make_workers
   let gc_control = Server_config.gc_control config in
   Server_worker.make
     ~longlived_workers:local_config.Server_local_config.longlived_workers
+    ~set_global_provider_backend_in_workers:
+      local_config.Server_local_config.set_global_provider_backend_in_workers
     ~nbr_procs:num_workers
     gc_control
     shmem_handle

@@ -95,6 +95,7 @@ let default =
     consume_streaming_errors = false;
     use_agent_error_format = Agent_error_format_unconfigured;
     rust_provider_backend = true;
+    set_global_provider_backend_in_workers = true;
     isolation_allow_decl_repackaging = false;
     naming_sqlite_path = None;
     enable_naming_table_fallback = false;
@@ -983,6 +984,13 @@ let load_
       ~current_version
       config
   in
+  let set_global_provider_backend_in_workers =
+    bool_if_min_version
+      Config_keys.Hhconf.set_global_provider_backend_in_workers
+      ~default:default.set_global_provider_backend_in_workers
+      ~current_version
+      config
+  in
   let isolation_allow_decl_repackaging =
     bool_if_min_version
       Config_keys.Hhconf.isolation_allow_decl_repackaging
@@ -1290,6 +1298,7 @@ let load_
     consume_streaming_errors;
     use_agent_error_format;
     rust_provider_backend;
+    set_global_provider_backend_in_workers;
     isolation_allow_decl_repackaging;
     naming_sqlite_path;
     enable_naming_table_fallback;
@@ -1424,6 +1433,8 @@ let to_rollout_flags (options : t) : Hack_event_logger.rollout_flags =
         Global_options.(options.saved_state.loading.use_manifold_cython_client);
       load_state_natively_v4 = options.load_state_natively;
       rust_provider_backend = options.rust_provider_backend;
+      set_global_provider_backend_in_workers =
+        options.set_global_provider_backend_in_workers;
       use_distc = options.use_distc;
       enable_fanout_aware_distc = options.enable_fanout_aware_distc;
       use_compressed_dep_graph = options.use_compressed_dep_graph;

@@ -35,14 +35,66 @@ let catch_and_classify_exceptions : 'x 'b. ('x -> 'b) -> 'x -> 'b =
   | Stdlib.Not_found ->
     Exit.exit Exit_status.Worker_not_found_exception
 
-let make ~longlived_workers ~nbr_procs gc_control heap_handle ~logging_init =
+let make_call_wrapper ~set_global_provider_backend_in_workers =
+  (* This runs in the main process *)
+  let get_master_global_backend ~set_global_provider_backend_in_workers () =
+    if set_global_provider_backend_in_workers then
+      let backend = Provider_backend.get () in
+      match backend with
+      | Provider_backend.Local_memory _ ->
+        (* We could support this, but it would mean serializing the entire store
+           and copying it over to the worker *)
+        None
+      | Provider_backend.Analysis ->
+        (* Zoncolan has its own handling for global provider backend setup *)
+        None
+      | Provider_backend.Shared_memory
+      | Provider_backend.Pessimised_shared_memory _
+      | Provider_backend.Rust_provider_backend _ ->
+        Some backend
+    else
+      None
+  in
+
+  (* This runs in the worker *)
+  let install_worker_global_backend = function
+    | None -> ()
+    | Some backend ->
+      (match backend with
+      | Provider_backend.Shared_memory ->
+        Provider_backend.set_shared_memory_backend ()
+      | Provider_backend.Pessimised_shared_memory info ->
+        Provider_backend.set_pessimised_shared_memory_backend info
+      | Provider_backend.Rust_provider_backend backend ->
+        Provider_backend.set_rust_backend backend
+      | Provider_backend.Analysis
+      | Provider_backend.Local_memory _ ->
+        (* unreachable because [get_master_global_backend] above does not
+           produce it *)
+        assert false)
+  in
+  Worker_controller.Call_wrapper
+    {
+      prepare =
+        get_master_global_backend ~set_global_provider_backend_in_workers;
+      wrap =
+        (fun backend f x ->
+          catch_and_classify_exceptions
+            (fun x ->
+              install_worker_global_backend backend;
+              f x)
+            x);
+    }
+
+let make
+    ~longlived_workers
+    ~set_global_provider_backend_in_workers
+    ~nbr_procs
+    gc_control
+    heap_handle
+    ~logging_init =
   Multi_worker.make
-    ~call_wrapper:
-      (Worker_controller.Call_wrapper
-         {
-           prepare = (fun () -> ());
-           wrap = (fun () f x -> catch_and_classify_exceptions f x);
-         })
+    ~call_wrapper:(make_call_wrapper ~set_global_provider_backend_in_workers)
     ~saved_state:(Server_global_state.save ~logging_init)
     ~entry
     ~longlived_workers
