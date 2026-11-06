@@ -58,6 +58,8 @@ module Hhconfig = struct
 
   let everything_sdt = key "everything_sdt"
 
+  let foreach_key_after_value = key "foreach_key_after_value"
+
   let forget_static_prop_refinements_by_name =
     key "forget_static_prop_refinements_by_name"
 

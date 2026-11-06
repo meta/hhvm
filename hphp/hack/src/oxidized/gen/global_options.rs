@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<88fb6d012a26fe739d13ce51e530803b>>
+// @generated SignedSource<<5b14b73297869a34889f67fbdbc323ea>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -423,4 +423,6 @@ pub struct GlobalOptions {
     pub tco_ban_memoize_erased_generic_return: bool,
     /// Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right.
     pub tco_list_assign_right_to_left: bool,
+    /// In `foreach ($e as $k => $v)`, type the write to the value target before the write to the key target, the order HHVM performs them in, so in `foreach ($d as $a => $a)` `$a` ends up with the key, and an index in the value target reads the key local's previous value. `await as` writes the key first and is unchanged.
+    pub tco_foreach_key_after_value: bool,
 }

@@ -158,6 +158,7 @@ impl Default for GlobalOptions {
             tco_private_member_variance_check: false,
             tco_ban_memoize_erased_generic_return: false,
             tco_list_assign_right_to_left: false,
+            tco_foreach_key_after_value: false,
             tco_repo_stdlib_path: None,
         }
     }

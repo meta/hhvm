@@ -205,6 +205,7 @@ type t = {
   tco_private_member_variance_check: bool;
   tco_ban_memoize_erased_generic_return: bool;
   tco_list_assign_right_to_left: bool;
+  tco_foreach_key_after_value: bool;
 }
 [@@deriving eq, show]
 
@@ -323,6 +324,7 @@ let default =
     tco_private_member_variance_check = false;
     tco_ban_memoize_erased_generic_return = false;
     tco_list_assign_right_to_left = false;
+    tco_foreach_key_after_value = false;
   }
 
 let set
@@ -438,6 +440,7 @@ let set
     ?tco_private_member_variance_check
     ?tco_ban_memoize_erased_generic_return
     ?tco_list_assign_right_to_left
+    ?tco_foreach_key_after_value
     options =
   let setting setting option =
     match setting with
@@ -770,6 +773,8 @@ let set
       setting
         tco_list_assign_right_to_left
         options.tco_list_assign_right_to_left;
+    tco_foreach_key_after_value =
+      setting tco_foreach_key_after_value options.tco_foreach_key_after_value;
   }
 
 let so_naming_sqlite_path t = t.so_naming_sqlite_path

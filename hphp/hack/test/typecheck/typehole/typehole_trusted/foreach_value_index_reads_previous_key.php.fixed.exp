@@ -1,0 +1,37 @@
+error: Typing[4110] Invalid assignment [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+foreach_value_index_reads_previous_key.php:8:26
+ 2 | 
+ 3 | final class C {
+ 4 |   public dict<int, string> $out = dict[];
+   |               ^^^ [2]
+ 5 | 
+ 6 |   public function fill(dict<int, string> $d): void {
+ 7 |     $k = 'not a key';
+   |          ^^^^^^^^^^^ [3]
+ 8 |     foreach ($d as $k => $this->out[$k]) {}
+   |                          ^^^^^^^^^^^^^^ [1]
+ 9 |   }
+10 | }
+
+error: Typing[4449] Invalid index type for this dict [1]
+-> This is an int [2]
+-> It is incompatible with a string or an int because of this statement [3]
+
+foreach_value_index_reads_previous_key.php:8:37
+ 2 | 
+ 3 | final class C {
+ 4 |   public dict<int, string> $out = dict[];
+   |               ^^^ [2]
+ 5 | 
+ 6 |   public function fill(dict<int, string> $d): void {
+ 7 |     $k = 'not a key';
+ 8 |     foreach ($d as $k => $this->out[$k]) {}
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+   |                                     ^^ [1]
+ 9 |   }
+10 | }
+
+2 errors found

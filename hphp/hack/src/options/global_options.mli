@@ -313,6 +313,8 @@ type t = {
       (** Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics. *)
   tco_list_assign_right_to_left: bool;
       (** Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right. *)
+  tco_foreach_key_after_value: bool;
+      (** In `foreach ($e as $k => $v)`, type the write to the value target before the write to the key target, the order HHVM performs them in, so in `foreach ($d as $a => $a)` `$a` ends up with the key, and an index in the value target reads the key local's previous value. `await as` writes the key first and is unchanged. *)
 }
 [@@deriving eq, show]
 
@@ -429,6 +431,7 @@ val set :
   ?tco_private_member_variance_check:bool ->
   ?tco_ban_memoize_erased_generic_return:bool ->
   ?tco_list_assign_right_to_left:bool ->
+  ?tco_foreach_key_after_value:bool ->
   t ->
   t
 

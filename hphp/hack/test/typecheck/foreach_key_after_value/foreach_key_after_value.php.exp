@@ -1,0 +1,129 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+->   via this generic `Tk` [4]
+->   via this generic `Tk` [5]
+->   via this generic `Tk` [6]
+
+foreach_key_after_value.php:7:15
+  1 | <?hh
+  2 | 
+  3 | function takes_int(int $_): void {}
+    |                    ^^^ [2]
+  4 | 
+  5 | function key_and_value_same_local(dict<string, int> $d): void {
+    |                                        ^^^^^^ [3]
+  6 |   foreach ($d as $a => $a) {
+  7 |     takes_int($a);
+    |               ^^ [1]
+  8 |   }
+  9 | }
+
+hackarray.hhi:35:22
+ 20 |     <<__NoAutoBound>> +Tk as arraykey,
+ 21 |     <<__NoAutoBound>> +Tv,
+ 22 |   > implements KeyedContainer<Tk, Tv>, \XHPChild {
+    |                               ^^ [5]
+ 23 | 
+ 24 |   }
+    :
+ 33 |     <<__NoAutoBound>> +Tk as arraykey,
+ 34 |     <<__NoAutoBound>> +Tv,
+ 35 |   > extends AnyArray<Tk, Tv> {}
+    |                      ^^ [4]
+ 36 | 
+ 37 |   /**
+
+interfaces.hhi:115:45
+113 |   )>>
+114 |   interface KeyedContainer<<<__NoAutoBound>> +Tk as arraykey, <<__NoAutoBound>> +Tv>
+115 |     extends Container<Tv>, KeyedTraversable<Tk, Tv> {}
+    |                                             ^^ [6]
+116 | 
+117 |   /**
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+->   via this generic `Tk` [4]
+->   via this generic `Tk` [5]
+->   via this generic `Tk` [6]
+
+foreach_key_after_value.php:13:15
+  1 | <?hh
+  2 | 
+  3 | function takes_int(int $_): void {}
+    |                    ^^^ [2]
+  4 | 
+  5 | function key_and_value_same_local(dict<string, int> $d): void {
+    :
+  9 | }
+ 10 | 
+ 11 | function key_and_list_element_same_local(dict<string, vec<int>> $d): void {
+    |                                               ^^^^^^ [3]
+ 12 |   foreach ($d as $a => list($a, $_)) {
+ 13 |     takes_int($a);
+    |               ^^ [1]
+ 14 |   }
+ 15 | }
+
+hackarray.hhi:35:22
+ 20 |     <<__NoAutoBound>> +Tk as arraykey,
+ 21 |     <<__NoAutoBound>> +Tv,
+ 22 |   > implements KeyedContainer<Tk, Tv>, \XHPChild {
+    |                               ^^ [5]
+ 23 | 
+ 24 |   }
+    :
+ 33 |     <<__NoAutoBound>> +Tk as arraykey,
+ 34 |     <<__NoAutoBound>> +Tv,
+ 35 |   > extends AnyArray<Tk, Tv> {}
+    |                      ^^ [4]
+ 36 | 
+ 37 |   /**
+
+interfaces.hhi:115:45
+113 |   )>>
+114 |   interface KeyedContainer<<<__NoAutoBound>> +Tk as arraykey, <<__NoAutoBound>> +Tv>
+115 |     extends Container<Tv>, KeyedTraversable<Tk, Tv> {}
+    |                                             ^^ [6]
+116 | 
+117 |   /**
+
+error: Typing[4110] Invalid assignment [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+
+foreach_key_after_value.php:22:26
+16 | 
+17 | final class C {
+18 |   public dict<int, string> $out = dict[];
+   |               ^^^ [2]
+19 | 
+20 |   public function value_index_reads_previous_key(dict<int, string> $d): void {
+21 |     $k = 'not a key';
+   |          ^^^^^^^^^^^ [3]
+22 |     foreach ($d as $k => $this->out[$k]) {}
+   |                          ^^^^^^^^^^^^^^ [1]
+23 |   }
+24 | }
+
+error: Typing[4449] Invalid index type for this dict [1]
+-> This is an int [2]
+-> It is incompatible with a string or an int because of this statement [3]
+
+foreach_key_after_value.php:22:37
+16 | 
+17 | final class C {
+18 |   public dict<int, string> $out = dict[];
+   |               ^^^ [2]
+19 | 
+20 |   public function value_index_reads_previous_key(dict<int, string> $d): void {
+21 |     $k = 'not a key';
+22 |     foreach ($d as $k => $this->out[$k]) {}
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
+   |                                     ^^ [1]
+23 |   }
+24 | }
+
+4 errors found

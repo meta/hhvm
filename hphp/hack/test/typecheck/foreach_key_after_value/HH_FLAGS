@@ -1,0 +1,1 @@
+--config foreach_key_after_value=true

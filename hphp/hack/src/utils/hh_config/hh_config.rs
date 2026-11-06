@@ -643,6 +643,10 @@ impl HhConfig {
                 "list_assign_right_to_left",
                 default.tco_list_assign_right_to_left,
             )?,
+            tco_foreach_key_after_value: hhconfig.get_bool_or(
+                "foreach_key_after_value",
+                default.tco_foreach_key_after_value,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

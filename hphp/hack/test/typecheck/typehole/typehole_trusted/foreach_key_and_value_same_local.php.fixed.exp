@@ -1,0 +1,46 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `string` [3]
+->   via this generic `Tk` [4]
+->   via this generic `Tk` [5]
+->   via this generic `Tk` [6]
+
+foreach_key_and_value_same_local.php:8:15
+  1 | <?hh
+  2 | 
+  3 | function takes_int(int $_): void {}
+    |                    ^^^ [2]
+  4 | 
+  5 | <<__EntryPoint>>
+  6 | function main(): void {
+  7 |   foreach (dict['k' => 1] as $a => $a) {
+    |            ^^^^^^^^^^^^^^ [3]
+  8 |     takes_int($a);
+    |               ^^ [1]
+  9 |   }
+ 10 | }
+
+hackarray.hhi:35:22
+ 20 |     <<__NoAutoBound>> +Tk as arraykey,
+ 21 |     <<__NoAutoBound>> +Tv,
+ 22 |   > implements KeyedContainer<Tk, Tv>, \XHPChild {
+    |                               ^^ [5]
+ 23 | 
+ 24 |   }
+    :
+ 33 |     <<__NoAutoBound>> +Tk as arraykey,
+ 34 |     <<__NoAutoBound>> +Tv,
+ 35 |   > extends AnyArray<Tk, Tv> {}
+    |                      ^^ [4]
+ 36 | 
+ 37 |   /**
+
+interfaces.hhi:115:45
+113 |   )>>
+114 |   interface KeyedContainer<<<__NoAutoBound>> +Tk as arraykey, <<__NoAutoBound>> +Tv>
+115 |     extends Container<Tv>, KeyedTraversable<Tk, Tv> {}
+    |                                             ^^ [6]
+116 | 
+117 |   /**
+
+1 error found

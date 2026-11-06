@@ -318,3 +318,5 @@ let ban_memoize_erased_generic_return t =
   t.Global_options.tco_ban_memoize_erased_generic_return
 
 let list_assign_right_to_left t = t.Global_options.tco_list_assign_right_to_left
+
+let foreach_key_after_value t = t.Global_options.tco_foreach_key_after_value
