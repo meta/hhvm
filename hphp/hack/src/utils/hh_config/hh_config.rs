@@ -647,6 +647,10 @@ impl HhConfig {
                 "foreach_key_after_value",
                 default.tco_foreach_key_after_value,
             )?,
+            tco_type_structure_fields_may_be_absent: hhconfig.get_bool_or(
+                "type_structure_fields_may_be_absent",
+                default.tco_type_structure_fields_may_be_absent,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

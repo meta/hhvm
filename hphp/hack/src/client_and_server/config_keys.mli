@@ -78,6 +78,8 @@ module Hhconfig : sig
 
   val treat_non_annotated_memoize_as_kbic : string
 
+  val type_structure_fields_may_be_absent : string
+
   val union_intersection_type_hints : string
 
   (* global options and typechecker options *)

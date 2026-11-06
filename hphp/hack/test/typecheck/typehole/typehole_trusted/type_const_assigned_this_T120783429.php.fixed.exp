@@ -1,0 +1,20 @@
+error: Typing[4165] The field `generic_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+type_const_assigned_this_T120783429.php:6:48
+ 4 |   const type Tthis = this;
+ 5 |   public static function breakit(): TypeStructure<T> {
+ 6 |     return type_structure(Bad::class, 'Tthis')['generic_types'][0];
+   |                                                ^^^^^^^^^^^^^^^ [1]
+ 7 |   }
+ 8 | }
+
+typestructure.hhi:70:6
+68 |     ?'return_type' => mixed,
+69 |     ?'param_types' => varray<mixed>,
+70 |     ?'generic_types' => varray<mixed>,
+   |      ^^^^^^^^^^^^^^^ [2]
+71 |     ?'root_name' => string,
+72 |     ?'access_list' => varray<string>,
+
+1 error found

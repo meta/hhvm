@@ -1,0 +1,20 @@
+error: Typing[4165] The field `alias` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+type_structure_alias_field_absent.php:8:14
+ 6 | 
+ 7 | function alias_of(TypeStructure<int> $ts): string {
+ 8 |   return $ts['alias'];
+   |              ^^^^^^^ [1]
+ 9 | }
+10 | 
+
+typestructure.hhi:79:6
+77 |     ?'value' => mixed,
+78 |     ?'typevars' => string,
+79 |     ?'alias' => string,
+   |      ^^^^^^^ [2]
+80 |     ?'exact' => bool,
+81 |     ?'like' => bool,
+
+1 error found

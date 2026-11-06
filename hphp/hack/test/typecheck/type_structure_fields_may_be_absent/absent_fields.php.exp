@@ -1,0 +1,95 @@
+error: Typing[4165] The field `name` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+absent_fields.php:8:14
+ 6 | 
+ 7 | function name_of(TypeStructure<int> $ts): string {
+ 8 |   return $ts['name'];
+   |              ^^^^^^ [1]
+ 9 | }
+10 | 
+
+typestructure.hhi:63:6
+61 |     ?'nullable' => bool,
+62 |     'kind' => TypeStructureKind,
+63 |     ?'name' => string,
+   |      ^^^^^^ [2]
+64 |     ?'classname' => classname<T>,
+65 |     ?'elem_types' => varray<mixed>,
+
+error: Typing[4165] The field `alias` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+absent_fields.php:12:14
+10 | 
+11 | function alias_of(TypeStructure<int> $ts): string {
+12 |   return $ts['alias'];
+   |              ^^^^^^^ [1]
+13 | }
+14 | 
+
+typestructure.hhi:79:6
+77 |     ?'value' => mixed,
+78 |     ?'typevars' => string,
+79 |     ?'alias' => string,
+   |      ^^^^^^^ [2]
+80 |     ?'exact' => bool,
+81 |     ?'like' => bool,
+
+error: Typing[4165] The field `generic_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+absent_fields.php:16:14
+14 | 
+15 | function generic_types_of_generic<T>(TypeStructure<T> $ts): vec<mixed> {
+16 |   return $ts['generic_types'];
+   |              ^^^^^^^^^^^^^^^ [1]
+17 | }
+18 | 
+
+typestructure.hhi:70:6
+68 |     ?'return_type' => mixed,
+69 |     ?'param_types' => varray<mixed>,
+70 |     ?'generic_types' => varray<mixed>,
+   |      ^^^^^^^^^^^^^^^ [2]
+71 |     ?'root_name' => string,
+72 |     ?'access_list' => varray<string>,
+
+error: Typing[4165] The field `generic_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+absent_fields.php:22:14
+20 |   TypeStructure<C<int>> $ts,
+21 | ): TypeStructure<int> {
+22 |   return $ts['generic_types'][0];
+   |              ^^^^^^^^^^^^^^^ [1]
+23 | }
+24 | 
+
+typestructure.hhi:70:6
+68 |     ?'return_type' => mixed,
+69 |     ?'param_types' => varray<mixed>,
+70 |     ?'generic_types' => varray<mixed>,
+   |      ^^^^^^^^^^^^^^^ [2]
+71 |     ?'root_name' => string,
+72 |     ?'access_list' => varray<string>,
+
+error: Typing[4165] The field `generic_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+absent_fields.php:26:44
+24 | 
+25 | function generic_types_of_this(): mixed {
+26 |   return type_structure(C::class, 'Tthis')['generic_types'];
+   |                                            ^^^^^^^^^^^^^^^ [1]
+27 | }
+
+typestructure.hhi:70:6
+68 |     ?'return_type' => mixed,
+69 |     ?'param_types' => varray<mixed>,
+70 |     ?'generic_types' => varray<mixed>,
+   |      ^^^^^^^^^^^^^^^ [2]
+71 |     ?'root_name' => string,
+72 |     ?'access_list' => varray<string>,
+
+5 errors found

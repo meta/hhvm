@@ -315,6 +315,8 @@ type t = {
       (** Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right. *)
   tco_foreach_key_after_value: bool;
       (** In `foreach ($e as $k => $v)`, type the write to the value target before the write to the key target, the order HHVM performs them in, so in `foreach ($d as $a => $a)` `$a` ends up with the key, and an index in the value target reads the key local's previous value. `await as` writes the key first and is unchanged. *)
+  tco_type_structure_fields_may_be_absent: bool;
+      (** Keep the `name`, `alias` and `generic_types` fields of a `TypeStructure<T>` optional, since HHVM can omit them (`generic_types` for `this`, or for a generic `T`), rather than mark them present. *)
 }
 [@@deriving eq, show]
 
@@ -432,6 +434,7 @@ val set :
   ?tco_ban_memoize_erased_generic_return:bool ->
   ?tco_list_assign_right_to_left:bool ->
   ?tco_foreach_key_after_value:bool ->
+  ?tco_type_structure_fields_may_be_absent:bool ->
   t ->
   t
 

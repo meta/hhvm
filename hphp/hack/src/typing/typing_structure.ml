@@ -130,6 +130,15 @@ let rec transform_shapemap ?(nullable = false) env pos ty shape =
       let acc_field_with_type sft_ty =
         TShapeMap.add field { sft_optional = false; sft_ty } shape
       in
+      (* HHVM can omit these: `generic_types` when `this` resolves to its
+         class alone, `alias` unless the type went through an alias. *)
+      let acc_field_maybe_absent sft_ty =
+        let sft_optional =
+          Typechecker_options.type_structure_fields_may_be_absent
+            (Env.get_tcopt env)
+        in
+        TShapeMap.add field { sft_optional; sft_ty } shape
+      in
       let (env, sft_ty) = Env.expand_type env sft_ty in
       match (field, deref sft_ty, deref base_type) with
       | (TSFlit_str (_, "nullable"), (_, Toption fty), _) when nullable ->
@@ -208,13 +217,14 @@ let rec transform_shapemap ?(nullable = false) env pos ty shape =
        * For test(TypeStructure<D>) there will not be a generic_types field
        *)
       | (TSFlit_str (_, "generic_types"), _, _) when is_generic ->
-        (env, acc_field_with_type sft_ty)
+        (env, acc_field_maybe_absent sft_ty)
       | (TSFlit_str (_, "generic_types"), _, (r, Tclass (_, _, tyl)))
         when not (List.is_empty tyl) ->
         let (env, tyl) = List.map_env env tyl ~f:make_ts in
-        (env, acc_field_with_type (MakeType.tuple r tyl))
-      | (TSFlit_str (_, ("kind" | "name" | "alias")), _, _) ->
-        (env, acc_field_with_type sft_ty)
+        (env, acc_field_maybe_absent (MakeType.tuple r tyl))
+      | (TSFlit_str (_, "kind"), _, _) -> (env, acc_field_with_type sft_ty)
+      | (TSFlit_str (_, ("name" | "alias")), _, _) ->
+        (env, acc_field_maybe_absent sft_ty)
       | _ ->
         (* If the field is marked optional (as it should be, apart from kind)
          * then leave it alone

@@ -83,6 +83,9 @@ module Hhconfig = struct
   let treat_non_annotated_memoize_as_kbic =
     key "treat_non_annotated_memoize_as_kbic"
 
+  let type_structure_fields_may_be_absent =
+    key "type_structure_fields_may_be_absent"
+
   let union_intersection_type_hints = key "union_intersection_type_hints"
 
   (* global options and typechecker options *)

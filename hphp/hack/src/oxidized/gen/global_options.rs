@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<5b14b73297869a34889f67fbdbc323ea>>
+// @generated SignedSource<<f7079720b83011b9713130e92c3f34b7>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -425,4 +425,6 @@ pub struct GlobalOptions {
     pub tco_list_assign_right_to_left: bool,
     /// In `foreach ($e as $k => $v)`, type the write to the value target before the write to the key target, the order HHVM performs them in, so in `foreach ($d as $a => $a)` `$a` ends up with the key, and an index in the value target reads the key local's previous value. `await as` writes the key first and is unchanged.
     pub tco_foreach_key_after_value: bool,
+    /// Keep the `name`, `alias` and `generic_types` fields of a `TypeStructure<T>` optional, since HHVM can omit them (`generic_types` for `this`, or for a generic `T`), rather than mark them present.
+    pub tco_type_structure_fields_may_be_absent: bool,
 }
