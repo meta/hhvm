@@ -1,0 +1,105 @@
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:4:8
+1 | <?hh
+2 | 
+3 | function flat_list(inout int $_): void {
+  |                              ^^ [2]
+4 |   list($_, $x) = tuple('str', 1);
+  |        ^^ [1]
+5 | }
+6 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:8:26
+ 5 | }
+ 6 | 
+ 7 | function foreach_value(inout int $_): void {
+   |                                  ^^ [2]
+ 8 |   foreach (vec['str'] as $_) {}
+   |                          ^^ [1]
+ 9 | }
+10 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:12:3
+ 9 | }
+10 | 
+11 | function both_inout(inout int $_, inout string $_): void {
+   |                               ^^ [2]
+12 |   $_ = 'str';
+   |   ^^ [1]
+13 | }
+14 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:16:3
+13 | }
+14 | 
+15 | function second_inout_unchanged(inout string $_, inout int $_): void {
+   |                                              ^^ [2]
+16 |   $_ = 'str';
+   |   ^^ [1]
+17 | }
+18 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:21:5
+17 | }
+18 | 
+19 | function in_one_branch(inout int $_, bool $b): void {
+   |                                  ^^ [2]
+20 |   if ($b) {
+21 |     $_ = 'str';
+   |     ^^ [1]
+22 |   }
+23 | }
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:26:9
+23 | }
+24 | 
+25 | function tuple_destructure(inout int $_): void {
+   |                                      ^^ [2]
+26 |   tuple($_, $y) = tuple('str', 1);
+   |         ^^ [1]
+27 | }
+28 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:30:16
+27 | }
+28 | 
+29 | function shape_destructure(inout int $_): void {
+   |                                      ^^ [2]
+30 |   shape('a' => $_) = shape('a' => 'str');
+   |                ^^ [1]
+31 | }
+32 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_write_forms_bad.php:34:3
+31 | }
+32 | 
+33 | function same_type(inout int $_): void {
+   |                              ^^ [2]
+34 |   $_ = 42;
+   |   ^^ [1]
+35 | }
+
+8 errors found

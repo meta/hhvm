@@ -1,0 +1,14 @@
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_assigned_by_foreach.php:4:26
+1 | <?hh
+2 | 
+3 | function foo(inout int $_): void {
+  |                        ^^ [2]
+4 |   foreach (vec['str'] as $_) {}
+  |                          ^^ [1]
+5 | }
+6 | 
+
+1 error found

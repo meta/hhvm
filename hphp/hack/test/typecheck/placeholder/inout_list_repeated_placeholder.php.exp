@@ -1,0 +1,27 @@
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_list_repeated_placeholder.php:4:8
+1 | <?hh
+2 | 
+3 | function foo(inout int $_): void {
+  |                        ^^ [2]
+4 |   list($_, $_) = tuple('str', 1);
+  |        ^^ [1]
+5 | }
+6 | 
+
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_list_repeated_placeholder.php:4:12
+1 | <?hh
+2 | 
+3 | function foo(inout int $_): void {
+  |                        ^^ [2]
+4 |   list($_, $_) = tuple('str', 1);
+  |            ^^ [1]
+5 | }
+6 | 
+
+2 errors found

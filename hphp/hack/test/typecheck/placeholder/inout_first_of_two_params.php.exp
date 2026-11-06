@@ -1,0 +1,14 @@
+error: NastCheck[3116] Cannot write to the placeholder `$_` when it is an `inout` parameter. Please name this variable instead [1]
+-> This is an `inout` parameter [2]
+
+inout_first_of_two_params.php:4:3
+1 | <?hh
+2 | 
+3 | function foo(inout int $_, inout string $_): void {
+  |                        ^^ [2]
+4 |   $_ = 'str';
+  |   ^^ [1]
+5 | }
+6 | 
+
+1 error found
