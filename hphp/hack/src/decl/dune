@@ -283,6 +283,7 @@
   procs_procs
   remote_old_decl_client
   rust_provider_backend_stubs
+  server_env
   server_progress
   shallow_decl_compare
   typing_deps
