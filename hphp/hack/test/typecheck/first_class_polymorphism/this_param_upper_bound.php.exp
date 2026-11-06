@@ -1,0 +1,55 @@
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_param_upper_bound.php:34:30
+ 8 | 
+ 9 | abstract class A {
+10 |   public function check<T as this>(T $other): void {
+   |                                      ^^^^^^ [2]
+11 |     $this->guard($other);
+12 |   }
+   :
+32 | 
+33 | function invalid(): void {
+34 |   $f = meth_caller(A::class, 'check');
+   |                              ^^^^^^^ [1]
+35 |   $f(new X(), new Y());
+36 |   $indirect = meth_caller(A::class, 'indirect');
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_param_upper_bound.php:36:37
+12 |   }
+13 | 
+14 |   public function indirect<TArg as TBase, TBase as this>(TArg $other): void {
+   |                                                               ^^^^^^ [2]
+15 |     $this->guard($other);
+16 |   }
+   :
+34 |   $f = meth_caller(A::class, 'check');
+35 |   $f(new X(), new Y());
+36 |   $indirect = meth_caller(A::class, 'indirect');
+   |                                     ^^^^^^^^^^ [1]
+37 |   $where = meth_caller(A::class, 'where_bound');
+38 | }
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_param_upper_bound.php:37:34
+16 |   }
+17 | 
+18 |   public function where_bound<TArg>(TArg $other): void where TArg as this {
+   |                                          ^^^^^^ [2]
+19 |     $this->guard($other);
+20 |   }
+   :
+35 |   $f(new X(), new Y());
+36 |   $indirect = meth_caller(A::class, 'indirect');
+37 |   $where = meth_caller(A::class, 'where_bound');
+   |                                  ^^^^^^^^^^^^^ [1]
+38 | }
+39 | 
+
+3 errors found

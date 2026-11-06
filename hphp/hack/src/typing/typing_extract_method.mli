@@ -17,12 +17,15 @@
     Invariance pins a container's element type, not its runtime contents, so
     invariant occurrences are obtainable too. For instance methods the implicit
     [this] receiver is itself an obtainable occurrence, so [~has_implicit_this:true]
-    should be passed.
+    should be passed. In that case, upper bounds on method and class type
+    parameters, including [where] constraints, are followed to detect values
+    that can be upcast to [this].
 
     Covariant occurrences (e.g. a [(function(this): void)] parameter) and
     [this::T] type constant projections are never counted. *)
 val explicit_this_param_positions :
   ?has_implicit_this:bool ->
+  ?class_tparams:Typing_defs.decl_tparam list ->
   env:Typing_env_types.env ->
   Typing_defs_core.decl_phase Typing_defs_core.ty Typing_defs_core.fun_type ->
   Pos_or_decl.t list

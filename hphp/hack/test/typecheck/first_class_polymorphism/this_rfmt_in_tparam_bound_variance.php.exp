@@ -1,1 +1,72 @@
-No errors
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_rfmt_in_tparam_bound_variance.php:61:31
+11 |   // this: contrav (receiver) + contrav (as rfmt in as constraint) = contrav → eliminated
+12 |   public function as_rfmt_contrav<T as WithTC1 with { type TC as this }>(
+13 |     T $_,
+   |       ^^ [2]
+14 |   ): void {}
+15 | 
+   :
+59 |       WithTC1 with { type TC as Base1 },
+60 |     ): void)>,
+61 |   >(meth_caller(Base1::class, 'as_rfmt_contrav'));
+   |                               ^^^^^^^^^^^^^^^^^ [1]
+62 | 
+63 |   // this kept (super rfmt, invariant)
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_rfmt_in_tparam_bound_variance.php:77:31
+23 |   // this: contrav (receiver) + invariant = invariant → kept
+24 |   public function exact_rfmt_contrav<T as WithTC1 with { type TC = this }>(
+25 |     T $_,
+   |       ^^ [2]
+26 |   ): void {}
+27 | }
+   :
+75 |       WithTC1 with { type TC = Tthis },
+76 |     ): void)>,
+77 |   >(meth_caller(Base1::class, 'exact_rfmt_contrav'));
+   |                               ^^^^^^^^^^^^^^^^^^^^ [1]
+78 | 
+79 |   // === With class type constants: this gets exact refinements ===
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_rfmt_in_tparam_bound_variance.php:88:38
+35 |   // this eliminated → TBase0 kept (invariant via exact rfmt on this)
+36 |   public function as_rfmt_contrav<T as WithTC1 with { type TC as this }>(
+37 |     T $_,
+   |       ^^ [2]
+38 |     this::TBase $_,
+39 |   ): void {}
+   :
+86 |       TBase0,
+87 |     ): void)>,
+88 |   >(meth_caller(Base1_WithTC::class, 'as_rfmt_contrav'));
+   |                                      ^^^^^^^^^^^^^^^^^ [1]
+89 | 
+90 |   // this kept, TBase0 kept
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_rfmt_in_tparam_bound_variance.php:112:38
+ 47 |   // this kept → both TBase0 and Tthis kept
+ 48 |   public function exact_rfmt_contrav<T as WithTC1 with { type TC = this }>(
+ 49 |     T $_,
+    |       ^^ [2]
+ 50 |     this::TBase $_,
+ 51 |   ): void {}
+    :
+110 |       TBase0,
+111 |     ): void)>,
+112 |   >(meth_caller(Base1_WithTC::class, 'exact_rfmt_contrav'));
+    |                                      ^^^^^^^^^^^^^^^^^^^^ [1]
+113 | }
+
+4 errors found

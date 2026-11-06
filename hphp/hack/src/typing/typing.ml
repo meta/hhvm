@@ -9873,6 +9873,7 @@ end = struct
       List.iter
         (Typing_extract_method.explicit_this_param_positions
            ~has_implicit_this:true
+           ~class_tparams:(Folded_class.tparams folded_class)
            ~env
            fun_ty)
         ~f:(fun decl_pos ->

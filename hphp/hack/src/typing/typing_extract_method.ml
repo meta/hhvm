@@ -17,6 +17,39 @@ let mk_tparam pos name tp_constraints =
       tp_user_attributes = [];
     }
 
+let type_parameter_upper_bounds bounds tparams where_constraints =
+  let open Typing_defs_core in
+  let bounds =
+    List.fold
+      tparams
+      ~init:bounds
+      ~f:(fun bounds { tp_name = (_, name); tp_constraints; _ } ->
+        let upper =
+          List.filter_map tp_constraints ~f:(function
+              | ((Ast_defs.Constraint_as | Ast_defs.Constraint_eq), ty) ->
+                Some ty
+              | _ -> None)
+        in
+        S_map.add name upper bounds)
+  in
+  let add_upper bounds name ty =
+    S_map.update
+      name
+      (fun old -> Some (ty :: Option.value old ~default:[]))
+      bounds
+  in
+  List.fold where_constraints ~init:bounds ~f:(fun bounds (left, kind, right) ->
+      let bounds =
+        match (get_node left, kind) with
+        | (Tgeneric name, (Ast_defs.Constraint_as | Ast_defs.Constraint_eq)) ->
+          add_upper bounds name right
+        | _ -> bounds
+      in
+      match (get_node right, kind) with
+      | (Tgeneric name, (Ast_defs.Constraint_super | Ast_defs.Constraint_eq)) ->
+        add_upper bounds name left
+      | _ -> bounds)
+
 module Variance_analysis : sig
   val analyse_this :
     Typing_defs_core.decl_phase Typing_defs_core.ty Typing_defs_core.fun_type ->
@@ -30,7 +63,11 @@ module Variance_analysis : sig
       type [this] cannot be obtained from them) and occurrences of [this] as the
       root of a type constant access (e.g. [this::T]) are not counted. *)
   val count_obtainable_this_in_param :
-    Typing_defs_core.decl_ty -> env:Typing_env_types.env -> int
+    follow_bounds:bool ->
+    upper_bounds:Typing_defs_core.decl_ty list S_map.t ->
+    Typing_defs_core.decl_ty ->
+    env:Typing_env_types.env ->
+    int
 
   val analyse_ty_params :
     Typing_defs_core.decl_phase Typing_defs_core.ty Typing_defs_core.fun_type ->
@@ -379,8 +416,42 @@ end = struct
         | Ast_defs.Invariant -> true
         | _ -> false)
 
-  let count_obtainable_this_in_param ty ~env =
+  let count_obtainable_this_in_param ~follow_bounds ~upper_bounds ty ~env =
     let open Typing_defs_core in
+    let on_ty ty ~ctx:(upper_bounds, seen) =
+      match get_node ty with
+      | Tgeneric name when not (S_set.mem name seen) ->
+        (match S_map.find_opt name upper_bounds with
+        | Some (_ :: _ as bounds) ->
+          let bounds = List.dedup_and_sort bounds ~compare:compare_decl_ty in
+          let ty = Typing_make_type.intersection (get_reason ty) bounds in
+          ((upper_bounds, S_set.add name seen), `Restart ty)
+        | _ -> ((upper_bounds, seen), `Stop ty))
+      | Tgeneric _ -> ((upper_bounds, seen), `Stop ty)
+      | Tfun ft ->
+        let upper_bounds =
+          type_parameter_upper_bounds
+            upper_bounds
+            ft.ft_tparams
+            ft.ft_where_constraints
+        in
+        let seen =
+          List.fold ft.ft_tparams ~init:seen ~f:(fun seen tparam ->
+              S_set.remove (snd tparam.tp_name) seen)
+        in
+        ((upper_bounds, seen), `Continue ty)
+      | _ -> ((upper_bounds, seen), `Continue ty)
+    in
+    let ty =
+      if not follow_bounds then
+        ty
+      else
+        transform_top_down_decl_ty
+          ty
+          ~ctx:(upper_bounds, S_set.empty)
+          ~on_ty
+          ~on_rc_bound:(fun bound ~ctx -> (ctx, `Continue bound))
+    in
     (* [find] already excludes [this::T] (it does not descend into [Taccess])
        and threads variance correctly through containers, function types and
        declared class-level variance, so we just count the [this] nodes reached
@@ -1861,7 +1932,18 @@ let ty_generics names ty =
     Covariant occurrences (e.g. a parameter of type [(function(this): void)],
     which only *accepts* a [this]) and [this::T] type constant projections are
     never counted. *)
-let explicit_this_param_positions ?(has_implicit_this = false) ~env fun_ty =
+let explicit_this_param_positions
+    ?(has_implicit_this = false) ?(class_tparams = []) ~env fun_ty =
+  let open Typing_defs_core in
+  let upper_bounds =
+    if not has_implicit_this then
+      S_map.empty
+    else
+      type_parameter_upper_bounds
+        S_map.empty
+        (class_tparams @ fun_ty.ft_tparams)
+        fun_ty.ft_where_constraints
+  in
   let init =
     if has_implicit_this then
       1
@@ -1873,7 +1955,13 @@ let explicit_this_param_positions ?(has_implicit_this = false) ~env fun_ty =
       fun_ty.Typing_defs_core.ft_params
       ~init:(init, [])
       ~f:(fun (total, positions) Typing_defs_core.{ fp_type; fp_pos; _ } ->
-        match Variance_analysis.count_obtainable_this_in_param fp_type ~env with
+        match
+          Variance_analysis.count_obtainable_this_in_param
+            ~follow_bounds:has_implicit_this
+            ~upper_bounds
+            fp_type
+            ~env
+        with
         | 0 -> (total, positions)
         | n -> (total + n, fp_pos :: positions))
   in

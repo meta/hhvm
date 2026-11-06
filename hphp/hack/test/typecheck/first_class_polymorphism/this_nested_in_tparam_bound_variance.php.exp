@@ -1,1 +1,37 @@
-No errors
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_nested_in_tparam_bound_variance.php:73:38
+10 |   // this: contrav (receiver) + contrav (as constraint) * cov (Cov param) = contrav → eliminated
+11 |   // T: contrav (param) → eliminated
+12 |   public function nested_cov_as<T as Cov<this>>(T $_): void {}
+   |                                                   ^^ [2]
+13 | 
+14 |   // this nested in contravariant container in `as` constraint
+   :
+71 |       Cov<Base_Nested1>,
+72 |     ): void)>,
+73 |   >(meth_caller(Base_Nested1::class, 'nested_cov_as'));
+   |                                      ^^^^^^^^^^^^^^^ [1]
+74 | 
+75 |   // Case 2: Contrav in as → this kept, T eliminated
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_nested_in_tparam_bound_variance.php:111:45
+ 40 | 
+ 41 |   public function nested_cov_as<T as Cov<this>>(
+ 42 |     T $_,
+    |       ^^ [2]
+ 43 |     this::TBase $_,
+ 44 |   ): void {}
+    :
+109 |       TBase0,
+110 |     ): void)>,
+111 |   >(meth_caller(Base_Nested1_WithTC::class, 'nested_cov_as'));
+    |                                             ^^^^^^^^^^^^^^^ [1]
+112 | 
+113 |   // Case 2 with TC: this kept, TBase0 kept
+
+2 errors found

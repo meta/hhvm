@@ -1,1 +1,72 @@
-No errors
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_in_direct_tparam_bound_variance.php:54:38
+ 7 |   // this: contrav (receiver) + contrav (as constraint) = contrav → eliminated
+ 8 |   // T: contrav (param) → eliminated, T → Base_Direct1
+ 9 |   public function direct_as_contrav<T as this>(T $_): void {}
+   |                                                  ^^ [2]
+10 | 
+11 |   // this directly in `super` constraint, T invariant (param + return)
+   :
+52 |       Base_Direct1,
+53 |     ): void)>,
+54 |   >(meth_caller(Base_Direct1::class, 'direct_as_contrav'));
+   |                                      ^^^^^^^^^^^^^^^^^^^ [1]
+55 | 
+56 |   // T super this, T inv: both kept
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_in_direct_tparam_bound_variance.php:73:38
+19 |   // this: contrav (receiver) + contrav (as constraint) = contrav → eliminated
+20 |   // T: contrav (param) + cov (return) = invariant → kept, bound simplified
+21 |   public function direct_as_inv<T as this>(T $_): ?T {
+   |                                              ^^ [2]
+22 |     return null;
+23 |   }
+   :
+71 |       T,
+72 |     ): ?T)>,
+73 |   >(meth_caller(Base_Direct1::class, 'direct_as_inv'));
+   |                                      ^^^^^^^^^^^^^^^ [1]
+74 | 
+75 |   // === With class type constants: this gets exact refinements ===
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_in_direct_tparam_bound_variance.php:84:45
+29 | 
+30 |   // this eliminated → TBase0 kept (invariant via exact rfmt on this)
+31 |   public function direct_as_contrav<T as this>(T $_, this::TBase $_): void {}
+   |                                                  ^^ [2]
+32 | 
+33 |   // this kept → both TBase0 and Tthis kept
+   :
+82 |       TBase0,
+83 |     ): void)>,
+84 |   >(meth_caller(Base_Direct1_WithTC::class, 'direct_as_contrav'));
+   |                                             ^^^^^^^^^^^^^^^^^^^ [1]
+85 | 
+86 |   // this kept, TBase0 kept
+
+error: Typing[4517] Cannot take a pointer to this method because a value of type `this` can be obtained from two or more of its parameters (counting the implicit receiver of an instance method), so the function pointer could be used to relate two unrelated subtypes of `this` [1]
+-> a value of type `this` can be obtained from this parameter [2]
+
+this_in_direct_tparam_bound_variance.php:109:45
+ 40 | 
+ 41 |   // this eliminated → TBase0 kept
+ 42 |   public function direct_as_inv<T as this>(T $_, this::TBase $_): ?T {
+    |                                              ^^ [2]
+ 43 |     return null;
+ 44 |   }
+    :
+107 |       TBase0,
+108 |     ): ?T)>,
+109 |   >(meth_caller(Base_Direct1_WithTC::class, 'direct_as_inv'));
+    |                                             ^^^^^^^^^^^^^^^ [1]
+110 | }
+
+4 errors found
