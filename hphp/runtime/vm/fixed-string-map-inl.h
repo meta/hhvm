@@ -135,16 +135,39 @@ void FixedStringMap<V,E>::addFrom(Iter begin, Iter end) {
     return true;
   };
 
-  // If the capacity is too high, dont even try to find perfect hash
-  if (capacity < (1 << kMaskSizePerfect)) {
-    // Try to find a perfect hash function
-    uint32_t consts = 0;
-    auto const limit = 1 << (kNumHashConsts * kHashConstSize);
-    while (consts < limit - 1) {
-      consts++;
-      if (!isPerfectHashFunction(consts)) continue;
+  // hash(c1, c2) == hash(c2, c1), and c1 == c2 always hashes to 0, so only
+  // c1 < c2 is worth trying.
+  static_assert(kNumHashConsts == 2);
+  constexpr uint32_t kNumShifts = 1u << kHashConstSize;
+  constexpr double kNumCandidates = kNumShifts * (kNumShifts - 1) / 2;
+  auto const findPerfectHashConsts = [&]() -> uint32_t {
+    for (uint32_t c2 = 1; c2 < kNumShifts; ++c2) {
+      for (uint32_t c1 = 0; c1 < c2; ++c1) {
+        auto const consts = c1 | (c2 << kHashConstSize);
+        if (isPerfectHashFunction(consts)) return consts;
+      }
+    }
+    return 0;
+  };
+
+  // Odds that one uniformly random hash function puts every key in its own
+  // slot.
+  auto const perfectOdds = [&] {
+    double odds = 1.0;
+    uint32_t i = 0;
+    for (auto it = begin; it != end && odds > 0; ++it) {
+      odds *= 1.0 - double(i++) / capacity;
+    }
+    return odds;
+  };
+
+  // For larger maps no candidate is likely to be perfect, and a failed search
+  // tries every one of them.
+  constexpr double kMinExpectedPerfect = 0.01;
+  if (capacity < (1 << kMaskSizePerfect) &&
+      perfectOdds() * kNumCandidates >= kMinExpectedPerfect) {
+    if (auto const consts = findPerfectHashConsts()) {
       setMaskAndConsts(mask, consts);
-      break;
     }
   }
 
