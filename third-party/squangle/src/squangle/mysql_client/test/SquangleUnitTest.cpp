@@ -31,6 +31,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "squangle/base/Base.h"
 #include "squangle/mysql_client/OperationHelpers.h"
 
 #include "squangle/mysql_client/Query.h"
@@ -2841,6 +2842,24 @@ TEST(MalformedResultTest, WellFormedResultBuildsNormally) {
   ASSERT_EQ(block.numRows(), 2);
   EXPECT_EQ(block.getField<int64_t>(0, "id"), 1);
   EXPECT_EQ(block.getField<std::string>(1, "name"), "bob");
+}
+
+TEST(QueryTimeoutAttributeTest, WholeSecondsHaveNoFraction) {
+  EXPECT_EQ(queryTimeoutAttributeValue(std::chrono::seconds(20)), "20");
+}
+
+TEST(QueryTimeoutAttributeTest, SubSecondTimeoutIsNotZero) {
+  EXPECT_EQ(
+      queryTimeoutAttributeValue(std::chrono::milliseconds(200)), "0.200");
+}
+
+TEST(QueryTimeoutAttributeTest, FractionalSecondsKeepMilliseconds) {
+  EXPECT_EQ(
+      queryTimeoutAttributeValue(std::chrono::milliseconds(1505)), "1.505");
+}
+
+TEST(QueryTimeoutAttributeTest, RoundsUpToTheNextMillisecond) {
+  EXPECT_EQ(queryTimeoutAttributeValue(std::chrono::microseconds(1)), "0.001");
 }
 
 } // namespace facebook::common::mysql_client::test

@@ -40,6 +40,12 @@ enum class QueryCallbackReason { RowsFetched, QueryBoundary, Failure, Success };
 // overload of operator<< for QueryCallbackReason
 std::ostream& operator<<(std::ostream& os, QueryCallbackReason reason);
 
+// Formats a query timeout as the value of the `query_timeout` attribute that
+// proxies honor: seconds, with millisecond precision ("20", "0.200").
+// Rounds up to the next millisecond so that a nonzero timeout is never sent
+// as "0".
+std::string queryTimeoutAttributeValue(Duration timeout);
+
 using LoggingFuncs =
     std::unordered_map<std::string, std::function<std::string()>>;
 using LoggingFuncsPtr = std::shared_ptr<LoggingFuncs>;

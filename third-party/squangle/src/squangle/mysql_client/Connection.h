@@ -768,10 +768,7 @@ class Connection {
       // attributes, where an intervening proxy may apply it as the query
       // timeout. We need to override that here.
       op.setAttribute(
-          "query_timeout",
-          folly::to<std::string>(
-              std::chrono::duration_cast<std::chrono::seconds>(*timeoutOverride)
-                  .count()));
+          "query_timeout", queryTimeoutAttributeValue(*timeoutOverride));
     }
   }
 };

@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <fmt/core.h>
 #include <glog/logging.h>
 
 #include "squangle/base/Base.h"
@@ -32,6 +33,16 @@ std::string_view toString(QueryCallbackReason reason) {
 // overload of operator<< for QueryCallbackReason
 std::ostream& operator<<(std::ostream& os, QueryCallbackReason reason) {
   return os << toString(reason);
+}
+
+std::string queryTimeoutAttributeValue(Duration timeout) {
+  const auto millis = std::chrono::ceil<Millis>(timeout).count();
+  const auto seconds = millis / 1000;
+  const auto fraction = millis % 1000;
+  if (fraction == 0) {
+    return fmt::format("{}", seconds);
+  }
+  return fmt::format("{}.{:03}", seconds, fraction);
 }
 
 } // namespace facebook::common::mysql_client
