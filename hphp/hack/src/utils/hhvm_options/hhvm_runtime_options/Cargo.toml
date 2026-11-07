@@ -16,7 +16,7 @@ byteorder = "1.5"
 colored = "3.1.1"
 cxx = "1.0.194"
 hdf = { path = "../../hdf" }
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 md-5 = "0.10"
 regex = "1.13.1"
 

@@ -41,7 +41,7 @@ ir = { path = "ir" }
 ir_to_bc = { path = "ir/conversions/ir_to_bc" }
 itertools = "0.15.0"
 jwalk = "0.8.1"
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 multifile_rust = { path = "../utils/multifile" }
 naming_provider = { path = "../hackrs/naming_provider/cargo/naming_provider" }
 options = { path = "compile/cargo/options" }

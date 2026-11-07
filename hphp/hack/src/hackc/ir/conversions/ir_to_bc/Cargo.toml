@@ -16,6 +16,6 @@ hhbc = { path = "../../../hhbc/cargo/hhbc" }
 instruction_sequence = { path = "../../../emitter/cargo/instruction_sequence" }
 ir = { path = "../.." }
 itertools = "0.15.0"
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 smallvec = { version = "1.16.4", features = ["const_generics", "impl_bincode", "serde", "specialization", "union", "write"] }
 stack_depth = { path = "../../../utils/cargo/stack_depth" }

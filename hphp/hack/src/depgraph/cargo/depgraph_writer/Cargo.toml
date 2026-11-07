@@ -14,5 +14,5 @@ crate-type = ["lib", "staticlib"]
 [dependencies]
 bytemuck = { version = "1.25", features = ["const_zeroed", "derive", "min_const_generics", "must_cast", "nightly_portable_simd", "nightly_stdsimd"] }
 dep = { path = "../dep" }
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 newtype = { path = "../../../utils/newtype" }

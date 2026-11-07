@@ -20,7 +20,7 @@ hhbc = { path = "../../../../../hhbc/cargo/hhbc" }
 hhbc_string_utils = { path = "../../../../../utils/cargo/hhbc_string_utils" }
 ir = { path = "../../../.." }
 itertools = "0.15.0"
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 naming_special_names_rust = { path = "../../../../../../naming" }
 newtype = { path = "../../../../../../utils/newtype" }
 regex = "1.13.1"

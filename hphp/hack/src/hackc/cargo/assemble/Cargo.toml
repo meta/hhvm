@@ -18,7 +18,7 @@ ffi = { path = "../../ffi/ffi" }
 hash = { path = "../../../utils/hash" }
 hhbc = { path = "../../hhbc/cargo/hhbc" }
 hhvm_types_ffi = { path = "../../hhvm_cxx/hhvm_types" }
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 naming_special_names_rust = { path = "../../../naming" }
 newtype = { path = "../../../utils/newtype" }
 parse_macro = { path = "../parse_macro" }

@@ -17,7 +17,7 @@ bytemuck = { version = "1.25", features = ["const_zeroed", "derive", "min_const_
 depgraph_reader = { path = "../../../cargo/depgraph_reader" }
 depgraph_writer = { path = "../../../cargo/depgraph_writer" }
 hash = { path = "../../../../utils/hash" }
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 newtype = { path = "../../../../utils/newtype" }
 rayon = "1.11.0"
 smallvec = { version = "1.16.4", features = ["const_generics", "impl_bincode", "serde", "specialization", "union", "write"] }

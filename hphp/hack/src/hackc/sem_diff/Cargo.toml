@@ -19,5 +19,5 @@ hash = { path = "../../utils/hash" }
 hhbc = { path = "../hhbc/cargo/hhbc" }
 hhbc-gen = { path = "../../../../tools/hhbc-gen" }
 itertools = "0.15.0"
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 newtype = { path = "../../utils/newtype" }

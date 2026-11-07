@@ -14,6 +14,6 @@ path = "../../stack_depth.rs"
 ffi = { path = "../../../ffi/ffi" }
 hhbc = { path = "../../../hhbc/cargo/hhbc" }
 hhbc-gen = { path = "../../../../../../tools/hhbc-gen" }
-log = { version = "0.4.34", features = ["kv_unstable", "kv_unstable_std"] }
+log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
 newtype = { path = "../../../../utils/newtype" }
 thiserror = "2.0.21"
