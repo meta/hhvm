@@ -57,7 +57,7 @@ throwIndexOutOfRange(std::string_view what, size_t value, size_t size);
 // instead of aborting the process.
 inline void
 checkIndexInRange(std::string_view what, size_t value, size_t size) {
-  if (FOLLY_UNLIKELY(value >= size)) {
+  if (value >= size) [[unlikely]] {
     throwIndexOutOfRange(what, value, size);
   }
 }
@@ -658,10 +658,10 @@ class RowBlock {
   // values, and std::logic_error if a startRow() is still open. out_of_range
   // derives from logic_error, so catching logic_error covers both.
   void addRow(StorageRow&& row) {
-    if (FOLLY_UNLIKELY(current_row_.has_value())) {
+    if (current_row_.has_value()) [[unlikely]] {
       throwAddRowWhileRowOpen();
     }
-    if (FOLLY_UNLIKELY(row.count() != row_fields_info_->numFields())) {
+    if (row.count() != row_fields_info_->numFields()) [[unlikely]] {
       throwWrongColumnCount(row.count());
     }
     rows_.push_back(std::move(row));
@@ -779,11 +779,10 @@ class RowBlock {
   }
 
   void checkRowStartedAndCapacity() {
-    if (FOLLY_UNLIKELY(!current_row_)) {
+    if (!current_row_) [[unlikely]] {
       throwRowNotStarted();
     }
-    if (FOLLY_UNLIKELY(
-            current_row_->count() >= row_fields_info_->numFields())) {
+    if (current_row_->count() >= row_fields_info_->numFields()) [[unlikely]] {
       throwNoMoreCapacity();
     }
   }
@@ -792,10 +791,10 @@ class RowBlock {
   // published, and so a bad row leaves the block completely untouched.
   template <typename Iter>
   void addRowFromRange(Iter first, Iter last, size_t count) {
-    if (FOLLY_UNLIKELY(current_row_.has_value())) {
+    if (current_row_.has_value()) [[unlikely]] {
       throwAddRowWhileRowOpen();
     }
-    if (FOLLY_UNLIKELY(count != row_fields_info_->numFields())) {
+    if (count != row_fields_info_->numFields()) [[unlikely]] {
       throwWrongColumnCount(count);
     }
     StorageRow row(count);

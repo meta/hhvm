@@ -93,7 +93,7 @@ class MockQueryResult::BasicBuilder {
   template <typename... Args>
   BasicBuilder& column(Args&&... args) {
     checkNotBuilt();
-    if (FOLLY_UNLIKELY(fields_ != nullptr)) {
+    if (fields_ != nullptr) [[unlikely]] {
       throwColumnAfterSeal();
     }
     fieldsBuilder_.column(std::forward<Args>(args)...);
@@ -198,7 +198,7 @@ class MockQueryResult::BasicBuilder {
     // result into an error.
     std::erase_if(
         blocks_, [](const RowBlock& block) { return block.numRows() == 0; });
-    if (FOLLY_UNLIKELY(blocks_.size() > 1)) {
+    if (blocks_.size() > 1) [[unlikely]] {
       throwNotSingleBlock(blocks_.size());
     }
     // built_ is set only once the call is known to succeed, so a rejected
@@ -280,7 +280,7 @@ class MockQueryResult::BasicBuilder {
   }
 
   void checkNotBuilt() const {
-    if (FOLLY_UNLIKELY(built_)) {
+    if (built_) [[unlikely]] {
       throwAlreadyBuilt();
     }
   }
