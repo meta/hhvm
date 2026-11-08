@@ -1452,6 +1452,7 @@ let to_rollout_flags (options : t) : Hack_event_logger.rollout_flags =
       zstd_decompress_by_file =
         Global_options.(options.saved_state.loading.zstd_decompress_by_file);
       warnings_default_all = options.warnings_default_all;
+      watchman_enabled = options.watchman.enabled;
       edenfs_file_watcher_enabled = options.edenfs_file_watcher.enabled;
       edenfs_file_watcher_sync_queries_obey_deferral =
         options.edenfs_file_watcher.sync_queries_obey_deferral;

@@ -127,6 +127,8 @@ type rollout_flags = {
       (** POC: @nzthomas, if true then saved state loading will only pass specific files to zstd shellout *)
   warnings_default_all: bool;
       (** POC: @catg - whether the client shows warnings by default. *)
+  watchman_enabled: bool;
+      (** Whether Watchman is enabled for Server_notifier after config overrides. *)
   edenfs_file_watcher_enabled: bool;
       (** POC: @frankemrich - if true, use Edenfs_watcher to power ServerNotifier (= file watching in server) *)
   edenfs_file_watcher_sync_queries_obey_deferral: bool;
