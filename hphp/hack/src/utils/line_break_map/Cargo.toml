@@ -11,4 +11,4 @@ license = "MIT"
 path = "../line_break_map.rs"
 
 [dev-dependencies]
-test-case = "3.4.0"
+test-case = "3.4.1"
