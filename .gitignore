@@ -10,6 +10,10 @@ hphp.log
 hphp/hack/_build/
 hphp/hack/cargo_home/
 /deps
+/obj-x86_64-linux-gnu
+/debian
+*.buildinfo
+*.changes
 
 /hphp/test/test
 /hphp/test/test_fast.inc
