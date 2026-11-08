@@ -22,4 +22,4 @@ nom-language = "0.1"
 
 [build-dependencies]
 anyhow = "1.0.104"
-cc = "1.10.0"
+cc = "1.11.1"
