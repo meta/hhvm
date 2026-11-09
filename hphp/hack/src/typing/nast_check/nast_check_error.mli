@@ -37,6 +37,10 @@ type t =
       class_name: string;
       props: (Pos_or_decl.t * string) list;
     }
+  | This_escapes_overridable_constructor of {
+      pos: Pos.t;
+      class_name: string;
+    }
   | Call_before_init of {
       pos: Pos.t;
       prop_name: string;

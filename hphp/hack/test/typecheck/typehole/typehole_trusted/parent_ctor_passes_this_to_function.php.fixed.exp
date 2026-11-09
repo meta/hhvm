@@ -1,0 +1,11 @@
+error: NastCheck[3004] `$this` escapes the constructor of `Base`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+parent_ctor_passes_this_to_function.php:9:14
+ 7 | class Base {
+ 8 |   public function __construct() {
+ 9 |     register($this);
+   |              ^^^^^ [1]
+10 |   }
+11 | 
+
+1 error found

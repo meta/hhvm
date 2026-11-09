@@ -643,6 +643,10 @@ impl HhConfig {
                 "forget_one_branch_tconst_refinements",
                 default.tco_forget_one_branch_tconst_refinements,
             )?,
+            tco_ban_this_escape_in_overridable_constructors: hhconfig.get_bool_or(
+                "ban_this_escape_in_overridable_constructors",
+                default.tco_ban_this_escape_in_overridable_constructors,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

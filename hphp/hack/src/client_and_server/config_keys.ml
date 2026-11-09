@@ -33,6 +33,9 @@ module Hhconfig = struct
   let ban_memoize_erased_generic_return =
     key "ban_memoize_erased_generic_return"
 
+  let ban_this_escape_in_overridable_constructors =
+    key "ban_this_escape_in_overridable_constructors"
+
   let ban_this_refinement_in_generic_class =
     key "ban_this_refinement_in_generic_class"
 

@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<3b840f2935f38dadeab07c84f6f23fe4>>
+// @generated SignedSource<<b09b4791e6f6405c1b53626d4de4eb59>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -423,4 +423,6 @@ pub struct GlobalOptions {
     pub tco_foreach_key_after_value: bool,
     /// Keep the `name`, `alias` and `generic_types` fields of a `TypeStructure<T>` optional, since HHVM can omit them (`generic_types` for `this`, or for a generic `T`), rather than mark them present.
     pub tco_type_structure_fields_may_be_absent: bool,
+    /// Reject places where `$this` escapes the constructor of a non-final class or a trait, such as passing `$this` or calling a non-private method, wherever they are in the constructor and not only before every property is initialized. A subclass constructor may run that constructor before initializing its own properties, which a method it overrides could then read.
+    pub tco_ban_this_escape_in_overridable_constructors: bool,
 }

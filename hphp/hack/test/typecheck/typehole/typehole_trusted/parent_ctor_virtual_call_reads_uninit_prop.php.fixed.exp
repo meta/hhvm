@@ -1,0 +1,11 @@
+error: NastCheck[3004] `$this` escapes the constructor of `Break8Base`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+parent_ctor_virtual_call_reads_uninit_prop.php:14:5
+12 | class Break8Base {
+13 |   public function __construct() {
+14 |     $this->hook();
+   |     ^^^^^^^^^^^ [1]
+15 |   }
+16 |   public function hook(): void {}
+
+1 error found

@@ -1,0 +1,11 @@
+error: NastCheck[3004] `$this` escapes the constructor of `T`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+trait_ctor_calls_override.php:5:5
+3 | trait T {
+4 |   public function __construct() {
+5 |     $this->hook();
+  |     ^^^^^^^^^^^ [1]
+6 |   }
+7 | 
+
+1 error found

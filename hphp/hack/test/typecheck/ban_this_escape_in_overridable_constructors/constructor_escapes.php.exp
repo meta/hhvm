@@ -1,0 +1,61 @@
+error: NastCheck[3004] `$this` escapes the constructor of `PassesThis`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+constructor_escapes.php:7:14
+5 | class PassesThis {
+6 |   public function __construct() {
+7 |     register($this);
+  |              ^^^^^ [1]
+8 |   }
+9 | }
+
+error: NastCheck[3004] `$this` escapes the constructor of `CallsOverridable`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+constructor_escapes.php:13:5
+11 | class CallsOverridable {
+12 |   public function __construct() {
+13 |     $this->hook();
+   |     ^^^^^^^^^^^ [1]
+14 |   }
+15 |   public function hook(): void {}
+
+error: NastCheck[3004] `$this` escapes the constructor of `CallsFinal`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+constructor_escapes.php:20:5
+18 | class CallsFinal {
+19 |   public function __construct() {
+20 |     $this->fixed();
+   |     ^^^^^^^^^^^^ [1]
+21 |   }
+22 |   final public function fixed(): void {}
+
+error: NastCheck[3004] `$this` escapes the constructor of `TemplateMethod`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+constructor_escapes.php:27:5
+25 | abstract class TemplateMethod {
+26 |   public function __construct() {
+27 |     $this->init();
+   |     ^^^^^^^^^^^ [1]
+28 |   }
+29 |   abstract protected function init(): void;
+
+error: NastCheck[3004] `$this` escapes the constructor of `TraitCallsOverridable`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+constructor_escapes.php:34:5
+32 | trait TraitCallsOverridable {
+33 |   public function __construct() {
+34 |     $this->hook();
+   |     ^^^^^^^^^^^ [1]
+35 |   }
+36 |   public function hook(): void {}
+
+error: NastCheck[3004] `$this` escapes the constructor of `EscapesAfterInit`, which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor. [1]
+
+constructor_escapes.php:43:14
+41 |   public function __construct() {
+42 |     $this->n = 1;
+43 |     register($this);
+   |              ^^^^^ [1]
+44 |   }
+45 | }
+
+6 errors found

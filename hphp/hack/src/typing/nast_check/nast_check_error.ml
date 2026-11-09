@@ -38,6 +38,10 @@ type t =
       class_name: string;
       props: (Pos_or_decl.t * string) list;
     }
+  | This_escapes_overridable_constructor of {
+      pos: Pos.t;
+      class_name: string;
+    }
   | Call_before_init of {
       pos: Pos.t;
       prop_name: string;
@@ -318,6 +322,16 @@ let not_initialized pos cname props =
       ^ " has properties that cannot be null and aren't always set in `__construct`."
     )
     prop_msgs
+
+let this_escapes_overridable_constructor pos class_name =
+  User_diagnostic.make_err
+    Error_code.(to_enum CallBeforeInit)
+    ( pos,
+      "`$this` escapes the constructor of "
+      ^ Markdown_lite.md_codify (Render.strip_ns class_name)
+      ^ ", which a subclass's constructor may run before initializing its own properties. Make the class final, or keep `$this` in its constructor."
+    )
+    []
 
 let call_before_init pos cv =
   User_diagnostic.make_err
@@ -1039,6 +1053,8 @@ let to_user_diagnostic t =
       constructor_required pos class_name prop_names
     | Not_initialized { pos; class_name; props } ->
       not_initialized pos class_name props
+    | This_escapes_overridable_constructor { pos; class_name } ->
+      this_escapes_overridable_constructor pos class_name
     | Call_before_init { pos; prop_name } -> call_before_init pos prop_name
     | Abstract_with_body pos -> abstract_with_body pos
     | Not_abstract_without_typeconst pos -> not_abstract_without_typeconst pos

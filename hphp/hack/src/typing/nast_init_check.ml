@@ -140,6 +140,9 @@ module Env = struct
     tenv: Typing_env_types.env;
     parent_cstr_props: S_set.t;
     init_not_required_props: S_set.t;
+    overridable_class: string option;
+        (** The class, when `$this` must never escape its constructor because a
+            subclass may run it before initializing its own properties *)
   }
 
   let rec make tenv c =
@@ -223,7 +226,29 @@ module Env = struct
       |> S_map.filter (fun _ ty_opt ->
              not (type_does_not_require_init tenv ty_opt))
     in
-    { methods; props; parent_cstr_props; tenv; init_not_required_props }
+    let overridable_class =
+      (* A final constructor leaves subclasses without a constructor of their
+         own, so their properties are initialized before it runs. *)
+      let cstr_final =
+        match split_methods c.c_methods with
+        | (Some cstr, _, _) -> cstr.m_final
+        | (None, _, _) -> false
+      in
+      Option.some_if
+        (Typechecker_options.ban_this_escape_in_overridable_constructors
+           (Typing_env.get_tcopt tenv)
+        && (Ast_defs.is_c_trait c.c_kind || not c.c_final)
+        && not cstr_final)
+        (snd c.c_name)
+    in
+    {
+      methods;
+      props;
+      parent_cstr_props;
+      tenv;
+      init_not_required_props;
+      overridable_class;
+    }
 
   and method_ acc m =
     if not (Aast.equal_visibility m.m_visibility Private) then
@@ -482,6 +507,15 @@ and block env acc l =
     (* The block has a return statement, forget what was initialized in it *)
     raise (InitReturn acc_before_block)
 
+(* `$this` escapes the constructor at [p] *)
+and escape env acc p =
+  check_all_init p env acc;
+  Option.iter env.overridable_class ~f:(fun class_name ->
+      Diagnostics.add_diagnostic
+        Nast_check_error.(
+          to_user_diagnostic
+          @@ This_escapes_overridable_constructor { pos = p; class_name }))
+
 and are_all_init env set =
   S_map.fold (fun cv _ acc -> acc && S.mem cv set) env.props true
 
@@ -510,7 +544,7 @@ and expr_ env acc p e =
   | ValCollection (_, _, el) -> exprl acc el
   | KeyValCollection (_, _, fdl) -> List.fold_left ~f:field ~init:acc fdl
   | This ->
-    check_all_init p env acc;
+    escape env acc p;
     acc
   | Method_caller _
   | EnumClassLabel _
@@ -569,7 +603,7 @@ and expr_ env acc p e =
     let method_ = Env.get_method env f in
     (match method_ with
     | None ->
-      check_all_init p env acc;
+      escape env acc p;
       acc
     | Some method_ ->
       (match !method_ with

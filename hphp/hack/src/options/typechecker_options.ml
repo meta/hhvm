@@ -315,5 +315,8 @@ let forget_one_branch_tconst_refinements t =
 
 let foreach_key_after_value t = t.Global_options.tco_foreach_key_after_value
 
+let ban_this_escape_in_overridable_constructors t =
+  t.Global_options.tco_ban_this_escape_in_overridable_constructors
+
 let type_structure_fields_may_be_absent t =
   t.Global_options.tco_type_structure_fields_may_be_absent
