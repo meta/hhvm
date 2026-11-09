@@ -60,9 +60,6 @@ module Hhconfig = struct
 
   let foreach_key_after_value = key "foreach_key_after_value"
 
-  let forget_static_prop_refinements_by_name =
-    key "forget_static_prop_refinements_by_name"
-
   let ignore_string_methods = key "ignore_string_methods"
 
   let interpret_soft_types_as_like_types =

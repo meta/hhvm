@@ -198,7 +198,6 @@ type t = {
   class_pointer_ban_class_array_key: bool;
   tco_permits_bypassing_visibility: string list;
   tco_tests_bypass_visibility_static_properties: bool;
-  tco_forget_static_prop_refinements_by_name: bool;
   tco_ban_this_refinement_in_generic_class: bool;
   tco_missing_targs_as_fresh_generics: bool;
   tco_private_member_variance_check: bool;
@@ -317,7 +316,6 @@ let default =
     class_pointer_ban_class_array_key = false;
     tco_permits_bypassing_visibility = [];
     tco_tests_bypass_visibility_static_properties = false;
-    tco_forget_static_prop_refinements_by_name = false;
     tco_ban_this_refinement_in_generic_class = false;
     tco_missing_targs_as_fresh_generics = false;
     tco_private_member_variance_check = false;
@@ -433,7 +431,6 @@ let set
     ?class_pointer_ban_class_array_key
     ?tco_permits_bypassing_visibility
     ?tco_tests_bypass_visibility_static_properties
-    ?tco_forget_static_prop_refinements_by_name
     ?tco_ban_this_refinement_in_generic_class
     ?tco_missing_targs_as_fresh_generics
     ?tco_private_member_variance_check
@@ -745,10 +742,6 @@ let set
       setting
         tco_tests_bypass_visibility_static_properties
         options.tco_tests_bypass_visibility_static_properties;
-    tco_forget_static_prop_refinements_by_name =
-      setting
-        tco_forget_static_prop_refinements_by_name
-        options.tco_forget_static_prop_refinements_by_name;
     tco_ban_this_refinement_in_generic_class =
       setting
         tco_ban_this_refinement_in_generic_class

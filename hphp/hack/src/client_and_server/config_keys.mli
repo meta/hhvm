@@ -58,8 +58,6 @@ module Hhconfig : sig
 
   val foreach_key_after_value : string
 
-  val forget_static_prop_refinements_by_name : string
-
   val ignore_string_methods : string
 
   val interpret_soft_types_as_like_types : string

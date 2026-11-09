@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<dfac046eb093403cb70bf6702b9e85f1>>
+// @generated SignedSource<<a85f1976b63c8041fd1186eabefe7782>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -409,8 +409,6 @@ pub struct GlobalOptions {
     pub class_pointer_ban_class_array_key: bool,
     pub tco_permits_bypassing_visibility: Vec<String>,
     pub tco_tests_bypass_visibility_static_properties: bool,
-    /// When a static property is assigned, invalidate its refinements under every class spelling (`self::`, `static::`, `C::`), not only the one assigned through.
-    pub tco_forget_static_prop_refinements_by_name: bool,
     /// Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments.
     pub tco_ban_this_refinement_in_generic_class: bool,
     /// Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables.

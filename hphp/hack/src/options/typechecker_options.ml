@@ -299,9 +299,6 @@ let permits_bypassing_visibility t =
 let tests_bypass_visibility_static_properties t =
   t.Global_options.tco_tests_bypass_visibility_static_properties
 
-let forget_static_prop_refinements_by_name t =
-  t.Global_options.tco_forget_static_prop_refinements_by_name
-
 let ban_this_refinement_in_generic_class t =
   t.Global_options.tco_ban_this_refinement_in_generic_class
 

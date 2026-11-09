@@ -615,10 +615,6 @@ impl HhConfig {
                 "tests_bypass_visibility_static_properties",
                 default.tco_tests_bypass_visibility_static_properties,
             )?,
-            tco_forget_static_prop_refinements_by_name: hhconfig.get_bool_or(
-                "forget_static_prop_refinements_by_name",
-                default.tco_forget_static_prop_refinements_by_name,
-            )?,
             tco_ban_this_refinement_in_generic_class: hhconfig.get_bool_or(
                 "ban_this_refinement_in_generic_class",
                 default.tco_ban_this_refinement_in_generic_class,
