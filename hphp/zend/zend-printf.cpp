@@ -922,9 +922,9 @@ static int xbuf_format_converter(char **outbuf, const char *fmt, va_list ap)
         case 'v':
           s = va_arg(ap, char *);
           if (s != nullptr) {
-            s_len = strlen(s);
-            if (adjust_precision && precision < s_len)
-              s_len = precision;
+            // %.*s must bound the read to `precision`; strlen would over-read a
+            // non-NUL-terminated arg.
+            s_len = adjust_precision ? strnlen(s, (size_t)precision) : strlen(s);
           } else {
             s = const_cast<char*>(s_null);
             s_len = S_NULL_LEN;

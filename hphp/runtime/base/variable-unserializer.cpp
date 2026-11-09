@@ -325,8 +325,10 @@ void VariableUnserializerImpl<Source>::reserveForAdd(size_t count) {
 }
 
 template <class Source>
-TypedValue VariableUnserializerImpl<Source>::getByVal(int id) {
-  if (id <= 0 || id > m_refs.size()) throwOutOfRange(id);
+TypedValue VariableUnserializerImpl<Source>::getByVal(int64_t id) {
+  if (id <= 0 || static_cast<uint64_t>(id) > m_refs.size()) {
+    throwOutOfRange(id);
+  }
   auto const result = m_refs[id - 1];
   if (!result) throwColRKey();
   return result.tv();

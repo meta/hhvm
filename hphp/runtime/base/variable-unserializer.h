@@ -156,7 +156,7 @@ struct VariableUnserializerImpl : VariableUnserializerBase {
   /*
    * Used by the 'r' encoding to re-use previously deserialized values.
    */
-  TypedValue getByVal(int id);
+  TypedValue getByVal(int64_t id);
 
   /*
    * Register an object that needs its __wakeup() method called after
