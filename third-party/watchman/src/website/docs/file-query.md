@@ -80,6 +80,10 @@ If the query was configured with the `empty_on_fresh_instance` property set to
 `true` then the result set will be empty and the `is_fresh_instance` property
 will be set to `true` in the result object.
 
+On EdenFS, a clock from a different watchman process can resume instead of
+producing a _fresh instance_; see
+[eden_resume_other_process_clocks](config.md#eden_resume_other_process_clocks).
+
 The since generator also knows how to talk to source control;
 [you can read more about that here](scm-query.md).
 

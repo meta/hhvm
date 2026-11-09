@@ -379,3 +379,21 @@ scope, have been read from EdenFS, the query returns a _fresh instance_. The
 count is of streamed entries, so a path reported again by each of several
 checkouts in the range counts each time. Defaults to 10 times
 `eden_file_count_threshold_for_fresh_instance`.
+
+### eden_resume_other_process_clocks
+
+This is specific to the EdenFS watcher
+
+On EdenFS, a clock is a position in the EdenFS journal, which outlives Watchman.
+When this is set to `true`, a query or subscription whose `since` is a clock
+that another Watchman process gave out resumes from that clock instead of
+getting a _fresh instance_, as long as EdenFS has not restarted or remounted the
+checkout since. If the journal no longer reaches back to the clock, the result
+is a fresh instance as before. `since` terms in an `expression` still treat such
+a clock as a fresh instance.
+
+With this enabled, restarting Watchman no longer makes clients that kept a clock
+start over. Every Watchman process that may be given another's clocks, such as
+one per user on the same checkout, must use the same ignore configuration
+(`ignore_dirs` and `ignore_vcs`). Watchman reads this option when it starts
+watching the root. Defaults to `false`.

@@ -34,6 +34,8 @@ enum class ClockOrigin {
   // EdenFS root numbers (mount generations) name the same root instance in
   // every watchman process.
   OtherProcess,
+  // Like OtherProcess, but the view could still answer from it.
+  Resumed,
   // Its root number is not the current one. Old-style clocks and scm since
   // specs without a clock have root number 0.
   OtherRoot,
@@ -126,12 +128,16 @@ struct ClockSpec {
   /** Evaluate the clockspec against the inputs, returning
    * the effective since parameter.
    * If cursorMap is passed in, it MUST be unlocked, as this method
-   * will acquire a lock to evaluate a named cursor. */
+   * will acquire a lock to evaluate a named cursor.
+   * If resumeOtherProcessClocks is set, a clock that another watchman process
+   * gave out for this root resumes from its ticks instead of being a fresh
+   * instance. */
   QuerySince evaluate(
       const ClockPosition& position,
       const ClockTicks lastAgeOutTick,
       folly::Synchronized<std::unordered_map<w_string, ClockTicks>>* cursorMap =
-          nullptr) const;
+          nullptr,
+      bool resumeOtherProcessClocks = false) const;
 
   /** Initializes some global state needed for clockspec evaluation */
   static void init();

@@ -130,8 +130,8 @@ ClockSpec::ClockSpec(const ClockPosition& position)
 QuerySince ClockSpec::evaluate(
     const ClockPosition& position,
     ClockTicks lastAgeOutTick,
-    folly::Synchronized<std::unordered_map<w_string, ClockTicks>>* cursorMap)
-    const {
+    folly::Synchronized<std::unordered_map<w_string, ClockTicks>>* cursorMap,
+    bool resumeOtherProcessClocks) const {
   return folly::variant_match(
       spec,
       [](const Timestamp& ts) -> QuerySince {
@@ -139,9 +139,18 @@ QuerySince ClockSpec::evaluate(
       },
       [&](const Clock& clock) -> QuerySince {
         QuerySince::Clock since_clock;
-        if (clock.start_time == proc_start_time && clock.pid == proc_pid &&
+        const bool sameProcess =
+            clock.start_time == proc_start_time && clock.pid == proc_pid;
+        // Clocks with no start time or pid come from watchman before 2.8.2 or
+        // were made up by other tools, and a clock ahead of the view's position
+        // cannot come from this generation's journal.
+        const bool resumable = resumeOtherProcessClocks &&
+            clock.start_time != 0 && clock.pid != 0 &&
+            clock.position.ticks <= position.ticks;
+        if ((sameProcess || resumable) &&
             clock.position.rootNumber == position.rootNumber) {
-          since_clock.origin = ClockOrigin::SameProcess;
+          since_clock.origin =
+              sameProcess ? ClockOrigin::SameProcess : ClockOrigin::Resumed;
           since_clock.is_fresh_instance = clock.position.ticks < lastAgeOutTick;
           if (since_clock.is_fresh_instance) {
             since_clock.ticks = 0;
@@ -149,9 +158,9 @@ QuerySince ClockSpec::evaluate(
             since_clock.ticks = clock.position.ticks;
           }
         } else {
-          // If the pid, start time or root number don't match, they asked a
-          // different incarnation of the server or a different instance of this
-          // root, so we treat them as having never spoken to us before.
+          // The root number doesn't match, or the clock came from another
+          // watchman process and can't be resumed, so we treat them as having
+          // never spoken to us before.
           since_clock.origin = clock.position.rootNumber == position.rootNumber
               ? ClockOrigin::OtherProcess
               : ClockOrigin::OtherRoot;

@@ -778,7 +778,9 @@ class EdenView final : public QueryableView {
             "eden_scoped_fresh_instance_scan_limit",
             10 * static_cast<int64_t>(thresholdForFreshInstance_))),
         enableGlobUpperBounds_(
-            config.getBool("eden_enable_glob_upper_bounds", true)) {}
+            config.getBool("eden_enable_glob_upper_bounds", true)),
+        resumeOtherProcessClocks_(
+            config.getBool("eden_resume_other_process_clocks", false)) {}
 
   void timeGenerator(const Query* /*query*/, QueryContext* ctx) const override {
     ctx->generationStarted();
@@ -1166,6 +1168,13 @@ class EdenView final : public QueryableView {
     return name;
   }
 
+  // An EdenFS clock is a journal position: its root number is the mount
+  // generation and its ticks are the journal sequence number. Both outlive
+  // watchman, and the generation changes when EdenFS restarts or remounts.
+  bool canResumeOtherProcessClocks() const override {
+    return resumeOtherProcessClocks_;
+  }
+
   folly::SemiFuture<folly::Unit> waitUntilReadyToQuery() override {
     return subscribeReadyPromise_.getSemiFuture();
   }
@@ -1488,6 +1497,7 @@ class EdenView final : public QueryableView {
   unsigned int thresholdForFreshInstance_;
   size_t scopedFreshInstanceScanLimit_;
   bool enableGlobUpperBounds_;
+  bool resumeOtherProcessClocks_;
 };
 
 #ifdef _WIN32

@@ -65,6 +65,8 @@ const char* clockOriginName(ClockOrigin origin) {
       return "same_process";
     case ClockOrigin::OtherProcess:
       return "other_process";
+    case ClockOrigin::Resumed:
+      return "resumed";
     case ClockOrigin::OtherRoot:
       return "other_root";
   }
@@ -273,12 +275,14 @@ static void execute_common(
     const auto& [samplingRate, eventCount] =
         getLogEventCounters(LogEventType::QueryExecuteType);
     // Log if override set, or if we have hit the sample rate,
-    // or if the query used the changes_since_mergebase_with generator
+    // or if the query used the changes_since_mergebase_with generator,
+    // or if it resumed a clock from another watchman process
     if (sample->will_log || eventCount == samplingRate ||
         (!ctx->generatorType.empty() &&
          ctx->generatorType == "scm_files_changed_since_mergebase_with") ||
         (!ctx->freshInstanceCause.empty() &&
-         ctx->freshInstanceCause != "New instance")) {
+         ctx->freshInstanceCause != "New instance") ||
+        sinceClockOrigin(ctx->since) == ClockOrigin::Resumed) {
       addRootMetadataToEvent(root_metadata, *queryExecute);
       queryExecute->event_count = eventCount != samplingRate ? 0 : eventCount;
       queryExecute->fresh_instance = res->isFreshInstance;
@@ -525,11 +529,13 @@ QueryResult w_query_execute(
       std::get<ClockSpec::Clock>(ctx.clockAtStartOfQuery.spec);
 
   // Evaluate the cursor for this root
-  ctx.since = query->since_spec ? query->since_spec->evaluate(
-                                      ctx.clockAtStartOfQuery.position(),
-                                      ctx.lastAgeOutTickValueAtStartOfQuery,
-                                      &root->inner.cursors)
-                                : QuerySince{};
+  ctx.since = query->since_spec
+      ? query->since_spec->evaluate(
+            ctx.clockAtStartOfQuery.position(),
+            ctx.lastAgeOutTickValueAtStartOfQuery,
+            &root->inner.cursors,
+            root->view()->canResumeOtherProcessClocks())
+      : QuerySince{};
 
   // If there is a since spec, check if it is fresh instance
   // By default new instances are fresh instance
@@ -540,6 +546,15 @@ QueryResult w_query_execute(
     } else {
       ctx.freshInstanceCause = "New instance";
     }
+  } else if (sinceClockOrigin(ctx.since) == ClockOrigin::Resumed) {
+    const auto& clock = std::get<ClockSpec::Clock>(query->since_spec->spec);
+    logf(
+        ERR,
+        "Resuming clock c:{}:{}:{}:{} from another watchman process\n",
+        clock.start_time,
+        clock.pid,
+        clock.position.rootNumber,
+        clock.position.ticks);
   }
 
   if (query->bench_iterations > 0) {

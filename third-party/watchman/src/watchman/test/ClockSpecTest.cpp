@@ -25,9 +25,13 @@ class ClockSpecTest : public testing::Test {
     pid_ = thisProcess.pid;
   }
 
-  static QuerySince::Clock evaluate(const std::string& clock) {
+  static QuerySince::Clock evaluate(
+      const std::string& clock,
+      bool resumeOtherProcessClocks = false) {
     return std::get<QuerySince::Clock>(
-        ClockSpec{typed_string_to_json(clock.c_str())}.evaluate(kNow, 0).since);
+        ClockSpec{typed_string_to_json(clock.c_str())}
+            .evaluate(kNow, 0, nullptr, resumeOtherProcessClocks)
+            .since);
   }
 
   std::string clockFromThisProcess(ClockPosition position) const {
@@ -59,8 +63,35 @@ TEST_F(ClockSpecTest, clockFromThisProcessResumesFromItsTicks) {
 TEST_F(ClockSpecTest, clockFromEarlierProcessIsFreshInstance) {
   auto since = evaluate(clockFromEarlierProcess({7, 40}));
 
-  // FIXME: a view whose clocks survive a watchman restart should be able to
-  // resume from this clock.
+  EXPECT_TRUE(since.is_fresh_instance);
+  EXPECT_EQ(since.origin, ClockOrigin::OtherProcess);
+}
+
+TEST_F(ClockSpecTest, clockFromEarlierProcessResumesWhenViewAllowsIt) {
+  auto since = evaluate(clockFromEarlierProcess({7, 40}), true);
+
+  EXPECT_FALSE(since.is_fresh_instance);
+  EXPECT_EQ(since.ticks, 40);
+  EXPECT_EQ(since.origin, ClockOrigin::Resumed);
+}
+
+TEST_F(ClockSpecTest, clockFromEarlierProcessForAnotherRootIsNotResumed) {
+  auto since = evaluate(clockFromEarlierProcess({8, 40}), true);
+
+  EXPECT_TRUE(since.is_fresh_instance);
+  EXPECT_EQ(since.origin, ClockOrigin::OtherRoot);
+}
+
+TEST_F(ClockSpecTest, clockWithoutProcessIsNotResumed) {
+  auto since = evaluate("c:0:0:7:40", true);
+
+  EXPECT_TRUE(since.is_fresh_instance);
+  EXPECT_EQ(since.origin, ClockOrigin::OtherProcess);
+}
+
+TEST_F(ClockSpecTest, clockAheadOfViewIsNotResumed) {
+  auto since = evaluate(clockFromEarlierProcess({7, 200}), true);
+
   EXPECT_TRUE(since.is_fresh_instance);
   EXPECT_EQ(since.origin, ClockOrigin::OtherProcess);
 }

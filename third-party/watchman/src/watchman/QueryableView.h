@@ -58,6 +58,15 @@ class QueryableView : public std::enable_shared_from_this<QueryableView> {
       int64_t& dirs,
       std::chrono::seconds minAge);
 
+  /**
+   * Whether a clock that another watchman process gave out for this root still
+   * names a position this view can answer from, so a query can resume from it
+   * instead of starting over with a fresh instance.
+   */
+  virtual bool canResumeOtherProcessClocks() const {
+    return false;
+  }
+
   virtual folly::SemiFuture<folly::Unit> waitForSettle(
       std::chrono::milliseconds settle_period) = 0;
   virtual CookieSync::SyncResult syncToNow(
