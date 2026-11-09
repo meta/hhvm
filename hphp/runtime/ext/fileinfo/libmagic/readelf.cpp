@@ -784,7 +784,8 @@ core:
 
         cname = (unsigned char *)
             &nbuf[doff + prpsoffsets(i)];
-        for (cp = cname; *cp && isprint(*cp); cp++)
+        // Bound the scan to the buffer; the name need not be NUL-terminated.
+        for (cp = cname; cp < nbuf + size && *cp && isprint(*cp); cp++)
           continue;
         /*
          * Linux apparently appends a space at the end

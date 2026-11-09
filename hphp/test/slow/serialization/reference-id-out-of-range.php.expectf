@@ -1,0 +1,36 @@
+dict(2) {
+  [0]=>
+  string(1) "x"
+  [1]=>
+  string(1) "x"
+}
+dict(2) {
+  [0]=>
+  string(1) "x"
+  [1]=>
+  string(1) "x"
+}
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;R:4294967298;}]. Id 4294967298 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;r:4294967298;}]. Id 4294967298 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;R:-4294967294;}]. Id -4294967294 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;r:-4294967294;}]. Id -4294967294 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;R:0;}]. Id 0 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;r:0;}]. Id 0 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;R:9223372036854775807;}]. Id 9223372036854775807 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
+
+Notice: Unable to unserialize: [a:2:{i:0;s:1:"x";i:1;r:9223372036854775807;}]. Id 9223372036854775807 out of range. in %s/test/slow/serialization/reference-id-out-of-range.php on line 17
+bool(false)
