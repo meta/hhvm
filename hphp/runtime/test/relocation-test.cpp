@@ -883,10 +883,37 @@ TEST(Relocation, PreserveFarCbzMapsFarJumpToRelocatedFarJump) {
   );
 }
 
+/*
+ * Which instruction inside a far-JCC window carries metadata that must stop the
+ * window from being folded.  The far-jump slot matters because an inline
+ * smashable jmp and a veneer have the same (ADRP+)LDR+BR shape as the window's
+ * tail: bytes alone cannot tell a real far JCC from a conditional branch that
+ * merely skips over one, so only the metadata can.
+ */
+enum class MarkedSite {
+  None,
+  Branch,
+  FarJumpSmashable,
+  FarJumpVeneer,
+};
+
+void markSite(CGMeta& meta, MarkedSite marked, TCA farJump) {
+  switch (marked) {
+    case MarkedSite::FarJumpSmashable:
+      meta.smashableLocations.insert(farJump);
+      break;
+    case MarkedSite::FarJumpVeneer:
+      meta.veneerAddrs.insert(farJump);
+      break;
+    case MarkedSite::None:
+    case MarkedSite::Branch:
+      break;
+  }}
+
 void checkRelocateSingleBitTestFarJcc(vixl::Register reg,
                                       uint8_t bit,
                                       bool isTbnz,
-                                      bool smashable = false,
+                                      MarkedSite marked = MarkedSite::None,
                                       bool testBranchAndB = false) {
   CodeBlock main;
   DataBlock data;
@@ -901,14 +928,14 @@ void checkRelocateSingleBitTestFarJcc(vixl::Register reg,
   MacroAssembler a { main };
   a.Tst(reg, uint64_t{1} << bit);
   auto const branch = main.frontier();
-  if (smashable) meta.smashableLocations.insert(branch);
+  if (marked == MarkedSite::Branch) meta.smashableLocations.insert(branch);
   auto const farJump = emitFarBccSequence(
     a,
     main,
     meta,
     isTbnz ? eq : ne
   );
-  if (smashable) meta.veneerAddrs.insert(farJump);
+  markSite(meta, marked, farJump);
   auto const fallthrough = main.frontier();
   emitUnrelatedFallthroughBranch(a);
   if (testBranchAndB) emitNonNopPaddingPastCompareBranchRange(a);
@@ -928,7 +955,7 @@ void checkRelocateSingleBitTestFarJcc(vixl::Register reg,
   auto const relocated = Instruction::Cast(main.toDestAddress(end));
   relocate(rel, main, start, end, main, meta, ai);
 
-  if (smashable) {
+  if (marked != MarkedSite::None) {
     auto const relocatedFarJump = end + 2 * kInstructionSize;
     auto const relocatedFallthrough =
       relocatedFarJump + (fallthrough - farJump);
@@ -1028,18 +1055,33 @@ TEST(Relocation, OptimizeSingleBitTestFarJccToTbnzl) {
 }
 
 TEST(Relocation, OptimizeSingleBitTestFarJccToTbnzB) {
-  checkRelocateSingleBitTestFarJcc(x0, 63, false, false, true);
+  checkRelocateSingleBitTestFarJcc(x0, 63, false, MarkedSite::None, true);
 }
 
 TEST(Relocation, OptimizeSingleBitTestFarJccToTbzB) {
-  checkRelocateSingleBitTestFarJcc(w0, 31, true, false, true);
+  checkRelocateSingleBitTestFarJcc(w0, 31, true, MarkedSite::None, true);
 }
 
 TEST(Relocation, PreserveSmashableSingleBitTestFarJcc) {
   auto const old = Cfg::Jit::ArmDisableAdrpLdrShortening;
   Cfg::Jit::ArmDisableAdrpLdrShortening = true;
   SCOPE_EXIT { Cfg::Jit::ArmDisableAdrpLdrShortening = old; };
-  checkRelocateSingleBitTestFarJcc(x0, 63, false, true);
+  checkRelocateSingleBitTestFarJcc(x0, 63, false, MarkedSite::Branch);
+}
+
+// The window's (ADRP; LDR; BR) tail can be an independent inline smashable jmp
+// that the conditional branch merely skips over.  Folding the window would
+// destroy that site and drop its start from the relocation map, leaving its
+// bind pointing into the stale source buffer.
+TEST(Relocation, PreserveSmashableJmpInSingleBitTestFarJccWindow) {
+  checkRelocateSingleBitTestFarJcc(
+    x0, 63, false, MarkedSite::FarJumpSmashable
+  );
+}
+
+// A veneer has the same tail shape and is just as unrecoverable once folded.
+TEST(Relocation, PreserveVeneerInSingleBitTestFarJccWindow) {
+  checkRelocateSingleBitTestFarJcc(x0, 63, false, MarkedSite::FarJumpVeneer);
 }
 
 template<class Check>
@@ -2180,7 +2222,7 @@ TEST(Relocation, OptimizeSmashedJccRewritesFarVeneer) {
   );
 }
 
-TEST(Relocation, OptimizeBccAdrpLdrBrToBcc) {
+void checkBccAdrpLdrBr(MarkedSite marked) {
   if (!arch::any<arch::ARM>()) {
     SUCCEED();
     return;
@@ -2213,6 +2255,7 @@ TEST(Relocation, OptimizeBccAdrpLdrBrToBcc) {
   auto const literal = main.frontier();
   main.dword(makeTarget32(target));
   auto const end = main.frontier();
+  markSite(meta, marked, loadStart);
 
   auto const logicalAdrp = Instruction::Cast(loadStart);
   auto const adrp = Instruction::Cast(main.toDestAddress(loadStart));
@@ -2225,12 +2268,34 @@ TEST(Relocation, OptimizeBccAdrpLdrBrToBcc) {
 
   auto const relocated =
     Instruction::Cast(main.toDestAddress(rel.adjustedAddressAfter(jcc)));
-  EXPECT_TRUE(relocated->IsCondBranchImm());
+  ASSERT_TRUE(relocated->IsCondBranchImm());
+
+  if (marked != MarkedSite::None) {
+    // Not folded: the branch keeps its original condition and still skips the
+    // tail rather than inheriting the far jump's target.
+    EXPECT_EQ(static_cast<Condition>(relocated->ConditionBranch()), lt);
+    return;
+  }
+
   EXPECT_EQ(static_cast<Condition>(relocated->ConditionBranch()), ge);
   EXPECT_EQ(
     relocated->GetImmPCOffsetTarget(),
     Instruction::CastConst(main.toDestAddress(rel.adjustedAddressAfter(target)))
   );
+}
+
+TEST(Relocation, OptimizeBccAdrpLdrBrToBcc) {
+  checkBccAdrpLdrBr(MarkedSite::None);
+}
+
+// As for the TST window: the (ADRP; LDR; BR) tail can be an independent inline
+// smashable jmp or a veneer that the conditional branch merely skips over.
+TEST(Relocation, PreserveSmashableJmpInFarBccWindow) {
+  checkBccAdrpLdrBr(MarkedSite::FarJumpSmashable);
+}
+
+TEST(Relocation, PreserveVeneerInFarBccWindow) {
+  checkBccAdrpLdrBr(MarkedSite::FarJumpVeneer);
 }
 
 TEST(Relocation, AdjustAdrpLdrLiteralAndShrinkAdrpToLdr) {

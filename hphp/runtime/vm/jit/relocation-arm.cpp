@@ -298,6 +298,8 @@ void adjustLiteralLoadImmediate(RelocationInfo& rel,
   }
 }
 
+bool isFarCondBranch(const Instruction* b, const Instruction* end);
+
 bool optimizeAdrpLiteralLoad(Env& env,
                              TCA srcAddr,
                              TCA destAddr,
@@ -309,6 +311,23 @@ bool optimizeAdrpLiteralLoad(Env& env,
   auto const src = Instruction::Cast(srcAddrActual);
 
   if (env.far.contains(src)) return false;
+
+  /*
+   * Shortening a standalone smashable is the intended flow -- it is emitted
+   * far so that relocation can bring it back. But when the site sits in the
+   * tail of a conditional-branch window, the head's relocation reasons about
+   * the window as a fixed shape, so shrinking the tail moves the ground under
+   * it. Same relationship `optimizeFarJmp()` declines on, one instruction
+   * apart.
+   */
+  if ((env.meta.smashableLocations.contains(srcAddr) ||
+       env.meta.veneerAddrs.contains(srcAddr)) &&
+      srcAddr > env.start) {
+    auto const headAddr = srcAddr - kInstructionSize;
+    auto const head = Instruction::Cast(env.srcBlock.toDestAddress(headAddr));
+    if (isFarCondBranch(head, env.srcEndActual)) return false;
+  }
+
   auto const srcLoad = LoadLiteral::at(src, env.srcEndActual);
   if (!srcLoad || !srcLoad.isFar()) return false;
 
@@ -555,6 +574,30 @@ struct FarCondBranchDetails {
   CondBranchDetails branch;
 };
 
+/*
+ * A far JCC and "a conditional branch that merely skips over an independent
+ * site" are byte-identical: the window's (ADRP; LDR; BR) tail is exactly the
+ * shape of an inline smashable jmp, and of a veneer.  Only the metadata tells
+ * them apart.  Folding the window destroys whichever site sits in the tail and
+ * drops its start address from the relocation map, so its bind keeps pointing
+ * at the stale source buffer -- and the fold reads the site's unbound
+ * placeholder literal as if it were a branch target.
+ *
+ * The window head is the caller's business; it is a smashable's own relocation
+ * there, not a collision.
+ */
+bool farCondBranchTailIsClear(const Env& env, ConstCodeAddress branchAddr) {
+  auto const tailEnd = branchAddr + (kFarJccInstrs << kInstructionSizeLog2);
+  for (auto addr = branchAddr + kInstructionSize;
+       addr < tailEnd;
+       addr += kInstructionSize) {
+    auto const key = const_cast<TCA>(addr);
+    if (env.meta.smashableLocations.contains(key)) return false;
+    if (env.meta.veneerAddrs.contains(key)) return false;
+  }
+  return true;
+}
+
 bool getFarCondBranchDetails(Env& env,
                              const Instruction* branch,
                              const Instruction* branchFrom,
@@ -562,6 +605,11 @@ bool getFarCondBranchDetails(Env& env,
                              TCA destAddr,
                              FarCondBranchDetails& out) {
   if (!isFarCondBranch(branch, env.srcEndActual)) return false;
+
+  if (!farCondBranchTailIsClear(
+        env, reinterpret_cast<ConstCodeAddress>(branchFrom))) {
+    return false;
+  }
 
   auto const literal = farJmpLiteralAddress(
     branch->GetNextInstruction(), branchFrom->GetNextInstruction()
@@ -765,6 +813,7 @@ bool optimizeFarCondBranch(Env& env, TCA srcAddr, TCA destAddr,
       )) {
     return false;
   }
+
   // NB: the imm offset was computed relative to destAddr, but the more general
   // case, which handles int26, uses imm-1 because of the extra instruction that
   // it requires.
@@ -857,6 +906,23 @@ bool optimizeFarJmp(Env& env, TCA srcAddr, TCA destAddr,
   if (env.meta.smashableLocations.contains(srcAddr)) return false;
   if (env.meta.veneerAddrs.contains(srcAddr)) return false;
   if (env.far.contains(src)) return false;
+
+  /*
+   * This tail may be the second half of a far JCC whose conditional head is
+   * itself a marked site. The head's own relocation owns the whole sequence,
+   * so folding the tail out from under it destroys the shape that head's
+   * smash paths assume. Checking only this address misses that, because the
+   * marker sits one instruction earlier.
+   */
+  if (srcAddr > env.start) {
+    auto const headAddr = srcAddr - kInstructionSize;
+    if (env.meta.smashableLocations.contains(headAddr) ||
+        env.meta.veneerAddrs.contains(headAddr)) {
+      auto const head =
+        Instruction::Cast(env.srcBlock.toDestAddress(headAddr));
+      if (isFarCondBranch(head, env.srcEndActual)) return false;
+    }
+  }
 
   if (!isFarJmp(src, env.srcEndActual)) return false;
 
@@ -1449,6 +1515,25 @@ size_t relocateImpl(Env& env) {
         if (!relocated && src->IsNop() && !env.far.contains(src)) {
           destCount = 0;
           env.updateInternalRefs = true;
+        }
+
+        /*
+         * No rewrite may swallow the start of a smashable site or a veneer.
+         * Swallowing one destroys the site and leaves its address unmapped, so
+         * every bind still naming it patches a stale source address or, once
+         * some later pass supplies a mapping, an unrelated instruction --
+         * either way silently, in an opt build.  A rewrite legitimately
+         * consumes the site it starts at, so only the interior words count.
+         */
+        for (size_t i = 1; i < srcCount; ++i) {
+          auto const swallowed = srcAddr + (i << kInstructionSizeLog2);
+          always_assert_flog(
+            !env.meta.smashableLocations.contains(swallowed) &&
+            !env.meta.veneerAddrs.contains(swallowed),
+            "relocate: rewrite at {} spanning {} instructions swallows the "
+            "start of a smashable or veneer at {}\n",
+            srcAddr, srcCount, swallowed
+          );
         }
       }
 
