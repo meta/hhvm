@@ -200,7 +200,6 @@ type t = {
   tco_tests_bypass_visibility_static_properties: bool;
   tco_ban_this_refinement_in_generic_class: bool;
   tco_missing_targs_as_fresh_generics: bool;
-  tco_private_member_variance_check: bool;
   tco_ban_memoize_erased_generic_return: bool;
   tco_list_assign_right_to_left: bool;
   tco_foreach_key_after_value: bool;
@@ -318,7 +317,6 @@ let default =
     tco_tests_bypass_visibility_static_properties = false;
     tco_ban_this_refinement_in_generic_class = false;
     tco_missing_targs_as_fresh_generics = false;
-    tco_private_member_variance_check = false;
     tco_ban_memoize_erased_generic_return = false;
     tco_list_assign_right_to_left = false;
     tco_foreach_key_after_value = false;
@@ -433,7 +431,6 @@ let set
     ?tco_tests_bypass_visibility_static_properties
     ?tco_ban_this_refinement_in_generic_class
     ?tco_missing_targs_as_fresh_generics
-    ?tco_private_member_variance_check
     ?tco_ban_memoize_erased_generic_return
     ?tco_list_assign_right_to_left
     ?tco_foreach_key_after_value
@@ -750,10 +747,6 @@ let set
       setting
         tco_missing_targs_as_fresh_generics
         options.tco_missing_targs_as_fresh_generics;
-    tco_private_member_variance_check =
-      setting
-        tco_private_member_variance_check
-        options.tco_private_member_variance_check;
     tco_ban_memoize_erased_generic_return =
       setting
         tco_ban_memoize_erased_generic_return

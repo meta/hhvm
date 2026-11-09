@@ -125,10 +125,7 @@ let visitor ctx =
           else
             None);
           Some Class_pointer_check.handler;
-          (if Typechecker_options.private_member_variance_check tcopt then
-            Some Private_member_variance_check.handler
-          else
-            None);
+          Some Private_member_variance_check.handler;
           Some No_disjoint_union_check.handler;
           Some Simplihack_check.handler;
         ]

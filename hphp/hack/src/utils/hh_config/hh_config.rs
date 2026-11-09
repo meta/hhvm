@@ -623,10 +623,6 @@ impl HhConfig {
                 "missing_targs_as_fresh_generics",
                 default.tco_missing_targs_as_fresh_generics,
             )?,
-            tco_private_member_variance_check: hhconfig.get_bool_or(
-                "private_member_variance_check",
-                default.tco_private_member_variance_check,
-            )?,
             tco_ban_memoize_erased_generic_return: hhconfig.get_bool_or(
                 "ban_memoize_erased_generic_return",
                 default.tco_ban_memoize_erased_generic_return,

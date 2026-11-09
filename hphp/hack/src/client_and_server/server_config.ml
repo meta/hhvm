@@ -633,8 +633,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
          config)
     ?tco_missing_targs_as_fresh_generics:
       (bool_opt Config_keys.Hhconfig.missing_targs_as_fresh_generics config)
-    ?tco_private_member_variance_check:
-      (bool_opt Config_keys.Hhconfig.private_member_variance_check config)
     ?tco_ban_memoize_erased_generic_return:
       (bool_opt Config_keys.Hhconfig.ban_memoize_erased_generic_return config)
     ?tco_list_assign_right_to_left:

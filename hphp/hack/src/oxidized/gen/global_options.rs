@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<a85f1976b63c8041fd1186eabefe7782>>
+// @generated SignedSource<<679c94e9fb3738ac1e4e9dd548dd2c25>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -413,8 +413,6 @@ pub struct GlobalOptions {
     pub tco_ban_this_refinement_in_generic_class: bool,
     /// Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables.
     pub tco_missing_targs_as_fresh_generics: bool,
-    /// Error when a private member that mentions a variant class type parameter is written or called through a receiver other than `$this`.
-    pub tco_private_member_variance_check: bool,
     /// Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics.
     pub tco_ban_memoize_erased_generic_return: bool,
     /// Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right.
