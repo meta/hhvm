@@ -246,36 +246,47 @@ void requestShutdown() {
 
 bool modulesInitialised() { return s_initialized; }
 
-void serialize(jit::ProfDataSerializer& ser, const char* onlyExtension) {
-  std::vector<std::pair<Extension*, BlobEncoder>> extData;
+SerializedExtensions serialize(const char* onlyExtension) {
+  SerializedExtensions result;
   for (auto& ext : s_ordered) {
-    if (onlyExtension && strcmp(ext->getName(), onlyExtension)) continue;
+    auto const name = ext->getName();
+    if (onlyExtension && strcmp(name, onlyExtension)) continue;
     BlobEncoder sd;
     ext->serialize(sd);
     if (!sd.size()) continue;
-    extData.push_back({ext, std::move(sd)});
+    result.push_back({name, sd.take()});
   }
+  return result;
+}
+
+bool deserialize(const SerializedExtension& data) {
+  auto const ext = get(data.name.c_str());
+  if (!ext) return false;
+  BlobDecoder sd(data.payload.data(), data.payload.size());
+  ext->deserialize(sd);
+  return true;
+}
+
+void serialize(jit::ProfDataSerializer& ser, const char* onlyExtension) {
+  auto const extData = serialize(onlyExtension);
   uint32_t len = extData.size();
   jit::write_raw<uint32_t>(ser, len);
   for (const auto& ext : extData) {
-    jit::write_string(ser, ext.first->getName());
-    jit::write_raw(ser, safe_cast<uint32_t>(ext.second.size()));
-    jit::write_raw(ser, ext.second.data(), ext.second.size());
+    jit::write_string(ser, ext.name.c_str());
+    jit::write_raw(ser, safe_cast<uint32_t>(ext.payload.size()));
+    jit::write_raw(ser, ext.payload.data(), ext.payload.size());
   }
 }
 
 void deserialize(jit::ProfDataDeserializer& des) {
   auto const nExts = jit::read_raw<uint32_t>(des);
   for (uint32_t i = 0; i < nExts; ++i) {
-    std::string name = jit::read_cpp_string(des);
+    SerializedExtension data;
+    data.name = jit::read_cpp_string(des);
     auto const size = jit::read_raw<uint32_t>(des);
-    std::string data;
-    data.resize(size);
-    jit::read_raw(des, data.data(), size);
-    auto ext = get(name.data());
-    if (!ext) continue;
-    BlobDecoder sd(data.data(), data.size());
-    ext->deserialize(sd);
+    data.payload.resize(size);
+    jit::read_raw(des, data.payload.data(), size);
+    deserialize(data);
   }
 }
 

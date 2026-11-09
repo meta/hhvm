@@ -18,13 +18,20 @@
 #include "hphp/runtime/ext/extension-registry.h"
 
 #include <cstdio>
+#include <cstring>
+#include <stdexcept>
 #include <vector>
 
+#include <folly/Range.h>
+#include <folly/Varint.h>
+
 #include "hphp/util/assertions.h"
+#include "hphp/util/blob-encoder.h"
 #include "hphp/util/trace.h"
 #include "hphp/runtime/ext/apache/ext_apache.h"
 #include "hphp/runtime/ext/apc/ext_apc.h"
 #include "hphp/runtime/base/program-functions.h"
+#include "hphp/runtime/base/tv-shared.h"
 #include "hphp/runtime/vm/builtin-symbol-map.h"
 #include "hphp/runtime/vm/native-func-table.h"
 #include "hphp/runtime/vm/runtime-compiler.h"
@@ -141,6 +148,22 @@ void Extension::loadDeclsFrom(const std::string& name) {
 }
 
 void Extension::deserialize(BlobDecoder& sd) {
+  auto bytes = folly::ByteRange{sd.data(), sd.remaining()};
+  auto const valid = [&] {
+    if (bytes.size() < sizeof(uint32_t)) return false;
+    uint32_t count;
+    std::memcpy(&count, bytes.data(), sizeof(count));
+    bytes.advance(sizeof(count));
+    if (count > bytes.size()) return false;
+    for (uint32_t i = 0; i < count; ++i) {
+      auto const size = folly::tryDecodeVarint(bytes);
+      if (!size || *size > bytes.size()) return false;
+      bytes.advance(*size);
+    }
+    return bytes.empty();
+  }();
+  if (!valid) throw std::runtime_error("Invalid extension warmup data");
+
   auto init = sd.readArrayInitWithLazyCount<VecInit>(
     [&](VecInit& v) {
       std::string_view sv;
@@ -156,7 +179,7 @@ void Extension::deserialize(BlobDecoder& sd) {
     Trace::ftraceRelease("Extension::deserialize [{}]: {} warmup keys\n", m_name, d.size());
   }
   MakeSharedEnv env {nullptr, nullptr};
-  setWarmupData(d->makeShared(env, false));
+  setWarmupData(MakeSharedArray(d.get(), env));
 }
 
 /////////////////////////////////////////////////////////////////////////////
