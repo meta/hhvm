@@ -51,6 +51,25 @@ const std::vector<w_string>& getUnconditionalLogFilePrefixes() {
       computeUnconditionalLogFilePrefixes();
   return names;
 }
+
+ClockOrigin sinceClockOrigin(const QuerySince& since) {
+  auto* sinceClock = std::get_if<QuerySince::Clock>(&since.since);
+  return sinceClock ? sinceClock->origin : ClockOrigin::None;
+}
+
+const char* clockOriginName(ClockOrigin origin) {
+  switch (origin) {
+    case ClockOrigin::None:
+      return "";
+    case ClockOrigin::SameProcess:
+      return "same_process";
+    case ClockOrigin::OtherProcess:
+      return "other_process";
+    case ClockOrigin::OtherRoot:
+      return "other_root";
+  }
+  return "";
+}
 } // namespace
 
 /* Query evaluator */
@@ -293,6 +312,8 @@ static void execute_common(
       if (!ctx->freshInstanceCause.empty()) {
         queryExecute->fresh_instance_cause = ctx->freshInstanceCause;
       }
+      queryExecute->since_clock_eval =
+          clockOriginName(sinceClockOrigin(ctx->since));
 
       getLogger()->logEvent(*queryExecute);
     }

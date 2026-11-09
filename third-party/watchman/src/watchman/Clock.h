@@ -22,13 +22,31 @@ struct ClockStamp {
   time_t timestamp;
 };
 
+/**
+ * Where the clock in a since clockspec came from, relative to this watchman
+ * process and the root's current instance.
+ */
+enum class ClockOrigin {
+  // No since, or a timestamp or named cursor since.
+  None,
+  SameProcess,
+  // Not from this process, but it has the root's current root number. Only
+  // EdenFS root numbers (mount generations) name the same root instance in
+  // every watchman process.
+  OtherProcess,
+  // Its root number is not the current one. Old-style clocks and scm since
+  // specs without a clock have root number 0.
+  OtherRoot,
+};
+
 struct QuerySince {
   struct Timestamp {
     time_t time;
   };
   struct Clock {
-    bool is_fresh_instance;
-    ClockTicks ticks;
+    bool is_fresh_instance{false};
+    ClockTicks ticks{0};
+    ClockOrigin origin{ClockOrigin::None};
   };
   std::variant<Timestamp, Clock> since;
 

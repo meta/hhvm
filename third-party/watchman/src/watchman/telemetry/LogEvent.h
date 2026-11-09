@@ -198,6 +198,7 @@ struct QueryExecute : public WatchmanEvent {
   std::string special_files;
   bool fresh_instance = false;
   std::string fresh_instance_cause;
+  std::string since_clock_eval;
   bool saved_state_missing = false;
   int64_t deduped = 0;
   int64_t results = 0;
@@ -222,6 +223,9 @@ struct QueryExecute : public WatchmanEvent {
     event.addBool("fresh_instance", fresh_instance);
     if (!query.empty()) {
       event.addString("fresh_instance_cause", fresh_instance_cause);
+    }
+    if (!since_clock_eval.empty()) {
+      event.addString("since_clock_eval", since_clock_eval);
     }
     event.addInt("deduped", deduped);
     event.addInt("results", results);

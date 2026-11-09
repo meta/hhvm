@@ -31,7 +31,7 @@ ClockSpec::ClockSpec(const json_ref& value) {
   auto parseClockString = [=, this](const char* str) {
     uint64_t start_time;
     int pid;
-    ClockRoot root_number;
+    ClockRoot root_number = 0;
     ClockTicks ticks;
     // Parse a >= 2.8.2 version clock string
     if (sscanf(
@@ -141,6 +141,7 @@ QuerySince ClockSpec::evaluate(
         QuerySince::Clock since_clock;
         if (clock.start_time == proc_start_time && clock.pid == proc_pid &&
             clock.position.rootNumber == position.rootNumber) {
+          since_clock.origin = ClockOrigin::SameProcess;
           since_clock.is_fresh_instance = clock.position.ticks < lastAgeOutTick;
           if (since_clock.is_fresh_instance) {
             since_clock.ticks = 0;
@@ -151,6 +152,9 @@ QuerySince ClockSpec::evaluate(
           // If the pid, start time or root number don't match, they asked a
           // different incarnation of the server or a different instance of this
           // root, so we treat them as having never spoken to us before.
+          since_clock.origin = clock.position.rootNumber == position.rootNumber
+              ? ClockOrigin::OtherProcess
+              : ClockOrigin::OtherRoot;
           since_clock.is_fresh_instance = true;
           since_clock.ticks = 0;
         }

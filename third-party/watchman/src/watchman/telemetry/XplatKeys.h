@@ -88,6 +88,7 @@ inline constexpr std::string_view kMetadata = "metadata";
 inline constexpr std::string_view kProperties = "properties";
 inline constexpr std::string_view kSpecialFiles = "special_files";
 inline constexpr std::string_view kFreshInstanceCause = "fresh_instance_cause";
+inline constexpr std::string_view kSinceClockEval = "since_clock_eval";
 inline constexpr std::string_view kQuery = "query";
 inline constexpr std::string_view kGenerator = "generator";
 
