@@ -120,8 +120,6 @@ module Hhconfig = struct
 
   let constraint_method_call = key "constraint_method_call"
 
-  let enable_eqeqeq_refinement_filter = key "enable_eqeqeq_refinement_filter"
-
   let disable_physical_equality = key "disable_physical_equality"
 
   let disallow_discarded_nullable_awaitables =

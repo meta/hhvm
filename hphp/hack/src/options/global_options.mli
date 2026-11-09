@@ -249,8 +249,6 @@ type t = {
   tco_autocomplete_mode: bool;  (** Are we running in autocomplete mode ? *)
   tco_extended_reasons: extended_reasons_config option;
       (** Controls whether we retain the full path for reasons or only simple witnesses *)
-  tco_enable_eqeqeq_refinement_filter: bool;
-      (** Filter the types used for strict equality intersection refinement. *)
   tco_disable_physical_equality: bool;
       (** If set to true, this disables the use of physical equality in subtyping *)
   hack_warnings: int none_or_all_except;  (** turn on hack warnings *)
@@ -402,7 +400,6 @@ val set :
   ?dump_tasts:string list ->
   ?tco_autocomplete_mode:bool ->
   ?tco_extended_reasons:extended_reasons_config ->
-  ?tco_enable_eqeqeq_refinement_filter:bool ->
   ?tco_disable_physical_equality:bool ->
   ?hack_warnings:int none_or_all_except ->
   ?warnings_default_all:bool ->

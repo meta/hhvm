@@ -110,8 +110,6 @@ module Hhconfig : sig
 
   val constraint_method_call : string
 
-  val enable_eqeqeq_refinement_filter : string
-
   val disable_physical_equality : string
 
   val disallow_discarded_nullable_awaitables : string
