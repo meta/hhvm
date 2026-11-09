@@ -38,10 +38,10 @@ size_t smashableCmpqLen() {
   return ARCH_SWITCH_CALL(smashableCmpqLen);
 }
 size_t smashableCallLen() {
-  return ARCH_SWITCH_CALL(smashableCallLen);
+  return ARCH_SWITCH_CALL(smashableCallLenActual);
 }
 size_t smashableJmpLen() {
-  return ARCH_SWITCH_CALL(smashableJmpLen);
+  return ARCH_SWITCH_CALL(smashableJmpLenActual);
 }
 size_t smashableJccLen() {
   return ARCH_SWITCH_CALL(smashableJccLen);
@@ -56,13 +56,15 @@ TCA emitSmashableMovq(CodeBlock& cb, CGMeta& fixups, uint64_t imm,
                           d,
                           emitFarLiteral);
 }
-TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target) {
+TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target,
+                      bool emitFarLiteral) {
   always_assert(target);
-  return ARCH_SWITCH_CALL(emitSmashableCall, cb, fixups, target);
+  return ARCH_SWITCH_CALL(emitSmashableCall, cb, fixups, target, emitFarLiteral);
 }
-TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target) {
+TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target,
+                     bool emitFarLiteral) {
   always_assert(target);
-  return ARCH_SWITCH_CALL(emitSmashableJmp, cb, fixups, target);
+  return ARCH_SWITCH_CALL(emitSmashableJmp, cb, fixups, target, emitFarLiteral);
 }
 TCA emitSmashableJcc(CodeBlock& cb, CGMeta& fixups, TCA target,
                      ConditionCode cc) {
@@ -131,13 +133,22 @@ ConditionCode smashableJccCond(TCA inst) {
 }
 
 /*
- * Right now, our smashable calls are always a known size.  If this ever
- * changes, this implementation will need to be architecture-dependent (and
- * the sizeof* routine will probably need to take a TCA).
+ * Recover a smashable call from its return address by subtracting a fixed
+ * length.  ARM's inline call is not a fixed *sequence* -- a far literal puts an
+ * ADRP in front of the LDR -- but the ADRP is a prefix, so `ret - len` always
+ * lands on the LDR, and every ARM parser accepts a site named by its LDR and
+ * walks back to the ADRP itself (see smashableInlineLoad()).  The result is
+ * therefore the site start for a near call and the LDR for a far one, which is
+ * what all the smashable*Target/smash* entry points expect.
  */
 TCA smashableCallFromRet(TCA ret) {
   always_assert(ret);
   return ret - smashableCallLen();
+}
+
+TCA smashableCallStart(TCA inst) {
+  always_assert(inst);
+  return ARCH_SWITCH_CALL(smashableCallStart, inst);
 }
 
 bool optimizeSmashedCall(TCA inst) {

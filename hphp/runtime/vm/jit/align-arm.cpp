@@ -43,7 +43,23 @@ struct AlignImpl {
    * the literal which is stored out of line.
    */
   static constexpr size_t SmashableAlignTo = 0;
-  static DECLARE_ALIGN_TABLE(s_table);
+  // SmashCall/SmashJmp use placeholder nbytes here because the real values
+  // come from smashable*LenActual() which reads Cfg flags unavailable at
+  // static-init time.  The templates (is_aligned/align) that read s_table
+  // directly are no-ops for these entries since SmashableAlignTo == 0.
+  // alignment_info() below computes the correct nbytes on the fly.
+  static constexpr AlignInfo s_table[] = {
+    { cache_line_size(),  cache_line_size(),      0 }, /* CacheLine */
+    { cache_line_size(),  cache_line_size() / 2,  0 }, /* CacheLineRoundUp */
+    { kJmpTargetAlign,    kJmpTargetAlign,        0 }, /* JmpTarget */
+    { 8,                  8,                      0 }, /* QWord Lit */
+    { SmashableAlignTo,   smashableMovqLen(),     kSmashMovqImmOff },
+    { SmashableAlignTo,   smashableCmpqLen(),     kSmashCmpqImmOff },
+    { SmashableAlignTo,   0,                      0 }, /* SmashCall placeholder */
+    { SmashableAlignTo,   0,                      0 }, /* SmashJmp placeholder */
+    { SmashableAlignTo,   smashableJccLen(),      0 }, /* SmashJcc */
+    { SmashableAlignTo,   smashableInterceptLen(), 0 },
+  };
 
   static void pad(CodeBlock& cb, AlignContext context, size_t bytes) {
     vixl::MacroAssembler a { cb };
@@ -86,10 +102,15 @@ void align(CodeBlock& cb, CGMeta* meta,
   return jit::align<AlignImpl>(cb, meta, alignment, context);
 }
 
-const AlignInfo& alignment_info(Alignment alignment) {
-  auto const idx = static_cast<uint32_t>(alignment);
-
-  return AlignImpl::s_table[idx];
+AlignInfo alignment_info(Alignment alignment) {
+  switch (alignment) {
+    case Alignment::SmashCall:
+      return { AlignImpl::SmashableAlignTo, smashableCallLenActual(), 0 };
+    case Alignment::SmashJmp:
+      return { AlignImpl::SmashableAlignTo, smashableJmpLenActual(), 0 };
+    default:
+      return AlignImpl::s_table[static_cast<uint32_t>(alignment)];
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

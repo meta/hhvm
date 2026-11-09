@@ -2343,6 +2343,33 @@ The format can be found in hphp/tools/configs/generate_configs.rs
   reload, a compare and a branchless faulting store per eliminated load, so it
   is for debugging only and must stay off in production.
 
+- bool Jit.ArmInlineSmashableCall = true, rehn
+
+  When true, ARM smashable Call instructions use the inline pattern
+  (LDR + BLR), embedding the indirect call in the instruction stream.
+  When false, the veneer pattern is used (BL to a separate
+  LDR + BR veneer).
+
+- bool Jit.ArmInlineSmashableJmp = true, rehn
+
+  When true, ARM smashable Jmp instructions use the inline pattern
+  (LDR + BR), embedding the indirect jump in the instruction stream.
+  When false, the veneer pattern is used (B to a separate
+  LDR + BR veneer).
+
+- bool Jit.ArmSmashLiteralOnly = false, rehn
+
+  When true, smashing an ARM call/jmp/jcc writes only the pooled literal and
+  leaves the branch indirect, instead of collapsing the site to a direct
+  branch once the target is in range. Collapsing is one-way: the literal
+  stops being what the branch reads, so a later re-smash of a still-tracked
+  site finds nothing to patch and is silently dropped. Callers that
+  legitimately re-smash -- rebinding a caller from a profiling prologue to an
+  optimized one, redirecting incoming branches before a translation is
+  reclaimed, installing a debugger guard -- get no effect. Staying indirect
+  keeps every site re-smashable for its whole life, at the cost of one
+  indirect branch per smashable site.
+
 - std::string Jit.LogAllInlineRegions = "", UNKNOWN
 
   Log the sizes and metadata for all translations in the TC broken

@@ -179,16 +179,22 @@ void registerFallbackJump(Venv& env, TCA jmp, ConditionCode cc) {
 }
 
 bool emit(Venv& env, const callphps& i) {
-  const auto call = emitSmashableCall(*env.cb, env.meta, i.target);
+  const auto call =
+    emitSmashableCall(*env.cb, env.meta, i.target,
+                      env.unit.farLiteralEnabled());
   setJmpTransID(env, call);
   env.meta.smashableCallData[call] = PrologueID(i.func, i.nargs);
-  setCallFuncId(env, call + smashableCallLen());
+  // The return address is the end of the emitted (variable-length) sequence;
+  // use the frontier so this stays correct for both near and far inline calls.
+  setCallFuncId(env, env.cb->frontier());
   return true;
 }
 
 bool emit(Venv& env, const callphpfe& i) {
   assertx(i.target.anyFuncEntry());
-  auto const call = emitSmashableCall(*env.cb, env.meta, env.cb->frontier());
+  auto const call =
+    emitSmashableCall(*env.cb, env.meta, env.cb->frontier(),
+                      env.unit.farLiteralEnabled());
   setJmpTransID(env, call);
   env.meta.smashableBinds.push_back({
     IncomingBranch::callFrom(call), i.target, SBInvOffset{0},
@@ -197,7 +203,9 @@ bool emit(Venv& env, const callphpfe& i) {
 }
 
 bool emit(Venv& env, const bindjmp& i) {
-  auto const jmp = emitSmashableJmp(*env.cb, env.meta, env.cb->frontier());
+  auto const jmp =
+    emitSmashableJmp(*env.cb, env.meta, env.cb->frontier(),
+                     env.unit.farLiteralEnabled());
   setJmpTransID(env, jmp);
   env.meta.smashableBinds.push_back({
     IncomingBranch::jmpFrom(jmp), i.target, i.spOff, false /* fallback */});
@@ -239,7 +247,9 @@ bool emit(Venv& env, const ldbindaddr& i) {
 }
 
 bool emit(Venv& env, const fallback& i) {
-  auto const jmp = emitSmashableJmp(*env.cb, env.meta, env.cb->frontier());
+  auto const jmp =
+    emitSmashableJmp(*env.cb, env.meta, env.cb->frontier(),
+                     env.unit.farLiteralEnabled());
   registerFallbackJump(env, jmp, CC_None);
   env.meta.smashableBinds.push_back({
     IncomingBranch::jmpFrom(jmp), i.target, i.spOff, true /* fallback */});

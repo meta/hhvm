@@ -42,8 +42,12 @@ constexpr size_t cache_line_size() { return 64; }
 
 /*
  * Get the AlignInfo for `alignment'; used by relocation.
+ *
+ * SmashCall/SmashJmp are computed on the fly because their nbytes depend on
+ * Cfg::Jit::ArmInlineSmashable{Call,Jmp}, which are only available after
+ * config parsing (i.e. after the static table is built).
  */
-const AlignInfo& alignment_info(Alignment alignment);
+AlignInfo alignment_info(Alignment alignment);
 
 ///////////////////////////////////////////////////////////////////////////////
 

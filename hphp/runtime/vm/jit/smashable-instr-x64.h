@@ -42,10 +42,15 @@ constexpr size_t smashableJmpLen()  { return 5; }
 constexpr size_t smashableJccLen()  { return 6; }
 constexpr size_t smashableInterceptLen () { return 2; }
 
+constexpr size_t smashableCallLenActual() { return smashableCallLen(); }
+constexpr size_t smashableJmpLenActual()  { return smashableJmpLen(); }
+
 TCA emitSmashableMovq(CodeBlock& cb, CGMeta& fixups, uint64_t imm,
                       PhysReg d, bool emitFarLiteral = false);
-TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target);
-TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target);
+TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target,
+                      bool emitFarLiteral);
+TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target,
+                     bool emitFarLiteral);
 TCA emitSmashableJcc(CodeBlock& cb, CGMeta& fixups, TCA target,
                      ConditionCode cc);
 void smashMovq(TCA inst, uint64_t imm);
@@ -60,6 +65,7 @@ uint64_t smashableMovqImm(TCA inst);
 uint32_t smashableCmpqImm(TCA inst);
 TCA smashableCallTarget(TCA inst);
 TCA smashableCallLiteral(TCA inst);
+inline TCA smashableCallStart(TCA inst) { return inst; }
 TCA smashableJmpTarget(TCA inst);
 TCA smashableJccTarget(TCA inst);
 ConditionCode smashableJccCond(TCA inst);

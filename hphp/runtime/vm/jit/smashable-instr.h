@@ -75,8 +75,10 @@ size_t smashableInterceptLen();
  */
 TCA emitSmashableMovq(CodeBlock& cb, CGMeta& fixups, uint64_t imm,
                       PhysReg d, bool emitFarLiteral = false);
-TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target);
-TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target);
+TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target,
+                      bool emitFarLiteral);
+TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target,
+                     bool emitFarLiteral);
 TCA emitSmashableJcc(CodeBlock& cb, CGMeta& fixups, TCA target,
                      ConditionCode cc);
 
@@ -121,6 +123,12 @@ ConditionCode smashableJccCond(TCA inst);
  * Obtain the address of a smashable call from its return IP.
  */
 TCA smashableCallFromRet(TCA ret);
+
+/*
+ * Normalize a smashable call address to the emitted sequence start used by
+ * profiling metadata. May return nullptr if the call has already collapsed.
+ */
+TCA smashableCallStart(TCA inst);
 
 /*
  * Optimize a smashable instruction in place after it has been smashed.  Returns

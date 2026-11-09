@@ -770,9 +770,9 @@ void Vgen::emitVeneers(Venv& env) {
           at.b(offset >> kInstructionSizeLog2, cond);
         }
       } else {
-        // The offset doesn't fit in a conditional jump. Hopefully it still fits
-        // in an unconditional jump, in which case we add an appendix to the
-        // veneer.
+        // The veneer is outside the conditional branch's range. Use an
+        // unconditional branch to an appendix that evaluates the condition.
+        // The appendix must be within the unconditional branch's range.
         offset += veneerSize;
         always_assert(is_int28(offset));
         // Add an appendix to the veneer, and jump to it instead.  The full
@@ -943,8 +943,11 @@ void Vgen::patch(Venv& env) {
     auto logicalLoadStart = p.instr;
     auto const target = env.addrs[p.target];
     assertx(target);
-    if (env.meta.smashableLocations.contains(p.instr)) {
-      assertx(possiblySmashableJmp(addr));
+    // Only the veneer form needs the redirect: its site is a B to the
+    // veneer that holds the literal.  An inline site already is the load and
+    // BR that patch() expects, so it is patched where it stands.
+    if (env.meta.smashableLocations.contains(p.instr) &&
+        possiblySmashableJmpVeneer(addr)) {
       auto const source = addr;
       // Update `addr' to point to the veneer.
       addr = TCA(vixl::Instruction::Cast(addr)->ImmPCOffsetTarget());
@@ -1338,7 +1341,7 @@ void Vgen::emit(const call& i) {
 
 void Vgen::emit(const calls& i) {
   trap_unaligned_stack();
-  auto const addr = emitSmashableCall(*env.cb, env.meta, i.target);
+  auto const addr = emitSmashableCall(*env.cb, env.meta, i.target, env.unit.farLiteralEnabled());
   // When using ROAR, track the native call so we can register them with ROAR
   // after the code is relocated into its final place in the code cache.
   //

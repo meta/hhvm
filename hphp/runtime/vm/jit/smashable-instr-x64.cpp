@@ -63,11 +63,13 @@ TCA emitSmashableMovq(CodeBlock& cb, CGMeta& fixups, uint64_t imm,
   return start;
 }
 
-TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target) {
+TCA emitSmashableCall(CodeBlock& cb, CGMeta& fixups, TCA target,
+                      bool /*emitFarLiteral*/) {
   return EMIT_BODY(cb, call, Call, target);
 }
 
-TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target) {
+TCA emitSmashableJmp(CodeBlock& cb, CGMeta& fixups, TCA target,
+                     bool /*emitFarLiteral*/) {
   return EMIT_BODY(cb, jmp, Jmp, target);
 }
 

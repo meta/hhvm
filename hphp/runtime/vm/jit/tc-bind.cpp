@@ -27,10 +27,13 @@ TRACE_SET_MOD(mcg)
 namespace HPHP::jit::tc {
 
 void bindCall(TCA toSmash, TCA start, Func* callee, int nArgs) {
+  if (start == nullptr) return;
+
+  toSmash = smashableCallStart(toSmash);
   // Return if already smashed.  Note that smashableCallTarget returns nullptr
   // when the target was smashed if the call was able to be optimized in place
   // (so that it doesn't look like a smashable call anymore).
-  if (start == nullptr || !smashableCallTarget(toSmash) ||
+  if (toSmash == nullptr || !smashableCallTarget(toSmash) ||
       smashableCallTarget(toSmash) == start) {
     return;
   }
