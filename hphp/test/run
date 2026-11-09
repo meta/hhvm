@@ -38,25 +38,5 @@ if ! hhvm_bin="$(get_hhvm_bin)"; then
     exit 1
 fi
 
-# Try to find a cli config.
-function get_cli_config {
-  local -a candidates
-  candidates=(
-    "/usr/local/hphpi/cli.hdf"
-  )
-
-  for config in "${candidates[@]}"; do
-    if [[ ! -d "$config" && -r "$config" ]]; then
-      echo "$config"
-      return
-    fi
-  done
-
-  return 1
-}
-
-if hhvm_cfg="$(get_cli_config)"; then
-  exec "$hhvm_bin" -c "$hhvm_cfg" -vBCCache.Enabled=false -vEval.EnableLogBridge=false -vEval.PreludePath= -vEval.AllowUngatedExec=true "$script_dir/run.php" "$@"
-else
-  exec "$hhvm_bin" -vBCCache.Enabled=false -vEval.EnableLogBridge=false "$script_dir/run.php" "$@"
-fi
+# run.php is short-lived, so JITing it costs more than it saves.
+exec "$hhvm_bin" -vBCCache.Enabled=false -vEval.EnableLogBridge=false -vEval.Jit=false "$script_dir/run.php" "$@"
