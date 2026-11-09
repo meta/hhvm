@@ -1411,6 +1411,7 @@ let saved_state_init
       | Error _ -> None
       | Ok (i, _, _) -> Some (yojson_of_loaded_info i))
     t;
+  Hack_event_logger.flush ();
   state_result >>| fun (loaded_info, changed_while_parsing, clock) ->
   Server_progress.write "loading saved state succeeded";
   Hh_logger.log "Watchclock: %s" (Server_env.show_clock clock);

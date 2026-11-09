@@ -130,6 +130,7 @@ let finalize_init init_env typecheck_telemetry init_telemetry =
          ~value:(Shared_mem.SMTelemetry.heap_size ())
   in
   Hack_event_logger.server_is_ready telemetry;
+  Hack_event_logger.flush ();
   Hh_logger.log
     "SERVER_IS_READY. Took %f seconds to init. Telemetry:\n%s"
     (t' -. init_env.init_start_t)
@@ -592,6 +593,7 @@ let log_recheck_end
     ~total_changed_files:total_changed_files_count
     ~total_rechecked:total_rechecked_count
     (Option.some_if any_full_checks telemetry);
+  Hack_event_logger.flush ();
   Hh_logger.log
     "RECHECK_END (recheck_id %s):\n%s"
     recheck_id
@@ -1162,6 +1164,7 @@ let program_init genv env =
     ~approach_name
     ~init_error
     ~init_type;
+  Hack_event_logger.flush ();
   env
 
 let num_workers options local_config =
@@ -1423,6 +1426,7 @@ let setup_server
     ~experiments_config_meta:
       local_config.Server_local_config.experiments_config_meta
     (Memory_stats.get_host_hw_telemetry ());
+  Hack_event_logger.flush ();
 
   check_nfs ~root options local_config;
   warn_on_non_opt_build options config;
