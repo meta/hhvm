@@ -56,6 +56,8 @@ module Hhconfig : sig
 
   val everything_sdt : string
 
+  val forget_one_branch_tconst_refinements : string
+
   val foreach_key_after_value : string
 
   val ignore_string_methods : string

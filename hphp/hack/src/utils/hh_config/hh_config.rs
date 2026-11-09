@@ -639,6 +639,10 @@ impl HhConfig {
                 "type_structure_fields_may_be_absent",
                 default.tco_type_structure_fields_may_be_absent,
             )?,
+            tco_forget_one_branch_tconst_refinements: hhconfig.get_bool_or(
+                "forget_one_branch_tconst_refinements",
+                default.tco_forget_one_branch_tconst_refinements,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

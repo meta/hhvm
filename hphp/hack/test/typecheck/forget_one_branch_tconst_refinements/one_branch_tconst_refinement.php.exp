@@ -1,0 +1,631 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `this::T` [2]
+-> But got `int` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [3]
+
+one_branch_tconst_refinement.php:19:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [2]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+14 | 
+15 |   <<__NeedsConcrete>>
+16 |   public static function if_without_else(Box<this::T> $b, Box<int> $i): void {
+   |                                                               ^^^ [3]
+17 |     if ($b is Box<int>) {
+18 |     }
+19 |     static::take($i);
+   |                  ^^ [1]
+20 |   }
+21 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Base::T super this::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:19:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+14 | 
+15 |   <<__NeedsConcrete>>
+16 |   public static function if_without_else(Box<this::T> $b, Box<int> $i): void {
+   |                                                               ^^^ [2]
+17 |     if ($b is Box<int>) {
+18 |     }
+19 |     static::take($i);
+   |                  ^^ [1]
+20 |   }
+21 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:19:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+14 | 
+15 |   <<__NeedsConcrete>>
+16 |   public static function if_without_else(Box<this::T> $b, Box<int> $i): void {
+   |                                                               ^^^ [2]
+17 |     if ($b is Box<int>) {
+18 |     }
+19 |     static::take($i);
+   |                  ^^ [1]
+20 |   }
+21 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `this::T as Base::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:19:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+14 | 
+15 |   <<__NeedsConcrete>>
+16 |   public static function if_without_else(Box<this::T> $b, Box<int> $i): void {
+   |                                                               ^^^ [2]
+17 |     if ($b is Box<int>) {
+18 |     }
+19 |     static::take($i);
+   |                  ^^ [1]
+20 |   }
+21 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `this::T` [2]
+-> But got `int` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [3]
+
+one_branch_tconst_refinement.php:25:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [2]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+21 | 
+22 |   <<__NeedsConcrete>>
+23 |   public static function ternary(Box<this::T> $b, Box<int> $i): void {
+   |                                                       ^^^ [3]
+24 |     $_ = $b is Box<int> ? 1 : 2;
+25 |     static::take($i);
+   |                  ^^ [1]
+26 |   }
+27 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Base::T super this::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:25:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+21 | 
+22 |   <<__NeedsConcrete>>
+23 |   public static function ternary(Box<this::T> $b, Box<int> $i): void {
+   |                                                       ^^^ [2]
+24 |     $_ = $b is Box<int> ? 1 : 2;
+25 |     static::take($i);
+   |                  ^^ [1]
+26 |   }
+27 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:25:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+21 | 
+22 |   <<__NeedsConcrete>>
+23 |   public static function ternary(Box<this::T> $b, Box<int> $i): void {
+   |                                                       ^^^ [2]
+24 |     $_ = $b is Box<int> ? 1 : 2;
+25 |     static::take($i);
+   |                  ^^ [1]
+26 |   }
+27 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `this::T as Base::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:25:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+21 | 
+22 |   <<__NeedsConcrete>>
+23 |   public static function ternary(Box<this::T> $b, Box<int> $i): void {
+   |                                                       ^^^ [2]
+24 |     $_ = $b is Box<int> ? 1 : 2;
+25 |     static::take($i);
+   |                  ^^ [1]
+26 |   }
+27 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `this::T` [2]
+-> But got `int` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [3]
+
+one_branch_tconst_refinement.php:38:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [2]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+29 |   public static function in_loop(
+30 |     Box<this::T> $b,
+31 |     Box<int> $i,
+   |         ^^^ [3]
+32 |     vec<int> $v,
+33 |   ): void {
+   :
+36 |       }
+37 |     }
+38 |     static::take($i);
+   |                  ^^ [1]
+39 |   }
+40 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Base::T super this::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:38:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+29 |   public static function in_loop(
+30 |     Box<this::T> $b,
+31 |     Box<int> $i,
+   |         ^^^ [2]
+32 |     vec<int> $v,
+33 |   ): void {
+   :
+36 |       }
+37 |     }
+38 |     static::take($i);
+   |                  ^^ [1]
+39 |   }
+40 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:38:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+29 |   public static function in_loop(
+30 |     Box<this::T> $b,
+31 |     Box<int> $i,
+   |         ^^^ [2]
+32 |     vec<int> $v,
+33 |   ): void {
+   :
+36 |       }
+37 |     }
+38 |     static::take($i);
+   |                  ^^ [1]
+39 |   }
+40 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `this::T as Base::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:38:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+29 |   public static function in_loop(
+30 |     Box<this::T> $b,
+31 |     Box<int> $i,
+   |         ^^^ [2]
+32 |     vec<int> $v,
+33 |   ): void {
+   :
+36 |       }
+37 |     }
+38 |     static::take($i);
+   |                  ^^ [1]
+39 |   }
+40 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `this::T` [2]
+-> But got `int` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [3]
+
+one_branch_tconst_refinement.php:54:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [2]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+42 |   public static function in_switch(
+43 |     Box<this::T> $b,
+44 |     Box<int> $i,
+   |         ^^^ [3]
+45 |     int $k,
+46 |   ): void {
+   :
+52 |         break;
+53 |     }
+54 |     static::take($i);
+   |                  ^^ [1]
+55 |   }
+56 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Base::T super this::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:54:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+42 |   public static function in_switch(
+43 |     Box<this::T> $b,
+44 |     Box<int> $i,
+   |         ^^^ [2]
+45 |     int $k,
+46 |   ): void {
+   :
+52 |         break;
+53 |     }
+54 |     static::take($i);
+   |                  ^^ [1]
+55 |   }
+56 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:54:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+42 |   public static function in_switch(
+43 |     Box<this::T> $b,
+44 |     Box<int> $i,
+   |         ^^^ [2]
+45 |     int $k,
+46 |   ): void {
+   :
+52 |         break;
+53 |     }
+54 |     static::take($i);
+   |                  ^^ [1]
+55 |   }
+56 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `this::T as Base::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:54:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+42 |   public static function in_switch(
+43 |     Box<this::T> $b,
+44 |     Box<int> $i,
+   |         ^^^ [2]
+45 |     int $k,
+46 |   ): void {
+   :
+52 |         break;
+53 |     }
+54 |     static::take($i);
+   |                  ^^ [1]
+55 |   }
+56 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `this::T` [2]
+-> But got `int` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [3]
+
+one_branch_tconst_refinement.php:63:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [2]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+56 | 
+57 |   <<__NeedsConcrete>>
+58 |   public static function in_try(Box<this::T> $b, Box<int> $i): void {
+   |                                                      ^^^ [3]
+59 |     try {
+60 |       invariant($b is Box<int>, 'refined in try');
+61 |     } catch (Exception $_) {
+62 |     }
+63 |     static::take($i);
+   |                  ^^ [1]
+64 |   }
+65 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Base::T super this::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:63:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+56 | 
+57 |   <<__NeedsConcrete>>
+58 |   public static function in_try(Box<this::T> $b, Box<int> $i): void {
+   |                                                      ^^^ [2]
+59 |     try {
+60 |       invariant($b is Box<int>, 'refined in try');
+61 |     } catch (Exception $_) {
+62 |     }
+63 |     static::take($i);
+   |                  ^^ [1]
+64 |   }
+65 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:63:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+56 | 
+57 |   <<__NeedsConcrete>>
+58 |   public static function in_try(Box<this::T> $b, Box<int> $i): void {
+   |                                                      ^^^ [2]
+59 |     try {
+60 |       invariant($b is Box<int>, 'refined in try');
+61 |     } catch (Exception $_) {
+62 |     }
+63 |     static::take($i);
+   |                  ^^ [1]
+64 |   }
+65 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `this::T as Base::T` [3]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:63:18
+ 7 |   abstract const type T;
+ 8 | 
+ 9 |   public static abstract function take(Box<this::T> $b): void;
+   |                                            ^^^^^^^ [3]
+   |                                                  ^ [4]
+10 | 
+11 |   abstract public function get(): Box<this::T>;
+   :
+56 | 
+57 |   <<__NeedsConcrete>>
+58 |   public static function in_try(Box<this::T> $b, Box<int> $i): void {
+   |                                                      ^^^ [2]
+59 |     try {
+60 |       invariant($b is Box<int>, 'refined in try');
+61 |     } catch (Exception $_) {
+62 |     }
+63 |     static::take($i);
+   |                  ^^ [1]
+64 |   }
+65 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `<expr#2>::T` [2]
+->   where `<expr#2>` is a reference to this expression [3]
+-> But got `int` [4]
+-> This type argument to `Box` must match exactly (it is invariant) [4]
+
+one_branch_tconst_refinement.php:71:11
+11 |   abstract public function get(): Box<this::T>;
+12 | 
+13 |   abstract public function put(Box<this::T> $b): void;
+   |                                    ^^^^^^^ [2]
+14 | 
+15 |   <<__NeedsConcrete>>
+   :
+65 | }
+66 | 
+67 | function expression_dependent(Base $x, Box<int> $i): void {
+   |                                            ^^^ [4]
+68 |   $b = $x->get();
+69 |   if ($b is Box<int>) {
+70 |   }
+71 |   $x->put($i);
+   |   ^^ [3]
+   |           ^^ [1]
+72 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `<expr#2>::T as Base::T` [3]
+->   where `<expr#2>` is a reference to this expression [4]
+-> This type argument to `Box` must match exactly (it is invariant) [5]
+
+one_branch_tconst_refinement.php:71:11
+11 |   abstract public function get(): Box<this::T>;
+12 | 
+13 |   abstract public function put(Box<this::T> $b): void;
+   |                                    ^^^^^^^ [3]
+   |                                          ^ [5]
+14 | 
+15 |   <<__NeedsConcrete>>
+   :
+65 | }
+66 | 
+67 | function expression_dependent(Base $x, Box<int> $i): void {
+   |                                            ^^^ [2]
+68 |   $b = $x->get();
+69 |   if ($b is Box<int>) {
+70 |   }
+71 |   $x->put($i);
+   |   ^^ [4]
+   |           ^^ [1]
+72 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Base::T super <expr#2>::T` [3]
+->   where `<expr#2>` is a reference to this expression [4]
+-> This type argument to `Box` must match exactly (it is invariant) [5]
+
+one_branch_tconst_refinement.php:71:11
+11 |   abstract public function get(): Box<this::T>;
+12 | 
+13 |   abstract public function put(Box<this::T> $b): void;
+   |                                    ^^^^^^^ [3]
+   |                                          ^ [5]
+14 | 
+15 |   <<__NeedsConcrete>>
+   :
+65 | }
+66 | 
+67 | function expression_dependent(Base $x, Box<int> $i): void {
+   |                                            ^^^ [2]
+68 |   $b = $x->get();
+69 |   if ($b is Box<int>) {
+70 |   }
+71 |   $x->put($i);
+   |   ^^ [4]
+   |           ^^ [1]
+72 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+->   where `<expr#2>` is a reference to this expression [4]
+-> This type argument to `Box` must match exactly (it is invariant) [5]
+
+one_branch_tconst_refinement.php:71:11
+11 |   abstract public function get(): Box<this::T>;
+12 | 
+13 |   abstract public function put(Box<this::T> $b): void;
+   |                                    ^^^^^^^ [3]
+   |                                          ^ [5]
+14 | 
+15 |   <<__NeedsConcrete>>
+   :
+65 | }
+66 | 
+67 | function expression_dependent(Base $x, Box<int> $i): void {
+   |                                            ^^^ [2]
+68 |   $b = $x->get();
+69 |   if ($b is Box<int>) {
+70 |   }
+71 |   $x->put($i);
+   |   ^^ [4]
+   |           ^^ [1]
+72 | }
+
+24 errors found

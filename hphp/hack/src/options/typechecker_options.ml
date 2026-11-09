@@ -310,6 +310,9 @@ let ban_memoize_erased_generic_return t =
 
 let list_assign_right_to_left t = t.Global_options.tco_list_assign_right_to_left
 
+let forget_one_branch_tconst_refinements t =
+  t.Global_options.tco_forget_one_branch_tconst_refinements
+
 let foreach_key_after_value t = t.Global_options.tco_foreach_key_after_value
 
 let type_structure_fields_may_be_absent t =

@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<679c94e9fb3738ac1e4e9dd548dd2c25>>
+// @generated SignedSource<<3b840f2935f38dadeab07c84f6f23fe4>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -417,6 +417,8 @@ pub struct GlobalOptions {
     pub tco_ban_memoize_erased_generic_return: bool,
     /// Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right.
     pub tco_list_assign_right_to_left: bool,
+    /// When merging control-flow branches, forget a type-constant refinement (such as `this::T = int` from an `is` test) made in only one branch, rather than keep it for code after the merge.
+    pub tco_forget_one_branch_tconst_refinements: bool,
     /// In `foreach ($e as $k => $v)`, type the write to the value target before the write to the key target, the order HHVM performs them in, so in `foreach ($d as $a => $a)` `$a` ends up with the key, and an index in the value target reads the key local's previous value. `await as` writes the key first and is unchanged.
     pub tco_foreach_key_after_value: bool,
     /// Keep the `name`, `alias` and `generic_types` fields of a `TypeStructure<T>` optional, since HHVM can omit them (`generic_types` for `this`, or for a generic `T`), rather than mark them present.

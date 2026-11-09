@@ -1,0 +1,219 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `this::TInner` [2]
+-> But got `int` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [3]
+
+bad_env_merge_T221690280.php:20:25
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [2]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [3]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+18 |       static::takeOuter($i); // should not error, does not error
+19 |     } else {
+20 |       static::takeOuter($i); // should error, does error
+   |                         ^^ [1]
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Foo::TInner super this::TInner` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [4]
+
+bad_env_merge_T221690280.php:20:25
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [3]
+   |                                                   ^^^^^^ [4]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [2]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+18 |       static::takeOuter($i); // should not error, does not error
+19 |     } else {
+20 |       static::takeOuter($i); // should error, does error
+   |                         ^^ [1]
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [4]
+
+bad_env_merge_T221690280.php:20:25
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [3]
+   |                                                   ^^^^^^ [4]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [2]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+18 |       static::takeOuter($i); // should not error, does not error
+19 |     } else {
+20 |       static::takeOuter($i); // should error, does error
+   |                         ^^ [1]
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `this::TInner as Foo::TInner` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [4]
+
+bad_env_merge_T221690280.php:20:25
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [3]
+   |                                                   ^^^^^^ [4]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [2]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+18 |       static::takeOuter($i); // should not error, does not error
+19 |     } else {
+20 |       static::takeOuter($i); // should error, does error
+   |                         ^^ [1]
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `this::TInner` [2]
+-> But got `int` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [3]
+
+bad_env_merge_T221690280.php:22:23
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [2]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [3]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+   :
+20 |       static::takeOuter($i); // should error, does error
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+   |                       ^^ [1]
+23 |   }
+24 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `Foo::TInner super this::TInner` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [4]
+
+bad_env_merge_T221690280.php:22:23
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [3]
+   |                                                   ^^^^^^ [4]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [2]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+   :
+20 |       static::takeOuter($i); // should error, does error
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+   |                       ^^ [1]
+23 |   }
+24 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `mixed` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [4]
+
+bad_env_merge_T221690280.php:22:23
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [3]
+   |                                                   ^^^^^^ [4]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [2]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+   :
+20 |       static::takeOuter($i); // should error, does error
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+   |                       ^^ [1]
+23 |   }
+24 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `int` [2]
+-> But got `this::TInner as Foo::TInner` [3]
+-> This type argument to `MyReifiedGenericClass` must match exactly (it is invariant) [4]
+
+bad_env_merge_T221690280.php:22:23
+ 6 |   <<__Enforceable, __Reifiable>>
+ 7 |   abstract const type TInner;
+ 8 |   const type TOuter = MyReifiedGenericClass<this::TInner>;
+   |                                             ^^^^^^^^^^^^ [3]
+   |                                                   ^^^^^^ [4]
+ 9 | 
+10 |   public static abstract function takeOuter(this::TOuter $outer): void;
+   :
+13 |   public static function test(
+14 |     this::TOuter $outer,
+15 |     MyReifiedGenericClass<int> $i,
+   |                           ^^^ [2]
+16 |   ): void {
+17 |     if ($outer is MyReifiedGenericClass<int>) {
+   :
+20 |       static::takeOuter($i); // should error, does error
+21 |     }
+22 |     static::takeOuter($i); // should error, does NOT error (BUG)
+   |                       ^^ [1]
+23 |   }
+24 | }
+
+8 errors found

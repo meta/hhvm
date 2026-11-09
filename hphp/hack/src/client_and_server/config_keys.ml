@@ -58,6 +58,9 @@ module Hhconfig = struct
 
   let everything_sdt = key "everything_sdt"
 
+  let forget_one_branch_tconst_refinements =
+    key "forget_one_branch_tconst_refinements"
+
   let foreach_key_after_value = key "foreach_key_after_value"
 
   let ignore_string_methods = key "ignore_string_methods"
