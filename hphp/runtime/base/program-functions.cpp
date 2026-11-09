@@ -432,7 +432,9 @@ void register_variable(Array& variables, char *name, const Variant& value,
       }
 
       if (!index) {
+        auto const size = symtable->size();
         symtable->append(make_persistent_array_like_tv(staticEmptyDictArray()));
+        if (symtable->size() == size) return;
         auto const key = symtable->get()->getKey(symtable->get()->iter_last());
         symtable = &asArrRef(symtable->lval(key));
       } else {
