@@ -1,5 +1,3 @@
-# pyre-strict
-
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
@@ -38,7 +36,7 @@ class JsonRpcStreamReader:
         # read the 'Content-Length:' line and absorb the newline
         # after it
         length_line = self.stream.readline().decode()
-        self.stream.read(len("\r\n"))
+        self._read_content(len("\r\n"))
 
         # get the content length as an integer for the
         # rest of the package
@@ -46,7 +44,13 @@ class JsonRpcStreamReader:
         return int(parts[1].strip())
 
     def _read_content(self, length: int) -> bytes:
-        return self.stream.read(length)
+        content = bytearray()
+        while len(content) < length:
+            chunk = self.stream.read(length - len(content))
+            if not chunk:
+                raise ValueError("Unexpected EOF in JSON-RPC message")
+            content.extend(chunk)
+        return bytes(content)
 
     def _read_payload(self) -> bytes:
         length = self._read_content_length()
