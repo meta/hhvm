@@ -2057,6 +2057,23 @@ let gen_this_name ft_tparams =
 
 let apply_subst_generic fun_ty subst =
   let open Typing_defs_core in
+  let names = S_set.of_list (S_map.keys subst) in
+  let dependencies =
+    S_map.map (fun ty -> S_set.inter names (ty_generics S_set.empty ty)) subst
+  in
+  let is_recursive name =
+    let rec visit seen = function
+      | [] -> false
+      | next :: _ when String.equal name next -> true
+      | next :: rest when S_set.mem next seen -> visit seen rest
+      | next :: rest ->
+        let seen = S_set.add next seen in
+        let next_dependencies = S_map.find next dependencies in
+        visit seen (S_set.elements next_dependencies @ rest)
+    in
+    visit S_set.empty (S_set.elements (S_map.find name dependencies))
+  in
+  let subst = S_map.filter (fun name _ -> not (is_recursive name)) subst in
   let on_ty ty ~ctx =
     match get_node ty with
     | Tgeneric nm ->
