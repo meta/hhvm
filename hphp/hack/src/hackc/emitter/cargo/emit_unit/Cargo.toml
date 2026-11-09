@@ -42,7 +42,7 @@ priority-queue = "1.4.0"
 regex = "1.13.1"
 scope = { path = "../scope" }
 serde_json = { version = "1.0.154", features = ["alloc", "float_roundtrip", "raw_value", "unbounded_depth"] }
-smallvec = { version = "1.16.4", features = ["const_generics", "impl_bincode", "serde", "specialization", "union", "write"] }
+smallvec = { version = "1.16.5", features = ["const_generics", "impl_bincode", "serde", "specialization", "union", "write"] }
 stack_depth = { path = "../../../utils/cargo/stack_depth" }
 stack_limit = { path = "../../../../utils/stack_limit" }
 statement_state = { path = "../statement_state" }
