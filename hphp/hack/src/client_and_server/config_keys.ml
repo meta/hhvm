@@ -334,6 +334,8 @@ module Hhconfig = struct
   let warn_on_non_opt_build = key "warn_on_non_opt_build"
 
   let warnings_generated_files = key "warnings_generated_files"
+
+  let xhp_attribute_reads_not_refined = key "xhp_attribute_reads_not_refined"
 end
 
 (** Keys valid in hh.conf (ServerLocalConfig).

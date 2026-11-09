@@ -2109,6 +2109,11 @@ let rec make_a_local_of ~include_this env e =
   | (_, p, Class_get ((_, _, cname), (_, member_name), _)) ->
     let (env, local) = Env.FakeMembers.make_static env cname member_name p in
     (env, Some (p, local))
+  | (_, _, Obj_get (_, (_, _, Id (_, member_name)), _, _))
+    when String.is_prefix member_name ~prefix:":"
+         && TCO.xhp_attribute_reads_not_refined (Env.get_tcopt env) ->
+    (* Each read calls `getAttribute`, which may return something else *)
+    (env, None)
   | ( _,
       p,
       Obj_get

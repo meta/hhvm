@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<b09b4791e6f6405c1b53626d4de4eb59>>
+// @generated SignedSource<<23a26ddfe0d6484f65fa013790a4b3de>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -425,4 +425,6 @@ pub struct GlobalOptions {
     pub tco_type_structure_fields_may_be_absent: bool,
     /// Reject places where `$this` escapes the constructor of a non-final class or a trait, such as passing `$this` or calling a non-private method, wherever they are in the constructor and not only before every property is initialized. A subclass constructor may run that constructor before initializing its own properties, which a method it overrides could then read.
     pub tco_ban_this_escape_in_overridable_constructors: bool,
+    /// Don't refine reads of an XHP attribute such as `$x->:attr` with `is`, `as`, null checks or `match`: each read calls `getAttribute`, which may return something else the next time.
+    pub tco_xhp_attribute_reads_not_refined: bool,
 }

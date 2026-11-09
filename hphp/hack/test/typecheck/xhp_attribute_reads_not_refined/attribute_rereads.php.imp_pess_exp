@@ -1,0 +1,103 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `~string` [2]
+-> But got `?string` [3]
+
+attribute_rereads.php:15:18
+ 2 | 
+ 3 | class :xhp {
+ 4 |   attribute string attr, int count = 0, string req @required;
+   |             ^^^^^^ [3]
+ 5 | 
+ 6 |   public function getAttribute(string $_, mixed $_ = null): mixed {
+   :
+ 9 | }
+10 | 
+11 | function takes_string(string $_): void {}
+   |                       ^^^^^^ [2]
+12 | 
+13 | function is_nonnull(:xhp $xhp): void {
+14 |   if ($xhp->:attr is nonnull) {
+15 |     takes_string($xhp->:attr);
+   |                  ^^^^^^^^^^^ [1]
+16 |   }
+17 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `~string` [2]
+-> But got `?string` [3]
+
+attribute_rereads.php:21:18
+ 2 | 
+ 3 | class :xhp {
+ 4 |   attribute string attr, int count = 0, string req @required;
+   |             ^^^^^^ [3]
+ 5 | 
+ 6 |   public function getAttribute(string $_, mixed $_ = null): mixed {
+   :
+ 9 | }
+10 | 
+11 | function takes_string(string $_): void {}
+   |                       ^^^^^^ [2]
+12 | 
+13 | function is_nonnull(:xhp $xhp): void {
+   :
+19 | function not_null(:xhp $xhp): void {
+20 |   if ($xhp->:attr !== null) {
+21 |     takes_string($xhp->:attr);
+   |                  ^^^^^^^^^^^ [1]
+22 |   }
+23 | }
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `~string` [2]
+-> But got `?string` [3]
+
+attribute_rereads.php:27:16
+ 2 | 
+ 3 | class :xhp {
+ 4 |   attribute string attr, int count = 0, string req @required;
+   |             ^^^^^^ [3]
+ 5 | 
+ 6 |   public function getAttribute(string $_, mixed $_ = null): mixed {
+   :
+ 9 | }
+10 | 
+11 | function takes_string(string $_): void {}
+   |                       ^^^^^^ [2]
+12 | 
+13 | function is_nonnull(:xhp $xhp): void {
+   :
+25 | function as_nonnull(:xhp $xhp): void {
+26 |   $xhp->:attr as nonnull;
+27 |   takes_string($xhp->:attr);
+   |                ^^^^^^^^^^^ [1]
+28 | }
+29 | 
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `~string` [2]
+-> But got `?string` [3]
+
+attribute_rereads.php:39:20
+ 9 | }
+10 | 
+11 | function takes_string(string $_): void {}
+   |                       ^^^^^^ [2]
+12 | 
+13 | function is_nonnull(:xhp $xhp): void {
+   :
+29 | 
+30 | class :pure {
+31 |   attribute string attr;
+   |             ^^^^^^ [3]
+32 | 
+33 |   final public function getAttribute(string $_, mixed $_ = null)[]: mixed {
+   :
+37 |   public function on_this(): void {
+38 |     if ($this->:attr is nonnull) {
+39 |       takes_string($this->:attr);
+   |                    ^^^^^^^^^^^^ [1]
+40 |     }
+41 |   }
+
+4 errors found

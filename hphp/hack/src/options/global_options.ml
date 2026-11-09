@@ -206,6 +206,7 @@ type t = {
   tco_foreach_key_after_value: bool;
   tco_type_structure_fields_may_be_absent: bool;
   tco_ban_this_escape_in_overridable_constructors: bool;
+  tco_xhp_attribute_reads_not_refined: bool;
 }
 [@@deriving eq, show]
 
@@ -325,6 +326,7 @@ let default =
     tco_foreach_key_after_value = false;
     tco_type_structure_fields_may_be_absent = false;
     tco_ban_this_escape_in_overridable_constructors = false;
+    tco_xhp_attribute_reads_not_refined = false;
   }
 
 let set
@@ -440,6 +442,7 @@ let set
     ?tco_forget_one_branch_tconst_refinements
     ?tco_foreach_key_after_value
     ?tco_type_structure_fields_may_be_absent
+    ?tco_xhp_attribute_reads_not_refined
     ?tco_ban_this_escape_in_overridable_constructors
     options =
   let setting setting option =
@@ -775,6 +778,10 @@ let set
       setting
         tco_ban_this_escape_in_overridable_constructors
         options.tco_ban_this_escape_in_overridable_constructors;
+    tco_xhp_attribute_reads_not_refined =
+      setting
+        tco_xhp_attribute_reads_not_refined
+        options.tco_xhp_attribute_reads_not_refined;
   }
 
 let so_naming_sqlite_path t = t.so_naming_sqlite_path

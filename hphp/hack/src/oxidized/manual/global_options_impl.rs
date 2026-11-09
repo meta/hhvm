@@ -157,6 +157,7 @@ impl Default for GlobalOptions {
             tco_list_assign_right_to_left: false,
             tco_foreach_key_after_value: false,
             tco_type_structure_fields_may_be_absent: false,
+            tco_xhp_attribute_reads_not_refined: false,
             tco_forget_one_branch_tconst_refinements: false,
             tco_ban_this_escape_in_overridable_constructors: false,
             tco_repo_stdlib_path: None,

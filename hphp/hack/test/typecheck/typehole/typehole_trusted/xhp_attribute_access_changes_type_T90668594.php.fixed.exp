@@ -1,0 +1,27 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `string` [2]
+-> But got `?string` [3]
+
+xhp_attribute_access_changes_type_T90668594.php:28:18
+ 2 | 
+ 3 | class :xhp {
+ 4 |   attribute string attr;
+   |             ^^^^^^ [3]
+ 5 | 
+ 6 |   public function __construct(
+   :
+18 | }
+19 | 
+20 | function takes_string(string $_): void {}
+   |                       ^^^^^^ [2]
+21 | 
+22 | <<__EntryPoint>>
+   :
+26 |   if ($xhp->:attr is nonnull) {
+27 |     // The typechecker thinks the type of $xhp->attr is string
+28 |     takes_string($xhp->:attr); // Fatals
+   |                  ^^^^^^^^^^^ [1]
+29 |   }
+30 | }
+
+1 error found

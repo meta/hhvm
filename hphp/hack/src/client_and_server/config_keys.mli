@@ -305,6 +305,8 @@ module Hhconfig : sig
   val warn_on_non_opt_build : string
 
   val warnings_generated_files : string
+
+  val xhp_attribute_reads_not_refined : string
 end
 
 (** Keys valid in hh.conf (ServerLocalConfig). *)

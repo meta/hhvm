@@ -315,6 +315,8 @@ type t = {
       (** Keep the `name`, `alias` and `generic_types` fields of a `TypeStructure<T>` optional, since HHVM can omit them (`generic_types` for `this`, or for a generic `T`), rather than mark them present. *)
   tco_ban_this_escape_in_overridable_constructors: bool;
       (** Reject places where `$this` escapes the constructor of a non-final class or a trait, such as passing `$this` or calling a non-private method, wherever they are in the constructor and not only before every property is initialized. A subclass constructor may run that constructor before initializing its own properties, which a method it overrides could then read. *)
+  tco_xhp_attribute_reads_not_refined: bool;
+      (** Don't refine reads of an XHP attribute such as `$x->:attr` with `is`, `as`, null checks or `match`: each read calls `getAttribute`, which may return something else the next time. *)
 }
 [@@deriving eq, show]
 
@@ -431,6 +433,7 @@ val set :
   ?tco_forget_one_branch_tconst_refinements:bool ->
   ?tco_foreach_key_after_value:bool ->
   ?tco_type_structure_fields_may_be_absent:bool ->
+  ?tco_xhp_attribute_reads_not_refined:bool ->
   ?tco_ban_this_escape_in_overridable_constructors:bool ->
   t ->
   t
