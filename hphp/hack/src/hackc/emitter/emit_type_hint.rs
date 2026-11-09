@@ -3,6 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 use std::borrow::Cow;
+use std::iter::once;
 
 use error::Error;
 use error::Result;
@@ -18,15 +19,21 @@ use hhvm_types_ffi::ffi::TypeConstraintFlags;
 use naming_special_names_rust::classes;
 use naming_special_names_rust::typehints;
 use oxidized::aast_defs::ClassPtrKind;
+use oxidized::aast_defs::HfParamInfo;
 use oxidized::aast_defs::Hint;
 use oxidized::aast_defs::Hint_;
 use oxidized::aast_defs::Hint_::*;
+use oxidized::aast_defs::HintFun;
+use oxidized::aast_defs::HintTparam;
 use oxidized::aast_defs::NastShapeInfo;
 use oxidized::aast_defs::ShapeElement;
 use oxidized::aast_defs::ShapeFieldInfo;
 use oxidized::aast_defs::Tprim;
+use oxidized::aast_defs::TupleExtra;
 use oxidized::aast_defs::TupleInfo;
+use oxidized::ast_defs::ConstraintKind;
 use oxidized::ast_defs::Id;
+use oxidized::ast_defs::ParamKind;
 use oxidized::ast_defs::ShapeFieldName;
 
 #[derive(Eq, PartialEq)]
@@ -89,30 +96,26 @@ pub fn fmt_hint(tparams: &[&str], strip_tparams: bool, hint: &Hint) -> Result<St
             format!("{}<{}>", k, fmt_hint(tparams, false, hint)?)
         }
         Hwildcard => "_".into(),
-        Hfun(hf) => {
-            // TODO(mqian): Implement for inout parameters
-            format!(
-                "(function ({}): {})",
-                fmt_hints(tparams, &hf.param_tys, ", ")?,
-                fmt_hint(tparams, false, &hf.return_ty)?
-            )
-        }
+        Hfun(hf) => fmt_fun_hint(tparams, hf)?,
         Haccess(Hint(_, hint), accesses) => {
-            if let Happly(Id(_, id), _) = hint.as_ref() {
-                format!(
-                    "{}::{}",
-                    fmt_name_or_prim(tparams, id),
-                    accesses
-                        .iter()
-                        .map(|Id(_, s)| s.as_str())
-                        .collect::<Vec<_>>()
-                        .join("::")
-                )
-            } else {
-                return Err(Error::unrecoverable(
-                    "ast_to_nast error. Should be Haccess(Happly())",
-                ));
-            }
+            let receiver = match hint.as_ref() {
+                Happly(Id(_, id), _) => fmt_name_or_prim(tparams, id),
+                Hvar(name) => Cow::Borrowed(name.as_str()),
+                _ => {
+                    return Err(Error::unrecoverable(
+                        "ast_to_nast error. Expected a type or variable context receiver",
+                    ));
+                }
+            };
+            format!(
+                "{}::{}",
+                receiver,
+                accesses
+                    .iter()
+                    .map(|Id(_, s)| s.as_str())
+                    .collect::<Vec<_>>()
+                    .join("::")
+            )
         }
         Hoption(hint) => {
             let Hint(_, h) = hint;
@@ -169,21 +172,24 @@ pub fn fmt_hint(tparams: &[&str], strip_tparams: bool, hint: &Hint) -> Result<St
             }
             string_utils::prefix_namespace("HH", &format!("shape({})", shape_fields.join(", ")))
         }
-        // TODO optional and variadic components T201398626 T201398652
-        Htuple(TupleInfo { required, .. }) => format!("({})", fmt_hints(tparams, required, ", ")?),
+        Htuple(tuple) => fmt_tuple_hint(tparams, tuple)?,
         Hunion(hints) => format!("({})", fmt_hints(tparams, hints, " | ")?),
         Hintersection(hints) => format!("({})", fmt_hints(tparams, hints, " & ")?),
         Hlike(t) => format!("~{}", fmt_hint(tparams, false, t)?),
         Hsoft(t) => format!("@{}", fmt_hint(tparams, false, t)?),
-        HfunContext(_)
-        | Hdynamic
-        | Hmixed
-        | Hnonnull
-        | Hnothing
-        | Hprim(_)
-        | Hthis
-        | Hvar(_)
-        | HvecOrDict(_, _) => fmt_name_or_prim(tparams, hint_to_string(h)).into(),
+        HfunContext(name) => format!("ctx {name}"),
+        Hvar(name) => name.clone(),
+        HvecOrDict(key, value) => {
+            let value = fmt_hint(tparams, false, value)?;
+            let arguments = match key {
+                Some(key) => format!("{}, {value}", fmt_hint(tparams, false, key)?),
+                None => value,
+            };
+            string_utils::prefix_namespace("HH", &format!("vec_or_dict<{arguments}>"))
+        }
+        Hdynamic | Hmixed | Hnonnull | Hnothing | Hprim(_) | Hthis => {
+            fmt_name_or_prim(tparams, hint_to_string(h)).into()
+        }
     })
 }
 
@@ -221,6 +227,163 @@ fn fmt_hints(tparams: &[&str], hints: &[Hint], separator: &str) -> Result<String
         .map(|h| fmt_hint(tparams, false, h))
         .collect::<Result<Vec<_>>>()
         .map(|v| v.join(separator))
+}
+
+fn fmt_tuple_hint(tparams: &[&str], tuple: &TupleInfo) -> Result<String> {
+    let required = tuple
+        .required
+        .iter()
+        .map(|hint| fmt_hint(tparams, false, hint));
+    let elements = match &tuple.extra {
+        TupleExtra::Hextra(extra) => required
+            .chain(
+                extra
+                    .optional
+                    .iter()
+                    .map(|hint| Ok(format!("optional {}", fmt_hint(tparams, false, hint)?))),
+            )
+            .chain(
+                extra
+                    .variadic
+                    .iter()
+                    .map(|hint| Ok(format!("{}...", fmt_hint(tparams, false, hint)?))),
+            )
+            .collect::<Result<Vec<_>>>()?,
+        TupleExtra::Hsplat(hint) => required
+            .chain(once(Ok(format!("...{}", fmt_hint(tparams, false, hint)?))))
+            .collect::<Result<Vec<_>>>()?,
+    };
+    Ok(format!("({})", elements.join(", ")))
+}
+
+fn fmt_fun_param(tparams: &[&str], hint: &Hint, info: Option<&HfParamInfo>) -> Result<String> {
+    let hint = fmt_hint(tparams, false, hint)?;
+    let Some(info) = info else {
+        return Ok(hint);
+    };
+    let optional = if info.optional.is_some() {
+        "optional "
+    } else {
+        ""
+    };
+    let inout = if matches!(info.kind, ParamKind::Pinout(_)) {
+        "inout "
+    } else {
+        ""
+    };
+    let named = if info.named.is_some() { "named " } else { "" };
+    let readonly = if info.readonlyness.is_some() {
+        "readonly "
+    } else {
+        ""
+    };
+    let splat = if info.splat.is_some() { "..." } else { "" };
+    let name = info
+        .named
+        .as_ref()
+        .map(|name| format!(" {name}"))
+        .unwrap_or_default();
+    Ok(format!(
+        "{optional}{inout}{named}{readonly}{splat}{hint}{name}"
+    ))
+}
+
+fn fmt_fun_tparam(tparams: &[&str], tparam: &HintTparam) -> Result<String> {
+    let attributes = if tparam.user_attributes.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "<<{}>> ",
+            tparam
+                .user_attributes
+                .iter()
+                .map(|Id(_, name)| fmt_name_or_prim(tparams, name))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    };
+    let constraints = tparam
+        .constraints
+        .iter()
+        .map(|(kind, hint)| {
+            let kind = match kind {
+                ConstraintKind::ConstraintAs => "as",
+                ConstraintKind::ConstraintEq => "=",
+                ConstraintKind::ConstraintSuper => "super",
+            };
+            Ok(format!(" {kind} {}", fmt_hint(tparams, false, hint)?))
+        })
+        .collect::<Result<Vec<_>>>()?
+        .join("");
+    Ok(format!("{attributes}{}{constraints}", tparam.name.1))
+}
+
+fn fmt_fun_hint(tparams: &[&str], function: &HintFun) -> Result<String> {
+    let tparams = tparams
+        .iter()
+        .copied()
+        .chain(function.tparams.iter().map(|tparam| tparam.name.1.as_str()))
+        .collect::<Vec<_>>();
+    let tparams = tparams.as_slice();
+    let type_parameters = if function.tparams.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "<{}>",
+            function
+                .tparams
+                .iter()
+                .map(|tparam| fmt_fun_tparam(tparams, tparam))
+                .collect::<Result<Vec<_>>>()?
+                .join(", ")
+        )
+    };
+    let variadic = function
+        .variadic_ty
+        .as_ref()
+        .map(|hint| fmt_hint(tparams, false, hint).map(|hint| format!("{hint}...")))
+        .transpose()?;
+    let named_variadic = function
+        .named_variadic_ty
+        .as_ref()
+        .map(|hint| fmt_hint(tparams, false, hint).map(|hint| format!("named {hint}...")))
+        .transpose()?;
+    let parameters = function
+        .param_tys
+        .iter()
+        .enumerate()
+        .map(|(index, hint)| {
+            fmt_fun_param(
+                tparams,
+                hint,
+                function.param_info.get(index).and_then(Option::as_ref),
+            )
+        })
+        .chain(variadic.into_iter().chain(named_variadic).map(Ok))
+        .collect::<Result<Vec<_>>>()?
+        .join(", ");
+    let contexts = function
+        .ctxs
+        .as_ref()
+        .map(|contexts| {
+            fmt_hints(tparams, &contexts.1, ", ").map(|contexts| format!("[{contexts}]"))
+        })
+        .transpose()?
+        .unwrap_or_default();
+    let readonly = if function.is_readonly.is_some() {
+        "readonly "
+    } else {
+        ""
+    };
+    let readonly_return = if function.is_readonly_return.is_some() {
+        "readonly "
+    } else {
+        ""
+    };
+    Ok(format!(
+        "({readonly}function{type_parameters} ({parameters}){contexts}: {readonly_return}{})",
+        fmt_hint(tparams, false, &function.return_ty)?
+    ))
 }
 
 fn can_be_nullable(hint: &Hint_) -> bool {
@@ -618,5 +781,254 @@ fn get_flags(tparams: &[&str], flags: TypeConstraintFlags, hint: &Hint_) -> Type
         | Hvar(_)
         | HvecOrDict(_, _)
         | Hwildcard => flags,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use hhbc::Constraint;
+    use hhvm_types_ffi::ffi::TypeConstraintFlags;
+    use oxidized::aast_defs::Contexts;
+    use oxidized::aast_defs::HfParamInfo;
+    use oxidized::aast_defs::Hint;
+    use oxidized::aast_defs::Hint_;
+    use oxidized::aast_defs::HintFun;
+    use oxidized::aast_defs::HintTparam;
+    use oxidized::aast_defs::TupleExtra;
+    use oxidized::aast_defs::TupleExtraInfo;
+    use oxidized::aast_defs::TupleInfo;
+    use oxidized::ast_defs::ConstraintKind;
+    use oxidized::ast_defs::Id;
+    use oxidized::ast_defs::OptionalKind;
+    use oxidized::ast_defs::ParamKind;
+    use oxidized::ast_defs::ReadonlyKind;
+    use oxidized::ast_defs::SplatKind;
+    use oxidized::pos::Pos;
+
+    use super::Kind;
+    use super::fmt_hint;
+    use super::hint_to_type_info;
+
+    fn hint(kind: Hint_) -> Hint {
+        Hint(Pos::NONE, Box::new(kind))
+    }
+
+    fn apply(name: &str) -> Hint {
+        hint(Hint_::Happly(Id(Pos::NONE, name.into()), vec![]))
+    }
+
+    fn param_info() -> HfParamInfo {
+        HfParamInfo {
+            kind: ParamKind::Pnormal,
+            readonlyness: None,
+            optional: None,
+            splat: None,
+            named: None,
+        }
+    }
+
+    fn signature(param_tys: Vec<Hint>, return_ty: Hint) -> HintFun {
+        let param_info = param_tys.iter().map(|_| None).collect();
+        HintFun {
+            is_readonly: None,
+            tparams: vec![],
+            param_tys,
+            param_info,
+            variadic_ty: None,
+            named_variadic_ty: None,
+            ctxs: None,
+            return_ty,
+            is_readonly_return: None,
+        }
+    }
+
+    fn rich_function() -> Hint {
+        let mut function = signature(
+            vec![apply("Widget"), apply("\\HH\\int"), apply("\\HH\\bool")],
+            apply("Widget"),
+        );
+        function.param_info = vec![
+            Some(HfParamInfo {
+                readonlyness: Some(ReadonlyKind::Readonly),
+                ..param_info()
+            }),
+            Some(HfParamInfo {
+                kind: ParamKind::Pinout(Pos::NONE),
+                ..param_info()
+            }),
+            Some(HfParamInfo {
+                optional: Some(OptionalKind::Optional),
+                ..param_info()
+            }),
+        ];
+        function.is_readonly = Some(ReadonlyKind::Readonly);
+        function.is_readonly_return = Some(ReadonlyKind::Readonly);
+        function.variadic_ty = Some(apply("\\HH\\string"));
+        function.named_variadic_ty = Some(apply("\\HH\\num"));
+        function.ctxs = Some(Contexts(Pos::NONE, vec![apply("io"), apply("write_props")]));
+        hint(Hint_::Hfun(function))
+    }
+
+    fn tuple(required: Vec<Hint>, optional: Vec<Hint>, variadic: Option<Hint>) -> Hint {
+        hint(Hint_::Htuple(TupleInfo {
+            required,
+            extra: TupleExtra::Hextra(TupleExtraInfo { optional, variadic }),
+        }))
+    }
+
+    #[test]
+    fn function_preserves_modifiers_variadics_and_contexts() {
+        assert_eq!(
+            fmt_hint(&[], false, &rich_function()).expect("function should format"),
+            "(readonly function (readonly Widget, inout HH\\int, optional HH\\bool, HH\\string..., named HH\\num...)[io, write_props]: readonly Widget)",
+        );
+    }
+
+    #[test]
+    fn function_distinguishes_default_contexts_from_explicit_pure() {
+        let mut function = signature(vec![], apply("\\HH\\void"));
+        assert_eq!(
+            fmt_hint(&[], false, &hint(Hint_::Hfun(function.clone())))
+                .expect("default contexts should format"),
+            "(function (): HH\\void)",
+        );
+        function.ctxs = Some(Contexts(Pos::NONE, vec![]));
+        assert_eq!(
+            fmt_hint(&[], false, &hint(Hint_::Hfun(function)))
+                .expect("pure contexts should format"),
+            "(function ()[]: HH\\void)",
+        );
+    }
+
+    #[test]
+    fn function_preserves_generic_bounds_attributes_named_parameters_and_splats() {
+        let mut function = signature(vec![apply("T"), apply("Args")], apply("T"));
+        function.tparams = vec![HintTparam {
+            name: Id(Pos::NONE, "T".into()),
+            user_attributes: vec![Id(Pos::NONE, "__NoAutoBound".into())],
+            constraints: vec![
+                (ConstraintKind::ConstraintAs, apply("Upper")),
+                (ConstraintKind::ConstraintSuper, apply("Lower")),
+            ],
+        }];
+        function.param_info = vec![
+            Some(HfParamInfo {
+                named: Some("$value".into()),
+                ..param_info()
+            }),
+            Some(HfParamInfo {
+                splat: Some(SplatKind::Splat),
+                ..param_info()
+            }),
+        ];
+        assert_eq!(
+            fmt_hint(&[], false, &hint(Hint_::Hfun(function)))
+                .expect("generic function should format"),
+            "(function<<<__NoAutoBound>> T as Upper super Lower> (named T $value, ...Args): T)",
+        );
+    }
+
+    #[test]
+    fn tuple_preserves_optional_variadic_and_splat_elements() {
+        let cases = [
+            (
+                tuple(
+                    vec![apply("\\HH\\int")],
+                    vec![apply("\\HH\\string")],
+                    Some(apply("\\HH\\bool")),
+                ),
+                "(HH\\int, optional HH\\string, HH\\bool...)",
+            ),
+            (
+                tuple(vec![], vec![apply("\\HH\\int")], None),
+                "(optional HH\\int)",
+            ),
+            (
+                tuple(vec![], vec![], Some(apply("\\HH\\string"))),
+                "(HH\\string...)",
+            ),
+            (
+                hint(Hint_::Htuple(TupleInfo {
+                    required: vec![apply("\\HH\\int")],
+                    extra: TupleExtra::Hsplat(apply("Args")),
+                })),
+                "(HH\\int, ...Args)",
+            ),
+        ];
+        for (tuple, expected) in cases {
+            assert_eq!(
+                fmt_hint(&[], false, &tuple).expect("tuple should format"),
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn auxiliary_contexts_and_vec_or_dict_preserve_their_arguments() {
+        assert_eq!(
+            fmt_hint(&[], false, &hint(Hint_::HfunContext("$cb".into())))
+                .expect("function context should format"),
+            "ctx $cb",
+        );
+        let access = hint(Hint_::Haccess(
+            hint(Hint_::Hvar("$obj".into())),
+            vec![Id(Pos::NONE, "C".into()), Id(Pos::NONE, "D".into())],
+        ));
+        assert_eq!(
+            fmt_hint(&[], false, &access).expect("variable context should format"),
+            "$obj::C::D"
+        );
+        for (key, expected) in [
+            (None, "HH\\vec_or_dict<HH\\int>"),
+            (
+                Some(apply("\\HH\\arraykey")),
+                "HH\\vec_or_dict<HH\\arraykey, HH\\int>",
+            ),
+        ] {
+            let array = hint(Hint_::HvecOrDict(key, apply("\\HH\\int")));
+            assert_eq!(
+                fmt_hint(&[], false, &array).expect("array arguments should format"),
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn reflection_detail_does_not_change_enforced_constraints() {
+        let function = rich_function();
+        let tuple = tuple(
+            vec![apply("\\HH\\int")],
+            vec![apply("\\HH\\string")],
+            Some(apply("\\HH\\bool")),
+        );
+        for kind in [Kind::Param, Kind::Return, Kind::Property] {
+            for (hint, expected) in [
+                (&function, Constraint::default()),
+                (
+                    &tuple,
+                    Constraint::intern("HH\\varray", TypeConstraintFlags::NoFlags),
+                ),
+            ] {
+                let info = hint_to_type_info(&kind, false, false, &[], hint)
+                    .expect("constraint should emit");
+                assert_eq!(info.type_constraint, expected);
+            }
+        }
+    }
+
+    #[test]
+    fn enum_generic_erasure_remains_explicit() {
+        let generic = hint(Hint_::Happly(
+            Id(Pos::NONE, "Box".into()),
+            vec![apply("\\HH\\int")],
+        ));
+        assert_eq!(
+            fmt_hint(&[], false, &generic).expect("generic should format"),
+            "Box<HH\\int>"
+        );
+        assert_eq!(
+            fmt_hint(&[], true, &generic).expect("enum base should erase arguments"),
+            "Box"
+        );
     }
 }
