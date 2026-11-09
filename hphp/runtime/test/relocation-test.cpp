@@ -2811,6 +2811,40 @@ jit::vector<TCA> resolvePooledLiterals(CodeBlock& cb, CGMeta& meta) {
   return literals;
 }
 
+TEST(SmashableArm, NativeCallLiteralForBothFormats) {
+  CodeBlock main;
+  if (!initLowBlock(4096, main)) {
+    GTEST_SKIP() << "could not map a code block below 4GB";
+  }
+  SCOPE_EXIT { freeLowBlock(); };
+
+  auto const oldInline = Cfg::Jit::ArmInlineSmashableCall;
+  SCOPE_EXIT { Cfg::Jit::ArmInlineSmashableCall = oldInline; };
+  MacroAssembler a{main};
+  auto const target = main.frontier();
+  a.Ret();
+
+  for (auto const inlineCall : {false, true}) {
+    Cfg::Jit::ArmInlineSmashableCall = inlineCall;
+    for (auto const far : {false, true}) {
+      SCOPED_TRACE(testing::Message() << "inline=" << inlineCall << ", far=" << far);
+      CGMeta meta;
+      if (inlineCall) {
+        auto const call = arm::emitSmashableCall(main, meta, target, far);
+        auto const literals = resolvePooledLiterals(main, meta);
+        ASSERT_EQ(literals.size(), 1);
+        EXPECT_EQ(smashableCallLiteral(call), literals[0]);
+      } else {
+        auto const emit = [&](vixl::Label& label) { a.bl(&label); };
+        auto const site = far
+          ? emitFarVeneer(a, main, target, emit)
+          : emitDirectVeneer(a, main, target, emit);
+        EXPECT_EQ(smashableCallLiteral(site.branch), site.literal);
+      }
+    }
+  }
+}
+
 TEST(SmashableArm, CallStartMatchesProfilingMetadata) {
   CodeBlock main;
   if (!initLowBlock(4096, main)) {

@@ -1345,9 +1345,9 @@ void Vgen::emit(const calls& i) {
   // When using ROAR, track the native call so we can register them with ROAR
   // after the code is relocated into its final place in the code cache.
   //
-  // ROAR patches the site in place and only recognizes a bare BL or B there,
-  // so `addr` must stay the address of the BL that emitSmashableCall emits,
-  // not of any load preceding it.
+  // ROAR accepts the sequence start: BL for a veneer call, LDR or ADRP
+  // for an inline call. Its final BL occupies the original branch slot so
+  // the return address stays unchanged.
   //
   // ROAR patches a registered site for the life of the process, but a reusable
   // TC frees translations and hands their memory to new code.

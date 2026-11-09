@@ -283,8 +283,8 @@ int registerDirectNativeCalls(const fast_map<TCA, TCA>& nativeCalls) {
   );
 }
 
-// On ARM a native call reaches its target through a veneer that loads a
-// pointer, so hand ROAR the pointer: patching it works at any distance,
+// On ARM a native call loads a pointer inline or through a veneer.
+// Hand ROAR the pointer: patching it works at any distance,
 // whereas retargeting the call itself only reaches +/-128MB. The call still
 // goes along, for ROAR to collapse onto once the callee settles.
 int registerLiteralNativeCalls(const fast_map<TCA, TCA>& nativeCalls) {
@@ -295,7 +295,7 @@ int registerLiteralNativeCalls(const fast_map<TCA, TCA>& nativeCalls) {
     auto const literal = smashableCallLiteral(nc.first);
     // A call smashed straight to its target no longer loads a literal.
     if (!literal) continue;
-    // A smashable veneer loads a 32-bit target, see smashableVeneerLoad().
+    // Both smashable call formats load a 32-bit target.
     callSites.push_back({nc.first, nc.second, literal, sizeof(uint32_t)});
   }
   return __roar_api_flag_safe_function_call_sites_with_literals(

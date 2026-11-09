@@ -1029,6 +1029,11 @@ TCA smashableCallTarget(TCA inst) {
 
 TCA smashableCallLiteral(TCA inst) {
   using namespace vixl;
+  if (useSmashedCallInline()) {
+    auto const load =
+      readInlineLoad(inst, UnconditionalBranchToRegisterMask, BLR);
+    return load ? load.literal : nullptr;
+  }
   if (!possiblySmashableCall(inst)) return nullptr;
   auto const veneer = Instruction::Cast(inst)->ImmPCOffsetTarget();
   auto const load = smashableVeneerLoad(veneer);
