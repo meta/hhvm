@@ -103,6 +103,9 @@ static const char* s_newIgnorelist[] = {
   "killpg"
 };
 
+#ifdef __roar__
+__attribute__((roar_no_jit))
+#endif
 void bt_handler(int sigin, siginfo_t* info, void* args) {
   // The report timed out (see the timer below): dump core on this thread.
   if (sigin == SIGABRT && info && info->si_code == SI_TIMER) {
