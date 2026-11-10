@@ -20,5 +20,6 @@ itertools = "0.15.0"
 naming_special_names_rust = { path = "../../../naming" }
 oxidized = { path = "../../../oxidized" }
 parser_core_types = { path = "../core_types" }
+positioned_parser = { path = "../../api/cargo/positioned_parser" }
 stack_limit = { path = "../../../utils/stack_limit" }
 strum = { version = "0.28.0", features = ["derive"] }

@@ -4153,6 +4153,7 @@ dependencies = [
  "naming_special_names_rust",
  "oxidized",
  "parser_core_types",
+ "positioned_parser",
  "stack_limit",
  "strum",
 ]

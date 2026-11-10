@@ -48,9 +48,9 @@ function both_collectors_preserve_extra_positionals_accepts(): void {
 }
 
 function immediately_called_named_collector_accepts(): void {
-  (($x, named $optional = 0, named arraykey...) ==> {
+  (($x, named $optional_value = 0, named arraykey...) ==> {
     wants_int($x);
-    wants_int($optional);
+    wants_int($optional_value);
   })(1, extra = "s");
 }
 
@@ -61,4 +61,3 @@ abstract class PositionalVariadicOverrideBase {
 class PositionalVariadicOverride extends PositionalVariadicOverrideBase {
   public function m(int ...$args, named string $name): void {}
 }
-//

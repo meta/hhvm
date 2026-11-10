@@ -2586,6 +2586,35 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
         })
     }
 
+    fn check_named_parameter_name(&mut self, param: S<'a>) {
+        if parameter_modifier(param, TokenKind::Named).is_none() {
+            return;
+        }
+        let name = match &param.children {
+            ParameterDeclaration(p) if p.pre_ellipsis.is_missing() && p.ellipsis.is_missing() => {
+                &p.name
+            }
+            ClosureParameterTypeSpecifier(p)
+                if p.pre_ellipsis.is_missing() && p.ellipsis.is_missing() =>
+            {
+                &p.name
+            }
+            _ => return,
+        };
+        if token_kind(name) != Some(TokenKind::Variable) {
+            return;
+        }
+        // Named arguments require a Name token; scan past the parameter's `$`.
+        let kind =
+            positioned_parser::scan_token_kind(self.env.text.source_text(), start_offset(name) + 1);
+        if kind != TokenKind::Name {
+            self.errors.push(make_error_from_node(
+                name,
+                errors::named_parameter_keyword_name,
+            ));
+        }
+    }
+
     fn params_errors(&mut self, params: S<'a>) {
         self.produce_error_from_check(ends_with_variadic_comma, params, || errors::error2022);
         self.produce_error_from_check(misplaced_variadic_param, params, || errors::error2021);
@@ -2681,6 +2710,7 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
             for x in syntax_to_list_no_separators(params) {
                 self_.check_parameter_this(x);
                 self_.check_parameter_readonly(x);
+                self_.check_named_parameter_name(x);
             }
             self_.params_errors(params)
         };

@@ -8,6 +8,7 @@
 //! to use for most applications.
 
 use parser::NoState;
+use parser::lexable_token::LexableToken;
 use parser::lexer::Lexer;
 use parser::parser::Parser;
 use parser::parser_env::ParserEnv;
@@ -18,6 +19,7 @@ use parser::smart_constructors_wrappers::WithKind;
 use parser::source_text::SourceText;
 use parser::syntax_error::SyntaxError;
 use parser::token_factory::SimpleTokenFactoryImpl;
+use parser::token_kind::TokenKind;
 use positioned_smart_constructors::*;
 
 pub type SmartConstructors = WithKind<
@@ -39,6 +41,17 @@ pub fn parse_script<'a>(
     let errors = parser.errors();
     let sc_state = parser.into_sc_state();
     (root, errors, sc_state)
+}
+
+/// Scan a token using the same keyword and case rules as expressions.
+pub fn scan_token_kind(source_text: &SourceText<'_>, offset: usize) -> TokenKind {
+    Lexer::make_at(
+        source_text,
+        offset,
+        SimpleTokenFactoryImpl::<PositionedToken>::new(),
+    )
+    .next_token()
+    .kind()
 }
 
 fn trivia_lexer<'a>(

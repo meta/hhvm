@@ -442,15 +442,14 @@ error: Typing[4331] Wrong type hint [1]
 named_lambda_reordered_params_bad.php:60:15
 58 | 
 59 | function immediately_called_named_collector_body_mistype_rejects(): void {
-60 |   (($x, named $optional = 0, named arraykey...) ==> {
-   |               ^^^^^^^^^ [1]
-   |                           ^ [3]
+60 |   (($x, named $optional_value = 0, named arraykey...) ==> {
+   |               ^^^^^^^^^^^^^^^ [1]
+   |                                 ^ [3]
 61 |     wants_string($x);
-62 |     wants_string($optional);
+62 |     wants_string($optional_value);
 63 |   })(1, extra = "s");
    |                 ^^^ [2]
 64 | }
-65 | //
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `string` [2]
@@ -465,13 +464,12 @@ named_lambda_reordered_params_bad.php:61:18
 11 | function named_variadic_extra_body_mistype_rejects(): void {
    :
 59 | function immediately_called_named_collector_body_mistype_rejects(): void {
-60 |   (($x, named $optional = 0, named arraykey...) ==> {
+60 |   (($x, named $optional_value = 0, named arraykey...) ==> {
 61 |     wants_string($x);
    |                  ^^ [1]
-62 |     wants_string($optional);
+62 |     wants_string($optional_value);
 63 |   })(1, extra = "s");
    |      ^ [3]
 64 | }
-65 | //
 
 21 errors found

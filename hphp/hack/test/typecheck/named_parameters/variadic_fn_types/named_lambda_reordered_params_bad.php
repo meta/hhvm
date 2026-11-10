@@ -57,9 +57,8 @@ function both_collectors_extra_positional_body_mistype_rejects(): void {
 function wants_int_vec(vec<int> $x): void {}
 
 function immediately_called_named_collector_body_mistype_rejects(): void {
-  (($x, named $optional = 0, named arraykey...) ==> {
+  (($x, named $optional_value = 0, named arraykey...) ==> {
     wants_string($x);
-    wants_string($optional);
+    wants_string($optional_value);
   })(1, extra = "s");
 }
-//
