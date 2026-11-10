@@ -882,8 +882,8 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 
 - uint32_t Eval.ServiceRouterJumpstartWarmup = 0, nikunjm
 
-  Maximum number of ServiceRouter tiers to store in the jumpstart profile.
-  Tiers are recorded during profiling and warmed up when the profile is loaded.
+  Maximum number of ServiceRouter tiers to record for warmup.
+  Zero disables collection.
 
 - uint64_t Eval.VMStackElms, UNKNOWN
 
