@@ -1,0 +1,1 @@
+Fatal error: when resolving anonymous type structure, Y::T does not resolve to a class or an interface and cannot contain type constant T in %s/type_structure/xhp_type_access.php on line 16

@@ -1,0 +1,1 @@
+Fatal error: when resolving anonymous type structure, HostTraverser::THost does not resolve to a class or an interface and cannot contain type constant TData in %s/checked_unsafe_cast/xhp_type_access.php on line 23
