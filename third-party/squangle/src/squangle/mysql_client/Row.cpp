@@ -16,6 +16,23 @@
 
 namespace facebook::common::mysql_client {
 
+namespace {
+
+uint64_t decodeBitField(folly::StringPiece bytes) {
+  if (bytes.size() > sizeof(uint64_t)) {
+    throw std::range_error(
+        fmt::format(
+            "BIT value of {} bytes does not fit in 64 bits", bytes.size()));
+  }
+  uint64_t value = 0;
+  for (unsigned char byte : bytes) {
+    value = (value << 8) | byte;
+  }
+  return value;
+}
+
+} // namespace
+
 namespace detail {
 
 void throwIndexOutOfRange(std::string_view what, size_t value, size_t size) {
@@ -308,7 +325,6 @@ folly::dynamic Row::getDynamic(size_t l) const {
         return folly::dynamic(row_block_->getField<double>(row_number_, l));
 
       // folly::dynamic::Type::INT64
-      case MYSQL_TYPE_BIT:
       case MYSQL_TYPE_TINY:
       case MYSQL_TYPE_SHORT:
       case MYSQL_TYPE_LONG:
@@ -321,7 +337,8 @@ folly::dynamic Row::getDynamic(size_t l) const {
         }
         return folly::dynamic(row_block_->getField<int64_t>(row_number_, l));
 
-      // folly::dynamic::Type::STRING
+      // folly::dynamic::Type::STRING, including BIT, whose value is the
+      // column's packed big-endian bytes
       default:
         return folly::dynamic(
             row_block_->getField<folly::StringPiece>(row_number_, l));
@@ -343,10 +360,14 @@ bool RowBlock::getField(size_t row, size_t field_num) const {
     using T = std::decay_t<decltype(arg)>;
     if constexpr (std::is_same_v<T, bool>) {
       return arg;
+    } else if constexpr (std::is_same_v<T, folly::StringPiece>) {
+      if (getFieldType(field_num) == MYSQL_TYPE_BIT) {
+        return decodeBitField(arg) != 0;
+      }
+      return folly::to<bool>(arg);
     } else if constexpr (
         (std::is_same_v<T, int64_t>) || (std::is_same_v<T, uint64_t>) ||
-        (std::is_same_v<T, double>) ||
-        (std::is_same_v<T, folly::StringPiece>)) {
+        (std::is_same_v<T, double>)) {
       return folly::to<bool>(arg);
     }
 
@@ -369,10 +390,14 @@ int64_t RowBlock::getField(size_t row, size_t field_num) const {
     using T = std::decay_t<decltype(arg)>;
     if constexpr (std::is_same_v<T, int64_t>) {
       return arg;
+    } else if constexpr (std::is_same_v<T, folly::StringPiece>) {
+      if (getFieldType(field_num) == MYSQL_TYPE_BIT) {
+        return folly::to<int64_t>(decodeBitField(arg));
+      }
+      return folly::to<int64_t>(arg);
     } else if constexpr (
         (std::is_same_v<T, bool>) || (std::is_same_v<T, uint64_t>) ||
-        (std::is_same_v<T, double>) ||
-        (std::is_same_v<T, folly::StringPiece>)) {
+        (std::is_same_v<T, double>)) {
       return folly::to<int64_t>(arg);
     }
 
@@ -390,10 +415,14 @@ uint64_t RowBlock::getField(size_t row, size_t field_num) const {
     using T = std::decay_t<decltype(arg)>;
     if constexpr (std::is_same_v<T, uint64_t>) {
       return arg;
+    } else if constexpr (std::is_same_v<T, folly::StringPiece>) {
+      if (getFieldType(field_num) == MYSQL_TYPE_BIT) {
+        return decodeBitField(arg);
+      }
+      return folly::to<uint64_t>(arg);
     } else if constexpr (
         (std::is_same_v<T, bool>) || (std::is_same_v<T, int64_t>) ||
-        (std::is_same_v<T, double>) ||
-        (std::is_same_v<T, folly::StringPiece>)) {
+        (std::is_same_v<T, double>)) {
       return folly::to<uint64_t>(arg);
     }
 
@@ -411,10 +440,14 @@ double RowBlock::getField(size_t row, size_t field_num) const {
     using T = std::decay_t<decltype(arg)>;
     if constexpr (std::is_same_v<T, double>) {
       return arg;
+    } else if constexpr (std::is_same_v<T, folly::StringPiece>) {
+      if (getFieldType(field_num) == MYSQL_TYPE_BIT) {
+        return folly::to<double>(decodeBitField(arg));
+      }
+      return folly::to<double>(arg);
     } else if constexpr (
         (std::is_same_v<T, bool>) || (std::is_same_v<T, int64_t>) ||
-        (std::is_same_v<T, uint64_t>) ||
-        (std::is_same_v<T, folly::StringPiece>)) {
+        (std::is_same_v<T, uint64_t>)) {
       return folly::to<double>(arg);
     }
 

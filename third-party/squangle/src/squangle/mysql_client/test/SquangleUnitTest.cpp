@@ -2664,6 +2664,57 @@ TEST(RowBlockAddRowTest, AddRow_InterleavedWithStartRow_BothVisible) {
 }
 
 // =============================================================================
+// BIT columns
+//
+// The server sends a BIT value as the column's packed big-endian bytes.
+// =============================================================================
+
+TEST(RowBlockBitTest, GetDynamicReturnsTheRawBytes) {
+  RowBlock block(
+      RowFields::builderWithoutCharsets()
+          .column("b", MYSQL_TYPE_BIT, "tbl")
+          .buildShared());
+  const std::string bytes("\x00\x01", 2);
+  block.addRow({bytes});
+
+  EXPECT_EQ(block.getRow(0).getDynamic(0), folly::dynamic(bytes));
+  EXPECT_EQ(block.getField<std::string>(0, 0), bytes);
+}
+
+TEST(RowBlockBitTest, NumericGettersDecodeBigEndian) {
+  RowBlock block(
+      RowFields::builderWithoutCharsets()
+          .column("b", MYSQL_TYPE_BIT, "tbl")
+          .buildShared());
+  block.addRow({std::string("\x00\x01", 2)});
+  // Bytes that happen to be ASCII digits are still bits, not text.
+  block.addRow({std::string("12")});
+  block.addRow({std::string("\x01\x02", 2)});
+  block.addRow({std::string("\x00", 1)});
+
+  EXPECT_EQ(block.getField<uint64_t>(0, 0), uint64_t{0x0001});
+  EXPECT_EQ(block.getField<uint64_t>(1, 0), uint64_t{0x3132});
+  EXPECT_EQ(block.getField<int64_t>(2, 0), int64_t{0x0102});
+  EXPECT_EQ(block.getField<double>(2, 0), double{0x0102});
+  EXPECT_TRUE(block.getField<bool>(0, 0));
+  EXPECT_FALSE(block.getField<bool>(3, 0));
+}
+
+TEST(RowBlockBitTest, NumericGettersRejectValuesThatDoNotFit) {
+  RowBlock block(
+      RowFields::builderWithoutCharsets()
+          .column("b", MYSQL_TYPE_BIT, "tbl")
+          .buildShared());
+  block.addRow({std::string(8, '\xff')});
+  block.addRow({std::string(9, '\x01')});
+
+  EXPECT_EQ(
+      block.getField<uint64_t>(0, 0), std::numeric_limits<uint64_t>::max());
+  EXPECT_THROW(block.getField<int64_t>(0, 0), std::range_error);
+  EXPECT_THROW(block.getField<uint64_t>(1, 0), std::range_error);
+}
+
+// =============================================================================
 // RowBlock Build-Path Tests
 //
 // Covers the RowBlock building API (startRow/appendValue/appendNull/finishRow)
