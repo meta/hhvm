@@ -400,7 +400,7 @@ IMPLEMENT_RESOURCE_ALLOCATION(PageletTask)
 // implementing PageletServer
 
 static JobQueueDispatcher<PageletWorker> *s_dispatcher;
-static Mutex s_dispatchMutex;
+static ReadWriteMutex s_dispatchMutex;
 static ServiceData::CounterCallback* s_counters;
 
 bool PageletServer::Enabled() {
@@ -411,7 +411,7 @@ void PageletServer::Restart() {
   Stop();
   if (Cfg::PageletServer::ThreadCount > 0) {
     {
-      Lock l(s_dispatchMutex);
+      WriteLock l(s_dispatchMutex);
       s_dispatcher = new JobQueueDispatcher<PageletWorker>
         (Cfg::PageletServer::ThreadCount,
          Cfg::PageletServer::ThreadCount,
@@ -445,7 +445,7 @@ void PageletServer::Stop() {
     s_dispatcher->stop();
     delete s_counters;
     s_counters = nullptr;
-    Lock l(s_dispatchMutex);
+    WriteLock l(s_dispatchMutex);
     delete s_dispatcher;
     s_dispatcher = nullptr;
   }
@@ -466,7 +466,7 @@ OptResource PageletServer::TaskStart(
     ServiceData::createTimeSeries("pagelet_queued",
                                   { ServiceData::StatsType::COUNT });
   {
-    Lock l(s_dispatchMutex);
+    ReadLock l(s_dispatchMutex);
     if (!s_dispatcher) {
       return OptResource();
     }
@@ -485,7 +485,7 @@ OptResource PageletServer::TaskStart(
                                         get_uploaded_files(), files,
                                         timeoutSeconds);
   PageletTransport *job = task->getJob();
-  Lock l(s_dispatchMutex);
+  WriteLock l(s_dispatchMutex);
   if (s_dispatcher) {
     job->incRefCount(); // paired with worker's decRefCount()
 
@@ -533,6 +533,11 @@ void PageletServer::AddToPipeline(const std::string &s) {
 
 int PageletServer::GetActiveWorker() {
   return s_dispatcher ? s_dispatcher->getActiveWorker() : 0;
+}
+
+size_t PageletServer::GetLiveThreadCount() {
+  ReadLock l(s_dispatchMutex);
+  return s_dispatcher ? s_dispatcher->getLiveThreadCount() : 0;
 }
 
 int PageletServer::GetQueuedJobs() {

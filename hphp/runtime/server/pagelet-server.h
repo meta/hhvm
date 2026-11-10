@@ -82,6 +82,7 @@ struct PageletServer {
    * Check active threads and queued requests
    */
   static int GetActiveWorker();
+  static size_t GetLiveThreadCount();
   static int GetQueuedJobs();
 };
 

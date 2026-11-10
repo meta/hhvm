@@ -53,6 +53,7 @@ public:
   static int TaskResult(XboxTransport* const job, int timeout_ms, Variant *ret);
 
   static int GetActiveWorkers();
+  static size_t GetLiveThreadCount();
   static int GetQueuedJobs();
 };
 

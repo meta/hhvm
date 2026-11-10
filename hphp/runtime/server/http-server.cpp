@@ -29,9 +29,11 @@
 #include "hphp/runtime/server/admin-request-handler.h"
 #include "hphp/runtime/server/http-request-handler.h"
 #include "hphp/runtime/server/memory-stats.h"
+#include "hphp/runtime/server/pagelet-server.h"
 #include "hphp/runtime/server/replay-transport.h"
 #include "hphp/runtime/server/server-stats.h"
 #include "hphp/runtime/server/warmup-request-handler.h"
+#include "hphp/runtime/server/xbox-server.h"
 
 #include "hphp/util/boot-stats.h"
 #include "hphp/util/bump-mapper.h"
@@ -77,6 +79,11 @@ std::atomic_int_fast64_t HttpServer::PrepareToStopTime{0};
 time_t HttpServer::OldServerStopTime;
 std::vector<ShutdownStat> HttpServer::ShutdownStats;
 folly::MicroSpinLock HttpServer::StatsLock;
+
+uint64_t HttpServer::GetIOGateThreadCount() {
+  return Cfg::Server::ThreadCount + XboxServer::GetLiveThreadCount() +
+    PageletServer::GetLiveThreadCount();
+}
 
 // signals upon which the server shuts down gracefully
 static const int kTermSignals[] = { SIGHUP, SIGINT, SIGTERM, SIGUSR1 };

@@ -16,10 +16,74 @@
 #include "hphp/util/job-queue.h"
 
 #include <chrono>
+#include <functional>
+#include <future>
 #include <thread>
 #include <gtest/gtest.h>
 
 namespace HPHP {
+
+namespace {
+template<bool CountActive = true>
+struct CountWorker
+  : JobQueueWorker<std::function<void()>, std::function<void()>*, CountActive, true> {
+  void doJob(std::function<void()> job) override { job(); }
+  void onThreadExit() override { if (this->m_context) (*this->m_context)(); }
+};
+}
+
+TEST(JobQueueDispatcher, InstantiatedWorkers) {
+  JobQueueDispatcher<CountWorker<>> dispatcher(128, 50000, 0, false, nullptr);
+  std::promise<void> started;
+  std::promise<void> release;
+  auto ready = release.get_future();
+  dispatcher.enqueue([&] { started.set_value(); ready.wait(); });
+  EXPECT_EQ(0, dispatcher.getLiveThreadCount());
+  dispatcher.start();
+  started.get_future().wait();
+  EXPECT_EQ(1, dispatcher.getLiveThreadCount());
+  dispatcher.setMaxThreadCount(50000);
+  EXPECT_EQ(1, dispatcher.getLiveThreadCount());
+  release.set_value();
+  dispatcher.waitEmpty(false);
+  EXPECT_EQ(0, dispatcher.getActiveWorker());
+  EXPECT_EQ(1, dispatcher.getLiveThreadCount());
+  dispatcher.stop();
+  EXPECT_EQ(0, dispatcher.getLiveThreadCount());
+}
+
+TEST(JobQueueDispatcher, CountRetiredWorkerDuringStop) {
+  std::promise<void> exiting;
+  std::promise<void> release;
+  auto ready = release.get_future();
+  std::function<void()> onExit = [&] { exiting.set_value(); ready.wait(); };
+  JobQueueDispatcher<CountWorker<>> dispatcher(1, 1, 0, false, &onExit);
+  dispatcher.enqueue([] {});
+  dispatcher.start();
+  dispatcher.waitEmpty(false);
+  dispatcher.setMaxThreadCount(0);
+  std::thread stopper([&] { dispatcher.stop(); });
+  exiting.get_future().wait();
+  EXPECT_EQ(1, dispatcher.getLiveThreadCount());
+  release.set_value();
+  stopper.join();
+  EXPECT_EQ(0, dispatcher.getLiveThreadCount());
+}
+
+TEST(JobQueueDispatcher, CountBeforeAndAfterResize) {
+  JobQueueDispatcher<CountWorker<false>> dispatcher(3, 3, 0, false, nullptr);
+  EXPECT_EQ(0, dispatcher.getLiveThreadCount());
+  dispatcher.setMaxThreadCount(2);
+  dispatcher.start();
+  EXPECT_EQ(2, dispatcher.getLiveThreadCount());
+  auto workers = dispatcher.getWorkers();
+  dispatcher.setMaxThreadCount(1);
+  static_cast<AsyncFunc<CountWorker<false>>*>(workers.back()->func())->waitForEnd();
+  dispatcher.enqueue([] {});
+  EXPECT_EQ(1, dispatcher.getLiveThreadCount());
+  dispatcher.stop();
+  EXPECT_EQ(0, dispatcher.getLiveThreadCount());
+}
 
 TEST(JobQueue, Ordering) {
   {

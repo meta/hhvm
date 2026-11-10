@@ -73,6 +73,8 @@ struct HttpServer : Synchronizable, Server::ServerEventListener {
 
   HPHP::Server* getPageServer() { return m_pageServer.get(); }
 
+  static uint64_t GetIOGateThreadCount();
+
   static void MarkShutdownStat(ShutdownEvent event);
   static void LogShutdownStats();
   static void ProfileFlush();

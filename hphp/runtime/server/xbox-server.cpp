@@ -15,6 +15,8 @@
 */
 
 #include "hphp/runtime/server/xbox-server.h"
+
+#include <folly/ScopeGuard.h>
 #include "hphp/runtime/base/builtin-functions.h"
 #include "hphp/runtime/base/request-fanout-limit-wrapper.h"
 #include "hphp/runtime/ext/server/ext_server.h"
@@ -175,8 +177,9 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static Mutex s_dispatchMutex;
+static ReadWriteMutex s_dispatchMutex;
 static JobQueueDispatcher<XboxWorker> *s_dispatcher;
+static size_t s_drainingThreadCount{0};
 static ServiceData::CounterCallback* s_counters;
 
 void XboxServer::Restart() {
@@ -184,7 +187,7 @@ void XboxServer::Restart() {
 
   if (Cfg::Xbox::ServerInfoThreadCount > 0) {
     {
-      Lock l(s_dispatchMutex);
+      WriteLock l(s_dispatchMutex);
       s_dispatcher = new JobQueueDispatcher<XboxWorker>
         (Cfg::Xbox::ServerInfoThreadCount,
          Cfg::Xbox::ServerInfoThreadCount,
@@ -231,16 +234,23 @@ void XboxServer::Stop() {
   delete s_counters;
   s_counters = nullptr;
   JobQueueDispatcher<XboxWorker>* dispatcher = nullptr;
+  size_t drainingCount = 0;
   {
-    Lock l(s_dispatchMutex);
+    WriteLock l(s_dispatchMutex);
     if (!s_dispatcher) return;
 
     dispatcher = s_dispatcher;
+    drainingCount = dispatcher->getLiveThreadCount();
+    s_drainingThreadCount += drainingCount;
     s_dispatcher = nullptr;
   }
 
+  SCOPE_EXIT {
+    delete dispatcher;
+    WriteLock l(s_dispatchMutex);
+    s_drainingThreadCount -= drainingCount;
+  };
   dispatcher->stop();
-  delete dispatcher;
 }
 
 bool XboxServer::Enabled() {
@@ -305,7 +315,7 @@ OptResource XboxServer::TaskStart(
     ServiceData::createTimeSeries("xbox_queued",
                                   { ServiceData::StatsType::COUNT });
   {
-    Lock l(s_dispatchMutex);
+    WriteLock l(s_dispatchMutex);
     if (s_dispatcher &&
         (s_dispatcher->getActiveWorker() <
          Cfg::Xbox::ServerInfoThreadCount ||
@@ -381,12 +391,18 @@ int XboxServer::TaskResult(XboxTransport *job, int timeout_ms, Variant *ret) {
 }
 
 int XboxServer::GetActiveWorkers() {
-  Lock l(s_dispatchMutex);
+  ReadLock l(s_dispatchMutex);
   return s_dispatcher ? s_dispatcher->getActiveWorker() : 0;
 }
 
+size_t XboxServer::GetLiveThreadCount() {
+  ReadLock l(s_dispatchMutex);
+  return s_drainingThreadCount +
+    (s_dispatcher ? s_dispatcher->getLiveThreadCount() : 0);
+}
+
 int XboxServer::GetQueuedJobs() {
-  Lock l(s_dispatchMutex);
+  ReadLock l(s_dispatchMutex);
   return s_dispatcher ? s_dispatcher->getQueuedJobs() : 0;
 }
 

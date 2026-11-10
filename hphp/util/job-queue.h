@@ -103,6 +103,8 @@ struct DispatcherStats {
   size_t activeThreads = 0;
   // Number of jobs that are currently in the queue
   size_t queuedJobCount = 0;
+  // Instantiated pool workers, including idle workers.
+  size_t liveThreads = 0;
 };
 
 /**
@@ -552,6 +554,10 @@ struct JobQueueDispatcher : IHostHealthObserver {
     return m_maxThreadCount.load(std::memory_order_acquire);
   }
 
+  size_t getLiveThreadCount() const {
+    return m_threadCount.load(std::memory_order_relaxed);
+  }
+
   int getActiveWorker() {
     return m_queue.getActiveWorker();
   }
@@ -583,6 +589,7 @@ struct JobQueueDispatcher : IHostHealthObserver {
     }
     for (auto worker : m_funcs) {
       worker->start();
+      ++m_threadCount;
     }
     m_stopped = false;
 
@@ -604,10 +611,12 @@ struct JobQueueDispatcher : IHostHealthObserver {
 
     // Spin up another worker thread if appropriate.
     auto const target = getTargetNumWorkers();
-    auto const actives = [&] {
+    size_t actives;
+    {
       Lock lock(m_mutex);
-      return numActiveThreads();
-    }();
+      if (m_stopped) return;
+      actives = numActiveThreads();
+    }
     if (actives < target) addWorker();
   }
 
@@ -668,8 +677,11 @@ struct JobQueueDispatcher : IHostHealthObserver {
     // TODO(t5572120): If stop has already been called when the destructor
     // runs, we'd bail out here and potentially start destroying AsyncFuncs
     // that are still running.
-    if (m_stopped) return;
-    m_stopped = true;
+    {
+      Lock lock(m_mutex);
+      if (m_stopped) return;
+      m_stopped = true;
+    }
 
     m_queue.stop();
     bool exceptioned = false;
@@ -681,7 +693,6 @@ struct JobQueueDispatcher : IHostHealthObserver {
         Lock lock(m_mutex);
         if (!m_funcs.empty()) {
           func = *m_funcs.begin();
-          m_funcs.erase(func);
         } else if (m_reaperFunc) {
           func = m_reaperFunc.release();
         }
@@ -694,6 +705,10 @@ struct JobQueueDispatcher : IHostHealthObserver {
       } catch (Exception& e) {
         exceptioned = true;
         exception = e;
+      }
+      {
+        Lock lock(m_mutex);
+        if (m_funcs.erase(func)) --m_threadCount;
       }
       delete func;
     }
@@ -784,6 +799,7 @@ struct JobQueueDispatcher : IHostHealthObserver {
     stats.maxThreads = getMaxThreadCount();
     stats.activeThreads = getActiveWorker();
     stats.queuedJobCount = getQueuedJobs();
+    stats.liveThreads = getLiveThreadCount();
 
     return stats;
   }
@@ -796,6 +812,7 @@ private:
   HealthLevel m_healthStatus{HealthLevel::Bold};
   typename TWorker::ContextType m_context;
   std::atomic<int> m_maxThreadCount;
+  std::atomic<size_t> m_threadCount{0};
   const int m_maxQueueCount;    // not including the possible reaper
   int m_currThreadCountLimit;   // initial limit can be lower than max
   std::atomic<uint32_t> m_prevNode{0};   // the NUMA node for last worker
@@ -842,6 +859,7 @@ private:
       if (func->waitForEnd(-1)) {
         it = m_stoppedWorkers.erase(it);
         m_funcs.erase(func);
+        if (!m_stopped) --m_threadCount;
         delete func;
         delete worker;
       } else {
@@ -883,6 +901,7 @@ private:
 
     if (start) {
       func->start();
+      ++m_threadCount;
     }
   }
 
