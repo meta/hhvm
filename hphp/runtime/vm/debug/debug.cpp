@@ -191,10 +191,8 @@ void DebugInfo::recordPerfMap(TCRange range, SrcKey sk, std::string name,
                           Cfg::Eval::PerfPidMapIncludeFilePath);
   }
   auto const start = reinterpret_cast<uintptr_t>(range.begin());
-  if (use_roar) {
-    if (meta != nullptr) {
-      meta->roarPidMapEntries.push_back({start, range.size(), name});
-    }
+  if (use_roar && meta != nullptr) {
+    meta->roarPidMapEntries.push_back({start, range.size(), name});
   } else {
     writeToPidMap(start, range.size(), name.c_str());
   }
