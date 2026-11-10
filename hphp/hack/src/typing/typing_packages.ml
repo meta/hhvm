@@ -61,13 +61,33 @@ type check_reason =
   | `No
   ]
 
+(* Compiling the exclude patterns is much more expensive than matching them,
+   and [is_excluded] runs on every cross-file symbol access, so keep the
+   compiled patterns for the last pattern list seen. *)
+let compiled_exclude_patterns : (string list * Str.regexp list) option ref =
+  ref None
+
+let get_compiled_exclude_patterns patterns =
+  match !compiled_exclude_patterns with
+  | Some (cached_patterns, regexps)
+    when phys_equal cached_patterns patterns
+         || List.equal String.equal cached_patterns patterns ->
+    regexps
+  | Some _
+  | None ->
+    let regexps = List.map patterns ~f:Str.regexp in
+    compiled_exclude_patterns := Some (patterns, regexps);
+    regexps
+
 let is_excluded env (file : Relative_path.t) =
   let filename = Relative_path.to_absolute file in
   let excluded_patterns =
-    Env.get_tcopt env |> Typechecker_options.package_exclude_patterns
+    Env.get_tcopt env
+    |> Typechecker_options.package_exclude_patterns
+    |> get_compiled_exclude_patterns
   in
-  List.exists excluded_patterns ~f:(fun pattern ->
-      Str.(string_match (regexp pattern) filename 0))
+  List.exists excluded_patterns ~f:(fun regexp ->
+      Str.string_match regexp filename 0)
 
 (* package, package info (name * pos), package membership kind *)
 let get_package_profile
