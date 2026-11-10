@@ -20,29 +20,32 @@ module Reason = Typing_reason
 (*****************************************************************************)
 
 let log_sub_type env p ty_sub ty_super =
-  let level =
-    if
-      not
-        (Typing_utils.is_capability_i ty_sub
-        || Typing_utils.is_capability_i ty_super)
-    then
-      1
-    else
-      3
-  in
-  Typing_log.(
-    log_with_level env "sub" ~level (fun () ->
-        log_types
-          (Pos_or_decl.of_raw_pos p)
-          env
-          [
-            Log_head
-              ( "Typing_ops.sub_type",
-                [
-                  Log_type_i ("ty_sub", ty_sub);
-                  Log_type_i ("ty_super", ty_super);
-                ] );
-          ]))
+  (* Check the lowest level first so that the common case where logging is off
+     doesn't pay for [is_capability_i]. *)
+  if Typing_log.should_log env ~category:"sub" ~level:1 then
+    let level =
+      if
+        not
+          (Typing_utils.is_capability_i ty_sub
+          || Typing_utils.is_capability_i ty_super)
+      then
+        1
+      else
+        3
+    in
+    Typing_log.(
+      log_with_level env "sub" ~level (fun () ->
+          log_types
+            (Pos_or_decl.of_raw_pos p)
+            env
+            [
+              Log_head
+                ( "Typing_ops.sub_type",
+                  [
+                    Log_type_i ("ty_sub", ty_sub);
+                    Log_type_i ("ty_super", ty_super);
+                  ] );
+            ]))
 
 let sub_type_i_apply_reason_callback
     ?(is_coeffect = false) ?class_sub_classname p env ty_sub ty_super callback =
