@@ -2276,7 +2276,7 @@ class ReflectionObject extends ReflectionClass {
    *
    *  Constructs a ReflectionObject.
    */
-  public function __construct($argument) {
+  public function __construct($argument)[] {
     if (!is_object($argument)) {
       throw new ReflectionException(
         __CLASS__.' expects to be constructed with an object, got '
