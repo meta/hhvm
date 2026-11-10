@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "hphp/runtime/ext/extension-registry.h"
 #include "hphp/runtime/vm/jit/cprof-record.h"
 #include "hphp/runtime/vm/srckey.h"
 
@@ -39,6 +40,8 @@ struct ContProfCheckpointReadResult {
   std::vector<ContProfProfileRecord> records;
   // Canonical unit manifest from the checkpoint.
   std::vector<std::string> unitPaths;
+  // Whole extension batch from the checkpoint, including an empty batch.
+  ExtensionRegistry::SerializedExtensions extensions;
 };
 
 /*

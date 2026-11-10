@@ -199,6 +199,9 @@ readContProfCheckpointDirectory(const std::string& directory) {
   result.recordsDecoded = checkpoint->records.size();
   result.records = std::move(checkpoint->records);
   result.unitPaths = std::move(checkpoint->unitPaths);
+  if (checkpoint->extensionData) {
+    result.extensions = std::move(*checkpoint->extensionData);
+  }
   s_filesRead->increment();
   s_recordsDecoded->addValue(result.recordsDecoded);
   s_recordsUnique->addValue(result.records.size());

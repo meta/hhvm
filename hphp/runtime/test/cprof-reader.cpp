@@ -21,6 +21,7 @@
 #include <fstream>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <system_error>
 #include <type_traits>
 #include <utility>
@@ -30,6 +31,7 @@
 #include <gtest/gtest.h>
 
 #include "hphp/runtime/base/runtime-option.h"
+#include "hphp/runtime/ext/extension-registry.h"
 #include "hphp/runtime/vm/as.h"
 #include "hphp/runtime/vm/func.h"
 #include "hphp/runtime/vm/hhbc.h"
@@ -307,15 +309,18 @@ TEST(ContProfReader, ReadsNamedCheckpointAndIgnoresLegacyFiles) {
   };
   auto const alpha = makeRecord("alpha", 1, 100, 7);
   auto const beta = makeRecord("beta", 2, 200, 11);
+  ExtensionRegistry::SerializedExtensions const extensions{{"apc", {'a'}}};
   ASSERT_TRUE(writeContProfCheckpointFile(
     path("cont-prof-1-100.cprof"),
     {makeRecord("alpha", 1, 300, 13), makeRecord("gamma", 3, 300, 13)},
-    {"src/legacy.php"}
+    {"src/legacy.php"},
+    ExtensionRegistry::SerializedExtensions{{"servicerouter", {'b'}}}
   ));
   ASSERT_TRUE(writeContProfCheckpointFile(
     path("jit.cprof"),
     {alpha, beta},
-    {"src/b.php", "src/a.php", "src/b.php"}
+    {"src/b.php", "src/a.php", "src/b.php"},
+    extensions
   ));
   ASSERT_TRUE(writeTextFile(path("notes.txt"), "ignored"));
 
@@ -328,13 +333,15 @@ TEST(ContProfReader, ReadsNamedCheckpointAndIgnoresLegacyFiles) {
   EXPECT_EQ(expected, result->records);
   std::vector<std::string> const unitPaths{"src/a.php", "src/b.php"};
   EXPECT_EQ(unitPaths, result->unitPaths);
+  EXPECT_EQ(extensions, result->extensions);
 }
 
 TEST(ContProfReader, DoesNotFallBackToLegacyCheckpoints) {
   folly::test::TemporaryDirectory directory{"hhvm_cont_prof_reader"};
   ASSERT_TRUE(writeContProfCheckpointFile(
     (directory.path() / "cont-prof-1-100.cprof").native(),
-    {makeRecord("alpha", 1, 100, 7)}, {"src/legacy.php"}
+    {makeRecord("alpha", 1, 100, 7)}, {"src/legacy.php"},
+    ExtensionRegistry::SerializedExtensions{{"apc", {'a'}}}
   ));
 
   auto result =
@@ -344,6 +351,7 @@ TEST(ContProfReader, DoesNotFallBackToLegacyCheckpoints) {
   EXPECT_EQ(0, result->recordsDecoded);
   EXPECT_TRUE(result->records.empty());
   EXPECT_TRUE(result->unitPaths.empty());
+  EXPECT_TRUE(result->extensions.empty());
 
   ASSERT_TRUE(writeTextFile(
     (directory.path() / "jit.cprof").native(), "not a checkpoint"
@@ -354,6 +362,36 @@ TEST(ContProfReader, DoesNotFallBackToLegacyCheckpoints) {
   EXPECT_EQ(0, result->recordsDecoded);
   EXPECT_TRUE(result->records.empty());
   EXPECT_TRUE(result->unitPaths.empty());
+  EXPECT_TRUE(result->extensions.empty());
+}
+
+TEST(ContProfReader, ReadsReplacedWholeExtensionSnapshotWithoutUnion) {
+  folly::test::TemporaryDirectory directory{"hhvm_cont_prof_reader_extensions"};
+  auto const path = (directory.path() / "jit.cprof").native();
+  ExtensionRegistry::SerializedExtensions const older{{"apc", {'a'}}};
+  ExtensionRegistry::SerializedExtensions const newer{{"servicerouter", {'b'}}};
+  auto const record = makeRecord("alpha", 1, 100, 7);
+  ASSERT_TRUE(writeContProfCheckpointFile(path, {record}, {}, older));
+
+  auto result = readContProfCheckpointDirectory(directory.path().native());
+  ASSERT_TRUE(result);
+  EXPECT_EQ(older, result->extensions);
+
+  ASSERT_TRUE(writeContProfCheckpointFile(path, {record}, {}, newer));
+  result = readContProfCheckpointDirectory(directory.path().native());
+  ASSERT_TRUE(result);
+  EXPECT_EQ(newer, result->extensions);
+
+  ExtensionRegistry::SerializedExtensions const empty;
+  ASSERT_TRUE(writeContProfCheckpointFile(path, {record}, {}, empty));
+  result = readContProfCheckpointDirectory(directory.path().native());
+  ASSERT_TRUE(result);
+  EXPECT_EQ(empty, result->extensions);
+
+  ASSERT_TRUE(writeContProfCheckpointFile(path, {record}));
+  result = readContProfCheckpointDirectory(directory.path().native());
+  ASSERT_TRUE(result);
+  EXPECT_TRUE(result->extensions.empty());
 }
 
 TEST(ContProfReader, ChecksFunctionKey) {

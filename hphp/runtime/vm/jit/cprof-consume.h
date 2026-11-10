@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "hphp/runtime/ext/extension-registry.h"
 #include "hphp/runtime/vm/jit/cprof-target-profile.h"
 #include "hphp/runtime/vm/jit/region-selection.h"
 #include "hphp/runtime/vm/srckey.h"
@@ -63,14 +64,16 @@ struct ContProfStartupCandidates {
 };
 
 /*
- * Load and merge the saved preload paths and units referenced by records, then
- * prepare compatible functions. Preloading is best-effort across repo changes.
+ * Restore extension data, then load and merge saved and referenced units
+ * before preparing functions.
+ * Preloading is best-effort across repo changes.
  * Must run in a VM session, before installing profiles or entering the optimizer.
  */
 ContProfStartupCandidates prepareContProfStartupCandidates(
   const std::vector<ContProfProfileRecord>& records,
   size_t maxFunctions,
-  const std::vector<std::string>& unitPaths = {}
+  const std::vector<std::string>& unitPaths = {},
+  const ExtensionRegistry::SerializedExtensions& extensions = {}
 );
 
 /*

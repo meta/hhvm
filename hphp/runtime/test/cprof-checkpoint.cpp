@@ -25,6 +25,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -33,13 +34,22 @@
 #include <folly/testing/TestUtil.h>
 #include <gtest/gtest.h>
 
+#include "hphp/runtime/base/array-data.h"
 #include "hphp/runtime/base/program-functions.h"
+#include "hphp/runtime/ext/apc/ext_apc.h"
+#include "hphp/runtime/ext/extension-registry.h"
+#include "hphp/runtime/vm/jit/cprof-consume.h"
 #include "hphp/runtime/vm/jit/cprof-controller.h"
 #include "hphp/runtime/vm/jit/cprof-reader.h"
 #include "hphp/runtime/vm/treadmill.h"
+#include "hphp/util/blob-encoder.h"
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/configs/server.h"
 #include "hphp/util/service-data.h"
+
+namespace HPHP {
+Variant HHVM_FUNCTION(apc_delete, const Variant& key);
+}
 
 namespace HPHP::jit::cprof {
 namespace {
@@ -119,6 +129,134 @@ TEST(ContProfCheckpoint, RoundTripsRecordsAndCanonicalUnitPaths) {
   EXPECT_EQ(encoded, serializeContProfCheckpoint(expected, unitPaths));
 }
 
+TEST(ContProfCheckpoint, RoundTripsOptionalExtensionData) {
+  std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
+  auto const legacy = serializeContProfCheckpoint(records);
+  ASSERT_TRUE(legacy);
+  auto const oldCheckpoint = deserializeContProfCheckpoint(
+    folly::ByteRange{legacy->data(), legacy->size()}
+  );
+  ASSERT_TRUE(oldCheckpoint);
+  EXPECT_FALSE(oldCheckpoint->extensionData);
+
+  for (auto const& snapshot :
+       std::vector<ExtensionRegistry::SerializedExtensions>{
+    {},
+    {
+      {"z_dependency", {'a', '\0', static_cast<char>(0xff)}},
+      {"apc", {'x'}},
+      {"apc", {'y'}},
+      {"a_consumer", {}},
+    },
+  }) {
+    auto const encoded = serializeContProfCheckpoint(records, {}, snapshot);
+    ASSERT_TRUE(encoded);
+    auto expectedSize = legacy->size() + sizeof(uint32_t);
+    for (auto const& [name, payload] : snapshot) {
+      expectedSize += 2 * sizeof(uint32_t) + name.size() + payload.size();
+    }
+    ASSERT_EQ(expectedSize, encoded->size());
+    EXPECT_TRUE(std::equal(legacy->begin(), legacy->end(), encoded->begin()));
+    auto const decoded = deserializeContProfCheckpoint(
+      folly::ByteRange{encoded->data(), encoded->size()}
+    );
+    ASSERT_TRUE(decoded);
+    EXPECT_EQ(records, decoded->records);
+    ASSERT_TRUE(decoded->extensionData);
+    EXPECT_EQ(snapshot, *decoded->extensionData);
+  }
+}
+
+TEST(ContProfCheckpoint, BoundsTheWholeExtensionBatch) {
+  std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
+  auto const framingSize = sizeof(uint32_t) +
+    2 * (2 * sizeof(uint32_t) + 1);
+  ExtensionRegistry::SerializedExtensions data{{"a", {}}, {"b", {'x'}}};
+  data.front().payload.resize(
+    kMaxContProfExtensionPayloadBytes - framingSize - 1, 'x'
+  );
+  auto encoded = serializeContProfCheckpoint(records, {}, data);
+  ASSERT_TRUE(encoded);
+  auto decoded = deserializeContProfCheckpoint(
+    folly::ByteRange{encoded->data(), encoded->size()}
+  );
+  ASSERT_TRUE(decoded);
+  ASSERT_TRUE(decoded->extensionData);
+  EXPECT_EQ(data, *decoded->extensionData);
+  data.back().payload.push_back('x');
+  encoded = serializeContProfCheckpoint(records, {}, data);
+  ASSERT_TRUE(encoded);
+  decoded = deserializeContProfCheckpoint(
+    folly::ByteRange{encoded->data(), encoded->size()}
+  );
+  ASSERT_TRUE(decoded);
+  EXPECT_EQ(records, decoded->records);
+  EXPECT_FALSE(decoded->extensionData);
+}
+
+TEST(ContProfCheckpoint, MalformedExtensionDataPreservesRecords) {
+  std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
+  std::vector<char> const payload{'x', '\0', 'y'};
+  ExtensionRegistry::SerializedExtensions const snapshot{
+    {"apc", payload}, {"servicerouter", payload}
+  };
+  auto const legacy = serializeContProfCheckpoint(records);
+  auto const encoded = serializeContProfCheckpoint(records, {}, snapshot);
+  ASSERT_TRUE(legacy);
+  ASSERT_TRUE(encoded);
+
+  for (size_t size = legacy->size() + 1; size < encoded->size(); ++size) {
+    auto const decoded = deserializeContProfCheckpoint(
+      folly::ByteRange{encoded->data(), size}
+    );
+    ASSERT_TRUE(decoded) << size;
+    EXPECT_EQ(records, decoded->records);
+    EXPECT_FALSE(decoded->extensionData);
+  }
+
+  for (auto bytes : {*legacy, *encoded}) {
+    bytes.push_back(0);
+    auto const decoded = deserializeContProfCheckpoint(
+      folly::ByteRange{bytes.data(), bytes.size()}
+    );
+    ASSERT_TRUE(decoded);
+    EXPECT_EQ(records, decoded->records);
+    EXPECT_FALSE(decoded->extensionData);
+  }
+
+  auto corrupted = *encoded;
+  auto const payloadSizeOffset =
+    corrupted.size() - payload.size() - sizeof(uint32_t);
+  std::fill_n(
+    corrupted.begin() + payloadSizeOffset, sizeof(uint32_t), uint8_t{0xff}
+  );
+  auto const decoded = deserializeContProfCheckpoint(
+    folly::ByteRange{corrupted.data(), corrupted.size()}
+  );
+  ASSERT_TRUE(decoded);
+  EXPECT_EQ(records, decoded->records);
+  EXPECT_FALSE(decoded->extensionData);
+
+  for (auto const& names : std::vector<std::vector<std::string>>{
+    {""}, {std::string{"apc\0suffix", 10}},
+  }) {
+    auto bytes = *legacy;
+    appendUint32(bytes, static_cast<uint32_t>(names.size()));
+    for (auto const& name : names) {
+      appendUint32(bytes, static_cast<uint32_t>(name.size()));
+      bytes.insert(bytes.end(), name.begin(), name.end());
+      appendUint32(bytes, static_cast<uint32_t>(payload.size()));
+      bytes.insert(bytes.end(), payload.begin(), payload.end());
+    }
+    auto const invalid = deserializeContProfCheckpoint(
+      folly::ByteRange{bytes.data(), bytes.size()}
+    );
+    ASSERT_TRUE(invalid);
+    EXPECT_EQ(records, invalid->records);
+    EXPECT_FALSE(invalid->extensionData);
+  }
+}
+
 TEST(ContProfCheckpoint, SkipsInvalidRecords) {
   folly::test::TemporaryDirectory temp{"cont-prof-checkpoint"};
   auto const path = temp.path().native() + "/checkpoint.cprof";
@@ -165,12 +303,6 @@ TEST(ContProfCheckpoint, RejectsMalformedOrNoncanonicalInput) {
   wrongRecordCount[0] ^= 1;
   EXPECT_FALSE(deserializeContProfCheckpoint(
     folly::ByteRange{wrongRecordCount.data(), wrongRecordCount.size()}
-  ));
-
-  auto trailingByte = *encoded;
-  trailingByte.push_back(0);
-  EXPECT_FALSE(deserializeContProfCheckpoint(
-    folly::ByteRange{trailingByte.data(), trailingByte.size()}
   ));
 }
 
@@ -496,6 +628,151 @@ TEST(ContProfCheckpoint, ActivatesOnlyWhileWriterIsRunning) {
 
   stopContProfCheckpointWriter();
   EXPECT_EQ(expectedCounters, writerCounters());
+}
+
+TEST(ContProfCheckpoint, WriterPreservesAPCKeysAcrossFailedSnapshots) {
+  folly::test::TemporaryDirectory temp{"cont-prof-checkpoint-apc"};
+  folly::test::TemporaryDirectory next{"cont-prof-checkpoint-restart"};
+  auto const apc = ExtensionRegistry::get("apc");
+  ASSERT_NE(nullptr, apc);
+  auto const key = OptString{"cont-prof-checkpoint-apc:original"};
+  auto const freshKey = OptString{"cont-prof-checkpoint-apc:fresh"};
+  auto const oversizedKey = OptString{
+    std::string{"cont-prof-checkpoint-apc:"} +
+    std::string(kMaxContProfExtensionPayloadBytes, 'x')
+  };
+  auto const oldServerMode = std::exchange(Cfg::Server::Mode, true);
+  auto const oldCapture = std::exchange(Cfg::Jit::ContProfCaptureEnabled, true);
+  auto const oldInterval = std::exchange(
+    Cfg::Jit::ContProfCheckpointIntervalSeconds, uint32_t{1}
+  );
+  auto const oldDirectory = std::exchange(
+    Cfg::Jit::ContProfCheckpointDirectory, temp.path().native()
+  );
+  auto const oldPrefixes = apcExtension::SerializePrefix;
+  auto const oldWarmupData = apc->getWarmupData();
+  apcExtension::SerializePrefix = {"cont-prof-checkpoint-apc:"};
+  apc->setWarmupData(nullptr);
+  SCOPE_EXIT {
+    stopContProfCheckpointWriter();
+    HHVM_FN(apc_delete)(Variant{key});
+    HHVM_FN(apc_delete)(Variant{freshKey});
+    HHVM_FN(apc_delete)(Variant{oversizedKey});
+    apcExtension::SerializePrefix = oldPrefixes;
+    if (auto const data = apc->getWarmupData()) DecRefSharedArray(data);
+    apc->setWarmupData(oldWarmupData);
+    Cfg::Server::Mode = oldServerMode;
+    Cfg::Jit::ContProfCaptureEnabled = oldCapture;
+    Cfg::Jit::ContProfCheckpointIntervalSeconds = oldInterval;
+    Cfg::Jit::ContProfCheckpointDirectory = oldDirectory;
+  };
+
+  auto const waitUntil = [](auto&& ready) {
+    auto const deadline = std::chrono::steady_clock::now() +
+      std::chrono::seconds{15};
+    do {
+      if (ready()) return true;
+      std::this_thread::sleep_for(std::chrono::milliseconds{10});
+    } while (std::chrono::steady_clock::now() < deadline);
+    return ready();
+  };
+  auto const counter = [](const char* name) {
+    return ServiceData::exportCounterByKey(name).value_or(-1);
+  };
+  auto const waitForFailedSnapshotWrite = [&] {
+    auto const failures = counter("jit.cprof.extensions.snapshot_failures");
+    if (!waitUntil([&] {
+      return counter("jit.cprof.extensions.snapshot_failures") > failures;
+    })) return false;
+    auto const writes = counter("jit.cprof.checkpoint.write_successes");
+    return waitUntil([&] {
+      return counter("jit.cprof.checkpoint.write_successes") > writes;
+    });
+  };
+  auto const payloadFor = [](std::string_view name) {
+    BlobEncoder encoder;
+    encoder.lazyCount([&] {
+      if (!name.empty()) encoder(name);
+      return name.empty() ? uint32_t{0} : uint32_t{1};
+    });
+    return encoder.take();
+  };
+  auto const path = (temp.path() / kContProfCheckpointFilename).native();
+  std::optional<ContProfCheckpoint> checkpoint;
+  ExtensionRegistry::SerializedExtension const* apcSnapshot = nullptr;
+  auto const readSnapshot = [&] {
+    checkpoint = readContProfCheckpointFile(path);
+    if (!checkpoint || !checkpoint->extensionData) return false;
+    auto const& extensions = *checkpoint->extensionData;
+    auto const found = std::find_if(
+      extensions.begin(), extensions.end(),
+      [](auto const& data) { return data.name == "apc"; }
+    );
+    if (found == extensions.end()) return false;
+    apcSnapshot = &*found;
+    return true;
+  };
+
+  auto const record = makeRecord("writer_apc_retention", 73, 7);
+  ASSERT_TRUE(retainContProfProfileRecord(record));
+  ASSERT_TRUE(HHVM_FN(apc_store)(Variant{key}, Variant{1}).toBoolean());
+  startContProfCheckpointWriter();
+  ASSERT_TRUE(contProfActive());
+  ASSERT_TRUE(waitUntil(readSnapshot));
+  EXPECT_EQ(payloadFor(key.data()), apcSnapshot->payload);
+
+  ASSERT_TRUE(HHVM_FN(apc_store)(Variant{oversizedKey}, Variant{1}).toBoolean());
+  ASSERT_TRUE(waitForFailedSnapshotWrite());
+  ASSERT_TRUE(readSnapshot());
+  EXPECT_EQ(payloadFor(key.data()), apcSnapshot->payload);
+  prepareContProfStartupCandidates({}, 0, {}, {*apcSnapshot});
+  auto const warmup = apc->getWarmupData();
+  ASSERT_NE(nullptr, warmup);
+  ASSERT_EQ(1, warmup->size());
+  auto const restoredKey = warmup->get(int64_t{0});
+  ASSERT_TRUE(isStringType(restoredKey.m_type));
+  EXPECT_STREQ(key.data(), restoredKey.m_data.pstr->data());
+
+  HHVM_FN(apc_delete)(Variant{oversizedKey});
+  HHVM_FN(apc_delete)(Variant{key});
+  auto const emptyPayload = payloadFor({});
+  ASSERT_TRUE(waitUntil([&] {
+    return readSnapshot() && apcSnapshot->payload == emptyPayload;
+  }));
+
+  ASSERT_TRUE(HHVM_FN(apc_store)(Variant{freshKey}, Variant{1}).toBoolean());
+  auto const freshPayload = payloadFor(freshKey.data());
+  ASSERT_TRUE(waitUntil([&] {
+    return readSnapshot() && apcSnapshot->payload == freshPayload;
+  }));
+
+  ASSERT_TRUE(HHVM_FN(apc_store)(Variant{oversizedKey}, Variant{1}).toBoolean());
+  ASSERT_TRUE(waitForFailedSnapshotWrite());
+  ASSERT_TRUE(readSnapshot());
+  EXPECT_EQ(freshPayload, apcSnapshot->payload);
+  auto const beforeFinalFlush = *checkpoint->extensionData;
+  stopContProfCheckpointWriter();
+  ASSERT_TRUE(readSnapshot());
+  EXPECT_EQ(beforeFinalFlush, *checkpoint->extensionData);
+  EXPECT_NE(checkpoint->records.end(), std::find(
+    checkpoint->records.begin(), checkpoint->records.end(), record
+  ));
+
+  // A failed first snapshot must not reuse a previous writer's batch.
+  auto const failures = counter("jit.cprof.extensions.snapshot_failures");
+  Cfg::Jit::ContProfCheckpointDirectory = next.path().native();
+  Cfg::Jit::ContProfCheckpointIntervalSeconds = 3600;
+  startContProfCheckpointWriter();
+  ASSERT_TRUE(contProfActive());
+  stopContProfCheckpointWriter();
+  EXPECT_EQ(failures + 1, counter("jit.cprof.extensions.snapshot_failures"));
+  auto const nextFiles = directoryEntries(next.path().native());
+  ASSERT_EQ(1, nextFiles.size());
+  auto const nextCheckpoint = readContProfCheckpointFile(
+    (next.path() / nextFiles.front()).native()
+  );
+  ASSERT_TRUE(nextCheckpoint);
+  EXPECT_FALSE(nextCheckpoint->extensionData);
 }
 
 }

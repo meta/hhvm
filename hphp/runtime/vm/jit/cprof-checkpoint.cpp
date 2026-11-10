@@ -26,6 +26,7 @@
 #include <exception>
 #include <filesystem>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <sys/stat.h>
 #include <thread>
@@ -40,6 +41,7 @@
 
 #include "hphp/runtime/base/init-fini-node.h"
 #include "hphp/runtime/base/program-functions.h"
+#include "hphp/runtime/ext/extension-registry.h"
 #include "hphp/runtime/vm/jit/cprof-controller.h"
 #include "hphp/runtime/vm/jit/cprof-counter.h"
 #include "hphp/runtime/vm/jit/cprof-key.h"
@@ -78,6 +80,22 @@ auto const s_checkpointInvalidRecordSkips =
   ContProfCounter("jit.cprof.checkpoint.invalid_record_skips");
 auto const s_checkpointByteLimitSkips =
   ContProfCounter("jit.cprof.checkpoint.byte_limit_skips");
+// Optional snapshots omitted from file writes: invalid payload or no byte room.
+auto const s_checkpointExtensionSkips =
+  ContProfCounter("jit.cprof.checkpoint.extension_skips");
+
+// Snapshot counters count whole batches; gauges describe the last attempt.
+auto const s_snapshotAttempts =
+  ContProfCounter("jit.cprof.extensions.snapshot_attempts");
+auto const s_snapshotFailures =
+  ContProfCounter("jit.cprof.extensions.snapshot_failures");
+auto const s_snapshotMicros =
+  ContProfCounter("jit.cprof.extensions.snapshot_us");
+auto const s_snapshotExtensions =
+  ContProfCounter("jit.cprof.extensions.snapshot_extensions");
+// Payload bytes, excluding envelope framing. Zero on a failed attempt.
+auto const s_snapshotBytes =
+  ContProfCounter("jit.cprof.extensions.snapshot_bytes");
 
 auto const s_fileIoFailures =
   ContProfCounter("jit.cprof.reader.file_io_failures");
@@ -86,6 +104,9 @@ auto const s_filesOversized =
 // Includes schema mismatches: the checkpoint decoder rejects the whole file.
 auto const s_filesInvalid =
   ContProfCounter("jit.cprof.reader.files_invalid");
+// Invalid extension snapshots skipped while preserving the file's records.
+auto const s_readerExtensionSkips =
+  ContProfCounter("jit.cprof.reader.extension_skips");
 
 // Start attempts include eligibility exclusions, but exclude calls with an
 // already-joinable writer. Failures count invalid directories, thread creation
@@ -129,13 +150,14 @@ struct Writer {
   template<class T>
   bool writeValue(T value) {
     static_assert(std::is_unsigned_v<T>);
-    return writeBytes(reinterpret_cast<const uint8_t*>(&value), sizeof(value));
+    return writeBytes(&value, sizeof(value));
   }
 
-  bool writeBytes(const uint8_t* data, size_t size) {
+  bool writeBytes(const void* data, size_t size) {
     if (size > m_maxBytes - m_bytes.size()) return false;
     if (size != 0) {
-      m_bytes.insert(m_bytes.end(), data, data + size);
+      auto const bytes = static_cast<const uint8_t*>(data);
+      m_bytes.insert(m_bytes.end(), bytes, bytes + size);
     }
     return true;
   }
@@ -247,12 +269,72 @@ struct CheckpointEncodeStats {
   size_t recordLimitSkips{};
   size_t invalidRecordSkips{};
   size_t byteLimitSkips{};
+  size_t extensionSkips{};
 };
+
+std::optional<ExtensionRegistry::SerializedExtensions>
+snapshotExtensionData() noexcept {
+  s_snapshotAttempts->increment();
+  s_snapshotExtensions->setValue(0);
+  s_snapshotBytes->setValue(0);
+  auto const start = std::chrono::steady_clock::now();
+  SCOPE_EXIT {
+    s_snapshotMicros->setValue(
+      std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now() - start
+      ).count()
+    );
+  };
+
+  try {
+    auto result = ExtensionRegistry::serialize();
+    auto remaining = kMaxContProfExtensionPayloadBytes - sizeof(uint32_t);
+    size_t bytes = 0;
+    for (auto const& [name, payload] : result) {
+      for (auto const size : {2 * sizeof(uint32_t), name.size(), payload.size()}) {
+        if (size > remaining) {
+          throw std::runtime_error("extension batch exceeds checkpoint limits");
+        }
+        remaining -= size;
+      }
+      bytes += payload.size();
+    }
+    s_snapshotExtensions->setValue(result.size());
+    s_snapshotBytes->setValue(bytes);
+    return result;
+  } catch (const std::exception& exception) {
+    Logger::Warning("cont-prof extension snapshot failed: %s", exception.what());
+  } catch (...) {
+    Logger::Warning("cont-prof extension snapshot failed");
+  }
+  s_snapshotFailures->increment();
+  return std::nullopt;
+}
+
+std::optional<std::vector<uint8_t>> encodeExtensionData(
+  const ExtensionRegistry::SerializedExtensions& extensions,
+  size_t maxBytes
+) {
+  Writer writer{std::min(maxBytes, kMaxContProfExtensionPayloadBytes)};
+  if (!writer.writeValue(static_cast<uint32_t>(extensions.size()))) {
+    return std::nullopt;
+  }
+  for (auto const& [name, payload] : extensions) {
+    if (!writer.writeValue(static_cast<uint32_t>(name.size())) ||
+        !writer.writeBytes(name.data(), name.size()) ||
+        !writer.writeValue(static_cast<uint32_t>(payload.size())) ||
+        !writer.writeBytes(payload.data(), payload.size())) {
+      return std::nullopt;
+    }
+  }
+  return std::move(writer).takeBytes();
+}
 
 std::optional<EncodedCheckpoint>
 encodeContProfCheckpoint(
   const std::vector<ContProfProfileRecord>& records,
   const std::vector<std::string>& unitPaths,
+  const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData,
   CheckpointEncodeStats* stats = nullptr
 ) {
   auto const selected = selectContProfCheckpointRecords(records);
@@ -277,8 +359,7 @@ encodeContProfCheckpoint(
       return std::nullopt;
     }
     if (!manifest.writeValue(static_cast<EncodedUnitPathSize>(path.size())) ||
-        !manifest.writeBytes(
-          reinterpret_cast<const uint8_t*>(path.data()), path.size())) {
+        !manifest.writeBytes(path.data(), path.size())) {
       return std::nullopt;
     }
   }
@@ -315,7 +396,51 @@ encodeContProfCheckpoint(
 
   auto bytes = std::move(writer).takeBytes();
   bytes.insert(bytes.end(), manifestBytes.begin(), manifestBytes.end());
+  if (extensionData) {
+    auto const encodedExtensions = encodeExtensionData(
+      *extensionData, kMaxCheckpointBytes - bytes.size()
+    );
+    if (encodedExtensions) {
+      bytes.insert(
+        bytes.end(), encodedExtensions->begin(), encodedExtensions->end()
+      );
+    } else if (stats) {
+      ++stats->extensionSkips;
+    }
+  }
   return EncodedCheckpoint{std::move(bytes), recordCount};
+}
+
+std::optional<ExtensionRegistry::SerializedExtensions>
+readExtensionData(Reader& reader) {
+  if (reader.remaining() > kMaxContProfExtensionPayloadBytes) return std::nullopt;
+
+  ExtensionRegistry::SerializedExtensions extensions;
+  uint32_t count{};
+  constexpr auto minExtensionBytes = 2 * sizeof(uint32_t) + 1;
+  if (!reader.readValue(count) ||
+      count > reader.remaining() / minExtensionBytes) {
+    return std::nullopt;
+  }
+
+  for (uint32_t i = 0; i < count; ++i) {
+    uint32_t nameSize{};
+    if (!reader.readValue(nameSize)) return std::nullopt;
+    auto const nameBytes = reader.readRange(nameSize);
+    if (!nameBytes) return std::nullopt;
+    std::string name{nameBytes->begin(), nameBytes->end()};
+    if (name.empty() || name.find('\0') != std::string::npos) return std::nullopt;
+    uint32_t size{};
+    if (!reader.readValue(size)) return std::nullopt;
+    auto const payload = reader.readRange(size);
+    if (!payload) return std::nullopt;
+    extensions.push_back({
+      std::move(name),
+      std::vector<char>{payload->begin(), payload->end()}
+    });
+  }
+  if (reader.remaining() != 0) return std::nullopt;
+  return extensions;
 }
 
 }
@@ -323,9 +448,10 @@ encodeContProfCheckpoint(
 std::optional<std::vector<uint8_t>>
 serializeContProfCheckpoint(
   const std::vector<ContProfProfileRecord>& records,
-  const std::vector<std::string>& unitPaths
+  const std::vector<std::string>& unitPaths,
+  const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData
 ) {
-  auto encoded = encodeContProfCheckpoint(records, unitPaths);
+  auto encoded = encodeContProfCheckpoint(records, unitPaths, extensionData);
   if (!encoded) return std::nullopt;
   return std::move(encoded->bytes);
 }
@@ -388,14 +514,18 @@ deserializeContProfCheckpoint(folly::ByteRange encoded) {
     paths.push_back(std::move(path));
   }
 
-  if (reader.remaining() != 0) return std::nullopt;
+  if (reader.remaining() != 0) {
+    checkpoint.extensionData = readExtensionData(reader);
+    if (!checkpoint.extensionData) s_readerExtensionSkips->increment();
+  }
   return checkpoint;
 }
 
 bool writeContProfCheckpointFile(
   const std::string& path,
   const std::vector<ContProfProfileRecord>& records,
-  const std::vector<std::string>& unitPaths
+  const std::vector<std::string>& unitPaths,
+  const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData
 ) {
   auto onFailure = folly::makeGuard([] {
     s_checkpointWriteFailures->increment();
@@ -407,8 +537,11 @@ bool writeContProfCheckpointFile(
     s_checkpointRecordLimitSkips->addValue(stats.recordLimitSkips);
     s_checkpointInvalidRecordSkips->addValue(stats.invalidRecordSkips);
     s_checkpointByteLimitSkips->addValue(stats.byteLimitSkips);
+    s_checkpointExtensionSkips->addValue(stats.extensionSkips);
   };
-  auto const encoded = encodeContProfCheckpoint(records, unitPaths, &stats);
+  auto const encoded = encodeContProfCheckpoint(
+    records, unitPaths, extensionData, &stats
+  );
   if (!encoded) return false;
 
   auto const& bytes = encoded->bytes;
@@ -530,6 +663,7 @@ struct ContProfCheckpointWriter {
       return;
     }
 
+    m_extensionData.reset();
     m_stopping = false;
     m_state.store(State::Starting, std::memory_order_release);
     try {
@@ -591,8 +725,14 @@ private:
         return snapshotContProfProfileRecords();
       }();
       auto const unitPaths = snapshotContProfLoadedUnits();
+      {
+        HphpSession session{Treadmill::SessionKind::ProfData};
+        if (auto data = snapshotExtensionData()) {
+          m_extensionData = std::move(data);
+        }
+      }
 
-      if (!writeContProfCheckpointFile(m_path, records, unitPaths)) {
+      if (!writeContProfCheckpointFile(m_path, records, unitPaths, m_extensionData)) {
         Logger::Warning(
           "Failed to write cont-prof checkpoint: %s",
           m_path.c_str()
@@ -613,8 +753,8 @@ private:
   void run() noexcept {
     bool failed = false;
     try {
-      hphp_thread_init(true /* skipExtensions */);
-      SCOPE_EXIT { hphp_thread_exit(true /* skipExtensions */); };
+      hphp_thread_init();
+      SCOPE_EXIT { hphp_thread_exit(); };
 
       folly::setThreadName("cont-prof");
 
@@ -657,6 +797,8 @@ private:
   }
 
   std::string m_path;
+  // Failed captures preserve the last good extension snapshot.
+  std::optional<ExtensionRegistry::SerializedExtensions> m_extensionData;
   std::thread m_thread;
   std::mutex m_shutdownMutex;
   std::condition_variable m_shutdownCondition;
@@ -698,12 +840,6 @@ namespace {
 InitFiniNode s_contProfCheckpointInit{
   startContProfCheckpointWriter,
   InitFiniNode::When::ProcessInit,
-  "cont-prof checkpoint writer"
-};
-
-InitFiniNode s_contProfCheckpointFini{
-  stopContProfCheckpointWriter,
-  InitFiniNode::When::ProcessExit,
   "cont-prof checkpoint writer"
 };
 

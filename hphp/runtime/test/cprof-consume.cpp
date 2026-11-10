@@ -25,6 +25,7 @@
 #include <new>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -33,6 +34,7 @@
 #include <folly/testing/TestUtil.h>
 #include <gtest/gtest.h>
 
+#include "hphp/runtime/base/array-data.h"
 #include "hphp/runtime/base/autoload-handler.h"
 #include "hphp/runtime/base/execution-context.h"
 #include "hphp/runtime/base/program-functions.h"
@@ -41,6 +43,8 @@
 #include "hphp/runtime/base/runtime-option.h"
 #include "hphp/runtime/base/static-string-table.h"
 #include "hphp/runtime/base/unit-cache.h"
+#include "hphp/runtime/ext/extension.h"
+#include "hphp/runtime/ext/extension-registry.h"
 #include "hphp/runtime/vm/as.h"
 #include "hphp/runtime/vm/class.h"
 #include "hphp/runtime/vm/constant.h"
@@ -66,6 +70,7 @@
 #include "hphp/runtime/vm/repo-global-data.h"
 #include "hphp/runtime/vm/unit-emitter.h"
 #include "hphp/runtime/vm/unit.h"
+#include "hphp/util/blob-encoder.h"
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/configs/repo.h"
 #include "hphp/util/configs/server.h"
@@ -1014,6 +1019,38 @@ TEST_F(ContProfConsumeTest, DropsConflictingMethSitesAndKeepsAgreement) {
   EXPECT_EQ(7, translations.front().executionCount);
   ASSERT_EQ(1, translations.front().targetProfiles.size());
   EXPECT_EQ(decRefSite->payload, translations.front().targetProfiles.front().payload);
+}
+
+TEST_F(ContProfConsumeTest, RestoresAPCKeysWhenNoFunctionRecordResolves) {
+  auto const apc = ExtensionRegistry::get("apc");
+  ASSERT_NE(nullptr, apc);
+  auto const oldWarmupData = apc->getWarmupData();
+  apc->setWarmupData(nullptr);
+  SCOPE_EXIT {
+    if (auto const data = apc->getWarmupData()) DecRefSharedArray(data);
+    apc->setWarmupData(oldWarmupData);
+  };
+
+  BlobEncoder encoder;
+  encoder.lazyCount([&] {
+    encoder(std::string_view{"cfgr:cont-prof-prepare:sv"});
+    return uint32_t{1};
+  });
+  ExtensionRegistry::SerializedExtensions const extensions{
+    {"apc", encoder.take()}
+  };
+  auto record = m_alpha;
+  record.header.funcKey.resolutionUnitPath += ".missing";
+  auto const prepared = prepareContProfStartupCandidates(
+    {record}, 1, {}, extensions
+  );
+  EXPECT_TRUE(prepared.candidates.empty());
+  auto const data = apc->getWarmupData();
+  ASSERT_NE(nullptr, data);
+  ASSERT_EQ(1, data->size());
+  auto const key = data->get(int64_t{0});
+  ASSERT_TRUE(isStringType(key.m_type));
+  EXPECT_EQ("cfgr:cont-prof-prepare:sv", key.m_data.pstr->toCppString());
 }
 
 TEST(ContProfConsume, StartupActivation) {

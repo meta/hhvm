@@ -68,6 +68,7 @@
 #include "hphp/runtime/server/warmup-request-handler.h"
 #include "hphp/runtime/server/xbox-server.h"
 #include "hphp/runtime/vm/debug/debug.h"
+#include "hphp/runtime/vm/jit/cprof-checkpoint.h"
 #include "hphp/runtime/vm/jit/cprof-consume.h"
 #include "hphp/runtime/vm/jit/mcgen-async.h"
 #include "hphp/runtime/vm/jit/mcgen-translate.h"
@@ -3300,6 +3301,7 @@ void hphp_process_exit() noexcept {
 #define LOG_AND_IGNORE(voidexpr) try { voidexpr; } catch (...) { \
     Logger::Error("got exception in cleanup step: " #voidexpr); }
   LOG_AND_IGNORE(jit::logGlobalTransStats())
+  LOG_AND_IGNORE(jit::cprof::stopContProfCheckpointWriter())
   LOG_AND_IGNORE(teardown_cli_server())
   LOG_AND_IGNORE(Xenon::getInstance().stop())
   LOG_AND_IGNORE(jit::mcgen::joinWorkerThreads())

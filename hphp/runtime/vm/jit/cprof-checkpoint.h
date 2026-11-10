@@ -24,6 +24,7 @@
 
 #include <folly/Range.h>
 
+#include "hphp/runtime/ext/extension-registry.h"
 #include "hphp/runtime/vm/jit/cprof-record.h"
 
 namespace HPHP::jit::cprof {
@@ -41,15 +42,24 @@ bool contProfActive();
 void startContProfCheckpointWriter();
 void stopContProfCheckpointWriter();
 
+/* Encoded batch limit, not a bound on serializer scans or temporary buffers. */
+constexpr size_t kMaxContProfExtensionPayloadBytes = 32U << 20;
+
 struct ContProfCheckpoint {
   std::vector<ContProfProfileRecord> records;
   std::vector<std::string> unitPaths;
+  std::optional<ExtensionRegistry::SerializedExtensions> extensionData;
 };
 
-/* Encode key-ordered records and canonicalize the unit preload manifest. */
+/*
+ * Encode key-ordered records, canonicalize the unit preload manifest, and
+ * preserve optional opaque extension payloads in dependency order.
+ */
 std::optional<std::vector<uint8_t>> serializeContProfCheckpoint(
   const std::vector<ContProfProfileRecord>& records,
-  const std::vector<std::string>& unitPaths = {});
+  const std::vector<std::string>& unitPaths = {},
+  const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData =
+    std::nullopt);
 
 /* Decode a checkpoint blob, validating untrusted input. */
 std::optional<ContProfCheckpoint>
@@ -59,7 +69,9 @@ deserializeContProfCheckpoint(folly::ByteRange);
 bool writeContProfCheckpointFile(
   const std::string& path,
   const std::vector<ContProfProfileRecord>& records,
-  const std::vector<std::string>& unitPaths = {});
+  const std::vector<std::string>& unitPaths = {},
+  const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData =
+    std::nullopt);
 
 /* Read the checkpoint at path; nullopt if missing or malformed. */
 std::optional<ContProfCheckpoint>

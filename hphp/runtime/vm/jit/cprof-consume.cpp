@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <map>
 #include <memory>
 #include <set>
@@ -200,6 +201,45 @@ auto const s_optimizeNoCode =
 // Prepared profile entries erased across translations, not distinct call sites.
 auto const s_methConflicts =
   ContProfCounter("jit.cprof.target.meth.method_conflicts");
+
+// Restore counters count individual extension payloads, not batches or keys.
+auto const s_restoreAttempts =
+  ContProfCounter("jit.cprof.extensions.restore_attempts");
+auto const s_restoredExtensions =
+  ContProfCounter("jit.cprof.extensions.restored_extensions");
+auto const s_restoreSkippedExisting =
+  ContProfCounter("jit.cprof.extensions.restore_skipped_existing");
+// Missing or disabled extensions.
+auto const s_restoreSkippedUnavailable =
+  ContProfCounter("jit.cprof.extensions.restore_skipped_unavailable");
+auto const s_restoreFailures =
+  ContProfCounter("jit.cprof.extensions.restore_failures");
+
+void restoreExtensions(
+  const ExtensionRegistry::SerializedExtensions& extensions
+) noexcept {
+  for (auto const& payload : extensions) {
+    s_restoreAttempts->increment();
+    try {
+      auto const extension = ExtensionRegistry::get(payload.name.c_str());
+      if (extension && extension->getWarmupData()) {
+        s_restoreSkippedExisting->increment();
+        continue;
+      }
+      if (!ExtensionRegistry::deserialize(payload)) {
+        s_restoreSkippedUnavailable->increment();
+        continue;
+      }
+      s_restoredExtensions->increment();
+    } catch (const std::exception& exception) {
+      s_restoreFailures->increment();
+      Logger::Warning("cont-prof extension restore failed: %s", exception.what());
+    } catch (...) {
+      s_restoreFailures->increment();
+      Logger::Warning("cont-prof extension restore failed");
+    }
+  }
+}
 
 struct LoadedUnits {
   size_t pathsRequested{0};
@@ -519,8 +559,10 @@ bool contProfStartupActive() {
 ContProfStartupCandidates prepareContProfStartupCandidates(
   const std::vector<ContProfProfileRecord>& records,
   size_t maxFunctions,
-  const std::vector<std::string>& unitPaths
+  const std::vector<std::string>& unitPaths,
+  const ExtensionRegistry::SerializedExtensions& extensions
 ) {
+  restoreExtensions(extensions);
   if (records.empty() || !maxFunctions) {
     return prepareContProfStartupCandidates(records, {}, maxFunctions);
   }
@@ -697,7 +739,8 @@ void consumeContProfAtStartup() noexcept {
       if (!input) return;
 
       auto const prepared = prepareContProfStartupCandidates(
-        input->records, Cfg::Jit::ContProfStartupMaxFunctions, input->unitPaths
+        input->records, Cfg::Jit::ContProfStartupMaxFunctions,
+        input->unitPaths, input->extensions
       );
       s_startupPreparedFuncs->setValue(prepared.candidates.size());
 

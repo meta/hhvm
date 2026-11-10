@@ -18,15 +18,24 @@
 #include <folly/ScopeGuard.h>
 #include <folly/testing/TestUtil.h>
 
-#include <cstring>
+#include <algorithm>
+#include <cstdint>
 #include <memory>
 #include <set>
+#include <string_view>
+#include <vector>
 
+#include "hphp/runtime/base/array-data.h"
 #include "hphp/runtime/base/concurrent-shared-store.h"
 #include "hphp/runtime/base/tv-comparisons.h"
 #include "hphp/runtime/ext/apc/ext_apc.h"
+#include "hphp/runtime/ext/extension-registry.h"
+#include "hphp/runtime/vm/jit/cprof-consume.h"
 #include "hphp/runtime/vm/jit/prof-data-serialize.h"
+#include "hphp/util/blob-encoder.h"
 #include "hphp/util/configs/eval.h"
+#include "hphp/util/configs/jit.h"
+#include "hphp/util/service-data.h"
 
 namespace HPHP {
 
@@ -50,6 +59,21 @@ const StaticString s_key2("key2");
 const StaticString s_foo("foo");
 const StaticString s_value1("value1");
 const StaticString s_value2("value2");
+
+ServiceData::CounterMap contProfRestoreCounters() {
+  ServiceData::CounterMap counters;
+  for (auto const name : {
+    "jit.cprof.extensions.restore_attempts",
+    "jit.cprof.extensions.restored_extensions",
+    "jit.cprof.extensions.restore_skipped_existing",
+    "jit.cprof.extensions.restore_skipped_unavailable",
+    "jit.cprof.extensions.restore_failures",
+  }) {
+    auto const counter = ServiceData::getCounterIfExists(name);
+    counters[name] = counter ? counter->getValue() : 0;
+  }
+  return counters;
+}
 
 }
 
@@ -221,6 +245,150 @@ TEST(APC, SandboxJumpstartAPCOnlyOmitsPreloadAndJITPayloads) {
 
   EXPECT_EQ(jit::read_raw<uint32_t>(des), 0);
   EXPECT_TRUE(des.done());
+}
+
+TEST(APC, ContProfRestoresKeyNamesWithoutReplacingValues) {
+  using namespace jit::cprof;
+  auto const apc = ExtensionRegistry::get("apc");
+  ASSERT_NE(nullptr, apc);
+  auto const matchingKey = StaticString{"cont-prof-apc-test:matching"};
+  auto const ignoredKey = StaticString{"cont-prof-apc-other:ignored"};
+  auto const oldPrefixes = apcExtension::SerializePrefix;
+  auto const oldWarmupData = apc->getWarmupData();
+  apcExtension::SerializePrefix = {"cont-prof-apc-test:"};
+  apc->setWarmupData(nullptr);
+  SCOPE_EXIT {
+    HHVM_FN(apc_delete)(Variant{matchingKey});
+    HHVM_FN(apc_delete)(Variant{ignoredKey});
+    apcExtension::SerializePrefix = oldPrefixes;
+    if (auto const data = apc->getWarmupData()) DecRefSharedArray(data);
+    apc->setWarmupData(oldWarmupData);
+  };
+
+  ASSERT_TRUE(HHVM_FN(apc_store)(
+    Variant{matchingKey}, Variant{s_value1}, 1500, 0
+  ).toBoolean());
+  ASSERT_TRUE(HHVM_FN(apc_store)(
+    Variant{ignoredKey}, Variant{s_value1}, 1500, 0
+  ).toBoolean());
+  auto const snapshot = ExtensionRegistry::serialize();
+  auto const found = std::find_if(
+    snapshot.begin(), snapshot.end(),
+    [](auto const& data) { return data.name == "apc"; }
+  );
+  ASSERT_NE(snapshot.end(), found);
+  ExtensionRegistry::SerializedExtensions const apcSnapshot{*found};
+
+  ASSERT_TRUE(HHVM_FN(apc_store)(
+    Variant{matchingKey}, Variant{s_value2}, 1500, 0
+  ).toBoolean());
+  auto expectedCounters = contProfRestoreCounters();
+  prepareContProfStartupCandidates({}, 0, {}, apcSnapshot);
+  ++expectedCounters["jit.cprof.extensions.restore_attempts"];
+  ++expectedCounters["jit.cprof.extensions.restored_extensions"];
+  EXPECT_EQ(expectedCounters, contProfRestoreCounters());
+  auto const data = apc->getWarmupData();
+  ASSERT_NE(nullptr, data);
+  ASSERT_EQ(1, data->size());
+  auto const key = data->get(int64_t{0});
+  ASSERT_TRUE(isStringType(key.m_type));
+  EXPECT_STREQ(matchingKey.data(), key.m_data.pstr->data());
+  bool success = false;
+  auto value = Variant::attach(HHVM_FN(apc_fetch)(Variant{matchingKey}, success));
+  ASSERT_TRUE(success);
+  EXPECT_TRUE(tvSame(*value.asTypedValue(),
+    make_tv<KindOfPersistentString>(s_value2.get())));
+
+  HHVM_FN(apc_delete)(Variant{matchingKey});
+  prepareContProfStartupCandidates({}, 0, {}, apcSnapshot);
+  ++expectedCounters["jit.cprof.extensions.restore_attempts"];
+  ++expectedCounters["jit.cprof.extensions.restore_skipped_existing"];
+  EXPECT_EQ(expectedCounters, contProfRestoreCounters());
+  EXPECT_EQ(data, apc->getWarmupData());
+  value = Variant::attach(HHVM_FN(apc_fetch)(Variant{matchingKey}, success));
+  EXPECT_FALSE(success);
+}
+
+TEST(APC, ContProfDistinguishesEmptyRestoreFromInvalidInput) {
+  using namespace jit::cprof;
+  auto const apc = ExtensionRegistry::get("apc");
+  ASSERT_NE(nullptr, apc);
+  auto const oldWarmupData = apc->getWarmupData();
+  apc->setWarmupData(nullptr);
+  SCOPE_EXIT {
+    if (auto const data = apc->getWarmupData()) DecRefSharedArray(data);
+    apc->setWarmupData(oldWarmupData);
+  };
+
+  auto expectedCounters = contProfRestoreCounters();
+  prepareContProfStartupCandidates({}, 0, {}, {{"apc", {}}});
+  ++expectedCounters["jit.cprof.extensions.restore_attempts"];
+  ++expectedCounters["jit.cprof.extensions.restore_failures"];
+  EXPECT_EQ(expectedCounters, contProfRestoreCounters());
+  EXPECT_EQ(nullptr, apc->getWarmupData());
+
+  BlobEncoder encoder;
+  encoder.lazyCount([] { return uint32_t{0}; });
+  prepareContProfStartupCandidates({}, 0, {}, {{"apc", encoder.take()}});
+  ++expectedCounters["jit.cprof.extensions.restore_attempts"];
+  ++expectedCounters["jit.cprof.extensions.restored_extensions"];
+  EXPECT_EQ(expectedCounters, contProfRestoreCounters());
+  ASSERT_NE(nullptr, apc->getWarmupData());
+  EXPECT_TRUE(apc->getWarmupData()->empty());
+}
+
+TEST(APC, ContProfSkipsUnavailableExtensionsWithoutDecoding) {
+  using namespace jit::cprof;
+  auto const apc = ExtensionRegistry::get("apc");
+  ASSERT_NE(nullptr, apc);
+  auto const oldWarmupData = apc->getWarmupData();
+  auto const oldEnabled = apcExtension::Enable;
+  apc->setWarmupData(nullptr);
+  apcExtension::Enable = false;
+  SCOPE_EXIT {
+    apcExtension::Enable = oldEnabled;
+    if (auto const data = apc->getWarmupData()) DecRefSharedArray(data);
+    apc->setWarmupData(oldWarmupData);
+  };
+
+  auto expectedCounters = contProfRestoreCounters();
+  prepareContProfStartupCandidates({}, 0, {}, {
+    {"apc", {'x'}}, {"cont-prof-missing-extension", {'x'}}
+  });
+  expectedCounters["jit.cprof.extensions.restore_attempts"] += 2;
+  expectedCounters["jit.cprof.extensions.restore_skipped_unavailable"] += 2;
+  EXPECT_EQ(expectedCounters, contProfRestoreCounters());
+  EXPECT_EQ(nullptr, apc->getWarmupData());
+}
+
+TEST(APC, ContProfRestoresServiceRouterWithCaptureDisabled) {
+  using namespace jit::cprof;
+  auto const sr = ExtensionRegistry::get("servicerouter");
+  if (!sr) GTEST_SKIP() << "ServiceRouter extension is not linked";
+  auto const oldCapture = Cfg::Jit::ContProfCaptureEnabled;
+  auto const oldWarmupData = sr->getWarmupData();
+  Cfg::Jit::ContProfCaptureEnabled = false;
+  sr->setWarmupData(nullptr);
+  SCOPE_EXIT {
+    Cfg::Jit::ContProfCaptureEnabled = oldCapture;
+    if (auto const data = sr->getWarmupData()) DecRefSharedArray(data);
+    sr->setWarmupData(oldWarmupData);
+  };
+
+  BlobEncoder encoder;
+  encoder.lazyCount([&] {
+    encoder(std::string_view{"cont-prof.test-tier"});
+    return uint32_t{1};
+  });
+  prepareContProfStartupCandidates(
+    {}, 0, {}, {{"servicerouter", encoder.take()}}
+  );
+  auto const data = sr->getWarmupData();
+  ASSERT_NE(nullptr, data);
+  ASSERT_EQ(1, data->size());
+  auto const tier = data->get(int64_t{0});
+  ASSERT_TRUE(isStringType(tier.m_type));
+  EXPECT_STREQ("cont-prof.test-tier", tier.m_data.pstr->data());
 }
 
 //////////////////////////////////////////////////////////////////////
