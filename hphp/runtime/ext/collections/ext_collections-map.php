@@ -188,8 +188,6 @@ final class Map<Tk as arraykey, Tv> implements \MutableMap<Tk, Tv> {
    * @return object
    */
   public function removeKey(mixed $key)[]: this {
-    // TODO(T125046752): Pushing `Tk` to the function boundary would add a
-    // upper bound generic check (as `arraykey`).
     $this->removeKeyNative(HH\FIXME\UNSAFE_CAST<mixed, Tk>($key));
     return $this;
   }
