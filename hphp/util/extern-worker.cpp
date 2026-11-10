@@ -35,6 +35,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <exception>
 #include <filesystem>
 #include <mutex>
 #include <stack>
@@ -88,6 +89,12 @@ constexpr int g_local_pipe_fd = 3;
 // constant, we'll store it "inline" in the ref itself, rather than
 // writing it to disk. This values probably needs more tuning.
 constexpr size_t g_inline_size = 256;
+
+// Blob writers buffer compressed blobs until they have this many bytes
+// (or are flushed) rather than writing each one separately. Most blobs
+// are small, and some filesystems (like btrfs) do expensive per-write
+// work.
+constexpr size_t g_blob_write_buffer_size = 1 << 20;
 
 // The compression level is between 0 (no compression) and 22 (lots of
 // computation, smaller resulting artifacts). We can probably tune
@@ -358,9 +365,10 @@ private:
 };
 
 // Represents a blob file for writing by a single thread. Blob RefId's are
-// obtained by actually writing the blob to disk. All writes are compressed
+// obtained by appending the blob to the file. All writes are compressed
 // with zstd (using a compression dict if it is available) as individual
-// frames.
+// frames. Writes are buffered, so a blob can only be read from the file
+// after flush().
 //
 // If create is set to true, we create the file and throw if the file exists.
 // Otherwise, we open the file in append mode and seek to the end.
@@ -398,6 +406,8 @@ struct BlobWriter {
   }
 
  ~BlobWriter() {
+    // Buffered blobs are only dropped if we're unwinding from an error.
+    assertx(m_compressedBuffer.empty() || std::uncaught_exceptions() > 0);
     if (m_fd >= 0) ::close(m_fd);
     if (m_cctx != nullptr) ZSTD_freeCCtx(m_cctx);
   }
@@ -428,6 +438,7 @@ struct BlobWriter {
 
   void syncOffset() {
     assertx(m_fd >= 0);
+    assertx(m_compressedBuffer.empty());
     auto const size = ::lseek(m_fd, 0, SEEK_END);
     if (size < 0) {
       throw Error{
@@ -443,19 +454,17 @@ struct BlobWriter {
   // For long-lived blobs, it's useful to occasionally free the buffer
   // that contains the compressed strings we're writing to the filesystem.
   void freeBuffer() {
-    m_compressedBuffer.clear();
+    assertx(m_compressedBuffer.empty());
     m_compressedBuffer.shrink_to_fit();
   }
 
-  RefId compressAndAppend(const std::string& data) {
-    assertx(m_cctx != nullptr);
-
-    // `m_compressedBuffer` will be updated with the compressed data here.
-    compressBlobToBuffer(data);
-
-    FTRACE(5, "Compress blob request for size {}\n", data.size());
-    auto const written =
-      folly::writeFull(m_fd, m_compressedBuffer.data(), m_compressedBuffer.size());
+  // Write any buffered blobs to the file.
+  void flush() {
+    if (m_compressedBuffer.empty()) return;
+    assertx(m_fd >= 0);
+    auto const written = folly::writeFull(
+      m_fd, m_compressedBuffer.data(), m_compressedBuffer.size()
+    );
     if (written != m_compressedBuffer.size()) {
       throw Error{
         fmt::format(
@@ -464,46 +473,73 @@ struct BlobWriter {
         )
       };
     }
+    m_compressedBuffer.clear();
+  }
+
+  RefId compressAndAppend(const std::string& data) {
+    assertx(m_cctx != nullptr);
+
+    FTRACE(5, "Compress blob request for size {}\n", data.size());
+    auto const size = compressBlobToBuffer(data);
+    if (m_compressedBuffer.size() >= g_blob_write_buffer_size) flush();
     auto const offset = m_offset;
-    m_offset += written;
+    m_offset += size;
     assertx(offset < std::numeric_limits<uint32_t>::max());
-    assertx(written < std::numeric_limits<uint32_t>::max());
+    assertx(size < std::numeric_limits<uint32_t>::max());
     return RefId{
       m_path.filename().native(),
       data.size(),
       static_cast<uint32_t>(offset),
-      static_cast<uint32_t>(written)
+      static_cast<uint32_t>(size)
     };
   }
 
 private:
-  void compressBlobToBuffer(const std::string& blob) {
+  // Compress the blob onto the end of `m_compressedBuffer`, returning
+  // its compressed size.
+  size_t compressBlobToBuffer(const std::string& blob) {
     assertx(blob.size() > g_inline_size);
+    auto const start = m_compressedBuffer.size();
     const size_t compressedSizeMax = ZSTD_compressBound(blob.size());
-    folly::resizeWithoutInitialization(m_compressedBuffer, compressedSizeMax);
+    // resizeWithoutInitialization() reserves exactly what it needs, and
+    // with some standard libraries reserve() doesn't grow geometrically,
+    // so appending would copy the buffer every time.
+    auto const needed = start + compressedSizeMax;
+    if (needed > m_compressedBuffer.capacity()) {
+      m_compressedBuffer.reserve(
+        std::max(needed, 2 * m_compressedBuffer.capacity())
+      );
+    }
+    folly::resizeWithoutInitialization(m_compressedBuffer, needed);
+    auto const dest = m_compressedBuffer.data() + start;
 
     size_t compressedSize;
     if (m_compressionDict != nullptr ) {
       compressedSize =
-        ZSTD_compress_usingCDict(m_cctx, m_compressedBuffer.data(), compressedSizeMax,
+        ZSTD_compress_usingCDict(m_cctx, dest, compressedSizeMax,
                                 blob.data(), blob.size(), m_compressionDict);
     } else {
       compressedSize =
-        ZSTD_compressCCtx(m_cctx, m_compressedBuffer.data(), compressedSizeMax,
+        ZSTD_compressCCtx(m_cctx, dest, compressedSizeMax,
                           blob.data(), blob.size(), g_zstd_compression_level);
     }
     if (ZSTD_isError(compressedSize)) {
+      m_compressedBuffer.resize(start);
       throw Error{
         fmt::format("ZSTD error while compressing: {}",
                       0 - compressedSize)
       };
     }
-    folly::resizeWithoutInitialization(m_compressedBuffer, compressedSize);
+    folly::resizeWithoutInitialization(
+      m_compressedBuffer, start + compressedSize
+    );
+    return compressedSize;
   }
 
   fs::path m_path;
   int m_fd;
   size_t m_offset;
+  // Compressed blobs not yet written to the file.
   std::string m_compressedBuffer;
   ZSTD_CCtx* m_cctx;
   ZSTD_CDict* m_compressionDict;
@@ -754,6 +790,7 @@ struct SerializedSink : public detail::ISink {
   void startFini() override {}
 
   void finish() override {
+    m_writer.flush();
     writeToPipe(
       g_local_pipe_fd,
       (const char*)m_encoder.data(),
@@ -1485,6 +1522,7 @@ coro::Task<IdVec> SubprocessImpl::store(const RequestId& requestId,
        })
     ))
     | as<std::vector>();
+  if (writer) writer->flush();
   co_return out;
 }
 
@@ -1535,7 +1573,8 @@ SubprocessImpl::exec(const RequestId& requestId,
   // worker will. This ensures the worker has exclusive access to the
   // file while it's running.
   auto writer = m_fdManager->acquireForAppend(m_compressionDict);
-  SCOPE_EXIT { if (writer) m_fdManager->release(*writer); };
+  SCOPE_EXIT { m_fdManager->release(*writer); };
+  writer->flush();
 
   Optional<uint64_t> usageEstimate{};
   if (m_subprocessScheduler.has_value()) {
