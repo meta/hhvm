@@ -23,7 +23,7 @@ namespace HPHP {
 
 /*
  * This is a utility for short-hand visitors (using lambdas) with
- * boost::apply_visitor.
+ * std::visit.
  *
  * Usage e.g.:
  *

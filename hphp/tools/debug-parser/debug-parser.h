@@ -22,11 +22,12 @@
 #include <ostream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <folly/DiscriminatedPtr.h>
+#include <folly/Overload.h>
 
-#include "hphp/util/match.h"
 #include "hphp/util/optional.h"
 
 #include <tbb/concurrent_hash_map.h>
@@ -172,12 +173,12 @@ struct Type {
    */
   template<class Ret, class... Funcs>
   Ret match(Funcs&&... funcs) {
-    return HPHP::match<Ret>(m_type, std::forward<Funcs>(funcs)...);
+    return matchImpl<Ret>(m_type, std::forward<Funcs>(funcs)...);
   }
 
   template<class Ret, class... Funcs>
   Ret match(Funcs&&... funcs) const {
-    return HPHP::match<Ret>(m_type, std::forward<Funcs>(funcs)...);
+    return matchImpl<Ret>(m_type, std::forward<Funcs>(funcs)...);
   }
 
   // Obtain a string representation of the type. This should be used for logging
@@ -189,6 +190,17 @@ struct Type {
     return os << t.toString();
   }
  private:
+  template<class Ret, class Ptr, class... Funcs>
+  static Ret matchImpl(Ptr& ptr, Funcs&&... funcs) {
+    return ptr.apply([&](auto* p) -> Ret {
+      if constexpr (std::is_void_v<Ret>) {
+        folly::overload(std::forward<Funcs>(funcs)...)(p);
+      } else {
+        return folly::overload(std::forward<Funcs>(funcs)...)(p);
+      }
+    });
+  }
+
   // Since void doesn't actually store anything, we can save some memory by
   // using a single static instance of the void type.
   static VoidType s_void_type;

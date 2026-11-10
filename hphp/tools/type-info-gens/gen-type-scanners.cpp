@@ -40,6 +40,7 @@
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/file.h"
+#include "hphp/util/match.h"
 #include "hphp/util/type-scan.h"
 
 /*

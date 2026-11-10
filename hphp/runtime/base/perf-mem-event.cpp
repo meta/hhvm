@@ -37,7 +37,6 @@
 #include "hphp/runtime/vm/jit/tc-internal.h"
 
 #include "hphp/util/alloc.h"
-#include "hphp/util/match.h"
 #include "hphp/util/perf-event.h"
 #include "hphp/util/stack-trace.h"
 #include "hphp/util/struct-log.h"
@@ -45,6 +44,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
+#include <folly/Overload.h>
 #include <folly/ScopeGuard.h>
 #ifdef HHVM_FACEBOOK
 #include <folly/Demangle.h>
@@ -218,8 +218,7 @@ bool record_vm_metadata_mem_event(data_map::result res, const void* addr,
   auto const pos = reinterpret_cast<const char*>(addr);
 
   assertx(!res.empty());
-  match(
-    res,
+  res.apply(folly::overload(
     [&](const ArrayData* arr) {
       record.setInt("offset", pos - reinterpret_cast<const char*>(arr));
       record.setStr("kind", "Array");
@@ -255,7 +254,7 @@ bool record_vm_metadata_mem_event(data_map::result res, const void* addr,
       record.setStr("kind", "Unit");
       fill_record(unit, addr, record);
     }
-  );
+  ));
   return true;
 }
 
