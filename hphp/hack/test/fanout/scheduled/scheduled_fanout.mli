@@ -76,6 +76,18 @@ type initialization =
 
           Requires HH_DISTC_PATH and WORKER_PATH, as supplied by the
           saved_state_tests Buck target. *)
+  | Saved_state_with_loading_schedule of {
+      before_dirty_snapshot: action list;
+          (** Edits included in the saved-state loader's dirty-file snapshot. *)
+      after_dirty_snapshot: action list;
+          (** Edits after that snapshot, before startup drains the notifier. *)
+    }
+      (** Create a saved state from the initial files, then run actual
+          [Server_lazy_init.saved_state_init] using precomputed state metadata.
+          Startup receives all edits through the existing mock notifier. Its
+          dirty-file snapshot includes only [before_dirty_snapshot] paths.
+          This models edits made while loading a saved state, without adding
+          production hooks. Requires the same environment as [Saved_state]. *)
 
 exception Diagnostics_mismatch of string
 
@@ -114,8 +126,9 @@ val expect_known_fanout_bug :
 
     [remote_old_decls] supplies Hack source for the old-declaration client's
     existing test fixture. It enables fetching missing old class declarations
-    during incremental iterations; all fetches read that fixture. Requires
-    [Saved_state] initialization, because the client requires a naming database.
+    during initialization and incremental iterations; all fetches read that
+    fixture. Requires either saved-state initialization variant, because the
+    client requires a naming database.
     The fixture is outside the repository, and the independent full check keeps
     remote old declarations disabled. *)
 val run :

@@ -6,8 +6,9 @@ fanout bugs whose reproducer depends on a particular sequence of changes within
 or across iterations. Ordinary fanout fixtures and server-loop tests remain in
 their existing suites.
 
-Each scenario starts with a full-check baseline, then runs explicit incremental
-iterations while retaining server state. The last iteration's diagnostics are
+Each scenario establishes a baseline through a full check or saved-state load,
+then runs explicit incremental iterations while retaining server state. The
+last iteration's diagnostics are
 compared with an independent full check of the final files, without an extra
 incremental check to repair stale state before comparison.
 

@@ -45,6 +45,10 @@ type scenario = {
 type initialization =
   | Full_check
   | Saved_state
+  | Saved_state_with_loading_schedule of {
+      before_dirty_snapshot: action list;
+      after_dirty_snapshot: action list;
+    }
 
 exception Diagnostics_mismatch of string
 
@@ -462,21 +466,43 @@ type child_request = {
   root: string;
   hhi: string;
   tmp: string;
+  initialization: initialization;
   saved_state: Scheduled_fanout_saved_state.t option;
   remote_old_decls: string option;
   check: child_check;
 }
 
 let run_child
-    ({ root; hhi; tmp; saved_state; remote_old_decls; check } : child_request) =
+    ({ root; hhi; tmp; initialization; saved_state; remote_old_decls; check } :
+      child_request) =
   let (genv, env) = setup ~root ~hhi ~tmp ~remote_old_decls in
   let env =
     match check with
     | Incremental { initial_files; iterations } ->
       let env =
-        match saved_state with
-        | Some saved_state -> Scheduled_fanout_saved_state.load saved_state env
-        | None ->
+        match (initialization, saved_state) with
+        | (Saved_state, Some saved_state) ->
+          Scheduled_fanout_saved_state.load saved_state env
+        | ( Saved_state_with_loading_schedule
+              { before_dirty_snapshot; after_dirty_snapshot },
+            Some saved_state ) ->
+          run_actions root before_dirty_snapshot;
+          let paths actions =
+            parsing_paths root (List.map (action_files actions) ~f:fst)
+          in
+          let env =
+            Scheduled_fanout_saved_state.initialize
+              saved_state
+              genv
+              env
+              ~dirty_files:(paths before_dirty_snapshot)
+              ~notifier_changes:(fun () ->
+                run_actions root after_dirty_snapshot;
+                paths (before_dirty_snapshot @ after_dirty_snapshot))
+          in
+          reject_internal_errors ~check:"saved-state initialization" env;
+          env
+        | (Full_check, None) ->
           run_iteration
             genv
             env
@@ -486,6 +512,7 @@ let run_child
               default_iteration with
               disk_needs_parsing = List.map initial_files ~f:fst;
             }
+        | _ -> failwith "Inconsistent saved-state initialization"
       in
       List.foldi iterations ~init:env ~f:(fun index env iteration ->
           run_iteration
@@ -598,7 +625,8 @@ let run
   let saved_state =
     match initialization with
     | Full_check -> None
-    | Saved_state ->
+    | Saved_state
+    | Saved_state_with_loading_schedule _ ->
       Some
         (Scheduled_fanout_saved_state.create
            ~root
@@ -612,6 +640,7 @@ let run
         root;
         hhi;
         tmp;
+        initialization;
         saved_state;
         remote_old_decls;
         check = Incremental scenario;
@@ -625,6 +654,13 @@ let run
      in the final repository. Read their actual contents in the fresh child. *)
   let final_files =
     initial_files
+    @ (match initialization with
+      | Full_check
+      | Saved_state ->
+        []
+      | Saved_state_with_loading_schedule
+          { before_dirty_snapshot; after_dirty_snapshot } ->
+        action_files (before_dirty_snapshot @ after_dirty_snapshot))
     @ List.concat_map
         iterations
         ~f:(fun
@@ -653,6 +689,7 @@ let run
         root;
         hhi;
         tmp;
+        initialization;
         saved_state;
         remote_old_decls = None;
         check = Fresh_check final_files;

@@ -76,6 +76,22 @@ let test_saved_errors () =
     };
   true
 
+(** The real startup path must restore saved error files even when neither the
+    dirty snapshot nor the notifier contains changes. This checks that the
+    loading schedule preserves saved diagnostics as well as clean baselines. *)
+let test_startup_saved_errors () =
+  let open Scheduled_fanout in
+  run
+    ~initialization:
+      (Saved_state_with_loading_schedule
+         { before_dirty_snapshot = []; after_dirty_snapshot = [] })
+    {
+      initial_files =
+        [("broken.php", "<?hh\nfunction broken(): int { return 'wrong'; }\n")];
+      iterations = [{ default_iteration with type_check = [Remaining] }];
+    };
+  true
+
 (** The remote old-declaration fixture must supply a missing comparison
     baseline during an ordinary incremental iteration. A comment-only class
     edit should then leave its unchanged consumer out of the fanout. Without
@@ -119,5 +135,6 @@ let () =
       ("saved_dependencies", test_saved_dependencies);
       ("cold_declarations", test_cold_declarations);
       ("saved_errors", test_saved_errors);
+      ("startup_saved_errors", test_startup_saved_errors);
       ("remote_old_declarations", test_remote_old_declarations);
     ]

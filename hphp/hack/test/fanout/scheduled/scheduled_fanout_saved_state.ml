@@ -173,3 +173,80 @@ let load saved_state (env : Server_env.env) =
     disk_needs_parsing = Relative_path.Set.empty;
     needs_recheck = old_errors;
   }
+
+let initialize
+    saved_state
+    (genv : Server_env.genv)
+    (env : Server_env.env)
+    ~dirty_files
+    ~notifier_changes =
+  check_build_revision saved_state.base_file_name;
+  let target : Server_args.saved_state_target_info =
+    {
+      changes = Relative_path.Set.elements dirty_files;
+      naming_changes = Relative_path.Set.elements dirty_files;
+      corresponding_base_revision =
+        Hg.Rev.of_string "0000000000000000000000000000000000000000";
+      deptable_fn = saved_state.dependency_graph_path;
+      compressed_deptable_fn = None;
+      prechecked_changes = [];
+      naming_table_path = saved_state.base_file_name;
+    }
+  in
+  let notified = ref false in
+  let notifier =
+    Server_notifier.init_mock
+      ~get_changes_async:(fun () ->
+        if !notified then
+          Server_notifier.AsyncChanges S_set.empty
+        else (
+          notified := true;
+          let changes =
+            notifier_changes ()
+            |> Relative_path.Set.elements
+            |> List.map ~f:Relative_path.to_absolute
+            |> S_set.of_list
+          in
+          Server_notifier.AsyncChanges changes
+        ))
+      ~get_changes_sync:(fun () -> S_set.empty)
+  in
+  let genv =
+    {
+      genv with
+      Server_env.notifier;
+      local_config =
+        {
+          genv.Server_env.local_config with
+          Server_local_config.attempt_fix_credentials = false;
+          hg_aware = false;
+          prechecked_files = false;
+          fetch_remote_old_decls =
+            env.Server_env.tcopt.Global_options.tco_fetch_remote_old_decls;
+        };
+    }
+  in
+  (* The saved state includes HHI. This is the same empty parsing queue that
+     real saved-state initialization receives before it selects dirty files. *)
+  let env =
+    { env with Server_env.disk_needs_parsing = Relative_path.Set.empty }
+  in
+  Typing_deps.replace
+    (Typing_deps_mode.InMemoryMode (Some saved_state.dependency_graph_path));
+  let result =
+    Cgroup_profiler.step_group "scheduled_saved_state_init" ~log:false
+    @@ Server_lazy_init.saved_state_init
+         ~do_indexing:false
+         ~load_state_approach:(Server_init_types.Precomputed target)
+         genv
+         env
+         (Server_args.root genv.Server_env.options)
+  in
+  match result with
+  | Ok ((env, _time), _) ->
+    if not !notified then
+      failwith "Saved-state initialization did not query the scheduled notifier";
+    env
+  | Error error ->
+    let error = Server_init_types.load_state_error_to_verbose_string error in
+    failwith ("Scheduled saved-state initialization failed: " ^ error.message)
