@@ -22,3 +22,4 @@ Each file corresponds to one familly/underlying bug, with one or more repros.
 | Unindexed declarations | unindexed_function.ml | Declaration caching can introduce names absent from indexed file information, leaving later invalidation unaware of those entries. |
 | Stale inherited declarations | mixed_decl_versions.ml | Folded declarations can retain information from an intermediate ancestor version that comparison of the old and new shallow declarations does not detect. |
 | Inheritance dependencies | missing_inheritance_dependency.ml | Inheritance dependencies recorded during typechecking can lag behind the relationships used by declarations, so ancestor changes can miss descendant invalidation and fanout. |
+| Saved state startup | saved_state_notifier_gap.ml | Saved-state startup updates naming for notifier changes but computes fanout only from the earlier dirty-file sets. |
