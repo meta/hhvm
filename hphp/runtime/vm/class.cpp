@@ -101,6 +101,7 @@ Mutex& getMutex(const StringData* s) {
 }
 
 static std::atomic<ClassId::Id> s_nextClassId{1};
+ReadWriteMutex g_scopeCacheMutex;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -308,11 +309,6 @@ static_assert(CheckSize<sizeof_Class, kClassSize>(), "");
  */
 void setResolvedTypeConstVal(Class::Const& cns, ArrayData* ad);
 
-/*
- * R/W lock for caching scopings of closures.
- */
-ReadWriteMutex s_scope_cache_mutex;
-
 Mutex s_priority_serialize_mutex;
 std::set<std::pair<int64_t, Class*>> s_priority_serialize;
 
@@ -395,7 +391,7 @@ Class* Class::rescope(Class* ctx) {
   };
 
   { // Return the cached clone if we have one.
-    ReadLock l(s_scope_cache_mutex);
+    ReadLock l(g_scopeCacheMutex);
 
     // If this succeeds, someone raced us to scoping the template.  We may have
     // unnecessarily allocated an ExtraData, but whatever.
@@ -415,7 +411,7 @@ Class* Class::rescope(Class* ctx) {
     template_cls->m_scoped ? cloneClass() : template_cls
   };
 
-  WriteLock l(s_scope_cache_mutex);
+  WriteLock l(g_scopeCacheMutex);
 
   if (fermeture->m_scoped) {
     // We raced with someone who scoped the template_cls just as we were about
@@ -425,8 +421,8 @@ Class* Class::rescope(Class* ctx) {
     // This race should be far less likely than a race between two attempted
     // first-scopings for `template_cls', which is why we don't do an test-and-
     // set when we first check `m_scoped' before acquiring the lock.
-    s_scope_cache_mutex.release();
-    SCOPE_EXIT { s_scope_cache_mutex.acquireWrite(); };
+    g_scopeCacheMutex.release();
+    SCOPE_EXIT { g_scopeCacheMutex.acquireWrite(); };
     fermeture = ClassPtr { cloneClass() };
   }
 
@@ -616,7 +612,7 @@ void Class::releaseRefs() {
     xtra->m_declIncludedEnums.clear();
 
     if (xtra->m_clonesWithThisScope.size() > 0) {
-      WriteLock l(s_scope_cache_mutex);
+      WriteLock l(g_scopeCacheMutex);
 
       // Purge all references to scoped closure clones that are scoped to
       // `this'---there is no way anyone can find them at this point.

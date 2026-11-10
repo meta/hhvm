@@ -2101,6 +2101,13 @@ private:
  */
 extern Mutex g_classesMutex;
 
+/*
+ * Protects scoped closure caches. Do not acquire while holding the instance-bits
+ * initialization lock: rescoping acquires these locks in the opposite order.
+ */
+struct ReadWriteMutex;
+extern ReadWriteMutex g_scopeCacheMutex;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 Attr classKindAsAttr(ClassKind kind);

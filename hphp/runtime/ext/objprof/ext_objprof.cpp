@@ -39,11 +39,13 @@
 #include "hphp/runtime/base/memory-manager-defs.h"
 #include "hphp/runtime/base/typed-value.h"
 #include "hphp/runtime/ext/asio/ext_static-wait-handle.h"
+#include "hphp/runtime/ext/core/ext_core_closure.h"
 #include "hphp/runtime/ext/datetime/ext_datetime.h"
 #include "hphp/runtime/vm/class.h"
 #include "hphp/runtime/vm/memo-cache.h"
 #include "hphp/runtime/vm/named-entity-defs.h"
 #include "hphp/util/alloc.h"
+#include "hphp/util/lock.h"
 #include "hphp/runtime/base/implicit-context.h"
 
 
@@ -960,9 +962,32 @@ void attributeStaticMemoizedFootprint(hphp_fast_map<ClassProp, ObjprofMetrics>* 
   });
 }
 
+/*
+ * Calls fn for each class and scoped closure clone. Takes an owning snapshot,
+ * locking only while copying each closure template's scoped clones.
+ * Runs callbacks without the lock because lazy APC property initialization
+ * can invoke warning handlers that create scoped closures.
+ */
+template<class Fn>
+void forEachObjprofClass(Fn fn) {
+  std::vector<ClassPtr> classes;
+  NamedType::foreach_name([&](NamedType& name) {
+    for (auto cls = name.clsList(); cls; cls = cls->m_next) {
+      if (cls->parent() == c_Closure::classof()) {
+        ReadLock lock(g_scopeCacheMutex);
+        for (auto const& clone : cls->scopedClones()) {
+          classes.emplace_back(clone.second);
+        }
+      }
+      classes.emplace_back(cls);
+    }
+  });
+  for (auto const& cls : classes) fn(cls.get());
+}
+
 void attributeStaticPropFootprint(hphp_fast_map<ClassProp, ObjprofMetrics>* histogram,
                                       bool objprof_props_mode, ObjprofState& env, int64_t max_depth) {
-  NamedType::foreach_class([&](Class* cls) {
+  forEachObjprofClass([&](Class* cls) {
     if (cls->needsInitSProps()) {
       return;
     }
@@ -1257,7 +1282,7 @@ Array objprof_get_paths_impl(
   });
   issueWarnings(deferred_warnings);
 
-  NamedType::foreach_class([&](Class* cls) {
+  forEachObjprofClass([&](Class* cls) {
     if (cls->needsInitSProps()) {
       return;
     }
