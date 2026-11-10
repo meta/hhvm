@@ -47,6 +47,10 @@ let make_type_collector () =
       Pos.AbsolutePosMap.singleton
         (Pos.to_absolute pos)
         [(env, Typing_defs.DeclTy ty)]
+
+    (* Coeffects are irrelevant to this collector's consumers (CST search
+       and the lambda parameter rewriter), so don't traverse them. *)
+    method! on_contexts _env _ctxs = Pos.AbsolutePosMap.empty
   end
 
 let type_collector = lazy (make_type_collector ())

@@ -1,0 +1,20 @@
+{
+  "pattern_type": "descendant_pattern",
+  "pattern": {
+    "pattern_type": "and_pattern",
+    "patterns": [
+      {
+        "pattern_type": "type_pattern",
+        "subtype_of": {
+          "kind": "class",
+          "name": "\\Supertype",
+          "args": []
+        }
+      },
+      {
+        "pattern_type": "match_pattern",
+        "match_name": "supertype"
+      }
+    ]
+  }
+}
