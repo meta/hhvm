@@ -1473,10 +1473,13 @@ class QueryArgument {
   // std::vector<QueryArgument> (handled by the overload above), and pair-list/
   // map types. Element/iteration order is preserved, which is fine for SQL list
   // contexts (IN, etc.).
+  // Views are ranges too, so a std::views::transform converts a container of
+  // some other type without building an intermediate container; the view's
+  // element type (the function's result) is what checked() validates.
   // Takes a forwarding reference so an rvalue collection is consumed rather
   // than copied: an owned container hands its elements over, while an lvalue
-  // (C deduces to a reference) still binds here and is copied, since the caller
-  // keeps it.
+  // (C deduces to a reference) or a view still binds here and is copied, since
+  // the caller keeps the elements.
   template <typename C>
     requires detail::QueryArgumentCollection<C>
   /* implicit */ QueryArgument(C&& arg_list)
@@ -1621,13 +1624,22 @@ class QueryArgument {
     if constexpr (std::ranges::sized_range<std::remove_cvref_t<Container>>) {
       list.reserve(container.size());
     }
+    // Elements are moved only when no one else can observe them: the range
+    // yields temporaries (e.g. a std::views::transform returning by value), or
+    // it is an rvalue that owns its elements (a moved-in std::vector<ValueRow>
+    // hands its cells over instead of duplicating them). A view or borrowed
+    // range (std::views::all, std::span, folly::Range, a transform returning
+    // references) refers to elements the caller still owns, so they are copied
+    // even when the view itself is a temporary -- including one that yields
+    // rvalue references (std::move_iterator).
+    using Range = std::remove_cvref_t<Container>;
+    constexpr bool kMoveElements =
+        !std::is_reference_v<std::ranges::range_reference_t<
+            std::remove_reference_t<Container>&>> ||
+        (std::is_rvalue_reference_v<Container&&> && !std::ranges::view<Range> &&
+         !std::ranges::borrowed_range<Range>);
     for (auto&& elem : container) {
-      // Consume the elements only when the container is an rvalue, i.e. we were
-      // handed ownership. An lvalue caller keeps its container intact, so its
-      // elements must be copied. This is what lets a moved-in
-      // std::vector<ValueRow> / std::vector<std::string> hand its cells and
-      // strings over instead of duplicating them.
-      if constexpr (std::is_rvalue_reference_v<Container&&>) {
+      if constexpr (kMoveElements) {
         list.emplace_back(std::move(elem));
       } else {
         list.emplace_back(elem);

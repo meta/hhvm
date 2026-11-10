@@ -20,14 +20,18 @@
 #include <fmt/core.h>
 #include <folly/FixedString.h>
 #include <folly/Optional.h>
+#include <folly/Range.h>
 #include <folly/container/F14Map.h>
 #include <folly/container/F14Set.h>
 #include <gtest/gtest.h>
 #include <array>
 #include <forward_list>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <optional>
+#include <ranges>
+#include <span>
 #include <unordered_map>
 #include <vector>
 
@@ -374,6 +378,13 @@ static_assert(
 // its reserve() with sized_range, so e.g. std::forward_list works.
 static_assert(std::is_constructible_v<QueryArgument, std::forward_list<int>>);
 static_assert(check_args_fixed<fixed_string{"%Ld"}, std::forward_list<int>>());
+// A view is checked by the type it yields, not the type it reads from.
+using ToStringView =
+    decltype(std::declval<const std::vector<int>&>() | std::views::transform([](int i) {
+               return std::to_string(i);
+             }));
+static_assert(check_args_fixed<fixed_string{"%Ls"}, ToStringView>());
+static_assert(!check_args_fixed<fixed_string{"%Ld"}, ToStringView>());
 // A std::string is a range of char but must stay a scalar, not a list.
 static_assert(!check_args_fixed<fixed_string{"%Ls"}, std::string>());
 // A map is a range, but its pair element isn't a list element.
@@ -1058,6 +1069,52 @@ TEST_F(QueryTest, CheckedQueryValueRowMatrixFromRvalue) {
   auto fromRvalue =
       Query::checked("INSERT INTO %T VALUES %V", "t", std::move(rows));
   EXPECT_EQ(fromRvalue.renderInsecure(), kExpected);
+}
+
+TEST_F(QueryTest, CheckedQueryListFromTransformView) {
+  struct Id {
+    std::string value;
+  };
+  const std::vector<Id> ids = {{"a"}, {"b"}};
+  constexpr std::string_view kExpected = "WHERE x IN (\"a\", \"b\")";
+
+  auto byRef = Query::checked(
+      "WHERE x IN (%Ls)",
+      ids | std::views::transform([](const Id& id) -> const std::string& {
+        return id.value;
+      }));
+  EXPECT_EQ(byRef.renderInsecure(), kExpected);
+
+  auto byValue = Query::checked(
+      "WHERE x IN (%Ls)",
+      ids | std::views::transform([](const Id& id) { return id.value; }));
+  EXPECT_EQ(byValue.renderInsecure(), kExpected);
+
+  auto byMember = Query::checked(
+      "WHERE x IN (%Ls)", std::views::transform(ids, &Id::value));
+  EXPECT_EQ(byMember.renderInsecure(), kExpected);
+}
+
+TEST_F(QueryTest, CheckedQueryTemporaryViewDoesNotConsumeElements) {
+  // A temporary view is an rvalue, but the elements belong to the caller, so
+  // they must be copied rather than moved out.
+  std::vector<Query> subQueries;
+  subQueries.push_back(Query::checked("SELECT %d", 1));
+
+  auto fromAll = Query::checked("%Lq", std::views::all(subQueries));
+  auto fromSpan = Query::checked("%Lq", std::span(subQueries));
+  auto fromRange = Query::checked("%Lq", folly::range(subQueries));
+  auto fromMoveIterators = Query::checked(
+      "%Lq",
+      std::ranges::subrange(
+          std::make_move_iterator(subQueries.begin()),
+          std::make_move_iterator(subQueries.end())));
+
+  EXPECT_EQ(fromAll.renderInsecure(), "SELECT 1");
+  EXPECT_EQ(fromSpan.renderInsecure(), "SELECT 1");
+  EXPECT_EQ(fromRange.renderInsecure(), "SELECT 1");
+  EXPECT_EQ(fromMoveIterators.renderInsecure(), "SELECT 1");
+  EXPECT_EQ(subQueries[0].renderInsecure(), "SELECT 1");
 }
 
 TEST_F(QueryTest, CheckedQueryValueRowMatrixWithSubQueryCell) {
