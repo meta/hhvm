@@ -233,6 +233,7 @@
  (libraries
    ai_options
    cli_args
+   core_unix
    string
    sys_utils
    utils_core

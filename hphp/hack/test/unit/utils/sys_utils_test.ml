@@ -167,6 +167,21 @@ let test_atomically_create () =
       ());
   true
 
+let test_lock_fd () =
+  Tempfile.with_real_tempdir (fun dir ->
+      let path = Path.concat dir "lock" |> Path.to_string in
+      assert (Lock.fd_of path = -1);
+      assert (Lock.grab path);
+      Utils.try_finally
+        ~f:(fun () ->
+          let fd = Core_unix.File_descr.of_int (Lock.fd_of path) in
+          let fd_stat = Unix.fstat fd in
+          let path_stat = Unix.stat path in
+          assert (fd_stat.Unix.st_dev = path_stat.Unix.st_dev);
+          assert (fd_stat.Unix.st_ino = path_stat.Unix.st_ino))
+        ~finally:(fun () -> assert (Lock.release path)));
+  true
+
 let tests =
   [
     ("test_freopen_failure1", test_freopen_failure1);
@@ -178,6 +193,7 @@ let tests =
       test_redirect_stdout_and_stderr_to_file_success );
     ("test_non_intr", test_non_intr);
     ("test_atomically_create", test_atomically_create);
+    ("test_lock_fd", test_lock_fd);
   ]
 
 let () = Unit_test.run_all tests

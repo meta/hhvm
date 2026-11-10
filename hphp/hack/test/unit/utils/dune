@@ -46,6 +46,7 @@
  (modules sys_utils_test)
  (libraries
   asserter
+  core_unix
   string
   test_injector_config
   sys_utils

@@ -5,6 +5,7 @@
   (:standard -safe-string))
  (libraries
   collections
+  core_unix
   disk
   exec_command
   iomux

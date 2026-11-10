@@ -82,7 +82,7 @@ let blocking_grab_then_release lock_file =
 let fd_of lock_file : int =
   match S_map.find_opt lock_file !lock_fds with
   | None -> -1
-  | Some fd -> Obj.magic fd
+  | Some (fd, _) -> Core_unix.File_descr.to_int fd
 
 (**
  * Check if the file lock is available without grabbing it.

@@ -31,16 +31,6 @@ val temp_dir_name : string
 
 val getenv_path : unit -> string option
 
-(** AVOID
-  * These "_naughty" functions break the abstraction of OCaml's Unix.file_descr
-  * type by using Obj.magic to convert between file descriptors and integers.
-  * Current usage is primarily for passing fd numbers across process boundaries
-  * via command line arguments. *)
-val fd_to_int_naughty : Unix.file_descr -> int
-
-(** AVOID, see {!fd_to_int_naughty} *)
-val int_to_fd_naughty : int -> Unix.file_descr
-
 (** This is a string "fd123:456" which uniquely identifies this file's inode *)
 val show_inode : Unix.file_descr -> string
 

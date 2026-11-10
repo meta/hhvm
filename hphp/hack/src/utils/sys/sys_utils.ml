@@ -539,21 +539,8 @@ type processor_info = {
 
 external processor_info : unit -> processor_info = "hh_processor_info"
 
-(* This assertion allows us to safely use Obj.magic to
-   * convert between Unix.file_descr and int below.
-   * This assertion will fail on Windows, but we don't support Windows anyway. *)
-let () = assert (Obj.is_int (Obj.repr Unix.stdin))
-
-let string_of_fd (fd : Unix.file_descr) : string = string_of_int (Obj.magic fd)
-
-(** AVOID. Breaks the abstraction of OCaml's Unix.file_descr
- * The assertion above ensures this is safe-ish. Use sparingly.
- * This Obj.magic has been present since D2332777 (15f9ac332fe5, Aug 2015)
- * via Handle.get_handle/wrap_handle, which were defined as `Obj.magic` for Unix-style OSs *)
-let fd_to_int_naughty (fd : Unix.file_descr) : int = Obj.magic fd
-
-(** AVOID, see {!fd_to_int_naughty} *)
-let int_to_fd_naughty (i : int) : Unix.file_descr = Obj.magic i
+let string_of_fd (fd : Unix.file_descr) : string =
+  string_of_int (Core_unix.File_descr.to_int fd)
 
 let show_inode (fd : Unix.file_descr) : string =
   let stat = Unix.fstat fd in
@@ -579,9 +566,6 @@ let rec select_non_intr read write exn timeout =
      * we call select on to verify those suspicions.
      *)
     let fdl_to_str fdl =
-      (* Using `Obj.magic` to convert file descriptors to ints because there is no
-       * library function to do so. See (https://github.com/ocaml/ocaml/pull/1990)
-       *)
       "["
       ^ List.fold_left
           ~f:(fun init fd -> init ^ string_of_fd fd ^ ", ")

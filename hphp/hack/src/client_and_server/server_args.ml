@@ -154,7 +154,7 @@ let parse_options () : options =
   let set_ai s = ai_mode := Some (Ai_options.prepare ~server:true s) in
   let set_max_procs n = max_procs := Some n in
   let set_save_naming s = save_naming := Some s in
-  let set_wait fd = waiting_client := Some (Sys_utils.int_to_fd_naughty fd) in
+  let set_wait fd = waiting_client := Some (Core_unix.File_descr.of_int fd) in
   let set_with_saved_state s = with_saved_state := Some s in
   let set_write_symbol_info s = write_symbol_info := Some s in
   let set_from s = from := s in

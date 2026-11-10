@@ -12,6 +12,7 @@
  (libraries
   agent_session_id_stubs
   connection_tracker
+  core_unix
   client_get_definition
   client_highlight_refs
   client_ide_service

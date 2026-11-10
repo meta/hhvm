@@ -150,7 +150,7 @@ let start_server (env : env) =
          * Note: Yes, the FD is available in the monitor process as well, but
          * it doesn't, and shouldn't, use it. *)
         [|
-          "--waiting-client"; string_of_int (Sys_utils.fd_to_int_naughty out_fd);
+          "--waiting-client"; string_of_int (Core_unix.File_descr.to_int out_fd);
         |];
         (if ignore_hh_version then
           [| "--ignore-hh-version" |]
