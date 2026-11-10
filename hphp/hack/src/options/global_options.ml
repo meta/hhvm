@@ -180,7 +180,8 @@ type t = {
   warnings_in_sandcastle: bool;
   warnings_generated_files: string list;
   tco_allowed_files_for_ignore_readonly: string list;
-  tco_package_exclude_patterns: string list;
+  tco_package_exclude_patterns:
+    (Str.regexp list[@opaque] [@equal fun a b -> List.equal Poly.equal a b]);
   tco_package_allow_classconst_violations: bool;
   tco_package_allow_all_tconst_violations: bool;
   tco_package_allow_enforceable_enum_violations: bool;
@@ -293,7 +294,9 @@ let default =
     warnings_generated_files = [];
     tco_allowed_files_for_ignore_readonly = [];
     tco_package_exclude_patterns =
-      [{|.*/__tests__/.*|}; {|.*/flib/intern/makehaste/.*|}];
+      List.map
+        [{|.*/__tests__/.*|}; {|.*/flib/intern/makehaste/.*|}]
+        ~f:Str.regexp;
     tco_package_allow_classconst_violations = true;
     tco_package_allow_all_tconst_violations = true;
     tco_package_allow_enforceable_enum_violations = true;
@@ -672,7 +675,9 @@ let set
         tco_allowed_files_for_ignore_readonly
         options.tco_allowed_files_for_ignore_readonly;
     tco_package_exclude_patterns =
-      setting tco_package_exclude_patterns options.tco_package_exclude_patterns;
+      setting
+        (Option.map tco_package_exclude_patterns ~f:(List.map ~f:Str.regexp))
+        options.tco_package_exclude_patterns;
     tco_package_allow_classconst_violations =
       setting
         tco_package_allow_classconst_violations
