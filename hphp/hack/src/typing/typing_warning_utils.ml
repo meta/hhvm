@@ -983,40 +983,6 @@ module Redundant_require_this_as = struct
   let quickfixes _ = []
 end
 
-module Shape_key_const_value_unresolvable = struct
-  type t = Typing_warning.Shape_key_const_value_unresolvable.t
-
-  let codes = [Codes.ShapeKeyEnumConstValueUnresolvable]
-
-  let code _ = Codes.ShapeKeyEnumConstValueUnresolvable
-
-  let claim
-      {
-        Typing_warning.Shape_key_const_value_unresolvable.class_name;
-        const_name;
-        const_kind;
-        _;
-      } =
-    let const_name_coded =
-      Markdown_lite.md_codify (class_name ^ "::" ^ const_name)
-    in
-    (match const_kind with
-    | `Enum -> "Enum constant " ^ const_name_coded ^ " used as a shape key"
-    | `ClassConst ->
-      "Class constant " ^ const_name_coded ^ " marked with `<<__ShapeKey>>`")
-    ^ " must be initialized with a string or integer literal, or a `nameof` expression"
-
-  let reasons
-      { Typing_warning.Shape_key_const_value_unresolvable.reason_pos; _ } =
-    [
-      ( reason_pos,
-        "Class pointers, constant forwarding, and computed expressions are not allowed"
-      );
-    ]
-
-  let quickfixes _ = []
-end
-
 module Redundant_concurrent = struct
   type t = unit
 
@@ -1067,8 +1033,6 @@ let module_of (type a x) (kind : (x, a) Typing_warning.kind) :
   | Typing_warning.Sealed_not_override -> (module Sealed_not_override)
   | Typing_warning.Redundant_require_this_as ->
     (module Redundant_require_this_as)
-  | Typing_warning.Shape_key_const_value_unresolvable ->
-    (module Shape_key_const_value_unresolvable)
   | Typing_warning.Redundant_concurrent -> (module Redundant_concurrent)
 
 let module_of_migrated
@@ -1100,7 +1064,6 @@ let is_type_dependent (type a x) (kind : (x, a) Typing_warning.kind) : bool =
   | Typing_warning.Sealed_not_override -> false
   | Typing_warning.Consistent_construct_abstract_final -> false
   | Typing_warning.Redundant_require_this_as -> false
-  | Typing_warning.Shape_key_const_value_unresolvable -> false
   | Typing_warning.Redundant_concurrent -> false
   (* Type-dependent: rely on type precision that could differ under dynamic *)
   | Typing_warning.Is_as_always -> true

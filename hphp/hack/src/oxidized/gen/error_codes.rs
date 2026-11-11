@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<b397dc1057d0d537c2d7e43cf43e72b5>>
+// @generated SignedSource<<2c1e9d0ab0a2e008e6333f765637e617>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -670,7 +670,6 @@ pub enum Warning {
     RedundantRequireThisAs = 12043,
     DynamicReturn = 12044,
     ReadonlyPropertyOverride = 12045,
-    ShapeKeyEnumConstValueUnresolvable = 12047,
     RedundantConcurrent = 12048,
 }
 impl TrivialDrop for Warning {}

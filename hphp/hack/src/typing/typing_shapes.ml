@@ -43,22 +43,13 @@ let shape_key_attribute_error pos cls const_name class_const =
     None
 
 let emit_shape_key_const_value_unresolvable
-    env ~pos ~reason_pos ~class_name ~const_name ~const_kind ~require_error =
-  if require_error then
-    Typing_error_utils.add_typing_error
-      ~env
-      Typing_error.(
-        shape
-        @@ Primary.Shape.Shape_key_const_value_unresolvable
-             { pos; reason_pos; class_name; const_name; const_kind })
-  else
-    Typing_warning_utils.add
-      env
-      Typing_warning.
-        ( pos,
-          Shape_key_const_value_unresolvable,
-          Shape_key_const_value_unresolvable.
-            { class_name; const_name; reason_pos; const_kind } )
+    env ~pos ~reason_pos ~class_name ~const_name ~const_kind =
+  Typing_error_utils.add_typing_error
+    ~env
+    Typing_error.(
+      shape
+      @@ Primary.Shape.Shape_key_const_value_unresolvable
+           { pos; reason_pos; class_name; const_name; const_kind })
 
 let check_shape_key_value env pos c cls cc =
   let open Aast in
@@ -100,8 +91,7 @@ let check_shape_key_value env pos c cls cc =
             ~reason_pos:(Pos_or_decl.of_raw_pos (Aast_utils.get_expr_pos value))
             ~class_name
             ~const_name
-            ~const_kind:`ClassConst
-            ~require_error:true;
+            ~const_kind:`ClassConst;
           None)
     in
     Option.iter error ~f:(fun error ->
@@ -125,8 +115,6 @@ let check_shape_key_use env pos cls const_name class_const =
         ~class_name:(Utils.strip_ns class_const.cc_origin)
         ~const_name
         ~const_kind:`Enum
-        ~require_error:
-          (Typechecker_options.require_enum_shape_key_be_resolvable tcopt)
   end else
     Option.iter
       (shape_key_attribute_error pos cls const_name class_const)
