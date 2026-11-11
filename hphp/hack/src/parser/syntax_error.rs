@@ -655,6 +655,9 @@ pub const named_param_without_named_keyword: Error =
 pub const named_parameter_keyword_name: Error =
     Cow::Borrowed("This named parameter's name conflicts with a keyword, please rename it.");
 
+pub const named_parameter_underscore_name: Error =
+    Cow::Borrowed("A named parameter cannot be named `_`.");
+
 pub const named_param_missing_name: Error = Cow::Borrowed(
     "Each `named` parameter in a function type must have a parameter name. For example: `(function(named int $x, named int $y): void)`.",
 );

@@ -2604,6 +2604,13 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
         if token_kind(name) != Some(TokenKind::Variable) {
             return;
         }
+        if self.text(name) == sn::special_idents::PLACEHOLDER {
+            self.errors.push(make_error_from_node(
+                name,
+                errors::named_parameter_underscore_name,
+            ));
+            return;
+        }
         // Named arguments require a Name token; scan past the parameter's `$`.
         let kind =
             positioned_parser::scan_token_kind(self.env.text.source_text(), start_offset(name) + 1);
