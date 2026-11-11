@@ -7,7 +7,6 @@
 InheritParentConfig: true
 Checks: '
 -facebook-hte-FormatPointlessCall_Fmt,
--facebook-hte-FormatPointlessCall_Folly,
 -facebook-hte-InlinedStaticLocalVariableWarning,
 -facebook-hte-LocalUncheckedArrayBounds,
 -facebook-hte-MemberUncheckedArrayBounds,
