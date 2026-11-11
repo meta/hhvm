@@ -515,9 +515,14 @@ impl ToOcamlRep for PosImpl {
                 block.build()
             }
             PosImpl::Tiny { file, span } => {
-                let file = file.as_deref().unwrap_or(&RelativePath::EMPTY);
+                // Converting the Arc, which is memoized, lets the positions of
+                // a file share one OCaml path instead of copying it each.
+                let file = match file {
+                    Some(file) => alloc.add(file),
+                    None => alloc.add(&RelativePath::EMPTY),
+                };
                 let mut block = alloc.block_with_size_and_tag(2, 2);
-                alloc.set_field(&mut block, 0, alloc.add(file));
+                alloc.set_field(&mut block, 0, file);
                 alloc.set_field(&mut block, 1, alloc.add(span));
                 block.build()
             }
@@ -761,6 +766,32 @@ mod tests {
                 &make_pos("b", (0, 0, 0), (0, 0, 0))
             ),
             "should reject merges with different filenames"
+        );
+    }
+
+    #[test]
+    fn test_tiny_positions_share_their_path_in_ocaml() {
+        let path = Arc::new(RelativePath::make(Prefix::Root, PathBuf::from("a.php")));
+        let first = Pos::from_lnum_bol_offset(Arc::clone(&path), (1, 0, 0), (1, 0, 5));
+        let second = Pos::from_lnum_bol_offset(path, (2, 6, 6), (2, 6, 9));
+        assert!(
+            matches!(first.0, PosImpl::Tiny { file: Some(_), .. }),
+            "a short span with a path should be Tiny"
+        );
+        let pair = (first.0, second.0);
+        let arena = ocamlrep::Arena::new();
+        let positions = arena.add_root(&pair);
+        let path_of = |index| {
+            positions
+                .field(index)
+                .and_then(|pos| pos.field(0))
+                .expect("a Tiny position block should have its path as field 0")
+                .to_bits()
+        };
+        assert_eq!(
+            path_of(0),
+            path_of(1),
+            "both positions should point at one OCaml path"
         );
     }
 }
