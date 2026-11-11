@@ -25,6 +25,7 @@
 #include "hphp/runtime/vm/jit/target-profile.h"
 
 #include "hphp/util/configs/eval.h"
+#include "hphp/util/configs/repo.h"
 #include "hphp/util/configs/sandbox.h"
 
 namespace HPHP::jit::irgen {
@@ -44,6 +45,17 @@ void emitCnsE(IRGS& env, const StringData* name) {
       push(env, cns(env, *val));
       return;
     }
+  }
+
+  // In RepoAuthoritative mode every constant is persistent, but its handle is
+  // only bound once the defining unit is merged. LdCns would bind a normal
+  // handle for a constant whose unit hasn't been loaded yet, making the later
+  // persistent bind in Constant::def fail and leaving the constant undefined,
+  // so emit a handle-less lookup instead.
+  if (Cfg::Repo::Authoritative &&
+      !rds::isHandleBound(lookupCnsHandle(name))) {
+    push(env, gen(env, LookupCnsE, cns(env, name)));
+    return;
   }
 
   auto const v = cond(

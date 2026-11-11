@@ -43,6 +43,7 @@
 #include "hphp/runtime/vm/jit/vasm-reg.h"
 
 #include "hphp/util/asm-x64.h"
+#include "hphp/util/configs/repo.h"
 #include "hphp/util/trace.h"
 
 namespace HPHP::jit::irlower {
@@ -172,6 +173,30 @@ static TypedValue lookupCnsEHelperPersistent(rds::Handle tv_handle,
 
 void cgLookupCnsE(IRLS& env, const IRInstruction* inst) {
   auto const cnsName = inst->src(0)->strVal();
+
+  // In RepoAuthoritative mode, irgen emits LookupCnsE for constants whose
+  // persistent handle isn't bound yet (see emitCnsE). Don't bind a normal
+  // handle for them here; go through Constant::load, which autoloads the
+  // defining unit. By the time we get here another thread may have bound the
+  // persistent handle with a concrete value, which the persistent helper below
+  // doesn't handle, so use the generic helper for that case too.
+  if (Cfg::Repo::Authoritative) {
+    auto const existing = lookupCnsHandle(cnsName);
+    if (!rds::isHandleBound(existing) ||
+        (rds::isPersistentHandle(existing) &&
+         rds::handleToPtr<TypedValue, rds::Mode::Persistent>(existing)
+           ->m_type != KindOfUninit)) {
+      cgCallHelper(
+        vmain(env), env,
+        CallSpec::direct(lookupCnsEHelper),
+        callDestTV(env, inst),
+        SyncOptions::Sync,
+        argGroup(env, inst).immPtr(cnsName)
+      );
+      return;
+    }
+  }
+
   auto const ch = makeCnsHandle(cnsName);
   assertx(rds::isHandleBound(ch));
 
