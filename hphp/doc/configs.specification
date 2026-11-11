@@ -21,6 +21,8 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 - std::string Repo.Path = Repo.Path, UNKNOWN, postprocess|staticdefault("")
 - bool Repo.LitstrLazyLoad = true, UNKNOWN
 - bool Repo.DebugInfo = Repo.DebugInfo, UNKNOWN, unitcacheflag|compileroption(Repo.DebugInfo)|staticdefault(true)
+- std::string Repo.UnitOrderFile = "", binliu, nobind
+- uint64_t Repo.UnitOrderBufferSize = 67108864, binliu, nobind
 
 # Server
 

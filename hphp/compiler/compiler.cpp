@@ -44,6 +44,7 @@
 
 #include "hphp/util/build-info.h"
 #include "hphp/util/configs/eval.h"
+#include "hphp/util/configs/repo.h"
 #include "hphp/util/exception.h"
 #include "hphp/util/hdf.h"
 #include "hphp/util/logger.h"
@@ -516,6 +517,11 @@ int prepareOptions(CompilerOptions &po, int argc, char **argv) {
      "input file names")
     ("input-list", value<std::string>(&po.inputList),
      "file containing list of file names, one per line")
+    ("unit-order-file", value<std::string>(&Cfg::Repo::UnitOrderFile),
+     "source-relative unit paths in priority order, one per line")
+    ("unit-order-buffer-size",
+     value<uint64_t>(&Cfg::Repo::UnitOrderBufferSize)->default_value(64 << 20),
+     "unit ordering buffer limit in bytes")
     ("build-incremental-base",
      "include RepoFile metadata required by --incremental-base-repo")
     ("incremental-base-repo", value<std::string>(&po.incrementalBaseRepo),
@@ -1488,7 +1494,7 @@ bool process(CompilerOptions &po) {
     if (incrementalRepo) {
       repoInvalidatedPaths.push_back(ue->m_filepath->toCppString());
     }
-    repo->add(encoded);
+    repo->add(std::move(encoded));
   };
 
   // This will contain all files eligible to be in the program: input files
@@ -1961,6 +1967,9 @@ bool process(CompilerOptions &po) {
   if (Option::GenerateBinaryHHBC) {
     autoload.emplace();
     repo.emplace(outputFile);
+    if (!Cfg::Repo::UnitOrderFile.empty()) {
+      repo->writeInSnOrder(Cfg::Repo::UnitOrderBufferSize);
+    }
   }
 
   if (Option::ConstFoldFileBC) {

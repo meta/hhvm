@@ -53,6 +53,7 @@
 
 #include "hphp/util/configs/eval.h"
 #include "hphp/util/configs/jit.h"
+#include "hphp/util/configs/repo.h"
 #include "hphp/util/logger.h"
 #include "hphp/util/rds-local.h"
 
@@ -95,6 +96,11 @@ void parse_options(int argc, char** argv) {
     ("input",
       po::value(&input_repo)->default_value("hhvm.hhbc"),
       "input hhbc repo path")
+    ("unit-order-file", po::value(&Cfg::Repo::UnitOrderFile),
+      "source-relative unit paths in priority order, one per line")
+    ("unit-order-buffer-size",
+      po::value(&Cfg::Repo::UnitOrderBufferSize)->default_value(64 << 20),
+      "unit ordering buffer limit in bytes")
     ("no-logging",
       po::bool_switch(&no_logging),
       "turn off logging")
@@ -503,6 +509,9 @@ void compile_repo() {
 
   RepoAutoloadMapBuilder autoload;
   RepoFileBuilder repo{output_repo};
+  if (!Cfg::Repo::UnitOrderFile.empty()) {
+    repo.writeInSnOrder(Cfg::Repo::UnitOrderBufferSize);
+  }
   std::mutex repoLock;
   std::atomic<size_t> numUnits{0};
 
@@ -511,7 +520,7 @@ void compile_repo() {
     autoload.addUnit(*ue);
     RepoFileBuilder::EncodedUE encoded{*ue, false};
     std::scoped_lock<std::mutex> _{repoLock};
-    repo.add(encoded);
+    repo.add(std::move(encoded));
   };
 
   std::thread asyncDispose;

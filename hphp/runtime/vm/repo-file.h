@@ -119,7 +119,13 @@ struct RepoFileBuilder {
   // and then write it to disk. This can only be called before
   // finish() is called.
   void add(const EncodedUE& ue);
+  void add(EncodedUE&& ue);
   void add(const UnitEmitter& ue);
+
+  // Write units to disk in serial-number order, buffering up to
+  // `bufferBytes` of units which arrive early. Serial numbers must be
+  // dense and start at 0. Must be called before any add().
+  void writeInSnOrder(uint64_t bufferBytes);
 
   // Retain reusable units from `base`, excluding units whose paths match or
   // are descendants of a path in `exclude`. `exclude` must contain unique,
@@ -145,6 +151,10 @@ struct RepoFileBuilder {
   RepoFileBuilder& operator=(const RepoFileBuilder&) = delete;
   RepoFileBuilder& operator=(RepoFileBuilder&&) = delete;
 private:
+  template<class T> void addImpl(T&&);
+  void writeUnit(const EncodedUE&);
+  void writeLowestPending();
+
   struct Data;
   std::unique_ptr<Data> m_data;
 };

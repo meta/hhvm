@@ -18,7 +18,10 @@
 #include <vector>
 #include <algorithm>
 #include <atomic>
+#include <fstream>
 #include <memory>
+#include <numeric>
+#include <ranges>
 #include <set>
 
 #include <folly/AtomicLinkedList.h>
@@ -32,6 +35,7 @@
 #define SET_FRAME_METADATA(...)
 #endif
 
+#include "hphp/runtime/base/static-string-table.h"
 #include "hphp/runtime/vm/constant.h"
 #include "hphp/runtime/vm/repo-global-data.h"
 #include "hphp/runtime/vm/unit-emitter.h"
@@ -51,7 +55,9 @@
 #include "hphp/hhbbc/type-system.h"
 #include "hphp/hhbbc/wide-func.h"
 
+#include "hphp/util/configs/repo.h"
 #include "hphp/util/extern-worker.h"
+#include "hphp/util/logger.h"
 #include "hphp/util/struct-log.h"
 
 namespace HPHP {
@@ -452,6 +458,50 @@ void analyze_iteratively(Index& index, LocalAnalysisMode mode) {
 }
 
 /*
+ * Return unit indices in emission order. Hints take priority, followed by
+ * unlisted units ordered by filename. Empty if no ordering file is configured.
+ */
+std::vector<uint32_t> unit_emit_order(
+    const std::vector<std::unique_ptr<php::Unit>>& units) {
+  if (Cfg::Repo::UnitOrderFile.empty()) return {};
+  size_t numHints = 0;
+  SStringToOneT<uint32_t> ranks;
+  std::ifstream input{Cfg::Repo::UnitOrderFile};
+  std::string line;
+  while (std::getline(input, line)) {
+    if (line.empty()) continue;
+    always_assert(numHints <= UINT32_MAX);
+    auto const rank = uint32_t(numHints++);
+    if (auto const s = lookupStaticString(line)) ranks.emplace(s, rank);
+  }
+
+  size_t matched = 0;
+  for (auto const& unit : units) {
+    matched += ranks.count(unit->filename);
+  }
+  Logger::FInfo("Unit ordering: {} hints in '{}', {} of {} units matched",
+                numHints, Cfg::Repo::UnitOrderFile, matched, units.size());
+
+  always_assert(units.size() <= (uint64_t{1} << 32));
+  std::vector<uint32_t> order(units.size());
+  std::iota(order.begin(), order.end(), uint32_t{0});
+  auto const rank = [&] (uint32_t i) {
+    auto const it = ranks.find(units[i]->filename);
+    return it != ranks.end() ? it->second : numHints;
+  };
+  std::sort(
+    order.begin(), order.end(),
+    [&] (uint32_t a, uint32_t b) {
+      auto const rankA = rank(a);
+      auto const rankB = rank(b);
+      if (rankA != rankB) return rankA < rankB;
+      return string_data_lt{}(units[a]->filename, units[b]->filename);
+    }
+  );
+  return order;
+}
+
+/*
  * Finally, use the results of all these iterations to perform
  * optimization.  This reanalyzes every function using our
  * now-very-updated Index, and then runs optimize_func with the
@@ -470,11 +520,14 @@ void final_pass(Index& index, F emitUnit) {
   trace_time _{"final pass", index.sample()};
   _.ignore_client_stats();
   index.freeze();
+  auto const& units = index.program().units;
+  auto const order = unit_emit_order(units);
   IndexAdaptor adaptor{ index };
   auto const dump_dir = debug_dump_to();
   parallel::for_each(
-    index.program().units,
-    [&] (const std::unique_ptr<php::Unit>& unit) {
+    std::views::iota(size_t{0}, units.size()),
+    [&] (size_t pos) {
+      auto const& unit = units[order.empty() ? pos : order[pos]];
       SET_FRAME_METADATA(unit->filename->toCppString());
       // optimize_func can remove 86*init methods from classes, so we
       // have to save the contexts for now.
@@ -505,7 +558,7 @@ void final_pass(Index& index, F emitUnit) {
           );
         }
       }
-      emitUnit(*unit);
+      emitUnit(*unit, order.empty() ? -1 : int64_t(pos));
     }
   );
 }
@@ -1576,9 +1629,9 @@ void whole_program(WholeProgramInput inputs,
     IndexAdaptor adaptor{ index };
 
     std::atomic<uint64_t> next{0};
-    auto const emitUnit = [&] (php::Unit& unit) {
+    auto const emitUnit = [&] (php::Unit& unit, int64_t sn) {
       auto ue = emit_unit(adaptor, unit);
-      auto const idx = next++;
+      auto const idx = sn >= 0 ? uint64_t(sn) : next++;
       ue->m_sn = idx;
       ue->setSha1(SHA1 { idx });
       if (Cfg::Eval::AbortBuildOnVerifyError && !ue->check(false)) {

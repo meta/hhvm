@@ -24,6 +24,7 @@
 #include "hphp/runtime/vm/unit-emitter.h"
 
 #include "hphp/util/blob-writer.h"
+#include "hphp/util/logger.h"
 
 #include <fmt/format.h>
 #include <folly/String.h>
@@ -33,9 +34,11 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string_view>
+#include <utility>
 
 TRACE_SET_MOD(repo_file)
 
@@ -186,6 +189,14 @@ struct RepoFileBuilder::Data : Blob::Writer<RepoFileChunks, RepoFileIndexes> {
   std::vector<UnitEmitterIndex> unitEmittersIndex;
   bool enableUnitEmitterReuse{false};
 
+  bool inSnOrder{false};
+  uint64_t bufferLimit{0};
+  int64_t nextSn{0};
+  std::map<int64_t, EncodedUE> pending;
+  uint64_t pendingBytes{0};
+  uint64_t peakPendingBytes{0};
+  size_t outOfOrderWrites{0};
+
   void finish(const RepoGlobalData&,
               std::vector<RepoUnitSymbols>,
               std::vector<UnitMethCallers>,
@@ -216,7 +227,53 @@ RepoFileBuilder::RepoFileBuilder(const std::string& path,
 RepoFileBuilder::~RepoFileBuilder() {
 }
 
+void RepoFileBuilder::writeInSnOrder(uint64_t bufferBytes) {
+  assertx(m_data);
+  assertx(m_data->unitEmittersIndex.empty());
+  m_data->inSnOrder = true;
+  m_data->bufferLimit = bufferBytes;
+}
+
 void RepoFileBuilder::add(const EncodedUE& ue) {
+  addImpl(ue);
+}
+
+void RepoFileBuilder::add(EncodedUE&& ue) {
+  addImpl(std::move(ue));
+}
+
+template<class T>
+void RepoFileBuilder::addImpl(T&& ue) {
+  assertx(m_data);
+  auto& data = *m_data;
+  if (data.inSnOrder) {
+    while (ue.sn > data.nextSn) {
+      if (data.pendingBytes + ue.blob.size() <= data.bufferLimit) {
+        data.pendingBytes += ue.blob.size();
+        data.peakPendingBytes =
+          std::max(data.peakPendingBytes, data.pendingBytes);
+        data.pending.emplace(ue.sn, std::forward<T>(ue));
+        return;
+      }
+      // The buffer is full: write whichever unit is closest to the front.
+      if (data.pending.empty() || data.pending.begin()->first > ue.sn) break;
+      writeLowestPending();
+    }
+  }
+  writeUnit(ue);
+  while (!data.pending.empty() && data.pending.begin()->first <= data.nextSn) {
+    writeLowestPending();
+  }
+}
+
+void RepoFileBuilder::writeLowestPending() {
+  auto const it = m_data->pending.begin();
+  writeUnit(it->second);
+  m_data->pendingBytes -= it->second.blob.size();
+  m_data->pending.erase(it);
+}
+
+void RepoFileBuilder::writeUnit(const EncodedUE& ue) {
   assertx(m_data);
   assertx(ue.path->isStatic());
   assertx(ue.sn >= 0);
@@ -240,6 +297,11 @@ void RepoFileBuilder::add(const EncodedUE& ue) {
   );
 
   m_data->write(RepoFileChunks::UNIT_EMITTERS, ue.blob.data(), size);
+
+  if (m_data->inSnOrder) {
+    m_data->outOfOrderWrites += ue.sn != m_data->nextSn;
+    m_data->nextSn = std::max(m_data->nextSn, ue.sn + 1);
+  }
 }
 
 void RepoFileBuilder::add(const UnitEmitter& ue) {
@@ -251,6 +313,17 @@ void RepoFileBuilder::finish(const RepoGlobalData& global,
                              const RepoAutoloadMapBuilder& autoloadMap,
                              const PackageInfo& packageInfo) {
   assertx(m_data);
+  // The ordered HHBBC pass assigns dense SNs from emission positions.
+  // Every unit is added before finish(), so no entries can remain pending.
+  always_assert(m_data->pending.empty());
+  if (m_data->inSnOrder) {
+    Logger::FInfo(
+      "Unit ordering: buffer_limit_bytes={}, peak_buffered_bytes={}, "
+      "out_of_order_writes={}",
+      m_data->bufferLimit, m_data->peakPendingBytes,
+      m_data->outOfOrderWrites
+    );
+  }
 
   std::vector<RepoUnitSymbols> unitSymbols(
     m_data->unitEmittersIndex.size());
