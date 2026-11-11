@@ -3359,6 +3359,13 @@ impl<'a, State: 'a + Clone> ParserErrors<'a, State> {
                     continue;
                 }
 
+                // TODO(T296572529): allow await in named args in the type checker once HHVM support is rolled out
+                NamedArgument(x)
+                    if !self.env.is_typechecker() && std::ptr::eq(node, &x.expression) =>
+                {
+                    continue;
+                }
+
                 // object of member selection expression or safe member selection expression
                 // is in legal position if member selection expression itself is in legal position
                 SafeMemberSelectionExpression(x) if std::ptr::eq(node, &x.object) => {

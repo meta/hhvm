@@ -5,3 +5,4 @@ function consume(named string $value): void { echo $value."\n"; }
 async function caller(): Awaitable<void> { consume(value=await gen()); }
 <<__EntryPoint>>
 function main(): void { \HH\Asio\join(caller()); }
+//
