@@ -19,7 +19,7 @@
 #include "hphp/util/hash.h"
 
 #include <folly/lang/Bits.h>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cstdint>
 
