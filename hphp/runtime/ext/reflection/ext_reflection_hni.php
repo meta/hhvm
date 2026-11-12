@@ -1132,9 +1132,13 @@ class ReflectionClass implements Reflector {
       return;
     }
     if (is_object($name_or_obj)) {
-      $this->obj = $name_or_obj;
       $classname = get_class($name_or_obj);
+      $this->__maybeNoticeNonClassArg($classname);
+      $this->obj = $name_or_obj;
     } else {
+      if (is_string($name_or_obj)) {
+        $this->__maybeNoticeNonClassArg($name_or_obj);
+      }
       $classname = $name_or_obj;
     }
     $cls = $this->__init($classname);
@@ -1153,6 +1157,9 @@ class ReflectionClass implements Reflector {
 
   <<__Native("NoRecording")>>
   private function __initFromClass(class<mixed> $cls)[]: void;
+
+  <<__Native("NoRecording")>>
+  private function __maybeNoticeNonClassArg(string $name)[]: void;
 
   /**
    * ( excerpt from http://php.net/manual/en/reflectionclass.tostring.php )

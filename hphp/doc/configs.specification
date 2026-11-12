@@ -722,6 +722,11 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 
   Whether operations like $c::foo() raise a notice when $c is a string
 
+- uint32_t Eval.ReflectionClassNonClassArgNoticeSampleRate = 0, dizzy
+
+  Whether ReflectionClass::__construct raises a sampled notice when it
+  receives a string or object instead of a class pointer
+
 - uint32_t Eval.CheckedUnsafeCastSampleRate = 0, UNKNOWN
 
   Raise notice if a UNSAFE_CAST argument has type that doesn't match the target type

@@ -43,9 +43,11 @@
 #include "hphp/system/systemlib.h"
 
 #include "hphp/util/configs/eval.h"
+#include "hphp/util/random.h"
 
 #include <functional>
 #include <boost/algorithm/string/predicate.hpp>
+#include <folly/Random.h>
 #include <fmt/core.h>
 
 namespace HPHP {
@@ -1343,6 +1345,17 @@ static TypedValue HHVM_METHOD(ReflectionClass, __init, const OptString& name) {
   return make_tv<KindOfClass>(const_cast<Class*>(cls));
 }
 
+static void HHVM_METHOD(ReflectionClass, __maybeNoticeNonClassArg,
+                        const OptString& name) {
+  auto const rate = Cfg::Eval::ReflectionClassNonClassArgNoticeSampleRate;
+  if (rate > 0 && folly::Random::oneIn(rate, threadLocalRng64())) {
+    raise_notice(
+      "ReflectionClass::__construct called with a non-class argument "
+      "for class %s; pass a class pointer instead",
+      name.get()->data());
+  }
+}
+
 static void HHVM_METHOD(ReflectionClass, __initFromClass, TypedValue cls) {
   auto const c = [&]() -> const Class* {
     if (isClassType(cls.m_type)) return val(cls).pclass;
@@ -2556,6 +2569,7 @@ struct ReflectionExtension final : Extension {
 
     HHVM_ME(ReflectionClass, __init);
     HHVM_ME(ReflectionClass, __initFromClass);
+    HHVM_ME(ReflectionClass, __maybeNoticeNonClassArg);
     HHVM_ME(ReflectionClass, get);
     HHVM_ME(ReflectionClass, getParent);
     HHVM_ME(ReflectionClass, isHack);
