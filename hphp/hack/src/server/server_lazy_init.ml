@@ -982,14 +982,49 @@ let parse_only_init
     env
     cgroup_steps
 
+(** Saved errors contain filenames rather than diagnostics. Recover the owners
+    of their symbols from the baseline before reverse naming bindings are removed,
+    so both sides of a duplicate can be processed by naming. *)
+let get_saved_state_error_files_and_owners
+    (old_naming_table : Naming_table.t)
+    (db_path : Naming_sqlite.db_path)
+    (old_errors : Relative_path.Set.t) : Relative_path.Set.t =
+  let add_owners files ids get_path =
+    List.fold ids ~init:files ~f:(fun files id ->
+        match get_path id.File_info.name with
+        | None -> files
+        | Some path -> Relative_path.Set.add files path)
+  in
+  let get_type_path name =
+    Naming_sqlite.get_itype_path_by_name db_path name |> Option.map ~f:fst
+  in
+  let get_exact_type_path name =
+    Naming_sqlite.get_type_path_by_name db_path name |> Option.map ~f:fst
+  in
+  Relative_path.Set.fold old_errors ~init:old_errors ~f:(fun path files ->
+      match Naming_table.get_file_info old_naming_table path with
+      | None -> files
+      | Some { File_info.ids; _ } ->
+        let { File_info.funs; classes; typedefs; consts; modules } = ids in
+        let files =
+          add_owners files funs (Naming_sqlite.get_fun_path_by_name db_path)
+        in
+        let files =
+          add_owners files funs (Naming_sqlite.get_ifun_path_by_name db_path)
+        in
+        let files = add_owners files classes get_exact_type_path in
+        let files = add_owners files typedefs get_exact_type_path in
+        let files = add_owners files classes get_type_path in
+        let files = add_owners files typedefs get_type_path in
+        let files =
+          add_owners files consts (Naming_sqlite.get_const_path_by_name db_path)
+        in
+        add_owners files modules (Naming_sqlite.get_module_path_by_name db_path))
+
 (** We'll adjust the forward and reverse naming table to reflect
-    changes to files which changed since the saved-state. We'll also
-    reflect changes in files which had [phase=Diagnostics.(Naming|Parsing)]
-    as well. Notionally that's because our current mechanism for handling
-    duplicate-name-errors requires all affected files to go through
-    the "update reverse naming table" procedure. (but it's redundant
-    because, elsewhere, we don't allow saved-state-generation in case
-    of naming errors...)
+    changes to files which changed since the saved-state. Files with saved errors
+    and their baseline symbol owners also go through naming to restore
+    duplicate-name tracking.
 
     The actual implementation is confusing because it stores fragments
     of naming-table in places you wouldn't expect:
@@ -1037,6 +1072,15 @@ let update_naming_table
   in
   Server_progress.with_message "updating file-to-symbol table" @@ fun () ->
   let t = Unix.gettimeofday () in
+  let old_error_files_and_owners =
+    match naming_table_fallback_fn with
+    | None -> old_errors
+    | Some db_path ->
+      get_saved_state_error_files_and_owners
+        old_naming_table
+        (Naming_sqlite.Db_path db_path)
+        old_errors
+  in
   let naming_files =
     List.fold
       ~init:Relative_path.Set.empty
@@ -1046,16 +1090,17 @@ let update_naming_table
         dirty_master_files;
         dirty_local_files;
         changed_while_parsing;
+        old_error_files_and_owners;
       ]
     |> Relative_path.Set.filter ~f:Find_utils.path_filter
   in
   let file_count = Relative_path.Set.cardinal naming_files in
   Hh_logger.log
-    "Among the changed files, %d are hack/php files (that are not ignored according to ignore_paths flag)."
+    "Processing %d hack/php files for naming (that are not ignored according to ignore_paths flag)."
     file_count;
   ( Cgroup_profiler.step_start_end cgroup_steps "remove fixmes"
   @@ fun _cgroup_step -> Fixme_provider.remove_batch naming_files );
-  (* Parse dirty files only *)
+  (* Parse dirty files and files needed to restore duplicate-name tracking. *)
   let (env, t) =
     Server_init_common.parse_files_and_update_forward_naming_table
       genv
@@ -1087,7 +1132,7 @@ let update_naming_table
     let (env, t) = write_symbol_info genv env cgroup_steps t in
     (env, t, None)
   else
-    (* Do global naming on all dirty files *)
+    (* Do global naming on all parsed files *)
     let (env, t) =
       Server_init_common
       .update_reverse_naming_table_from_env_and_get_duplicate_name_errors

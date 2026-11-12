@@ -602,6 +602,7 @@ let in_process ~name request =
 let run
     ?(initialization = Full_check)
     ?remote_old_decls
+    ?(expected_diagnostics : (string * int * string) list option)
     ({ initial_files; iterations } as scenario) =
   if List.is_empty iterations then
     invalid_arg "A scheduled fanout scenario must contain an iteration";
@@ -695,21 +696,36 @@ let run
         check = Fresh_check final_files;
       }
   in
+  let format diagnostics =
+    if List.is_empty diagnostics then
+      "No diagnostics."
+    else
+      List.map diagnostics ~f:(fun diagnostic ->
+          Yojson.Safe.from_string diagnostic |> Yojson.Safe.pretty_to_string)
+      |> String.concat ~sep:"\n"
+  in
   if not (List.equal String.equal incremental full) then
-    let format diagnostics =
-      if List.is_empty diagnostics then
-        "No diagnostics."
-      else
-        List.map diagnostics ~f:(fun diagnostic ->
-            Yojson.Safe.from_string diagnostic |> Yojson.Safe.pretty_to_string)
-        |> String.concat ~sep:"\n"
-    in
     raise
       (Diagnostics_mismatch
          (Printf.sprintf
             "The last incremental iteration disagrees with a fresh full check.\n\nIncremental diagnostics:\n%s\n\nFull-check diagnostics:\n%s"
             (format incremental)
-            (format full)))
+            (format full)));
+  Option.iter expected_diagnostics ~f:(fun expected ->
+      if not (matches_diagnostics expected (format full)) then
+        let expected =
+          if List.is_empty expected then
+            "No diagnostics."
+          else
+            List.map expected ~f:(fun (file, code, message) ->
+                Printf.sprintf "%s: %d: %s" file code message)
+            |> String.concat ~sep:"\n"
+        in
+        failwith
+          (Printf.sprintf
+             "Unexpected final diagnostics.\n\nExpected:\n%s\n\nActual:\n%s"
+             expected
+             (format full)))
 
 let run_expect_bug ?initialization ?remote_old_decls ~bug ~expectation scenario
     =

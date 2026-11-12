@@ -124,6 +124,11 @@ val expect_known_fanout_bug :
     Saved-state runs apply the same saved warning hashes to the independent
     full check so both executions use the same warning suppression policy.
 
+    [expected_diagnostics], when supplied, also checks the final diagnostics
+    against the given (relative filename, error code, primary message) tuples.
+    Positions and reason messages are ignored; order does not matter and
+    duplicate entries are retained. An empty list requires no diagnostics.
+
     [remote_old_decls] supplies Hack source for the old-declaration client's
     existing test fixture. It enables fetching missing old class declarations
     during initialization and incremental iterations; all fetches read that
@@ -132,7 +137,11 @@ val expect_known_fanout_bug :
     The fixture is outside the repository, and the independent full check keeps
     remote old declarations disabled. *)
 val run :
-  ?initialization:initialization -> ?remote_old_decls:string -> scenario -> unit
+  ?initialization:initialization ->
+  ?remote_old_decls:string ->
+  ?expected_diagnostics:(string * int * string) list ->
+  scenario ->
+  unit
 
 type bug_expectation =
   | Diagnostics of {
