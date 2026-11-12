@@ -620,6 +620,13 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 
 - bool Eval.TimeoutsUseWallTime = true, UNKNOWN
 
+- bool Eval.EnableThriftSinkBufferedReadFastPath = false, UNKNOWN
+
+  Complete an already-buffered Thrift sink message batch inline when no
+  external-thread-event lifecycle hooks are installed. At most one consecutive
+  batch may complete inline. Disabled keeps every read on the external-event
+  path without prefetching a message batch.
+
 - std::string Eval.InterpTailCallDispatch = "false", UNKNOWN, private|postprocess
 
   Selects the bytecode interpreter when the compiler supports guaranteed tail

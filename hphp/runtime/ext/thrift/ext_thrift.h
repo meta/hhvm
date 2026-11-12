@@ -393,6 +393,7 @@ struct TClientSink : SystemLib::ClassLoader<"TClientSink"> {
 
   void init(apache::thrift::detail::ClientSinkBridge::ClientPtr sinkBridge) {
     sinkBridge_.reset(sinkBridge.release());
+    readyBatchReturned_ = false;
   }
 
   void endSink() {
@@ -425,13 +426,17 @@ struct TClientSink : SystemLib::ClassLoader<"TClientSink"> {
   }
 
   TClientSinkCreditsOrFinalResponse getCreditsOrFinalResponse() {
+    return getCreditsOrFinalResponse(sinkBridge_->getMessages());
+  }
+
+  TClientSinkCreditsOrFinalResponse getCreditsOrFinalResponse(
+      apache::thrift::detail::ClientSinkBridge::ClientQueue creditsQueue) {
     uint64_t credits = 0;
     folly::Try<apache::thrift::StreamPayload> response;
     bool responseAvailable = false;
 
-    auto creditsQueue_ = sinkBridge_->getMessages();
-    while (!creditsQueue_.empty() && !responseAvailable) {
-      auto& message = creditsQueue_.front();
+    while (!creditsQueue.empty() && !responseAvailable) {
+      auto& message = creditsQueue.front();
       folly::variant_match(
           message,
           [&](apache::thrift::StreamMessage::PayloadOrError& payloadOrError) {
@@ -441,7 +446,7 @@ struct TClientSink : SystemLib::ClassLoader<"TClientSink"> {
           [&](apache::thrift::StreamMessage::RequestN& requestN) {
             credits += requestN.n;
           });
-      creditsQueue_.pop();
+      creditsQueue.pop();
     }
     if (responseAvailable) {
       endSink();
@@ -459,6 +464,7 @@ struct TClientSink : SystemLib::ClassLoader<"TClientSink"> {
 
  public:
   apache::thrift::detail::ClientSinkBridge::ClientReleasePtr sinkBridge_;
+  bool readyBatchReturned_ = false;
 };
 } // namespace thrift
 
@@ -542,6 +548,30 @@ struct Thrift2StreamEvent final : AsioExternalThreadEvent {
   std::unique_ptr<folly::IOBuf> serverError_;
 };
 
+inline Array thriftSinkResponseToArray(
+    const thrift::TClientSinkCreditsOrFinalResponse& response) {
+  auto responseStr = null_string;
+  auto errorStr = null_string;
+  uint64_t credits = 0;
+  folly::variant_match(
+      response,
+      [&](const std::unique_ptr<folly::IOBuf>& finalResponse) {
+        responseStr = ioBufToString(*finalResponse);
+      },
+      [&](const thrift::TClientStreamError& finalResponseError) {
+        if (finalResponseError.errorMsg_) {
+          // Encoded stream exceptions are decoded by generated code.
+          if (finalResponseError.isEncoded_) {
+            responseStr = ioBufToString(*finalResponseError.errorMsg_);
+          } else {
+            errorStr = ioBufToString(*finalResponseError.errorMsg_);
+          }
+        }
+      },
+      [&](const uint64_t& n) { credits = n; });
+  return make_vec_array(credits, responseStr, errorStr);
+}
+
 struct ThriftSinkEvent final : AsioExternalThreadEvent {
   ThriftSinkEvent() = default;
 
@@ -566,30 +596,9 @@ struct ThriftSinkEvent final : AsioExternalThreadEvent {
               0 // error code UNKNOWN
               ));
     }
-    auto responseStr = null_string;
-    auto errorStr = null_string;
-    uint64_t credits = 0;
-    folly::variant_match(
-        creditsOrFinalResponse_,
-        [&](const std::unique_ptr<folly::IOBuf>& finalResponse) {
-          responseStr = ioBufToString(*finalResponse);
-        },
-        [&](const thrift::TClientStreamError& finalResponseError) {
-          if (finalResponseError.errorMsg_) {
-            // Encoded stream exceptions need to be deserialized by generated
-            // code. Returning it as the response string so that it will be
-            // decoded
-            if (finalResponseError.isEncoded_) {
-              responseStr = ioBufToString(*finalResponseError.errorMsg_);
-            } else {
-              errorStr = ioBufToString(*finalResponseError.errorMsg_);
-            }
-          }
-        },
-        [&](const uint64_t& n) { credits = n; });
-    return tvCopy(
+    tvCopy(
         make_array_like_tv(
-            make_vec_array(credits, responseStr, errorStr).detach()),
+            thriftSinkResponseToArray(creditsOrFinalResponse_).detach()),
         result);
   }
 

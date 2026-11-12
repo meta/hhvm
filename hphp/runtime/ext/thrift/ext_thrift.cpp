@@ -17,6 +17,12 @@
 
 #include "hphp/runtime/ext/thrift/ext_thrift.h"
 
+#include <utility>
+
+#include "hphp/runtime/ext/asio/asio-session.h"
+#include "hphp/runtime/ext/asio/ext_static-wait-handle.h"
+#include "hphp/util/configs/eval.h"
+
 namespace HPHP::thrift {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,6 +35,21 @@ Object HHVM_METHOD(
   auto data = TClientSink::GetDataOrThrowException(this_);
   if (!data->sinkBridge_) {
     return null_object;
+  }
+
+  auto const session = AsioSession::Get();
+  if (!std::exchange(data->readyBatchReturned_, false) &&
+      Cfg::Eval::EnableThriftSinkBufferedReadFastPath &&
+      !session->hasOnExternalThreadEventCreate() &&
+      !session->hasOnExternalThreadEventSuccess() &&
+      !session->hasOnExternalThreadEventFail()) {
+    auto messages = data->sinkBridge_->getMessages();
+    if (!messages.empty()) {
+      data->readyBatchReturned_ = true;
+      auto const response = data->getCreditsOrFinalResponse(std::move(messages));
+      return Object::attach(c_StaticWaitHandle::CreateSucceeded(
+        make_array_like_tv(thriftSinkResponseToArray(response).detach())));
+    }
   }
   auto event = new ThriftSinkEvent();
 
