@@ -49,7 +49,6 @@ struct FuncId {
   constexpr static FuncId fromInt(Int num) {
     return FuncId{Id(num, Id::from_raw)};
   }
-  Int toStableInt() const;
 
   bool isInvalid() const { return m_id == Invalid.m_id; }
   bool isDummy()   const { return m_id == Dummy.m_id; }

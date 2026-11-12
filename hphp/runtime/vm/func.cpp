@@ -76,21 +76,6 @@ InheritedRetTypesMap s_inheritedRetTypes;
 
 Mutex g_funcsMutex;
 
-/*
- * FuncId high water mark and FuncId -> Func* table.
- * We can't start with 0 since that's used for special sentinel value
- * in TreadHashMap
- */
-static std::atomic<FuncId::Int> s_nextFuncId{1};
-folly::ConcurrentHashMap<uint32_t, uint32_t> s_stableFuncIDs;
-
-static ServiceData::ExportedCounter* s_funcid_counter =
-  ServiceData::createCounter("admin.func_ids");
-static InitFiniNode s_funcidCounterInit([]{
-  // see comment on s_nextFuncId for why we start at 1.
-  s_funcid_counter->setValue(1);
-}, InitFiniNode::When::PostRuntimeOptions, "func_id counter init");
-
 namespace {
 inline int numProloguesForNumPositionals(int numPositionalParams) {
   // The number of prologues is numPositionalParams + 2. The extra 2 are needed for
@@ -159,7 +144,7 @@ void Func::finishDestroy() {
   NamedFunc::removeFunc(this);
 
   if (hasInheritedReturnTypes()) {
-    s_inheritedRetTypes.erase(getFuncId().toStableInt());
+    s_inheritedRetTypes.erase(getFuncId().toInt());
   }
 
   if (m_allFlags.m_registeredInDataMap) {
@@ -194,7 +179,7 @@ void Func::freeClone() {
 
   if (hasInheritedReturnTypes()) {
     m_attrs = static_cast<Attr>(m_attrs & ~AttrHasInheritedReturnTypes);
-    s_inheritedRetTypes.erase(getFuncId().toStableInt());
+    s_inheritedRetTypes.erase(getFuncId().toInt());
   }
 
   // Class::destroy() already invalidated the token via startDestroy(), and a
@@ -239,7 +224,6 @@ Func* Func::clone(Class* cls, const StringData* name) const {
   // context of the class it was cloned into, so unset it for the new clone.
   f->m_attrs = Attr(f->m_attrs & ~AttrHasInheritedReturnTypes);
 
-  f->setNewFuncId();
   f->atomicFlags().unset(Func::Flags::Zombie);
   return f;
 }
@@ -256,7 +240,6 @@ void Func::init(int numPositionalParams) {
 #ifndef NDEBUG
   m_magic = kMagic;
 #endif
-  setNewFuncId();
   // For methods, we defer setting the full name until m_cls is initialized
   if (!preClass()) {
     setFullName();
@@ -373,26 +356,6 @@ std::pair<const StringData*, const StringData*> Func::getMethCallerNames(
 
 ///////////////////////////////////////////////////////////////////////////////
 // FuncId manipulation.
-
-FuncId::Int Func::maxFuncIdNum() {
-  return s_nextFuncId.load(std::memory_order_acquire);
-}
-
-void Func::setNewFuncId() {
-  auto const id = s_nextFuncId.fetch_add(1, std::memory_order_acq_rel);
-  s_funcid_counter->increment();
-
-  if (!Cfg::Repo::Authoritative) {
-    s_stableFuncIDs.insert_or_assign(getFuncId().toInt(), id);
-  }
-}
-
-uint32_t Func::getStableId() const {
-  if (Cfg::Repo::Authoritative) return getFuncId().toInt();
-  auto const it = s_stableFuncIDs.find(getFuncId().toInt());
-  assertx(it != s_stableFuncIDs.end());
-  return it->second;
-}
 
 const Func* Func::fromFuncId(FuncId id) {
   auto const func = id.getFunc();
@@ -1398,13 +1361,13 @@ void Func::recordCallNoCheck() const {
 
 const TypeIntersectionConstraint& Func::lookupInheritedReturnTypes() const {
   assertx(hasInheritedReturnTypes());
-  auto it = s_inheritedRetTypes.find(getFuncId().toStableInt());
+  auto it = s_inheritedRetTypes.find(getFuncId().toInt());
   always_assert(it != s_inheritedRetTypes.end());
   return it->second;
 }
 
 void Func::storeInheritedReturnTypes(TypeIntersectionConstraint&& tcs) {
-  always_assert(s_inheritedRetTypes.insert(getFuncId().toStableInt(), std::move(tcs)).second);
+  always_assert(s_inheritedRetTypes.insert(getFuncId().toInt(), std::move(tcs)).second);
   m_attrs = m_attrs | AttrHasInheritedReturnTypes;
 }
 

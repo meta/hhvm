@@ -349,16 +349,6 @@ TEST(COUNTERS, alloc_arena_usage) {
 
 #endif
 
-TEST(COUNTERS, func_ids) {
-  EXPECT_EQ(getVal("admin.func_ids"), Func::maxFuncIdNum());
-  auto obj = SystemLib::AllocInvalidArgumentExceptionObject("This is a test exception object for counters");
-  auto func = obj->getVMClass()->getCtor();
-  const auto prev = Func::maxFuncIdNum();
-  func->clone(obj->getVMClass(), makeStaticString("bananas"));
-  EXPECT_EQ(Func::maxFuncIdNum(), prev+1);
-  EXPECT_EQ(getVal("admin.func_ids"), Func::maxFuncIdNum());
-}
-
 TEST(COUNTERS, swappable_roarena_capac) {
   setup_swappable_readonly_arena(32);
   auto const arena = get_swappable_readonly_arena();

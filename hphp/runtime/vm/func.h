@@ -263,25 +263,6 @@ struct Func final {
   std::shared_ptr<FuncToken> getFuncToken() const;
 
   /*
-   * Get a function ID that is guaranteed not to be reused during the lifetime
-   * of the process.
-   */
-  uint32_t getStableId() const;
-
-private:
-  /*
-   * Reserve the next available FuncId for `this', and add `this' to the
-   * function table.
-   */
-  void setNewFuncId();
-
-public:
-  /*
-   * The max FuncId num.
-   */
-  static FuncId::Int maxFuncIdNum();
-
-  /*
    * Lookup a Func* by its ID.
    */
   static const Func* fromFuncId(FuncId id);

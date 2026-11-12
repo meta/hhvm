@@ -146,9 +146,6 @@ int64_t HHVM_FUNCTION(hphp_get_stats, const OptString& name) {
   if (strcmp(name.c_str(), "units") == 0) {
     return numLoadedUnits();
   }
-  if (strcmp(name.c_str(), "funcs") == 0) {
-    return Func::maxFuncIdNum();
-  }
   return ServerStats::Get(name.data());
 }
 Array HHVM_FUNCTION(hphp_get_status) {
