@@ -1126,14 +1126,16 @@ class ReflectionClass implements Reflector {
    *                     reflect, or an object.
    */
   public function __construct(mixed $name_or_obj)[] {
+    if (HH\is_class($name_or_obj)) {
+      $this->__initFromClass($name_or_obj);
+      $this->name = HH\class_to_classname($name_or_obj);
+      return;
+    }
     if (is_object($name_or_obj)) {
       $this->obj = $name_or_obj;
       $classname = get_class($name_or_obj);
     } else {
       $classname = $name_or_obj;
-    }
-    if (HH\is_class($classname)) {
-      $classname = HH\class_to_classname($classname);
     }
     $cls = $this->__init($classname);
     if ($cls is null) {
@@ -1144,6 +1146,9 @@ class ReflectionClass implements Reflector {
 
   <<__Native("NoRecording")>>
   private function __init(string $name)[]: ?class<mixed>;
+
+  <<__Native("NoRecording")>>
+  private function __initFromClass(class<mixed> $cls)[]: void;
 
   /**
    * ( excerpt from http://php.net/manual/en/reflectionclass.tostring.php )

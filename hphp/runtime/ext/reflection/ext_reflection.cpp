@@ -1343,6 +1343,20 @@ static TypedValue HHVM_METHOD(ReflectionClass, __init, const OptString& name) {
   return make_tv<KindOfClass>(const_cast<Class*>(cls));
 }
 
+static void HHVM_METHOD(ReflectionClass, __initFromClass, TypedValue cls) {
+  auto const c = [&]() -> const Class* {
+    if (isClassType(cls.m_type)) return val(cls).pclass;
+    assertx(isLazyClassType(cls.m_type));
+    return Class::load(val(cls).plazyclass.name());
+  }();
+  if (!c) {
+    Reflection::ThrowReflectionExceptionObject(fmt::format(
+      "Class {} does not exist",
+      val(cls).plazyclass.name()->toCppString()));
+  }
+  ReflectionClassHandle::Get(this_)->setClass(c);
+}
+
 static TypedValue HHVM_METHOD(ReflectionClass, get) {
   auto const cls = ReflectionClassHandle::GetClassFor(this_);
   return make_tv<KindOfClass>(const_cast<Class*>(cls));
@@ -2541,6 +2555,7 @@ struct ReflectionExtension final : Extension {
     HHVM_ME(ReflectionTypeAlias, getFileName);
 
     HHVM_ME(ReflectionClass, __init);
+    HHVM_ME(ReflectionClass, __initFromClass);
     HHVM_ME(ReflectionClass, get);
     HHVM_ME(ReflectionClass, getParent);
     HHVM_ME(ReflectionClass, isHack);
