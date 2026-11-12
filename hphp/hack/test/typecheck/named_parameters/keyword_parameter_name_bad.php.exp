@@ -1,4 +1,4 @@
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:4:37
 2 | <<file: __EnableUnstableFeatures('named_parameters')>>
@@ -8,7 +8,7 @@ keyword_parameter_name_bad.php:4:37
 5 | function namespace_parameter(named int $namespace): void {}
 6 | function contextual_parameters(named int $type, named int $match): void {}
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:5:40
 3 | 
@@ -18,7 +18,7 @@ keyword_parameter_name_bad.php:5:40
 6 | function contextual_parameters(named int $type, named int $match): void {}
 7 | function uppercase_parameter(named int $PRIVATE): void {}
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:6:42
 4 | function module_parameter(named int $module): void {}
@@ -28,7 +28,7 @@ keyword_parameter_name_bad.php:6:42
 7 | function uppercase_parameter(named int $PRIVATE): void {}
 8 | function decorated_parameter(named int $inout): void {}
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:6:59
 4 | function module_parameter(named int $module): void {}
@@ -38,7 +38,7 @@ keyword_parameter_name_bad.php:6:59
 7 | function uppercase_parameter(named int $PRIVATE): void {}
 8 | function decorated_parameter(named int $inout): void {}
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:7:40
 5 | function namespace_parameter(named int $namespace): void {}
@@ -48,7 +48,7 @@ keyword_parameter_name_bad.php:7:40
 8 | function decorated_parameter(named int $inout): void {}
 9 | function default_keyword_parameter(named int $optional = 0): void {}
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:8:40
  6 | function contextual_parameters(named int $type, named int $match): void {}
@@ -58,7 +58,7 @@ keyword_parameter_name_bad.php:8:40
  9 | function default_keyword_parameter(named int $optional = 0): void {}
 10 | 
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:9:46
  7 | function uppercase_parameter(named int $PRIVATE): void {}
@@ -68,7 +68,7 @@ keyword_parameter_name_bad.php:9:46
 10 | 
 11 | class KeywordParameters {
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:12:48
 10 | 
@@ -78,7 +78,7 @@ keyword_parameter_name_bad.php:12:48
 13 |   public function method(named int $abstract): void {}
 14 | }
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:13:36
 11 | class KeywordParameters {
@@ -88,7 +88,7 @@ keyword_parameter_name_bad.php:13:36
 14 | }
 15 | 
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:17:36
 15 | 
@@ -98,7 +98,7 @@ keyword_parameter_name_bad.php:17:36
 18 | }
 19 | 
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:21:27
 19 | 
@@ -108,7 +108,7 @@ keyword_parameter_name_bad.php:21:27
 22 |   $_ = (named int $private) ==> $private;
 23 | }
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:22:19
 20 | function closures(): void {
@@ -118,7 +118,7 @@ keyword_parameter_name_bad.php:22:19
 23 | }
 24 | 
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:25:49
 23 | }
@@ -128,7 +128,7 @@ keyword_parameter_name_bad.php:25:49
 26 | type OptionalKeywordParameterType =
 27 |   (function(optional named int $module): void);
 
-error: Parsing[1002] This named parameter's name conflicts with a keyword, please rename it. [1]
+error: Parsing[1002] This named parameter's name conflicts with a keyword. Please rename the parameter, such as with a trailing underscore. [1]
 
 keyword_parameter_name_bad.php:27:32
 25 | type KeywordParameterType = (function(named int $abstract): void);

@@ -652,8 +652,10 @@ pub const splat_readonly_param: Error = Cow::Borrowed("Splat parameters cannot b
 pub const named_param_without_named_keyword: Error =
     Cow::Borrowed("Unexpected parameter name. Only `named` parameters can have names.");
 
-pub const named_parameter_keyword_name: Error =
-    Cow::Borrowed("This named parameter's name conflicts with a keyword, please rename it.");
+pub const named_parameter_keyword_name: Error = Cow::Borrowed(concat!(
+    "This named parameter's name conflicts with a keyword. ",
+    "Please rename the parameter, such as with a trailing underscore.",
+));
 
 pub const named_parameter_underscore_name: Error =
     Cow::Borrowed("A named parameter cannot be named `_`.");
