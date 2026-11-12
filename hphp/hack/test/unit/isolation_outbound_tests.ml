@@ -133,6 +133,7 @@ let test_ensure_indexed_warms_the_cache () =
   Server_isolation_outbound.ensure_indexed
     ~ctx
     ~workers:None
+    ~check_memory:(fun () -> ())
     [foo_path; bar_path];
   let after_bulk = Server_isolation_outbound.files_indexed () in
   let edges = Server_isolation_outbound.get ctx foo_path in
@@ -141,6 +142,21 @@ let test_ensure_indexed_warms_the_cache () =
   Int.equal after_bulk 2
   && Int.equal (Server_isolation_outbound.files_indexed ()) 2
   && Relative_path.Set.mem edges bar_path
+
+let test_ensure_indexed_stops_when_memory_is_low () =
+  Server_isolation_outbound.reset ();
+  let { Common_setup.ctx; foo_path; bar_path; _ } = setup () in
+  match
+    Server_isolation_outbound.ensure_indexed
+      ~ctx
+      ~workers:None
+      ~check_memory:(fun () ->
+        raise (Server_isolation_memory.Below_floor "memory is low"))
+      [foo_path; bar_path]
+  with
+  | () -> false
+  | exception Server_isolation_memory.Below_floor reason ->
+    String.equal reason "memory is low"
 
 let test_release_cache_keeps_the_count () =
   Server_isolation_outbound.reset ();
@@ -189,6 +205,8 @@ let tests =
     ( "test_edges_point_at_the_referenced_file",
       test_edges_point_at_the_referenced_file );
     ("test_ensure_indexed_warms_the_cache", test_ensure_indexed_warms_the_cache);
+    ( "test_ensure_indexed_stops_when_memory_is_low",
+      test_ensure_indexed_stops_when_memory_is_low );
     ("test_release_cache_keeps_the_count", test_release_cache_keeps_the_count);
     ( "test_attribute_only_reference_yields_an_edge",
       test_attribute_only_reference_yields_an_edge );

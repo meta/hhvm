@@ -169,6 +169,7 @@ module Absorb = struct
     claimed: Relative_path.Set.t;
     max_cluster_size: int option;
     max_dependents: int;
+    check_memory: unit -> unit;
   }
 
   (* Where the subset rule stands: every dependent already inside, one named
@@ -289,6 +290,7 @@ let index b paths =
       Server_isolation_outbound.ensure_indexed
         ~ctx:b.ctx
         ~workers:b.workers
+        ~check_memory:b.check_memory
         (Relative_path.Set.elements paths))
 
 (* Everything the cluster reaches and does not hold, less the candidates whose
@@ -461,7 +463,8 @@ let batch
     naming_table
     ~claimed
     ~max_cluster_size
-    ~max_dependents =
+    ~max_dependents
+    ~check_memory =
   {
     ctx;
     workers;
@@ -470,6 +473,7 @@ let batch
     claimed;
     max_cluster_size;
     max_dependents;
+    check_memory;
   }
 
 let grow_batch
@@ -491,6 +495,7 @@ let grow_batch
       ~claimed
       ~max_cluster_size
       ~max_dependents
+      ~check_memory
   in
   let rec rounds round active finished =
     match active with

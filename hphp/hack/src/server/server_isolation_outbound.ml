@@ -99,14 +99,31 @@ let index_one ctx path =
   HashSet.add cached path;
   outbound
 
-let index_batch (ctx : Provider_context.t) () (paths : Relative_path.t list) :
-    unit =
-  List.iter paths ~f:(fun path ->
-      ignore (index_one ctx path : Relative_path.Set.t))
+(** Indexes [paths] one at a time, and stops at the first one where
+    [check_memory] says the machine is low, returning why. Checked here, in the
+    worker, before every file: a worker's memory grows with each file it
+    indexes, and the master is waiting for the call to return and cannot look
+    until then. *)
+let index_batch
+    (ctx : Provider_context.t)
+    (check_memory : unit -> unit)
+    (_ : string option)
+    (paths : Relative_path.t list) : string option =
+  let rec index = function
+    | [] -> None
+    | path :: rest ->
+      (match check_memory () with
+      | exception Server_isolation_memory.Below_floor reason -> Some reason
+      | () ->
+        ignore (index_one ctx path : Relative_path.Set.t);
+        index rest)
+  in
+  index paths
 
 let ensure_indexed
     ~(ctx : Provider_context.t)
     ~(workers : Multi_worker.worker list option)
+    ~(check_memory : unit -> unit)
     (paths : Relative_path.t list) : unit =
   let missing =
     (* [mem] rather than [get], which would deserialise every hit's edge set
@@ -123,12 +140,22 @@ let ensure_indexed
        that no [reset] can find. Naming a path never written is harmless. *)
     List.iter missing ~f:(HashSet.add cached);
     indexed_count := !indexed_count + List.length missing;
-    Multi_worker.call
-      workers
-      ~job:(index_batch ctx)
-      ~neutral:()
-      ~merge:(fun () () -> ())
-      ~next:(Multi_worker.next workers missing)
+    (* A worker that finds memory low ends its bucket, and every other does the
+       same at its next file, so the call returns within a file's time rather
+       than raising with workers still busy. *)
+    let stopped =
+      Multi_worker.call
+        workers
+        ~job:(index_batch ctx check_memory)
+        ~neutral:None
+        ~merge:(fun reason so_far ->
+          match so_far with
+          | Some _ -> so_far
+          | None -> reason)
+        ~next:(Multi_worker.next workers missing)
+    in
+    Option.iter stopped ~f:(fun reason ->
+        raise (Server_isolation_memory.Below_floor reason))
   end
 
 (* The fallback for anything [ensure_indexed] has not pre-warmed. *)

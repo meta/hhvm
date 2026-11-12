@@ -18,10 +18,16 @@
 
     Safe on workers because indexing only reads source. Anything reading the
     dependency graph would not be: a forked worker sees the memory-mapped [base]
-    but not the [delta] on the master's heap. *)
+    but not the [delta] on the master's heap.
+
+    [check_memory] is called by each worker before every file. When it raises
+    [Server_isolation_memory.Below_floor] that worker stops, the others stop at
+    their next file, and the exception is re-raised here once the call returns.
+    The files not reached are not indexed. *)
 val ensure_indexed :
   ctx:Provider_context.t ->
   workers:Multi_worker.worker list option ->
+  check_memory:(unit -> unit) ->
   Relative_path.t list ->
   unit
 

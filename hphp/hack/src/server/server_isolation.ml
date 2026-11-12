@@ -327,7 +327,9 @@ type run = {
 }
 
 (** Stops the run, by raising, when the machine is running out of memory. Called
-    wherever a run could be using more of it than a moment ago. *)
+    wherever a run could be using more of it than a moment ago, including in
+    the workers, which are sent this function: it holds the guard and nothing
+    else of the run. *)
 let check_memory r =
   let guard = r.memory_guard in
   (fun () -> Memory.check guard)
