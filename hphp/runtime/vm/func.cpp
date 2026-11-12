@@ -33,6 +33,7 @@
 #include "hphp/runtime/vm/class.h"
 #include "hphp/runtime/vm/func-cleanup.h"
 #include "hphp/runtime/vm/func-emitter.h"
+#include "hphp/runtime/vm/func-token.h"
 #include "hphp/runtime/vm/repo-file.h"
 #include "hphp/runtime/vm/repo-global-data.h"
 #include "hphp/runtime/vm/reverse-data-map.h"
@@ -151,6 +152,7 @@ void* Func::allocFuncMem(int numPositionalParams) {
 
 void Func::startDestroy() {
   atomicFlags().set(Func::Flags::Zombie);
+  FuncToken::setInvalid(this);
 }
 
 void Func::finishDestroy() {
@@ -173,6 +175,7 @@ void Func::finishDestroy() {
     this->~Func();
     low_free(this);
   };
+
   if (s_treadmill.load(std::memory_order_acquire)) {
     Treadmill::enqueue(std::move(lambda));
     return;
@@ -193,6 +196,10 @@ void Func::freeClone() {
     m_attrs = static_cast<Attr>(m_attrs & ~AttrHasInheritedReturnTypes);
     s_inheritedRetTypes.erase(getFuncId().toStableInt());
   }
+
+  // Class::destroy() already invalidated the token via startDestroy(), and a
+  // Class that was never bound never handed one out.
+  FuncToken::assertNoValidToken(this);
 
   {
     auto metaLock = jit::tc::lockMetadata();
@@ -395,6 +402,13 @@ const Func* Func::fromFuncId(FuncId id) {
 
 bool Func::isFuncIdValid(FuncId id) {
   return !id.isInvalid() && !id.isDummy();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// FuncToken
+
+std::shared_ptr<FuncToken> Func::getFuncToken() const {
+  return FuncToken::get(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
