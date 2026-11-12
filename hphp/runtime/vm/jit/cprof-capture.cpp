@@ -192,7 +192,7 @@ snapshotContProfProfileRecord(
     return std::nullopt;
   }
 
-  auto const transIds = profData.funcProfTransIDs(func.getFuncId());
+  auto const transIds = profData.funcProfTransIDs(&func);
   if (transIds.empty()) {
     reject(ContProfCaptureRejection::NoProfileTranslations);
     return std::nullopt;

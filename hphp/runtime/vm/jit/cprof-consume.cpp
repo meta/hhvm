@@ -472,7 +472,7 @@ bool installCandidate(
     return false;
   }
   if (profData.profiling(funcId) || profData.optimized(funcId) ||
-      !profData.funcProfTransIDs(funcId).empty()) {
+      !profData.funcProfTransIDs(func).empty()) {
     s_installSkippedTouched->increment();
     return false;
   }
@@ -525,7 +525,7 @@ bool optimizeCandidate(
     return false;
   }
   if (!profData.profiling(funcId) || profData.optimized(funcId) ||
-      profData.funcProfTransIDs(funcId).empty()) {
+      profData.funcProfTransIDs(func).empty()) {
     s_optimizeSkippedProfileState->increment();
     return false;
   }

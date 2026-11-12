@@ -391,7 +391,7 @@ TEST_F(ContProfConsumeTest, InstallsAllProfilesBeforeOptimization) {
     auto const funcId = candidate->func->getFuncId();
     EXPECT_TRUE(profData->profiling(funcId));
     EXPECT_FALSE(profData->optimized(funcId));
-    auto const ids = profData->funcProfTransIDs(funcId);
+    auto const ids = profData->funcProfTransIDs(candidate->func);
     ASSERT_EQ(1, ids.size());
     transIds.push_back(ids.front());
     auto const record = profData->transRec(ids.front());
@@ -418,7 +418,7 @@ TEST_F(ContProfConsumeTest, InstallsAllProfilesBeforeOptimization) {
   for (size_t i = 0; i < installed.size(); ++i) {
     TransIDVec const expected{transIds[i]};
     EXPECT_EQ(expected,
-              profData->funcProfTransIDs(installed[i]->func->getFuncId()));
+              profData->funcProfTransIDs(installed[i]->func));
     EXPECT_FALSE(profData->optimized(installed[i]->func->getFuncId()));
   }
 }
@@ -518,10 +518,10 @@ void ContProfConsumeTest::checkReuse(double probability, bool captureEnabled) {
     ).value_or(0)
   );
   EXPECT_FALSE(profData->profiling(m_alphaFunc));
-  EXPECT_TRUE(profData->funcProfTransIDs(m_alphaFunc->getFuncId()).empty());
+  EXPECT_TRUE(profData->funcProfTransIDs(m_alphaFunc).empty());
   EXPECT_FALSE(profData->optimized(m_betaFunc->getFuncId()));
   EXPECT_EQ(!refresh, profData->profiling(m_betaFunc));
-  auto const ids = profData->funcProfTransIDs(m_betaFunc->getFuncId());
+  auto const ids = profData->funcProfTransIDs(m_betaFunc);
   if (refresh) {
     EXPECT_TRUE(ids.empty());
   } else {
@@ -575,7 +575,7 @@ TEST_F(ContProfConsumeTest, RejectsUnrelatedProfDataWithoutInstalling) {
   EXPECT_EQ(nullptr, unrelated.targetProfile());
   for (auto const func : {m_alphaFunc, m_betaFunc}) {
     EXPECT_FALSE(unrelated.profiling(func));
-    EXPECT_TRUE(unrelated.funcProfTransIDs(func->getFuncId()).empty());
+    EXPECT_TRUE(unrelated.funcProfTransIDs(func).empty());
   }
 }
 
@@ -796,7 +796,7 @@ void optimizeBeforePersistentConstantUnitLoads(ConstantDependency dependency) {
     *profData, prepared.candidates
   );
   ASSERT_EQ(1, installed.size());
-  if (callee) EXPECT_TRUE(profData->funcProfTransIDs(callee->getFuncId()).empty());
+  if (callee) EXPECT_TRUE(profData->funcProfTransIDs(callee).empty());
   {
     VMProtect protect;
     LeaseHolder lease{func, TransKind::Optimize, true};

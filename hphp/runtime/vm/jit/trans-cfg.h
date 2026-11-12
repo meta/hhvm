@@ -75,7 +75,7 @@ struct TransCFG {
   };
 
   TransCFG() {}
-  TransCFG(FuncId funcId,
+  TransCFG(const Func* func,
            const ProfData* profData,
            bool inlining = false);
 

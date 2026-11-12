@@ -321,7 +321,7 @@ RegionVec regionizeFunc(const Func* func, std::string& transCFGAnnot) {
 
   auto const funcId = func->getFuncId();
   auto const profData = jit::profData();
-  TransCFG cfg(funcId, profData);
+  TransCFG cfg(func, profData);
 
   if (Trace::moduleEnabled(HPHP::Trace::pgo, 5)) {
     auto dotFileName = folly::to<std::string>(
@@ -330,7 +330,7 @@ RegionVec regionizeFunc(const Func* func, std::string& transCFGAnnot) {
     if (outFile.is_open()) {
       cfg.print(outFile, funcId, profData);
       FTRACE(5, "regionizeFunc: initial CFG for func {}({}) saved to file {}\n",
-        Func::fromFuncId(funcId)->fullName()->data(), funcId, dotFileName);
+        func->fullName()->data(), funcId, dotFileName);
       outFile.close();
     }
   }

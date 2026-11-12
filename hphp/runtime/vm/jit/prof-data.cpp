@@ -135,7 +135,6 @@ void ProfData::addTransProfile(TransID transID,
   // If the translation corresponds to a DV Funclet, then add an entry
   // into dvFuncletDB.
   auto const func = startSk.func();
-  auto const funcId = func->getFuncId();
 
   if (startSk.anyFuncEntry() && startSk.entryOffset() != 0) {
     assertx(func->isDVEntry(startSk.entryOffset()));
@@ -157,7 +156,7 @@ void ProfData::addTransProfile(TransID transID,
   // Putting transID in m_funcProfTrans makes it visible to other threads, so
   // this has to happen after we've already put its metadata in m_transRecs.
   std::unique_lock lock{m_funcProfTransLock};
-  m_funcProfTrans[funcId].push_back(transID);
+  m_funcProfTrans[func].push_back(transID);
 }
 
 void ProfData::addTransProfPrologue(TransID transID, SrcKey sk, uint32_t nArgs,
@@ -184,7 +183,7 @@ void ProfData::addProfTrans(TransID transID,
       FuncCleanup::addProfDataSks(sk);
       m_dvFuncletDB.emplace(sk.toAtomicInt(), transID);
     }
-    m_funcProfTrans[sk.funcID()].push_back(transID);
+    m_funcProfTrans[sk.func()].push_back(transID);
   } else {
     auto prologueID = PrologueID{sk.funcID(), ptr->prologueArgs()};
     FuncCleanup::addProfDataPrologueID(prologueID);
@@ -331,7 +330,7 @@ void ProfData::cleanupFunc(const Func* func,
 
   auto id = func->getFuncId();
 
-  m_funcProfTrans.erase(id);
+  m_funcProfTrans.erase(func);
   m_blockEndOffsets.erase(id.toInt());
   m_profilingFuncs.erase(id.toInt());
 

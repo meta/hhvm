@@ -86,7 +86,7 @@ createCallGraphFromProfCode(jit::hash_map<hfsort::TargetId, FuncId>& funcID) {
   pd->forEachProfilingFunc([&](auto const& func) {
     always_assert(func);
     auto const fid = func->getFuncId();
-    auto const transIds = pd->funcProfTransIDs(fid);
+    auto const transIds = pd->funcProfTransIDs(func);
     uint32_t size = 1; // avoid zero-sized functions
     uint32_t profCount = 0;
     for (auto transId : transIds) {

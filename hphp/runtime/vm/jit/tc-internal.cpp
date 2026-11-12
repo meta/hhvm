@@ -529,7 +529,7 @@ bool profileFunc(const Func* func) {
 
   if (!shouldPGOFunc(func)) return false;
 
-  if (profData()->optimized(func->getFuncId())) return false;
+  if (profData()->optimized(func)) return false;
 
   // If we already started profiling `func', then we return true and skip the
   // other checks below.
