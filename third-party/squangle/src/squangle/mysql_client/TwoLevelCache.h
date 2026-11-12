@@ -21,7 +21,7 @@ namespace {
 // that the current value (`*it`) is better than `*best` and false means it is
 // not.
 template <typename Container, typename Compare>
-auto findBest(Container& container, Compare comp) {
+inline auto findBest(Container& container, Compare comp) {
   auto it = container.begin();
   if (it == container.end()) {
     return container.end();
