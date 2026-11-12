@@ -99,6 +99,13 @@ type options = {
           what comes back: clusters in one batch are grown against the same
           [claimed] snapshot, so a larger batch drops more of them for
           overlapping. At least 1. *)
+  min_free_memory_percent: int;
+      (** Stop the run when less than this percentage of the machine's memory is
+          available, whoever is using the rest. 0 turns the check off. *)
+  max_memory_percent: int;
+      (** Stop the run when the memory available on the machine has fallen by
+          more than this percentage of its total since the run began. 0 turns
+          the check off. *)
   allow_long_run: bool;
       (** Run even when the seed count says this will take hours. Without it a
           run that long is refused before it starts. *)

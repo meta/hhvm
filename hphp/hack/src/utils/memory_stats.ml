@@ -52,6 +52,18 @@ let colon_file_to_pairs ~(fn : string) : (string * string) list =
            | [k; v] -> Some (String.strip k, String.strip v)
            | _ -> None)
 
+let get_mem_available () =
+  get_status_entry (colon_file_to_pairs ~fn:"/proc/meminfo") ~key:"MemAvailable"
+
+let get_mem_available_and_total () =
+  let pairs = colon_file_to_pairs ~fn:"/proc/meminfo" in
+  match
+    ( get_status_entry pairs ~key:"MemAvailable",
+      get_status_entry pairs ~key:"MemTotal" )
+  with
+  | (Some available, Some total) -> Some (available, total)
+  | _ -> None
+
 (** If we wish to store an arbitrary string as a json key, let's make it
 friendly for json path accessors, by retaining only alphanumerics,
 replacing everything else with _, and coalescing multiple _.

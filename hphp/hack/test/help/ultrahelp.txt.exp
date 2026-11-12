@@ -97,6 +97,8 @@ Options:
   --isolation-max-cluster-size         <n> stop growing a cluster once it reaches <n> files; when growing, 500 unless given
   --isolation-allow-long-run           run even when the seed count says this will take hours
   --isolation-batch-size               <n> grow <n> clusters at a time; they are all held in memory together, so this sets how much memory the run needs, and a larger batch drops more overlapping clusters so it also changes how many are reported
+  --isolation-min-free-memory          <percent> stop the run when less than <percent> of the machine's memory is available, whoever is using it (default 15, 0 turns the check off)
+  --isolation-max-memory               <percent> stop the run when the machine's available memory has fallen by more than <percent> of its total since the run began, whoever is using it (default 25, 0 turns the check off)
   --isolation-max-seeds                <n> grow from at most <n> seeds
   --isolation-seed-offset              <n> skip the first <n> seeds; pair with --isolation-max-seeds to walk the seed list in chunks
   --force-dormant-start                If server is dormant, force start a new one instead of waiting for the next one to start up automatically (default: false)

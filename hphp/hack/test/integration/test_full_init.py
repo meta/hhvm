@@ -49,7 +49,10 @@ class FreshInitTestDriver(common_tests.CommonTestDriver):
                 "max_workers=2",
                 self.repo_dir,
             ]
-            + list(map(lambda x: x.format(root=root), options)),
+            + [
+                x.format(root=root)
+                for x in common_tests.without_isolation_memory_limits(options)
+            ],
             stdin=stdin,
         )
 
@@ -569,6 +572,50 @@ class TestFreshInit(common_tests.CommonTests):
         raised = grown_cluster(["--isolation-max-cluster-size", "1000"])
         self.assertEqual(referenced + 1, len(raised["files"]))
         self.assertFalse(raised["truncated"])
+
+    def test_growth_stops_when_the_machine_is_low_on_memory(self) -> None:
+        # Growth can use all of a machine's memory, and the workers are
+        # processes of their own, so the run checks what the machine has left
+        # rather than what the server uses. A floor of 100% is one no machine
+        # meets, which makes the stop certain without using any memory.
+        repo_dir = self.test_driver.repo_dir
+        with open(os.path.join(repo_dir, "low_memory.php"), "w") as f:
+            f.write("<?hh\nfunction low_memory(): void {}\n")
+        seed_list = os.path.join(repo_dir, "low_memory_seeds.txt")
+        with open(seed_list, "w") as f:
+            f.write("low_memory.php\n")
+        self.test_driver.start_hh_server(
+            changed_files=["low_memory.php"], args=["--no-load"]
+        )
+        options = [
+            "--isolation",
+            "--isolation-grow",
+            "--isolation-seed-list",
+            seed_list,
+            "--json",
+        ]
+
+        stdout, _, retcode = self.test_driver.run_check(
+            options=[*options, "--isolation-min-free-memory", "100"]
+        )
+        input_error_exit_code = 10
+        self.assertEqual(input_error_exit_code, retcode, stdout)
+        self.assertIn("memory", json.loads(stdout)["refused"])
+
+        # With the limits off, which is how the driver runs every test that does
+        # not name them, the same run completes, and so it does with a share
+        # that is the whole machine, which no run can pass.
+        for extra in ([], ["--isolation-max-memory", "100"]):
+            stdout, _, retcode = self.test_driver.run_check(options=[*options, *extra])
+            self.assertEqual(0, retcode, (extra, stdout))
+
+        usage_error_exit_code = 64
+        for flag in ("--isolation-min-free-memory", "--isolation-max-memory"):
+            _, stderr, retcode = self.test_driver.run_check(
+                options=[*options, flag, "101"]
+            )
+            self.assertEqual(usage_error_exit_code, retcode, (flag, stderr))
+            self.assertIn("percentage", stderr)
 
     def test_isolation_move_to_refuses_a_missing_seed_dir(self) -> None:
         self.test_driver.start_hh_server(changed_files=[], args=["--no-load"])

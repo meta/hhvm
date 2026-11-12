@@ -154,8 +154,38 @@ let test_release_cache_keeps_the_count () =
   ignore (Server_isolation_outbound.get ctx foo_path : Relative_path.Set.t);
   kept && Int.equal (Server_isolation_outbound.files_indexed ()) 2
 
+let test_memory_guard_stops_a_run_over_its_share () =
+  let gib n = n * 1024 * 1024 * 1024 in
+  let total = gib 200 in
+  let reason ~max_used_percent ~available_at_start available =
+    Server_isolation_memory.reason
+      (Server_isolation_memory.guard
+         ~min_free_percent:15
+         ~max_used_percent
+         ~available_at_start)
+      ~available:(gib available)
+      ~total
+  in
+  let from_150 =
+    reason ~max_used_percent:25 ~available_at_start:(Some (gib 150))
+  in
+  (* A quarter of 200 GiB is 50 GiB, and the floor is 30 GiB available. *)
+  Option.is_none (from_150 120)
+  && Option.is_none (from_150 100)
+  && Option.is_some (from_150 99)
+  && Option.is_some (from_150 29)
+  (* 0 turns the share off, and the floor still holds. *)
+  && Option.is_none
+       (reason ~max_used_percent:0 ~available_at_start:(Some (gib 150)) 60)
+  && Option.is_some
+       (reason ~max_used_percent:0 ~available_at_start:(Some (gib 150)) 29)
+  (* A host that did not report its memory at the start has no share to hold. *)
+  && Option.is_none (reason ~max_used_percent:25 ~available_at_start:None 60)
+
 let tests =
   [
+    ( "test_memory_guard_stops_a_run_over_its_share",
+      test_memory_guard_stops_a_run_over_its_share );
     ( "test_edges_point_at_the_referenced_file",
       test_edges_point_at_the_referenced_file );
     ("test_ensure_indexed_warms_the_cache", test_ensure_indexed_warms_the_cache);

@@ -55,7 +55,11 @@ type grown = {
     [max_dependents] bounds how far the closure rule reaches for one candidate.
     It must be at least 1, since a seed is grown from its own closure, and no
     larger than [max_cluster_size], or a cluster would open already over the
-    cap. *)
+    cap.
+
+    [check_memory] is called before every round, and may raise to stop the batch
+    where it is: a round is what takes the memory, and a batch can run for
+    hundreds of them. *)
 val grow_batch :
   Provider_context.t ->
   Multi_worker.worker list option ->
@@ -64,6 +68,7 @@ val grow_batch :
   claimed:Relative_path.Set.t ->
   max_cluster_size:int option ->
   max_dependents:int ->
+  check_memory:(unit -> unit) ->
   Relative_path.t list ->
   grown list
 

@@ -480,6 +480,7 @@ let grow_batch
     ~(claimed : Relative_path.Set.t)
     ~(max_cluster_size : int option)
     ~(max_dependents : int)
+    ~(check_memory : unit -> unit)
     (seeds : Relative_path.t list) : grown list =
   let b =
     batch
@@ -495,6 +496,7 @@ let grow_batch
     match active with
     | [] -> finished
     | _ ->
+      check_memory ();
       let (still_active, done_now) = run_round b round active in
       rounds (round + 1) still_active (done_now @ finished)
   in

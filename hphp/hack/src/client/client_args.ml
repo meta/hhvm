@@ -363,6 +363,8 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
   let isolation_max_dependents = ref None in
   let isolation_max_cluster_size = ref None in
   let isolation_batch_size = ref None in
+  let isolation_min_free_memory = ref None in
+  let isolation_max_memory = ref None in
   let isolation_allow_long_run = ref false in
   let isolation_max_seeds = ref None in
   let isolation_seed_offset = ref 0 in
@@ -400,6 +402,14 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
         (* The largest batch a long run has finished at; not a tuned
            figure. *)
         batch_size = Option.value !isolation_batch_size ~default:400;
+        min_free_memory_percent =
+          Option.value
+            !isolation_min_free_memory
+            ~default:Client_isolation_args.default_min_free_memory_percent;
+        max_memory_percent =
+          Option.value
+            !isolation_max_memory
+            ~default:Client_isolation_args.default_max_memory_percent;
         allow_long_run = !isolation_allow_long_run;
         max_seeds = !isolation_max_seeds;
         seed_offset = !isolation_seed_offset;
@@ -679,6 +689,18 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
       ( "--isolation-batch-size",
         Arg.Int (fun n -> isolation_batch_size := Some n),
         " <n> grow <n> clusters at a time; they are all held in memory together, so this sets how much memory the run needs, and a larger batch drops more overlapping clusters so it also changes how many are reported",
+        (Arg_non_user_facing, Help_options) );
+      ( "--isolation-min-free-memory",
+        Arg.Int (fun n -> isolation_min_free_memory := Some n),
+        Printf.sprintf
+          " <percent> stop the run when less than <percent> of the machine's memory is available, whoever is using it (default %d, 0 turns the check off)"
+          Client_isolation_args.default_min_free_memory_percent,
+        (Arg_non_user_facing, Help_options) );
+      ( "--isolation-max-memory",
+        Arg.Int (fun n -> isolation_max_memory := Some n),
+        Printf.sprintf
+          " <percent> stop the run when the machine's available memory has fallen by more than <percent> of its total since the run began, whoever is using it (default %d, 0 turns the check off)"
+          Client_isolation_args.default_max_memory_percent,
         (Arg_non_user_facing, Help_options) );
       ( "--isolation-max-seeds",
         Arg.Int (fun n -> isolation_max_seeds := Some n),

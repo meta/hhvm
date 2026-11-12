@@ -14,6 +14,12 @@ let reject message = raise (Invalid message)
 
 let warn message = Printf.eprintf "warning: %s\n%!" message
 
+(* Low enough that a run that would have finished is not stopped for a few
+   GiB. *)
+let default_min_free_memory_percent = 15
+
+let default_max_memory_percent = 25
+
 let check
     ~max_dependents_given
     ~mode_flags_given
@@ -27,6 +33,8 @@ let check
         max_dependents;
         max_cluster_size;
         batch_size;
+        min_free_memory_percent;
+        max_memory_percent;
         allow_long_run = _;
         max_seeds;
         seed_offset;
@@ -37,6 +45,16 @@ let check
   | Some n when n < 1 ->
     reject (Printf.sprintf "--isolation-max-seeds must be at least 1, got %d" n)
   | _ -> ());
+  if min_free_memory_percent < 0 || min_free_memory_percent > 100 then
+    reject
+      (Printf.sprintf
+         "--isolation-min-free-memory is a percentage, from 0 to 100, got %d"
+         min_free_memory_percent);
+  if max_memory_percent < 0 || max_memory_percent > 100 then
+    reject
+      (Printf.sprintf
+         "--isolation-max-memory is a percentage, from 0 to 100, got %d"
+         max_memory_percent);
   (match max_cluster_size with
   | Some n when n < 2 ->
     (* A cap of 1 would retire every cluster before it absorbed anything. *)

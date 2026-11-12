@@ -62,6 +62,8 @@ type options = {
   max_dependents: int;
   max_cluster_size: int option;
   batch_size: int;
+  min_free_memory_percent: int;
+  max_memory_percent: int;
   allow_long_run: bool;
   max_seeds: int option;
   seed_offset: int;

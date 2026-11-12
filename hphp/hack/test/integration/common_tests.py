@@ -28,6 +28,22 @@ class AllLogs(NamedTuple):
     ide_log: str
 
 
+def without_isolation_memory_limits(options: List[str]) -> List[str]:
+    """Turn off each isolation memory limit the options do not set.
+
+    The limits look at the whole machine, which tests running in parallel share,
+    so a test that is not about them must not depend on what the others use.
+    """
+    if "--isolation" not in options:
+        return options
+    return options + [
+        extra
+        for flag in ("--isolation-min-free-memory", "--isolation-max-memory")
+        if flag not in options
+        for extra in (flag, "0")
+    ]
+
+
 class CommonTestDriver(TestDriver):
     # This needs to be overridden in child classes. The files in this
     # directory will be used to set up the initial environment for each
@@ -299,7 +315,7 @@ class CommonTestDriver(TestDriver):
     def run_check(
         self, stdin: Optional[str] = None, options: Optional[List[str]] = None
     ) -> Tuple[str, str, int]:
-        options = [] if options is None else options
+        options = without_isolation_memory_limits([] if options is None else options)
         root = self.repo_dir + os.path.sep
         args = [
             hh_client,

@@ -308,6 +308,7 @@ type run = {
   max_dependents: int;
   max_cluster_size: int option;
   batch_size: int;
+  memory_guard: Memory.guard;
   overlapping_clusters: int ref;
       (** Clusters dropped because an earlier cluster in the same batch already
           claimed one of their files. Counted here rather than in growth: growth
@@ -324,6 +325,12 @@ type run = {
           files outside it referencing in. Counted so a run says how much of its
           output is in that state. *)
 }
+
+(** Stops the run, by raising, when the machine is running out of memory. Called
+    wherever a run could be using more of it than a moment ago. *)
+let check_memory r =
+  let guard = r.memory_guard in
+  (fun () -> Memory.check guard)
 
 let median sizes =
   match List.sort sizes ~compare:Int.compare with
@@ -440,8 +447,10 @@ let measure_seeds r seeds ~total_seeds =
   in
   let report_if_due () =
     if Float.(Unix.gettimeofday () -. !last_report > seconds_between_reports)
-    then
+    then begin
+      check_memory r ();
       report ()
+    end
   in
   let measure_one_seed seed =
     let size = closure_of_seed r seed in
@@ -567,6 +576,7 @@ let grow_one_batch
       ~claimed
       ~max_cluster_size:r.max_cluster_size
       ~max_dependents
+      ~check_memory:(check_memory r)
       batch
   in
   log_growth_progress ~grown:!grown ~total_seeds ~since;
@@ -656,8 +666,15 @@ let movability_of_seeds r seeds =
   end
 
 let make_run options genv env sink =
-  let Server_isolation_types.{ max_dependents; max_cluster_size; batch_size; _ }
-      =
+  let Server_isolation_types.
+        {
+          max_dependents;
+          max_cluster_size;
+          batch_size;
+          min_free_memory_percent;
+          max_memory_percent;
+          _;
+        } =
     options
   in
   let ctx = Provider_utils.ctx_from_server_env env in
@@ -670,6 +687,11 @@ let make_run options genv env sink =
     max_dependents;
     max_cluster_size;
     batch_size;
+    memory_guard =
+      Memory.guard
+        ~min_free_percent:min_free_memory_percent
+        ~max_used_percent:max_memory_percent
+        ~available_at_start:(Memory_stats.get_mem_available ());
     overlapping_clusters = ref 0;
     refused_seeds = ref 0;
     truncated_clusters = ref 0;
@@ -928,4 +950,11 @@ let go
       | None ->
         let r = make_run options genv env sink in
         reset_caches ();
-        query r options)
+        (try query r options with
+        | Memory.Below_floor reason ->
+          let message = String.capitalize reason in
+          Hh_logger.log "[isolation] refused: %s" message;
+          refused
+            ~grow:(Server_isolation_types.is_grow mode)
+            ~total_seeds:0
+            message))
