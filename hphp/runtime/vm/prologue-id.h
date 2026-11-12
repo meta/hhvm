@@ -29,30 +29,27 @@ struct Func;
  * that the prologue handles.
  */
 struct PrologueID {
-  PrologueID(FuncId funcId, uint32_t nargs)
-    : m_funcId(funcId)
+  PrologueID(const Func* func, uint32_t nargs)
+    : m_func(func)
     , m_nargs(nargs)
   {}
 
-  PrologueID(const Func* func, uint32_t nargs);
-
-  PrologueID() : PrologueID(FuncId::Invalid, std::numeric_limits<uint32_t>::max())
+  PrologueID() : PrologueID(nullptr, std::numeric_limits<uint32_t>::max())
   {}
 
-  FuncId      funcId() const { return m_funcId; }
-  uint32_t    nargs()  const { return m_nargs;  }
-  const Func* func()   const;
+  uint32_t    nargs()  const { return m_nargs; }
+  const Func* func()   const { return m_func; }
 
   bool operator==(const PrologueID& other) const {
-    return m_funcId == other.m_funcId && m_nargs == other.m_nargs;
+    return m_func == other.m_func && m_nargs == other.m_nargs;
   }
 
   /* implicit */ operator uint64_t() const {
-    return uint64_t(funcId().toInt()) << 32 | m_nargs;
+    return uint64_t(m_func.getRaw()) << 32 | m_nargs;
   }
 
   static PrologueID fromInt(uint64_t i) {
-    return PrologueID(FuncId::fromInt(i >> 32), i & 0xffffffff);
+    return PrologueID(PackedPtr<Func>::fromRaw(i >> 32), i & 0xffffffff);
   }
 
   struct Eq {
@@ -64,12 +61,12 @@ struct PrologueID {
 
   struct Hasher {
     size_t operator()(PrologueID pid) const {
-      return folly::hash::hash_combine(pid.funcId().toInt(), pid.nargs());
+      return folly::hash::hash_combine(pid.m_func.getRaw(), pid.nargs());
     }
   };
 
  private:
-  FuncId m_funcId;
+  PackedPtr<const Func> m_func;
   uint32_t m_nargs;
 };
 

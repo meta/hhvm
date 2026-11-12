@@ -313,7 +313,7 @@ void smashOptCalls(CGMeta& meta,
     const TCA target = it->second;
     FTRACE(1, "smashedOptCalls: found candidate call @ {}, "
            "target prologue @ {} (funcId={}, nArgs={})\n",
-           call, target, pid.funcId(), pid.nargs());
+           call, target, pid.func()->getFuncId(), pid.nargs());
     assertx(code().inMainOrColdOrFrozen(call));
     assertx(code().inMainOrColdOrFrozen(target));
 

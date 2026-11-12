@@ -20,19 +20,11 @@
 
 namespace HPHP {
 
-PrologueID::PrologueID(const Func* func, uint32_t nargs)
-  : PrologueID(func->getFuncId(), nargs)
-{}
-
-const Func* PrologueID::func() const {
-  return Func::fromFuncId(m_funcId);
-}
-
 std::string show(PrologueID pid) {
   auto func = pid.func();
-  return fmt::format("{}(id 0x{:#x}) # of args: {}",
+  return fmt::format("{}(id {}) # of args: {}",
                         func->fullName()->data(),
-                        pid.funcId().toInt(), pid.nargs());
+                        fmt::ptr(func), pid.nargs());
 }
 
 } // namespace HPHP

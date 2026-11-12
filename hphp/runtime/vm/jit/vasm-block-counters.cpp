@@ -276,7 +276,7 @@ void profileGuidedUpdate(Vunit& unit) {
     update(unit, regionKey);
   } else if (optimizePrologue) {
     auto const pid = unit.context->pid;
-    if (pid.funcId() == FuncId::Invalid) return;
+    if (pid.func() == nullptr) return;
     update(unit, pid);
   }
 }

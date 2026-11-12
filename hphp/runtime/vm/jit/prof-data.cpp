@@ -161,7 +161,7 @@ void ProfData::addTransProfile(TransID transID,
 
 void ProfData::addTransProfPrologue(TransID transID, SrcKey sk, uint32_t nArgs,
                                     uint32_t asmSize) {
-  auto prologueID = PrologueID{sk.funcID(), nArgs};
+  auto prologueID = PrologueID{sk.func(), nArgs};
   FuncCleanup::addProfDataPrologueID(prologueID);
 
   {
@@ -185,7 +185,7 @@ void ProfData::addProfTrans(TransID transID,
     }
     m_funcProfTrans[sk.func()].push_back(transID);
   } else {
-    auto prologueID = PrologueID{sk.funcID(), ptr->prologueArgs()};
+    auto prologueID = PrologueID{sk.func(), ptr->prologueArgs()};
     FuncCleanup::addProfDataPrologueID(prologueID);
     m_proflogueDB.emplace(prologueID, transID);
   }
