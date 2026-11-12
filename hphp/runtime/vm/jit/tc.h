@@ -249,17 +249,21 @@ struct FuncMetaInfo {
 
   FuncMetaInfo() = default;
   FuncMetaInfo(Func* f, LocalTCBuffer&& buf)
-    : fid(f->getFuncId())
-    , func(f)
+    : funcToken(f->getFuncToken())
     , tcBuf(std::move(buf))
   {}
 
   FuncMetaInfo(FuncMetaInfo&&) = default;
   FuncMetaInfo& operator=(FuncMetaInfo&&) = default;
 
-  FuncId fid;
-  Func* func;
+  std::shared_ptr<FuncToken> funcToken;
   LocalTCBuffer tcBuf;
+
+  // Set once a retranslateAll worker is done with this job, whether or not it
+  // optimized the function. Written under the mcgen worker condvar mutex and
+  // accessed through std::atomic_ref so waitForTranslate() can check it
+  // without taking the mutex.
+  bool jobDone{false};
 
   void add(std::unique_ptr<Translator>&& p) {
     translators.emplace_back(std::move(p));
@@ -280,7 +284,7 @@ struct FuncMetaInfo {
  * function. It is assumed that these translations have been emitted into per-
  * thread buffers and will need to be relocated.
  */
-void publishOptFunc(FuncMetaInfo info);
+void publishOptFunc(const Func* func, FuncMetaInfo info);
 
 /*
  * Acquires the code and metadata locks once, and then processes all the

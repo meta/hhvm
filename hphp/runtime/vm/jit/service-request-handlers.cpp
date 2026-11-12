@@ -404,7 +404,7 @@ TCA handleRetranslateOptAnyFuncEntry(uint32_t numArgs,
   SrcKey sk{
     liveFunc(), numArgs, optionalNamedParams, SrcKey::FuncEntryTag {}
   };
-  auto const translated = mcgen::retranslateOpt(sk.funcID());
+  auto const translated = mcgen::retranslateOpt(sk.func());
   vmpc() = sk.advanced().pc();
   regState() = VMRegState::DIRTY;
 

@@ -41,6 +41,7 @@
 #include "hphp/runtime/vm/jit/translate-region.h"
 #include "hphp/runtime/vm/jit/vasm-gen.h"
 #include "hphp/runtime/vm/jit/vtune-jit.h"
+#include "hphp/runtime/vm/func-token.h"
 #include "hphp/runtime/vm/treadmill.h"
 
 #include "hphp/util/boot-stats.h"
@@ -128,11 +129,10 @@ size_t infoSize(const FuncMetaInfo& info) {
   return sz;
 }
 
-void relocateOptFunc(FuncMetaInfo& info,
+void relocateOptFunc(const Func* func, FuncMetaInfo& info,
                      PrologueTCAMap& prologueTCAs,
                      SrcKeyTransMap& srcKeyTrans,
                      size_t* failedBytes = nullptr) {
-  auto const func = info.func;
   unsigned nRegions = 0;
   // Relocate/emit all prologues and translations for func in order.
   for (auto& translator : info.translators) {
@@ -255,20 +255,22 @@ void relocateSortedOptFuncs(std::vector<FuncMetaInfo>& infos,
 
   bool shouldLog = Cfg::Server::Mode;
   for (auto& finfo : infos) {
-    // We clear the translations that are not relocated to ensure
-    // no one tries publishing such translations.
-    if (!Func::isFuncIdValid(finfo.fid)) {
+    // make sure we don't get ahead of the translation threads
+    mcgen::waitForTranslate(finfo);
+
+    // We clear the translations that are not relocated to ensure no one tries
+    // smashing or publishing such translations. The later phases only look at
+    // the translators, so this is the only place that checks the token.
+    auto const func = finfo.funcToken->getFunc();
+    if (func == nullptr) {
       finfo.clear();
       continue;
     }
 
-    // make sure we don't get ahead of the translation threads
-    mcgen::waitForTranslate(finfo);
-
     if (tcIsFull()) {
       FTRACE(1, "relocateSortedOptFuncs: ran out of space in the TC. "
-             "Skipping function {} {}\n", finfo.func->getFuncId(),
-             finfo.func->fullName());
+             "Skipping function {} {}\n", func->getFuncId(),
+             func->fullName());
       failedBytes += infoSize(finfo);
       // Reset the translators.  This will cause the callers of the OptPrologues
       // that are being skipped to be smashed to stop calling the corresponding
@@ -282,7 +284,7 @@ void relocateSortedOptFuncs(std::vector<FuncMetaInfo>& infos,
       shouldLog = false;
       Logger::Info("retranslateAll: starting to relocate functions");
     }
-    relocateOptFunc(finfo, prologueTCAs, srcKeyTrans, &failedBytes);
+    relocateOptFunc(func, finfo, prologueTCAs, srcKeyTrans, &failedBytes);
   }
 
   if (failedBytes) {
@@ -425,8 +427,6 @@ void smashOptSortedOptFuncs(std::vector<FuncMetaInfo>& infos,
   BootStats::Block timer("RTA_smash_opt_funcs",
                          Cfg::Server::Mode);
   for (auto& finfo : infos) {
-    if (!Func::isFuncIdValid(finfo.fid)) continue;
-
     for (auto& translator : finfo.translators) {
       // Skip if the translation wasn't relocated (e.g. ran out of TC space).
       if (!translator->entry()) continue;
@@ -465,9 +465,7 @@ void publishSortedOptFuncsMeta(std::vector<FuncMetaInfo>& infos) {
   BootStats::Block timer("RTA_publish_meta",
                          Cfg::Server::Mode);
   for (auto& finfo : infos) {
-    if (Func::isFuncIdValid(finfo.fid)) {
-      publishOptFuncMeta(finfo);
-    }
+    publishOptFuncMeta(finfo);
   }
 }
 
@@ -476,9 +474,7 @@ void publishSortedOptFuncsCode(std::vector<FuncMetaInfo>& infos,
   BootStats::Block timer("RTA_publish_code",
                          Cfg::Server::Mode);
   for (auto& finfo : infos) {
-    if (Func::isFuncIdValid(finfo.fid)) {
-      publishOptFuncCode(finfo, publishedSet);
-    }
+    publishOptFuncCode(finfo, publishedSet);
   }
 }
 
@@ -553,15 +549,15 @@ SrcRec* createSrcRec(SrcKey sk, SBInvOffset spOff) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void publishOptFunc(FuncMetaInfo info) {
+void publishOptFunc(const Func* func, FuncMetaInfo info) {
   PrologueTCAMap prologueTCAs;
   SrcKeyTransMap srcKeyTrans;
-  relocateOptFunc(info, prologueTCAs, srcKeyTrans);
+  relocateOptFunc(func, info, prologueTCAs, srcKeyTrans);
 
   {
     auto codeLock = lockCode();
     auto metaLock = lockMetadata();
-    invalidateFuncProfSrcKeys(Func::fromFuncId(info.fid));
+    invalidateFuncProfSrcKeys(func);
     publishOptFuncMeta(info);
     publishOptFuncCode(info);
 

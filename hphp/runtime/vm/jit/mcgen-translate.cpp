@@ -35,6 +35,7 @@
 #include "hphp/runtime/vm/jit/vm-protect.h"
 #include "hphp/runtime/vm/jit/write-lease.h"
 
+#include "hphp/runtime/vm/func-token.h"
 #include "hphp/runtime/vm/property-profile.h"
 #include "hphp/runtime/vm/treadmill.h"
 #include "hphp/runtime/vm/type-profile.h"
@@ -61,6 +62,8 @@
 #include "hphp/util/trace.h"
 
 #include "hphp/zend/zend-strtod.h"
+
+#include <atomic>
 
 #include <folly/system/ThreadName.h>
 
@@ -120,9 +123,7 @@ CompactVector<Trace::BumpRelease> bumpTraceFunctions(const Func* func) {
   return opt();
 }
 
-void optimize(tc::FuncMetaInfo& info) {
-  auto const func = info.func;
-
+void optimize(const Func* func, tc::FuncMetaInfo& info) {
   assertx(!s_bumpers);
   SCOPE_EXIT { s_bumpers = nullptr; };
   auto const bumpers = bumpTraceFunctions(func);
@@ -133,7 +134,7 @@ void optimize(tc::FuncMetaInfo& info) {
   tracing::Block _{"optimize", [&] { return traceProps(func); }};
 
   // Regenerate the prologues before the actual function body.
-  regeneratePrologues(func, info);
+  regeneratePrologues(const_cast<Func*>(func), info);
 
   // Regionize func and translate all its regions.
   std::string transCFGAnnot;
@@ -195,24 +196,30 @@ std::mutex s_condVarMutex;
 
 struct TranslateWorker : JobQueueWorker<tc::FuncMetaInfo*, void*, true, true> {
   void doJob(tc::FuncMetaInfo* info) override {
+    SCOPE_EXIT {
+      {
+        std::unique_lock<std::mutex> lock{s_condVarMutex};
+        std::atomic_ref<bool>{info->jobDone}.store(true,
+                                                   std::memory_order_release);
+      }
+      s_condVar.notify_one();
+    };
     try {
       ProfileNonVMThread nonVM;
       HphpSession hps{Treadmill::SessionKind::TranslateWorker};
 
-      // Check if the func was treadmilled before the job started
-      if (!Func::isFuncIdValid(info->fid)) return;
+      auto func = info->funcToken->getFunc();
 
-      always_assert(!profData()->optimized(info->fid));
+      // Skip funcs that started being destroyed before the job ran
+      if (func == nullptr) return;
+
+      always_assert(!profData()->optimized(func));
 
       VMProtect _;
-      optimize(*info);
+      optimize(func, *info);
 
-      {
-        std::unique_lock<std::mutex> lock{s_condVarMutex};
-        always_assert(!profData()->optimized(info->fid));
-        profData()->setOptimized(info->fid);
-      }
-      s_condVar.notify_one();
+      always_assert(!profData()->optimized(func));
+      profData()->setOptimized(func);
     } catch (std::exception& e) {
       always_assert_flog(false,
                          "Uncaught exception {} in RTA thread", e.what());
@@ -509,14 +516,16 @@ void retranslateAll(bool skipSerialize) {
       if (auto const dispatcher = s_dispatcher.load(std::memory_order_acquire)) {
         dispatcher->waitEmpty(false);
       }
-      jobs.clear();
-      jobs.reserve(nFuncs);
       {
         ProfData::Session pds;
-        for (auto i = 0u; i < nFuncs; ++i) {
-          auto const fid = sortedFuncs[i];
-          profData()->unsetOptimized(fid);
+        for (auto const& job : jobs) {
+          auto const func = job.funcToken->getFunc();
+          if (func && profData()->optimized(func)) {
+            profData()->unsetOptimized(func);
+          }
         }
+        jobs.clear();
+        jobs.reserve(nFuncs);
         profData()->clearAllOptimizedSKs();
         clearCachedInliningMetadata();
       }
@@ -612,14 +621,15 @@ void retranslateAll(bool skipSerialize) {
 ////////////////////////////////////////////////////////////////////////////////
 }
 
-void waitForTranslate(const tc::FuncMetaInfo& info) {
-  if (profData()->optimized(info.fid)) return;
+void waitForTranslate(tc::FuncMetaInfo& info) {
+  std::atomic_ref<bool> jobDone{info.jobDone};
+  if (jobDone.load(std::memory_order_acquire)) return;
 
   std::unique_lock<std::mutex> lock{s_condVarMutex};
   s_condVar.wait(
     lock,
     [&] {
-      return profData()->optimized(info.fid);
+      return jobDone.load(std::memory_order_acquire);
     }
   );
 }
@@ -770,31 +780,30 @@ std::string debug_translate_live(SrcKey sk,
   }
 }
 
-bool retranslateOpt(FuncId funcId) {
+bool retranslateOpt(const Func* func) {
   VMProtect _;
 
   if (Cfg::Jit::DisabledByVSDebug && isDebuggerAttachedProcess()) {
     return false;
   }
 
-  auto const func = const_cast<Func*>(Func::fromFuncId(funcId));
   if (profData() == nullptr) return false;
-  if (profData()->optimized(funcId)) return true;
+  if (profData()->optimized(func)) return true;
 
   LeaseHolder writer(func, TransKind::Optimize, false);
   if (!writer) return false;
 
-  if (profData()->optimized(funcId)) return true;
-  profData()->setOptimized(funcId);
+  if (profData()->optimized(func)) return true;
+  profData()->setOptimized(func);
 
   cprof::maybeCaptureContProfProfile(*profData(), *func);
 
   tracing::Block _b{"retranslate-opt", [&] { return traceProps(func); }};
   tracing::Pause _p;
 
-  tc::FuncMetaInfo info(func, tc::LocalTCBuffer());
-  optimize(info);
-  tc::publishOptFunc(std::move(info));
+  tc::FuncMetaInfo info(const_cast<Func*>(func), tc::LocalTCBuffer());
+  optimize(func, info);
+  tc::publishOptFunc(func, std::move(info));
   tc::checkFreeProfData();
 
   return true;
@@ -802,8 +811,8 @@ bool retranslateOpt(FuncId funcId) {
 
 void optimizeFunc(Func* func) {
   tc::FuncMetaInfo info(func, tc::LocalTCBuffer());
-  optimize(info);
-  tc::publishOptFunc(std::move(info));
+  optimize(func, info);
+  tc::publishOptFunc(func, std::move(info));
   tc::checkFreeProfData();
 }
 

@@ -413,10 +413,14 @@ struct ProfData {
   /*
    * Check if a (function|SrcKey) has been marked as optimized.
    */
-  bool optimized(FuncId funcId) const {
-    auto const func = Func::fromFuncId(funcId);
+  bool optimized(const Func* func) const {
     return func->atomicFlags().check(Func::Flags::Optimized);
   }
+  bool optimized(FuncId funcId) const {
+    auto func = Func::fromFuncId(funcId);
+    return optimized(func);
+  }
+
   bool optimized(SrcKey sk) const {
     auto const it = m_optimizedSKs.find(sk.toAtomicInt());
     return it != m_optimizedSKs.end() && it->second;
@@ -425,8 +429,7 @@ struct ProfData {
   /*
    * Indicate that an optimized translation was emitted for a (function|SrcKey).
    */
-  void setOptimized(FuncId funcId) {
-    auto func = Func::fromFuncId(funcId);
+  void setOptimized(const Func* func) {
     DEBUG_ONLY auto const previousValue =
       func->atomicFlags().set(Func::Flags::Optimized);
     assertx(!previousValue);
@@ -435,14 +438,25 @@ struct ProfData {
     // reset the counter for live translations.
     func->resetJitReqCount();
   }
-  void unsetOptimized(FuncId funcId) {
+
+  void setOptimized(FuncId funcId) {
     auto func = Func::fromFuncId(funcId);
+    setOptimized(func);
+  }
+
+  void unsetOptimized(const Func* func) {
     DEBUG_ONLY auto const previousValue =
       func->atomicFlags().unset(Func::Flags::Optimized);
     assertx(previousValue);
     m_optimizedFuncCount.fetch_sub(1, std::memory_order_acq_rel);
     s_optimized_funcs_counter->decrement();
   }
+
+  void unsetOptimized(FuncId funcId) {
+    auto func = Func::fromFuncId(funcId);
+    unsetOptimized(func);
+  }
+
   void setOptimized(SrcKey sk) {
     FuncCleanup::addProfDataSks(sk);
     m_optimizedSKs.emplace(sk.toAtomicInt(), true).first->second = true;
