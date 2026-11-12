@@ -1,0 +1,50 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `string` [2]
+-> But got `arraykey` [3]
+->   via this generic `Tk` [4]
+->   via this generic `Tk` [5]
+->   via this generic `Tk` [6]
+
+list_in_foreach_await_index_evaluation_order.php:19:20
+  2 | 
+  3 | class C {
+  4 |   public arraykey $k = 0;
+    |          ^^^^^^^^ [3]
+  5 | }
+  6 | 
+  7 | function takes_string(string $_): void {}
+    |                       ^^^^^^ [2]
+  8 | 
+  9 | async function values(): AsyncIterator<(string, string)> {
+    :
+ 17 |   foreach (values() await as list($dd[$c->k], $c->k)) {
+ 18 |     foreach ($dd as $key => $_) {
+ 19 |       takes_string($key);
+    |                    ^^^^ [1]
+ 20 |     }
+ 21 |   }
+
+hackarray.hhi:35:22
+ 20 |     <<__NoAutoBound>> +Tk as arraykey,
+ 21 |     <<__NoAutoBound>> +Tv,
+ 22 |   > implements KeyedContainer<Tk, Tv>, \XHPChild {
+    |                               ^^ [5]
+ 23 | 
+ 24 |   }
+    :
+ 33 |     <<__NoAutoBound>> +Tk as arraykey,
+ 34 |     <<__NoAutoBound>> +Tv,
+ 35 |   > extends AnyArray<Tk, Tv> {}
+    |                      ^^ [4]
+ 36 | 
+ 37 |   /**
+
+interfaces.hhi:115:45
+113 |   )>>
+114 |   interface KeyedContainer<<<__NoAutoBound>> +Tk as arraykey, <<__NoAutoBound>> +Tv>
+115 |     extends Container<Tv>, KeyedTraversable<Tk, Tv> {}
+    |                                             ^^ [6]
+116 | 
+117 |   /**
+
+1 error found
