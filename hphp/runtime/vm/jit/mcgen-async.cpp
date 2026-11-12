@@ -295,12 +295,14 @@ struct AsyncRegionTranslationContext {
                                 pthread_t requestTid)
     : kind(kind)
     , ctx(ctx)
+    , funcToken(ctx.sk.func()->getFuncToken())
     , currNumTranslations(currNumTranslations)
     , requestTid(requestTid)
   {}
 
   TransKind kind;
   RegionContext ctx;
+  std::shared_ptr<FuncToken> funcToken;
   int currNumTranslations;
   pthread_t requestTid;
 };
@@ -442,13 +444,8 @@ struct AsyncTranslationWorker
                                                 : rctx.requestTid;
     ViewHolder viewer{viewTid, true};
 
-    if (ctx.sk.func() == nullptr) {
-      FTRACE(2, "Invalid func id\n");
-      return;
-    }
-
-    if (ctx.sk.func()->atomicFlags().check(Func::Flags::Zombie)) {
-      FTRACE(2, "Zombie function {}\n", ctx.sk.func()->fullName());
+    if (rctx.funcToken->getFunc() == nullptr) {
+      FTRACE(2, "Func destroyed since it was enqueued\n");
       return;
     }
 
