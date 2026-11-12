@@ -1,0 +1,71 @@
+warning: Warn[12029] You are using the `?->` operator but this object is of type Ent with { type TEnt = <expr#2>::TEnt } which cannot be null. You can use the `->` operator instead. [1]
+
+is_final_class_on_tconst_leaks_after_branch.php:47:3
+45 |     $w = $z;
+46 |   }
+47 |   $w?->itemOnly();
+   |   ^^^^^^^^^^^^^ [1]
+48 | }
+49 | 
+
+warning: Warn[12029] You are using the `?->` operator but this object is of type Ent with { type TEnt = <expr#2>::TEnt } which cannot be null. You can use the `->` operator instead. [1]
+
+is_final_class_on_tconst_leaks_after_branch.php:56:3
+54 |     $w = $e->gen();
+55 |   }
+56 |   $w?->itemOnly();
+   |   ^^^^^^^^^^^^^ [1]
+57 | }
+58 | 
+
+error: Typing[4053] No instance method `itemOnly` in `Ent` [1]
+-> Did you mean `gen` instead? [2]
+-> This is why I think it is an object of type Ent [3]
+-> Declaration of `Ent` is here [4]
+
+is_final_class_on_tconst_leaks_after_branch.php:47:8
+ 1 | <?hh
+ 2 | 
+ 3 | abstract class Ent {
+   |                ^^^ [4]
+ 4 |   abstract const type TEnt as Ent super this;
+   |                               ^^^ [3]
+ 5 | 
+ 6 |   abstract public function gen(): ?this::TEnt;
+   |                            ^^^ [2]
+ 7 | }
+ 8 | 
+   :
+45 |     $w = $z;
+46 |   }
+47 |   $w?->itemOnly();
+   |        ^^^^^^^^ [1]
+48 | }
+49 | 
+
+error: Typing[4053] No instance method `itemOnly` in `Ent` [1]
+-> Did you mean `gen` instead? [2]
+-> This is why I think it is an object of type Ent [3]
+-> Declaration of `Ent` is here [4]
+
+is_final_class_on_tconst_leaks_after_branch.php:56:8
+ 1 | <?hh
+ 2 | 
+ 3 | abstract class Ent {
+   |                ^^^ [4]
+ 4 |   abstract const type TEnt as Ent super this;
+   |                               ^^^ [3]
+ 5 | 
+ 6 |   abstract public function gen(): ?this::TEnt;
+   |                            ^^^ [2]
+ 7 | }
+ 8 | 
+   :
+54 |     $w = $e->gen();
+55 |   }
+56 |   $w?->itemOnly();
+   |        ^^^^^^^^ [1]
+57 | }
+58 | 
+
+4 errors found
