@@ -128,10 +128,6 @@ let check
       reject
         "--isolation-max-seeds and --isolation-seed-offset take a window of the starting files, and --isolation-movable asks about all of them"
   end;
-  (* Nothing grows without [--isolation-grow], so there is no cluster to cap. *)
-  if (not grow) && Option.is_some max_cluster_size then
-    reject
-      "--isolation-max-cluster-size caps a growing cluster; pass --isolation-grow to grow one";
   (* Growth clamps the reach to the cap, so a larger one is not refused, it is
      silently unused. Only worth saying when the caller picked the reach: the
      default sits above most caps, and naming a flag they never passed reads as
@@ -140,7 +136,7 @@ let check
   | Some cap when max_dependents_given && grow && max_dependents > cap ->
     warn
       (Printf.sprintf
-         "--isolation-max-dependents %d is clamped to --isolation-max-cluster-size %d for growth; a closure larger than the cluster can never be absorbed"
+         "--isolation-max-dependents %d is clamped to the cluster size cap of %d for growth; a closure larger than the cluster can never be absorbed"
          max_dependents
          cap)
   | _ -> ());

@@ -518,6 +518,58 @@ class TestFreshInit(common_tests.CommonTests):
             clusters,
         )
 
+    def test_growth_is_capped_unless_the_cap_is_raised(self) -> None:
+        # Without a cap a cluster grows until nothing more can be taken, which
+        # for files that everything references is most of the repository.
+        # Growth is therefore given one, and a cluster that reaches it says so.
+        repo_dir = self.test_driver.repo_dir
+        referenced = 600
+        files = {
+            "capped_seed.php": (
+                "<?hh\nfunction capped_seed(): void {\n"
+                + "".join(f"  capped_target_{i}();\n" for i in range(referenced))
+                + "}\n"
+            )
+        }
+        for i in range(referenced):
+            files[f"capped_target_{i}.php"] = (
+                f"<?hh\nfunction capped_target_{i}(): void {{}}\n"
+            )
+        for filename, contents in files.items():
+            with open(os.path.join(repo_dir, filename), "w") as f:
+                f.write(contents)
+        seed_list = os.path.join(repo_dir, "capped_seeds.txt")
+        with open(seed_list, "w") as f:
+            f.write("capped_seed.php\n")
+        self.test_driver.start_hh_server(
+            changed_files=list(files.keys()), args=["--no-load"]
+        )
+
+        def grown_cluster(extra_options):
+            output, _ = self.test_driver.check_cmd(
+                expected_output=None,
+                options=[
+                    "--isolation",
+                    "--isolation-grow",
+                    "--isolation-seed-list",
+                    seed_list,
+                    "--json",
+                    *extra_options,
+                ],
+            )
+            (clusters, _) = parse_isolation_json(output)
+            self.assertEqual(1, len(clusters), clusters)
+            return clusters[0]
+
+        default_cap = 500
+        by_default = grown_cluster([])
+        self.assertEqual(default_cap, len(by_default["files"]))
+        self.assertTrue(by_default["truncated"])
+
+        raised = grown_cluster(["--isolation-max-cluster-size", "1000"])
+        self.assertEqual(referenced + 1, len(raised["files"]))
+        self.assertFalse(raised["truncated"])
+
     def test_isolation_move_to_refuses_a_missing_seed_dir(self) -> None:
         self.test_driver.start_hh_server(changed_files=[], args=["--no-load"])
         stdout, _, retcode = self.test_driver.run_check(

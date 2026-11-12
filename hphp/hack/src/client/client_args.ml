@@ -393,7 +393,10 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
            bound the isolatability figures are reported against. Not derived
            from measurement. *)
         max_dependents = Option.value !isolation_max_dependents ~default:600;
-        max_cluster_size = !isolation_max_cluster_size;
+        (* 500 is the cap a growing run uses when the caller names none, so that
+           a cluster cannot grow until it has taken most of the repository. *)
+        max_cluster_size =
+          Some (Option.value !isolation_max_cluster_size ~default:500);
         (* The largest batch a long run has finished at; not a tuned
            figure. *)
         batch_size = Option.value !isolation_batch_size ~default:400;
@@ -667,7 +670,7 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
         (Arg_non_user_facing, Help_options) );
       ( "--isolation-max-cluster-size",
         Arg.Int (fun n -> isolation_max_cluster_size := Some n),
-        " <n> stop growing a cluster once it reaches <n> files",
+        " <n> stop growing a cluster once it reaches <n> files; when growing, 500 unless given",
         (Arg_non_user_facing, Help_options) );
       ( "--isolation-allow-long-run",
         Arg.Set isolation_allow_long_run,
@@ -1409,6 +1412,12 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
     match Option.value !mode ~default:MODE_STATUS with
     | MODE_ISOLATION _ ->
       let options = isolation_options () in
+      (* Nothing grows without [--isolation-grow], so there is no cluster to cap. *)
+      if Option.is_some !isolation_max_cluster_size && not !isolation_grow then
+        Die.bad_args
+          ~message:
+            "--isolation-max-cluster-size caps a growing cluster; pass --isolation-grow to grow one"
+          ~usage:None;
       (match
          Client_isolation_args.validate
            ~max_dependents_given:(Option.is_some !isolation_max_dependents)

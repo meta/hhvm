@@ -94,7 +94,7 @@ Options:
   --isolation-seed-list                <file> grow from the repo-relative paths listed in <file> instead of scanning for seeds
   --isolation-seed-dir                 <dir> grow from every Hack file under <dir>
   --isolation-max-dependents           <n> the most files that may depend on a candidate for it to be taken along with them
-  --isolation-max-cluster-size         <n> stop growing a cluster once it reaches <n> files
+  --isolation-max-cluster-size         <n> stop growing a cluster once it reaches <n> files; when growing, 500 unless given
   --isolation-allow-long-run           run even when the seed count says this will take hours
   --isolation-batch-size               <n> grow <n> clusters at a time; they are all held in memory together, so this sets how much memory the run needs, and a larger batch drops more overlapping clusters so it also changes how many are reported
   --isolation-max-seeds                <n> grow from at most <n> seeds
