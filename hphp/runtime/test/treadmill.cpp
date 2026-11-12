@@ -23,6 +23,16 @@
 
 namespace HPHP {
 
+TEST(Treadmill, EnqueueOwnsMoveOnlyCallback) {
+  auto result = 0;
+  Treadmill::enqueue([value = std::make_unique<int>(42), &result] {
+    result = *value;
+  });
+  Treadmill::finishRequest();
+  Treadmill::startRequest(Treadmill::SessionKind::UnitTests);
+  EXPECT_EQ(result, 42);
+}
+
 TEST(Treadmill, EnqueueOwnsExplicitlyMovedLambda) {
   auto result = 0;
   auto value = std::make_shared<int>(42);

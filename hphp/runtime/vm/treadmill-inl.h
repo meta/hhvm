@@ -15,6 +15,8 @@
 */
 #pragma once
 
+#include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "hphp/util/concurrent-slist.h"
@@ -48,7 +50,7 @@ private:
 
 template<class F>
 struct WorkItemImpl final : WorkItem {
-  explicit WorkItemImpl(F&& f) : f(std::forward<F>(f)) {}
+  explicit WorkItemImpl(F f) : f(std::move(f)) {}
 
   void run() noexcept override { f(); }
 
@@ -58,8 +60,11 @@ private:
 
 template<class F>
 void enqueue(F&& f) {
-  std::unique_ptr<WorkItemImpl<F>> p(new WorkItemImpl<F>(std::forward<F>(f)));
-  enqueueInternal(std::move(p));
+  static_assert(!std::is_lvalue_reference_v<F>,
+                "Treadmill::enqueue takes ownership of its callback; "
+                "pass an rvalue (std::move it)");
+  enqueueInternal(
+    std::make_unique<WorkItemImpl<std::decay_t<F>>>(std::forward<F>(f)));
 }
 
 //////////////////////////////////////////////////////////////////////

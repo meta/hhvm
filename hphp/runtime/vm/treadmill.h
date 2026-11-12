@@ -124,6 +124,9 @@ unsigned long long getNumInflightRequests();
  * Note: the function passed here escapes (naturally).  If you use a
  * lambda here, copy things into the lambda by value.
  *
+ * f must be an rvalue: the treadmill takes ownership of it, so std::move
+ * named callbacks in.
+ *
  * Important: f() must not throw an exception.
  */
 template<class F> void enqueue(F&& f);

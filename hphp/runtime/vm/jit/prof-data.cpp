@@ -292,7 +292,7 @@ void discardProfData() {
   // with hardcoded counter addresses that must remain valid. Freeing
   // while these translations are live causes use-after-free corruption.
   if (!isJitSerializing()) {
-    Treadmill::enqueue(VasmBlockCounters::free);
+    Treadmill::enqueue(&VasmBlockCounters::free);
   }
 }
 
