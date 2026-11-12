@@ -236,6 +236,22 @@ module Find_my_tests = struct
       selected test (used for reason provenance). *)
   type reason_multiset = reason_count list [@@deriving yojson]
 
+  (** A concrete selection-graph edge. Symbol identities and expansion
+      strategies are separate; test targets have no expansion strategy.
+      [edge_key] uses the same normalization as reason provenance. *)
+  type path_edge = {
+    source_symbol: string;
+    source_strategy: string;
+    target_symbol: string;
+    target_strategy: string option;
+    reason: string;
+    edge_key: string;
+  }
+  [@@deriving yojson]
+
+  (** Ordered edges from a root symbol to a selected test node. *)
+  type selection_path = path_edge list [@@deriving yojson]
+
   type selected_cldp_member = {
     member_name: string;
     selected_after_secs: float;
@@ -244,6 +260,8 @@ module Find_my_tests = struct
     reason_provenance_indices: int list option;
         (** Indices into [result_data.reason_provenance] for this CLDP test member.
             [None] when reason provenance is not requested. *)
+    path_provenance_indices: int list option;
+        (** Indices into [result_data.path_provenance] for this CLDP test member. *)
   }
   [@@deriving yojson]
 
@@ -256,6 +274,7 @@ module Find_my_tests = struct
     cldp_members: selected_cldp_member list option; [@default None]
     reason_provenance_indices: int list option;
         (** Indices into [result_data.reason_provenance] for this test method. *)
+    path_provenance_indices: int list option;
   }
   [@@deriving yojson]
 
@@ -267,6 +286,7 @@ module Find_my_tests = struct
     methods: selected_test_method list;
     reason_provenance_indices: int list option;
         (** Indices into [result_data.reason_provenance] for this test class. *)
+    path_provenance_indices: int list option;
   }
   [@@deriving yojson]
 
@@ -288,6 +308,9 @@ module Find_my_tests = struct
         (** Interned pool of minimal multisets referenced by the
             [reason_provenance_indices] fields throughout the result. [None]
             when reason provenance is not requested. *)
+    path_provenance: selection_path list option;
+        (** Interned pool of concrete paths whose reason multisets are minimal.
+            Distinct paths with equal multisets are retained. *)
   }
   [@@deriving yojson]
 
@@ -317,6 +340,8 @@ module Find_my_tests = struct
     reason_provenance: bool; [@default false]
         (** Track, per selected test, the minimal multisets of edge-type reasons
             on paths from a root that caused its selection. *)
+    path_provenance: bool; [@default false]
+        (** Return every concrete path attaining a minimal reason multiset. *)
     time_limit_secs: int option; [@default None]
     test_count_checkpoint_secs: int list; [@default [20; 30; 40]]
         (** Elapsed-time checkpoints (in seconds) at which to record the number of selected test files. *)
@@ -344,6 +369,7 @@ module Find_my_tests = struct
       max_test_files = None;
       root_provenance = false;
       reason_provenance = false;
+      path_provenance = false;
       time_limit_secs = None;
       test_count_checkpoint_secs = [20; 30; 40];
       symbol_node_count_checkpoint_interval = None;
