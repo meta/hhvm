@@ -327,11 +327,9 @@ void ProfData::cleanupFunc(const Func* func,
                            const std::vector<PrologueID>& prologueIDs) {
   std::unique_lock lock{m_funcProfTransLock};
 
-  auto id = func->getFuncId();
-
   m_funcProfTrans.erase(func);
   m_blockEndOffsets.erase(func);
-  m_profilingFuncs.erase(id.toInt());
+  m_profilingFuncs.erase(func);
 
   for (auto const sk : srcKeys) {
     m_optimizedSKs.erase(sk.toAtomicInt());

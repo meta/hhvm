@@ -481,10 +481,10 @@ struct ProfData {
    */
   bool profiling(const Func* func) const {
     assertx(func);
-    return profiling(func->getFuncId());
+    return m_profilingFuncs.find(func) != m_profilingFuncs.end();
   }
   bool profiling(FuncId funcId) const {
-    return m_profilingFuncs.find(funcId.toInt()) != m_profilingFuncs.end();
+    return profiling(Func::fromFuncId(funcId));
   }
 
   /*
@@ -493,8 +493,7 @@ struct ProfData {
   void setProfiling(const Func* func) {
     assertx(func);
 
-    auto const funcId = func->getFuncId();
-    if (!m_profilingFuncs.emplace(funcId.toInt(), true).second) {
+    if (!m_profilingFuncs.emplace(func, true).second) {
       // Someone else beat us, just return.
       return;
     }
@@ -513,9 +512,7 @@ struct ProfData {
   template<class Fn>
   void forEachProfilingFunc(Fn fn) {
     for (auto it : m_profilingFuncs) {
-      auto funcId = FuncId::fromInt(it.first);
-      auto func = Func::fromFuncId(funcId);
-      fn(func);
+      fn(it.first);
     }
   }
 
@@ -645,7 +642,7 @@ private:
    */
   std::atomic<int64_t> m_profilingBCSize{0};
   std::atomic<int64_t> m_optimizedFuncCount{0};
-  folly::AtomicHashMap<FuncId::Int, bool> m_profilingFuncs;
+  folly::AtomicHashMap<const Func*, bool, pointer_hash<Func>> m_profilingFuncs;
 
   /*
    * SrcKeys that have already been optimized. SrcKeys are marked as not
