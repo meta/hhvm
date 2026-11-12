@@ -149,37 +149,36 @@ void* Func::allocFuncMem(int numPositionalParams) {
   return low_malloc(funcSize);
 }
 
-void Func::destroy(Func* func) {
-  NamedFunc::removeFunc(func);
+void Func::startDestroy() {
+  atomicFlags().set(Func::Flags::Zombie);
+}
 
-  if (func->hasInheritedReturnTypes()) {
-    s_inheritedRetTypes.erase(func->getFuncId().toStableInt());
+void Func::finishDestroy() {
+  NamedFunc::removeFunc(this);
+
+  if (hasInheritedReturnTypes()) {
+    s_inheritedRetTypes.erase(getFuncId().toStableInt());
   }
 
-  if (func->m_allFlags.m_registeredInDataMap) {
-    func->deregisterInDataMap();
+  if (m_allFlags.m_registeredInDataMap) {
+    deregisterInDataMap();
   }
 
+  auto lambda = [this](){
+    {
+      auto metaLock = jit::tc::lockMetadata();
+      auto fc = FuncCleanup::get(this);
+      if (fc) fc->cleanup();
+    }
+    this->~Func();
+    low_free(this);
+  };
   if (s_treadmill.load(std::memory_order_acquire)) {
-    Treadmill::enqueue([func](){
-      {
-        auto metaLock = jit::tc::lockMetadata();
-        auto fc = FuncCleanup::get(func);
-        if (fc) fc->cleanup();
-      }
-      func->~Func();
-      low_free(func);
-    });
+    Treadmill::enqueue(std::move(lambda));
     return;
   }
 
-  {
-    auto metaLock = jit::tc::lockMetadata();
-    auto fc = FuncCleanup::get(func);
-    if (fc) fc->cleanup();
-  }
-  func->~Func();
-  low_free(func);
+  lambda();
 }
 
 void Func::freeClone() {

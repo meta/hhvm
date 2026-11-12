@@ -113,7 +113,7 @@ struct DestroyTestUnit {
         cls->destroy();
       }
     }
-    unit->destroy();
+    unit->startDestroy();
   }
 };
 

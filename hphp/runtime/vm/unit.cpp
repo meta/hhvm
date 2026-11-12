@@ -112,7 +112,7 @@ Unit::~Unit() {
     data_map::deregister(this);
   }
 
-  for (auto const func : funcs()) Func::destroy(func);
+  for (auto const func : funcs()) func->finishDestroy();
 
   // ExecutionContext and the TC may retain references to Class'es, so
   // it is possible for Class'es to outlive their Unit.
@@ -139,21 +139,30 @@ void Unit::operator delete(void* p, size_t /*sz*/) {
   vm_free(p);
 }
 
-void Unit::destroy() {
-  for (auto const func : funcs()) func->atomicFlags().set(Func::Flags::Zombie);
+void Unit::operator delete(Unit* p, std::destroying_delete_t) {
+  if (p->m_extended) {
+    static_cast<UnitExtended*>(p)->~UnitExtended();
+  } else {
+    p->~Unit();
+  }
+  vm_free(p);
+}
+
+void Unit::startDestroy() {
+  for (auto const func : funcs()) func->startDestroy();
   for (auto const& pcls : m_preClasses) {
     Class* cls = pcls->namedType()->clsList();
     while (cls) {
       Class* cur = cls;
       cls = cls->m_next;
       if (cur->preClass() == pcls.get()) {
-      	for (size_t i = 0; i < cur->numMethods(); i++) {
-    			if (auto meth = cur->getMethod(i)) {
-      			if (meth->cls() == cur) {
-							meth->atomicFlags().set(Func::Flags::Zombie);
+        for (size_t i = 0; i < cur->numMethods(); i++) {
+          if (auto meth = cur->getMethod(i)) {
+            if (meth->cls() == cur) {
+              meth->startDestroy();
             }
-    			}
-  			}
+          }
+        }
       }
     }
   }

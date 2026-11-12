@@ -301,7 +301,7 @@ struct DestroyTargetProfileTestUnit {
         cls->destroy();
       }
     }
-    unit->destroy();
+    unit->startDestroy();
   }
 };
 

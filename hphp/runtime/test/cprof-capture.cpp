@@ -96,7 +96,7 @@ struct DestroyTestUnit {
         named->setCachedFunc(nullptr);
       }
     }
-    unit->destroy();
+    unit->startDestroy();
   }
 };
 

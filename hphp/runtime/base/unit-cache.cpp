@@ -265,7 +265,7 @@ struct CachedFile {
     } else if (cu.unit->releaseCacheRefCount()) {
       // Otherwise, only delete the Unit if this is the last reference
       // to it.
-      cu.unit->destroy();
+      cu.unit->startDestroy();
     }
   }
 
@@ -686,7 +686,7 @@ void releaseFromHashCache(Unit* unit) {
       if (u->nextCachedByHash() == unit) {
         if (unit->hasCacheRef()) return;
         u->setNextCachedByHash(unit->nextCachedByHash());
-        unit->destroy();
+        unit->startDestroy();
       }
     }
     return;
@@ -709,7 +709,7 @@ void releaseFromHashCache(Unit* unit) {
   // delete this Unit will see that the entry is gone.
   auto const DEBUG_ONLY old = lock.update(unit->nextCachedByHash());
   assertx(old == unit);
-  unit->destroy();
+  unit->startDestroy();
 }
 
 CachedFilePtr createUnitFromFile(const StringData* const path,
@@ -2459,7 +2459,7 @@ private:
       auto const [lastRequest, lastTime] = unit->getLastTouch();
       if (!isExpired(now, oldestRequest, lastRequest, lastTime)) continue;
       accessor->second = nullptr;
-      unit->destroy();
+      unit->startDestroy();
       s_unitsEvalReaped->increment();
     }
   }

@@ -46,6 +46,7 @@
 #include "hphp/util/sha1.h"
 
 #include <map>
+#include <new>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -167,7 +168,7 @@ public:
   // Construction and destruction.
 
   Unit();
-  virtual ~Unit();
+  ~Unit();
 
   /*
    * New and delete using low memory.
@@ -175,7 +176,12 @@ public:
   void* operator new(size_t sz);
   void operator delete(void* p, size_t sz);
 
-  void destroy();
+  /*
+   * Unit has no vtable, so dispatch to the most derived destructor here.
+   */
+  void operator delete(Unit* p, std::destroying_delete_t);
+
+  void startDestroy();
 
   /////////////////////////////////////////////////////////////////////////////
   // Basic accessors.                                                   [const]
@@ -634,7 +640,7 @@ private:
   const Extension* m_extension{nullptr};
 };
 
-static_assert(CheckSize<Unit, 224>(), "");
+static_assert(CheckSize<Unit, 216>(), "");
 
 struct UnitExtended : Unit {
   friend struct Unit;
@@ -658,7 +664,7 @@ struct UnitExtended : Unit {
   std::atomic<Unit*> m_nextCachedByHash{nullptr};
 };
 
-static_assert(CheckSize<UnitExtended, 280>(), "");
+static_assert(CheckSize<UnitExtended, 272>(), "");
 
 ///////////////////////////////////////////////////////////////////////////////
 }
