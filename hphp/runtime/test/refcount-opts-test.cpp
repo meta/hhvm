@@ -71,7 +71,7 @@ struct PhiEnv {
   }
 
   IRUnit unit{test_context};
-  BCContext bcctx{BCMarker::Dummy(), 0};
+  BCContext bcctx{test_marker(), 0};
   Block* left = unit.defBlock();
   Block* right = unit.defBlock();
   Block* join = unit.defBlock();
@@ -88,7 +88,7 @@ struct PhiEnv {
  */
 TEST(RefcountOpts, PreserveInfiniteUpperBoundAfterDecref) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const value = unit.gen(Conjure, bcctx, TCountedVec);
   auto const dec = unit.gen(DecRef, bcctx, DecRefData{}, value->dst());
@@ -121,7 +121,7 @@ TEST(RefcountOpts, PreserveInfiniteUpperBoundAfterDecref) {
  */
 TEST(RefcountOpts, RetainPayloadAcrossOwnerRelease) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const owner = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
   auto const value = unit.gen(Conjure, bcctx, TObj | TInt);
@@ -175,7 +175,7 @@ TEST(RefcountOpts, RetainPayloadAcrossOwnerRelease) {
  */
 TEST(RefcountOpts, RetainPayloadAcrossOwnerReleaseWithPhi) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const owner = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
   auto const value = unit.gen(Conjure, bcctx, TObj | TInt);
@@ -236,7 +236,7 @@ TEST(RefcountOpts, RetainPayloadAcrossOwnerReleaseWithPhi) {
  */
 TEST(RefcountOpts, RetainAwaitedResultAcrossWaitHandleRelease) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const wh = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
   auto const result = unit.gen(LdWHResult, bcctx, TObj | TInitNull, wh->dst());
@@ -288,7 +288,7 @@ TEST(RefcountOpts, RetainAwaitedResultAcrossWaitHandleRelease) {
  */
 TEST(RefcountOpts, CancelAcrossBalancedDecref) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const a = unit.gen(Conjure, bcctx, TObj);
   auto const b = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
@@ -339,7 +339,7 @@ TEST(RefcountOpts, CancelAcrossBalancedDecref) {
  */
 TEST(RefcountOpts, RetainPayloadAfterUnknownStore) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const a = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
   auto const b = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
@@ -412,7 +412,7 @@ TEST(RefcountOpts, RetainPayloadAfterPendingLoad) {
   for (auto const extra : {false, true}) {
     SCOPED_TRACE(extra);
     IRUnit unit{test_context};
-    BCContext const bcctx{BCMarker::Dummy(), 0};
+    BCContext const bcctx{test_marker(), 0};
     auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
     auto const a = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
     auto const b = unit.gen(LdLoc, bcctx, TObj, LocalId{1}, fp->dst());
@@ -475,7 +475,7 @@ TEST(RefcountOpts, RetainPayloadAfterPendingLoad) {
  */
 TEST(RefcountOpts, PreserveCreditAcrossMultipleConsumes) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const value = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
   auto const first = unit.gen(Conjure, bcctx, TCountedVec);
@@ -537,7 +537,7 @@ TEST(RefcountOpts, RetainPayloadAfterPendingMove) {
   for (auto const extra : {false, true}) {
     SCOPED_TRACE(extra);
     IRUnit unit{test_context};
-    BCContext const bcctx{BCMarker::Dummy(), 0};
+    BCContext const bcctx{test_marker(), 0};
     auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
     auto const a = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
     auto const b = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
@@ -603,7 +603,7 @@ TEST(RefcountOpts, RetainPayloadAfterPendingMove) {
  */
 TEST(RefcountOpts, CancelPairAfterPendingUnknownStore) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const a = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
   auto const value = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{1}, fp->dst());
@@ -660,7 +660,7 @@ TEST(RefcountOpts, CancelPairAfterPendingUnknownStore) {
  */
 TEST(RefcountOpts, PreserveCreditAcrossHeapSupportRemovals) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const owner = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
   auto const value = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{1}, fp->dst());
@@ -718,7 +718,7 @@ TEST(RefcountOpts, PreserveCreditAcrossHeapSupportRemovals) {
  */
 TEST(RefcountOpts, ReleaseAfterDecReleaseCheckTaken) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const owner = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
   auto const value = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{1}, fp->dst());
@@ -771,7 +771,7 @@ TEST(RefcountOpts, ReleaseAfterDecReleaseCheckTaken) {
  */
 TEST(RefcountOpts, RetainPayloadAcrossUniqueDictTransfer) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const a = unit.gen(LdLoc, bcctx, TCountedDict, LocalId{0}, fp->dst());
   auto const b = unit.gen(LdLoc, bcctx, TCountedDict, LocalId{0}, fp->dst());
@@ -826,7 +826,7 @@ TEST(RefcountOpts, RetainPayloadAcrossUniqueDictTransfer) {
  */
 TEST(RefcountOpts, ReleaseAfterReturnHookTaken) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const value = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
   auto const shared = unit.defBlock();
@@ -875,7 +875,7 @@ TEST(RefcountOpts, WeakenWithPendingReductions) {
       SCOPED_TRACE(pending);
       SCOPED_TRACE(releaseCheck);
       IRUnit unit{test_context};
-      BCContext const bcctx{BCMarker::Dummy(), 0};
+      BCContext const bcctx{test_marker(), 0};
       auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
       auto const value = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
       auto const other = unit.gen(Conjure, bcctx, TCountedVec);
@@ -1108,7 +1108,7 @@ TEST(RefcountOpts, ExcludeAliasesWithDisjointRefcountBounds) {
   for (auto const refs : {1, 2}) {
     SCOPED_TRACE(refs);
     IRUnit unit{test_context};
-    BCContext const bcctx{BCMarker::Dummy(), 0};
+    BCContext const bcctx{test_marker(), 0};
     auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
     auto const original = unit.gen(Conjure, bcctx, TStaticVec);
     auto const a = unit.gen(CopyArray, bcctx, original->dst());
@@ -1563,7 +1563,7 @@ TEST(RefcountOpts, SharePhiMemorySupportAcrossColumns) {
  */
 TEST(RefcountOpts, ShareSupportAcrossSwappingLoopPhis) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const a = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
   auto const b = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{1}, fp->dst());
@@ -1701,7 +1701,7 @@ TEST(RefcountOpts, ConsumeSharedMemorySupportOnce) {
       SCOPED_TRACE(::testing::Message() << "clearFirst=" << clearFirst
                    << " nz=" << nz);
       IRUnit unit{test_context};
-      BCContext const bcctx{BCMarker::Dummy(), 0};
+      BCContext const bcctx{test_marker(), 0};
       auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
       auto const a = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
       auto const b = unit.gen(LdLoc, bcctx, TCountedVec, LocalId{0}, fp->dst());
@@ -1995,7 +1995,7 @@ TEST(RefcountOpts, NontransitiveMayAliasDecrefs) {
     for (auto const nz : {false, true}) {
       SCOPED_TRACE(::testing::Message() << "overlap=" << overlap << " nz=" << nz);
       IRUnit unit{test_context};
-      BCContext const bcctx{BCMarker::Dummy(), 0};
+      BCContext const bcctx{test_marker(), 0};
       auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
       auto const original = unit.gen(Conjure, bcctx, TStaticDict);
       auto const c = unit.gen(CopyArray, bcctx, original->dst());
@@ -2059,7 +2059,7 @@ TEST(RefcountOpts, MergeConditionalPendingDecrefTypes) {
       SCOPED_TRACE(::testing::Message() << "overlap=" << overlap
                                        << " reverse=" << reverse);
       IRUnit unit{test_context};
-      BCContext const bcctx{BCMarker::Dummy(), 0};
+      BCContext const bcctx{test_marker(), 0};
       auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
       auto const original = unit.gen(Conjure, bcctx, TStaticDict);
       auto const c = unit.gen(CopyArray, bcctx, original->dst());
@@ -2193,7 +2193,7 @@ TEST(RefcountOpts, CancelAcrossConsecutiveDecrefs) {
         SCOPED_TRACE(::testing::Message() << "middleNZ=" << middleNZ
                      << " finalNZ=" << finalNZ << " count=" << count);
         IRUnit unit{test_context};
-        BCContext const bcctx{BCMarker::Dummy(), 0};
+        BCContext const bcctx{test_marker(), 0};
         auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
         auto const a = unit.gen(Conjure, bcctx, TCountedVec);
         auto const b = unit.gen(Conjure, bcctx, TCountedVec);
@@ -2838,7 +2838,7 @@ TEST(RefcountOpts, FoldArrayCOWBounds) {
       SCOPED_TRACE(::testing::Message() << "refs=" << refs
                    << " firstSet=" << firstSet);
       IRUnit unit{test_context};
-      BCContext const bcctx{BCMarker::Dummy(), 0};
+      BCContext const bcctx{test_marker(), 0};
       auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
       unit.entry()->push_back(fp);
       if (!firstSet) {
@@ -2896,7 +2896,7 @@ TEST(RefcountOpts, FoldArrayCOWBounds) {
  */
 TEST(RefcountOpts, PreserveCOWAfterPendingAliasDecref) {
   IRUnit unit{test_context};
-  BCContext const bcctx{BCMarker::Dummy(), 0};
+  BCContext const bcctx{test_marker(), 0};
   auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
   auto const original = unit.gen(Conjure, bcctx, TStaticVec);
   auto const a = unit.gen(CopyArray, bcctx, original->dst());
@@ -3037,7 +3037,7 @@ TEST(RefcountOpts, PreserveReferencesAcrossLeafDecref) {
         SCOPED_TRACE(::testing::Message() << "releaseType=" << releaseType.toString()
                      << " string=" << string << " heap=" << heap);
         IRUnit unit{test_context};
-        BCContext const bcctx{BCMarker::Dummy(), 0};
+        BCContext const bcctx{test_marker(), 0};
         auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
         auto const aType = string ? TCountedStr : TCountedVec;
         unit.entry()->push_back(fp);
@@ -3206,7 +3206,7 @@ TEST(RefcountOpts, ChainConditionalPendingDecrefTypes) {
   for (auto const overlap : {false, true}) {
     SCOPED_TRACE(overlap);
     IRUnit unit{test_context};
-    BCContext const bcctx{BCMarker::Dummy(), 0};
+    BCContext const bcctx{test_marker(), 0};
     auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
     auto const original = unit.gen(Conjure, bcctx, TStaticDict);
     auto const c = unit.gen(CopyArray, bcctx, original->dst());
@@ -3543,7 +3543,7 @@ TEST(RefcountOpts, ReleaseBeforeLoopRedefinition) {
   for (auto const phi : {false, true}) {
     SCOPED_TRACE(phi);
     IRUnit unit{test_context};
-    BCContext const bcctx{BCMarker::Dummy(), 0};
+    BCContext const bcctx{test_marker(), 0};
     unit.entry()->push_back(unit.gen(DefFP, bcctx, DefFPData{std::nullopt}));
     auto const header = unit.defBlock();
     auto const body = unit.defBlock();

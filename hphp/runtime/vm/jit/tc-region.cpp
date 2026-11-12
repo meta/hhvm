@@ -697,7 +697,7 @@ void RegionTranslator::gen() {
   // trigger retranslation) and helps remove bias towards larger functions that
   // can cause variations in the size of code.prof.
   if (kind == TransKind::Profile &&
-      !profData()->profiling(sk.funcID()) &&
+      !profData()->profiling(sk.func()) &&
       !sk.anyFuncEntry()) {
     return;
   }

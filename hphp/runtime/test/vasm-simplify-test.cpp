@@ -660,7 +660,7 @@ void testSinkDefsPureLoadLinear(MakeLoadOrigin makeLoadOrigin,
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLoadOrigin(irUnit, bcctx, fp);
 
@@ -798,7 +798,7 @@ void testSinkDefsPureLoadSinksWithPhysicalBase() {
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLdLocOrigin(irUnit, bcctx, fp, 0);
 
@@ -836,7 +836,7 @@ void testSinkDefsPureLoadStopsBeforeExplicitPhysicalClobber() {
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLdLocOrigin(irUnit, bcctx, fp, 0);
 
@@ -881,7 +881,7 @@ void testSinkDefsPureLoadStopsBeforeImplicitPhysicalClobber() {
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLdLocOrigin(irUnit, bcctx, fp, 0);
 
@@ -953,7 +953,7 @@ void testSinkDefsPureLoadSinksAfterUserMoves() {
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLdLocOrigin(irUnit, bcctx, fp, 0);
 
@@ -1069,7 +1069,7 @@ void testSinkDefsPureLoadStopsAtSelfLoopClobber() {
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLdLocOrigin(irUnit, bcctx, fp, 0);
     auto const storeOrigin = makeStLocOrigin(irUnit, bcctx, fp, 0);
@@ -1124,7 +1124,7 @@ void testSinkDefsPureLoadStopsAtClobberingBranchPath() {
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLdLocOrigin(irUnit, bcctx, fp, 0);
     auto const storeOrigin = makeStLocOrigin(irUnit, bcctx, fp, 0);
@@ -1187,7 +1187,7 @@ void testSinkDefsPureLoadStopsBeforeClobberingBlockEnd() {
     SCOPED_TRACE(kind == CodeKind::Trace ? "trace_abi" : "prologue_abi");
 
     IRUnit irUnit{test_context};
-    auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+    auto const bcctx = BCContext{test_marker(), 0};
     auto const fp = irUnit.gen(DefFP, bcctx, DefFPData{std::nullopt})->dst();
     auto const loadOrigin = makeLdLocOrigin(irUnit, bcctx, fp, 0);
 

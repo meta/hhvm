@@ -2215,7 +2215,7 @@ SrcKey read_srckey(ProfDataDeserializer& ser) {
   ITRACE(2, "SrcKey>\n");
   auto const func = read_func(ser);
   auto const orig = SrcKey::fromAtomicInt(read_raw<SrcKey::AtomicInt>(ser));
-  auto const sk = orig.withFuncID(func->getFuncId());
+  auto const sk = orig.withFunc(func);
   ITRACE(2, "SrcKey: {}\n", show(sk));
   return sk;
 }

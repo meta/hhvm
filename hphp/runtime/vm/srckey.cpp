@@ -37,10 +37,10 @@ std::string show(SrcKey sk) {
   if (unit->origFilepath()->data() && unit->origFilepath()->size()) {
     filepath = unit->origFilepath()->data();
   }
-  return fmt::format("{}:{} in {}(id 0x{:#x})@{: >6}{}{}{}{}{}",
+  return fmt::format("{}:{} in {}(id {})@{: >6}{}{}{}{}{}",
                         filepath, sk.lineNumber(),
                         func->fullName()->data(),
-                        sk.funcID().toInt(), sk.printableOffset(),
+                        fmt::ptr(sk.func()), sk.printableOffset(),
                         resumeModeShortName(sk.resumeMode()),
                         sk.hasThis()  ? "t" : "",
                         sk.prologue() ? "p" : "",
@@ -51,9 +51,9 @@ std::string show(SrcKey sk) {
 std::string showShort(SrcKey sk) {
   if (!sk.valid()) return "<invalid SrcKey>";
   return fmt::format(
-    "{}(id {:#x})@{}{}{}{}{}{}",
+    "{}(id {})@{}{}{}{}{}{}",
     sk.func()->fullName()->slice(),
-    sk.funcID(),
+    fmt::ptr(sk.func()),
     sk.printableOffset(),
     resumeModeShortName(sk.resumeMode()),
     sk.hasThis()  ? "t" : "",

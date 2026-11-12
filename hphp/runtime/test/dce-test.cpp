@@ -25,7 +25,7 @@
 namespace HPHP::jit {
 
 TEST(DCE, NonDCEablePassthroughKeepsProducerLive) {
-  auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+  auto const bcctx = BCContext{test_marker(), 0};
   IRUnit unit{test_context};
 
   auto const entry = unit.entry();

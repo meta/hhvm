@@ -298,7 +298,7 @@ const uint64_t* alloc_literal(Venv& env, uint64_t val) {
 void setCallFuncId(Venv& env, TCA callRetAddr) {
   if (!env.unit.context) return;
 
-  env.meta.setCallFuncId(callRetAddr, env.unit.context->initSrcKey.funcID(),
+  env.meta.setCallFuncId(callRetAddr, env.unit.context->initSrcKey.func()->getFuncId(),
                          env.unit.context->kind);
 }
 

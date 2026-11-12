@@ -36,7 +36,7 @@ struct Unit;
  * these using a (Func id, hhbc instruction) pair.
  */
 struct SrcKey {
-  static_assert(sizeof(FuncId) == sizeof(uint32_t), "");
+  static_assert(sizeof(PackedPtr<const Func>) == sizeof(uint32_t), "");
   static_assert(sizeof(Offset) == sizeof(uint32_t), "");
 
   /////////////////////////////////////////////////////////////////////////////
@@ -83,7 +83,6 @@ struct SrcKey {
 
   SrcKey(const Func* f, Offset off, ResumeMode resumeMode);
   SrcKey(const Func* f, PC pc, ResumeMode resumeMode);
-  SrcKey(FuncId funcId, Offset off, ResumeMode resumeMode);
 
   SrcKey(const Func* f, uint32_t numArgs, PrologueTag);
   SrcKey(const Func* f, uint32_t numArgs, bool mayHaveUninitNamed, FuncEntryTag);
@@ -114,9 +113,6 @@ struct SrcKey {
   /*
    * Direct accessors.
    */
-
-  FuncId funcID() const;
-
   // Offset of the bytecode represented by this SrcKey.
   // Valid only when !prologue() && !funcEntry() && !namedParamsFuncEntry().
   Offset offset() const;
@@ -188,7 +184,7 @@ struct SrcKey {
    */
   SrcKey advanced(const Func* f = nullptr) const;
 
-  SrcKey withFuncID(FuncId funcId) const;
+  SrcKey withFunc(const Func* func) const;
 
   /////////////////////////////////////////////////////////////////////////////
 
@@ -222,7 +218,7 @@ private:
   union {
     AtomicInt m_atomicInt;
     struct {
-      FuncId m_funcID;
+      PackedPtr<const Func> m_func;
       uint32_t m_offsetOrNumArgs : kNumOffsetBits;
       uint32_t m_resumeModeAndTags : kNumModeBits;
     } m_s;

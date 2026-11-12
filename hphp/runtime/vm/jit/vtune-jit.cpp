@@ -36,7 +36,8 @@ void reportTraceletToVtune(const Unit* unit,
 
   if (!unit) return;
 
-  methodInfo.method_id = tr.src.funcID().toInt() + MIN_METHOD_ID;
+  methodInfo.method_id = PackedPtr<const Func>::toRaw(tr.src.func());
+  assertx(methodInfo.method_id > MIN_METHOD_ID);
 
   if (func && func->fullName()) {
     char *name = const_cast<char *>(func->fullName()->data());

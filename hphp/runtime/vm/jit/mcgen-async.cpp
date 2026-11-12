@@ -442,8 +442,8 @@ struct AsyncTranslationWorker
                                                 : rctx.requestTid;
     ViewHolder viewer{viewTid, true};
 
-    if (!Func::isFuncIdValid(ctx.sk.funcID())) {
-      FTRACE(2, "Invalid func id {}\n", ctx.sk.funcID().toInt());
+    if (ctx.sk.func() == nullptr) {
+      FTRACE(2, "Invalid func id\n");
       return;
     }
 

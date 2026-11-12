@@ -26,7 +26,7 @@ namespace {
 
 struct GuardEnv {
   GuardEnv() {
-    irb.setCurMarker(BCMarker::Dummy());
+    irb.setCurMarker(test_marker());
     irb.enableConstrainGuards();
     auto const fp = gen(DefFP, DefFPData{std::nullopt});
     gen(DefFrameRelSP, DefStackData{SBInvOffset{7}, SBInvOffset{5}}, fp);

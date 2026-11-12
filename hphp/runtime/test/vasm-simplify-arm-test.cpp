@@ -146,8 +146,8 @@ void checkPairUpsSimplification(const PairUpsScenario& scenario) {
   unit.entry = unit.makeBlock(AreaIndex::Main, 1);
   Vout v(unit, unit.entry);
 
-  IRInstruction origin0{DefConst, {BCMarker::Dummy(), 0}};
-  IRInstruction origin1{DefConst, {BCMarker::Dummy(), 0}};
+  IRInstruction origin0{DefConst, {test_marker(), 0}};
+  IRInstruction origin1{DefConst, {test_marker(), 0}};
 
   auto const base = Vreg64{Reg64{0}};
   auto const simd0 = Vreg128{RegXMM{0}};

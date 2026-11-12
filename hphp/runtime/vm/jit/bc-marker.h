@@ -38,21 +38,6 @@ struct SSATmp;
  * guard relaxation merges multiple profile translations.
  */
 struct BCMarker {
-  /*
-   * This is for use by test code that needs to provide BCMarkers but is not
-   * deriving them from an actual bytecode region. It is always valid().
-   */
-  static BCMarker Dummy() {
-    return BCMarker {
-      SrcKey(FuncId::Dummy, 0, ResumeMode::None),
-      SBInvOffset{0},
-      false,
-      TransIDSet{},
-      nullptr,
-      nullptr,
-      nullptr
-    };
-  }
 
   BCMarker() = default;
 
@@ -82,7 +67,7 @@ struct BCMarker {
 
   std::string show() const;
   bool valid() const;
-  bool hasFunc() const { return valid() && !m_sk.funcID().isDummy(); }
+  bool hasFunc() const { return valid(); }
 
   SrcKey      sk()        const { assertx(valid()); return m_sk;            }
   const Func* func()      const { assertx(hasFunc()); return m_sk.func();   }
@@ -151,4 +136,3 @@ private:
 //////////////////////////////////////////////////////////////////////
 
 }
-

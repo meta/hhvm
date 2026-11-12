@@ -21,36 +21,30 @@ namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////
 
 inline SrcKey::SrcKey()
-  : m_s{FuncId::Invalid, 0, encodeResumeMode(ResumeMode::None)}
+  : m_s{nullptr, 0, encodeResumeMode(ResumeMode::None)}
 {}
 
 inline SrcKey::SrcKey(const Func* f, Offset off, ResumeMode resumeMode)
-  : m_s{f->getFuncId(), (uint32_t)off, encodeResumeMode(resumeMode)}
+  : m_s{f, (uint32_t)off, encodeResumeMode(resumeMode)}
 {
   assertx((uint32_t)off >> kNumOffsetBits == 0);
 }
 
 inline SrcKey::SrcKey(const Func* f, PC pc, ResumeMode resumeMode)
-  : m_s{f->getFuncId(), (uint32_t)f->offsetOf(pc), encodeResumeMode(resumeMode)}
+  : m_s{f, (uint32_t)f->offsetOf(pc), encodeResumeMode(resumeMode)}
 {
   assertx((uint32_t)f->offsetOf(pc) >> kNumOffsetBits == 0);
 }
 
-inline SrcKey::SrcKey(FuncId funcId, Offset off, ResumeMode resumeMode)
-  : m_s{funcId, (uint32_t)off, encodeResumeMode(resumeMode)}
-{
-  assertx((uint32_t)off >> kNumOffsetBits == 0);
-}
-
 inline SrcKey::SrcKey(const Func* f, uint32_t numArgs, PrologueTag)
-  : m_s{f->getFuncId(), numArgs, encodePrologue()}
+  : m_s{f, numArgs, encodePrologue()}
 {
   assertx(numArgs >> kNumOffsetBits == 0);
 }
 
 inline SrcKey::SrcKey(const Func* f, uint32_t numArgs, bool mayHaveUninitNamed,
                       FuncEntryTag)
-  : m_s{f->getFuncId(), numArgs,
+  : m_s{f, numArgs,
         numArgs == f->numPositionalParams() && mayHaveUninitNamed
         ? encodeNamedParamsFuncEntry()
         : encodeFuncEntry()}
@@ -59,7 +53,7 @@ inline SrcKey::SrcKey(const Func* f, uint32_t numArgs, bool mayHaveUninitNamed,
 }
 
 inline SrcKey::SrcKey(SrcKey other, Offset off)
-  : m_s{other.funcID(), (uint32_t)off, other.m_s.m_resumeModeAndTags}
+  : m_s{other.func(), (uint32_t)off, other.m_s.m_resumeModeAndTags}
 {
   assertx((uint32_t)off >> kNumOffsetBits == 0);
 }
@@ -75,15 +69,15 @@ inline SrcKey SrcKey::fromAtomicInt(AtomicInt in) {
 ///////////////////////////////////////////////////////////////////////////////
 
 inline bool SrcKey::valid() const {
-  auto const funcID = m_s.m_funcID;
+  auto f = func();
   assertx(
-    funcID.isInvalid() || funcID.isDummy() ||
-    (prologue() && numEntryArgs() <= func()->numPositionalParams() + 1) ||
-    (funcEntry() && numEntryArgs() <= func()->numPositionalParams()) ||
-    (namedParamsFuncEntry() && numEntryArgs() == func()->numPositionalParams()) ||
-    (!prologue() && !funcEntry() && offset() < func()->bclen())
+    f == nullptr ||
+    (prologue() && numEntryArgs() <= f->numPositionalParams() + 1) ||
+    (funcEntry() && numEntryArgs() <= f->numPositionalParams()) ||
+    (namedParamsFuncEntry() && numEntryArgs() == f->numPositionalParams()) ||
+    (!prologue() && !funcEntry() && offset() < f->bclen())
   );
-  return !funcID.isInvalid();
+  return f != nullptr;
 }
 
 inline SrcKey::AtomicInt SrcKey::toAtomicInt() const {
@@ -96,11 +90,6 @@ inline size_t SrcKey::stableHash() const {
     m_s.m_offsetOrNumArgs,
     m_s.m_resumeModeAndTags
   );
-}
-
-inline FuncId SrcKey::funcID() const {
-  assertx(!m_s.m_funcID.isInvalid());
-  return m_s.m_funcID;
 }
 
 inline Offset SrcKey::offset() const {
@@ -186,7 +175,7 @@ inline uint32_t SrcKey::encodeNamedParamsFuncEntry() {
 }
 
 inline const Func* SrcKey::func() const {
-  return Func::fromFuncId(m_s.m_funcID);
+  return m_s.m_func;
 }
 
 inline const Unit* SrcKey::unit() const {
@@ -260,9 +249,9 @@ inline SrcKey SrcKey::advanced(const Func* f) const {
   return tmp;
 }
 
-inline SrcKey SrcKey::withFuncID(FuncId funcId) const {
+inline SrcKey SrcKey::withFunc(const Func* func) const {
   auto tmp = *this;
-  tmp.m_s.m_funcID = funcId;
+  tmp.m_s.m_func = func;
   return tmp;
 }
 

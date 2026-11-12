@@ -15,11 +15,21 @@
 */
 #pragma once
 
+#include "hphp/runtime/vm/class.h"
+#include "hphp/runtime/vm/jit/bc-marker.h"
 #include "hphp/runtime/vm/jit/translator.h"
+#include "hphp/system/systemlib.h"
 
 namespace HPHP::jit {
 
 //////////////////////////////////////////////////////////////////////
+
+inline BCMarker test_marker() {
+  return BCMarker{
+    SrcKey{SystemLib::getExceptionClass()->getCtor(), 0, ResumeMode::None},
+    SBInvOffset{0}, false, TransIDSet{}, nullptr, nullptr, nullptr
+  };
+}
 
 // A TransContext for use in tests.
 const auto test_context =

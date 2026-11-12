@@ -49,7 +49,7 @@ std::vector<AliasClass> generic_classes() {
 }
 
 std::vector<AliasClass> specialized_classes(IRUnit& unit) {
-  auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
+  auto const bcctx = BCContext { test_marker(), 0 };
 
   // Specialized test cases need some SSATmp*'s and similar things, so let's
   // make some instructions.
@@ -384,7 +384,7 @@ TEST(AliasClass, StackUnions) {
 
 TEST(AliasClass, IterUnion) {
   IRUnit unit{test_context};
-  auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
+  auto const bcctx = BCContext { test_marker(), 0 };
   auto const FP = unit.gen(DefFP, bcctx, DefFPData { std::nullopt })->dst();
 
   {
@@ -478,7 +478,7 @@ TEST(AliasClass, IterUnion) {
 
 TEST(AliasClass, FrameUnion) {
   IRUnit unit{test_context};
-  auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
+  auto const bcctx = BCContext { test_marker(), 0 };
   auto const dsData = DefStackData { SBInvOffset { 0 }, SBInvOffset { 0 } };
   auto const biData = DefCalleeFPData {
     IRSPRelOffset { 0 }, nullptr, 1, SrcKey {}, IRSPRelOffset { 0 },
@@ -595,7 +595,7 @@ TEST(AliasClass, FrameSubsetUnrelatedSpecialization) {
 
 TEST(AliasClass, Pointees) {
   IRUnit unit{test_context};
-  auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
+  auto const bcctx = BCContext { test_marker(), 0 };
   auto ptr = unit.gen(LdMBase, bcctx, TLval, AliasClassData{ ALocalAny | APropAny })->dst();
   auto const acls = pointee(ptr);
   EXPECT_EQ(ALocalAny | APropAny, acls);

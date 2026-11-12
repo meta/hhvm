@@ -44,7 +44,7 @@ namespace HPHP::jit {
 //////////////////////////////////////////////////////////////////////
 
 TEST(Simplifier, JumpConstFold) {
-  auto const dummy = BCContext { BCMarker::Dummy(), 0 };
+  auto const dummy = BCContext { test_marker(), 0 };
   IRUnit unit(test_context);
 
   // Folding JmpZero and JmpNZero.
@@ -69,7 +69,7 @@ TEST(Simplifier, JumpConstFold) {
 
 TEST(Simplifier, CondJmp) {
   IRUnit unit{test_context};
-  auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
+  auto const bcctx = BCContext { test_marker(), 0 };
 
   // Folding Conv*ToBool
   {
@@ -100,7 +100,7 @@ TEST(Simplifier, CondJmp) {
 
 TEST(Simplifier, DecReleaseCheckUncounted) {
   IRUnit unit{test_context};
-  auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
+  auto const bcctx = BCContext { test_marker(), 0 };
 
   for (auto const type : {TInt, TStaticStr, TUncounted}) {
     auto const value = unit.gen(Conjure, bcctx, type)->dst();
@@ -117,7 +117,7 @@ TEST(Simplifier, DecReleaseCheckUncounted) {
 
 TEST(Simplifier, DecReleaseCheckMaybeCounted) {
   IRUnit unit{test_context};
-  auto const bcctx = BCContext { BCMarker::Dummy(), 0 };
+  auto const bcctx = BCContext { test_marker(), 0 };
 
   for (auto const type : {TObj, TStr, TInt | TObj, TCell}) {
     auto const value = unit.gen(Conjure, bcctx, type)->dst();
@@ -132,7 +132,7 @@ TEST(Simplifier, DecReleaseCheckMaybeCounted) {
 
 TEST(Simplifier, Count) {
   IRUnit unit{test_context};
-  auto const dummy = BCContext { BCMarker::Dummy(), 0 };
+  auto const dummy = BCContext { test_marker(), 0 };
 
   // Count($null) --> 0
   {
@@ -221,7 +221,7 @@ TEST(Simplifier, TypeConstantLoadsRetainLayoutChecks) {
   ASSERT_TRUE(allowBespokeArrayLikes());
 
   IRUnit unit{test_context};
-  auto const bcctx = BCContext{BCMarker::Dummy(), 0};
+  auto const bcctx = BCContext{test_marker(), 0};
   auto const cls = unit.gen(Conjure, bcctx, TCls)->dst();
   auto const name = unit.cns(makeStaticString("T"));
   for (auto const op : {LdTypeCns, LdTypeCnsNoThrow}) {
@@ -239,7 +239,7 @@ TEST(Simplifier, TypeConstantLoadsRetainLayoutChecks) {
 
 TEST(Simplifier, LdObjClass) {
   IRUnit unit{test_context};
-  auto const dummy = BCContext { BCMarker::Dummy(), 0 };
+  auto const dummy = BCContext { test_marker(), 0 };
   auto const cls = SystemLib::getHH_IteratorClass();
 
   // LdObjClass t1:Obj<=C doesn't simplify
@@ -264,7 +264,7 @@ TEST(Simplifier, LdObjClass) {
 
 TEST(Simplifier, LdObjInvoke) {
   IRUnit unit{test_context};
-  auto const dummy = BCContext { BCMarker::Dummy(), 0 };
+  auto const dummy = BCContext { test_marker(), 0 };
 
   // LdObjInvoke t1:Cls doesn't simplify
   {

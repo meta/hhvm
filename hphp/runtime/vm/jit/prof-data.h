@@ -99,7 +99,7 @@ struct ProfTransRec {
 
   TransKind kind()        const { return m_kind; }
   SrcKey    srcKey()      const { return m_sk; }
-  FuncId    funcId()      const { return m_sk.funcID(); }
+  FuncId    funcId()      const { return func()->getFuncId(); }
   Func*     func()        const { return const_cast<Func*>(m_sk.func()); }
   bool      isProfile()   const { return m_kind == TransKind::Profile; }
   bool      isProflogue() const { return m_kind == TransKind::ProfPrologue; }

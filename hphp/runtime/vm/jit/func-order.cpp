@@ -407,12 +407,12 @@ void recordTranslation(const TransRec& transRec) {
   auto const kind = transRec.kind;
   if (kind != TransKind::Optimize && kind != TransKind::OptPrologue) return;
 
-  auto const funcId = transRec.src.funcID();
+  auto const func = transRec.src.func();
   auto const size = transRec.aLen ? transRec.aLen
                                   : transRec.acoldLen ? transRec.acoldLen
                                                       : transRec.afrozenLen;
   FuncSizes::accessor acc;
-  if (!s_funcSizes.insert(acc, FuncSizes::value_type(funcId.toInt(), size))) {
+  if (!s_funcSizes.insert(acc, FuncSizes::value_type(func->getFuncId().toInt(), size))) {
     acc->second += size;
   }
 }

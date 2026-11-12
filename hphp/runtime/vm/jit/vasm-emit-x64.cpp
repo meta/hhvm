@@ -959,7 +959,7 @@ template<class X64Asm>
 void Vgen<X64Asm>::emit(const interceptjcc& i) {
   assertx(env.unit.context);
   assertx(i.cc == CC_AE);
-  auto const funcId = env.unit.context->initSrcKey.funcID();
+  auto const funcId = env.unit.context->initSrcKey.func()->getFuncId();
   align(a.code(), &env.meta, Alignment::SmashIntercept, AlignContext::Live);
   env.meta.setInterceptJccTCA(a.frontier(), funcId);
   auto taken = i.targets[1];
