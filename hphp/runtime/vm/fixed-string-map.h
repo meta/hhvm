@@ -66,11 +66,9 @@ private:
   void add(const StringData* s, const V& v);
 
 private:
-  static constexpr uint32_t kHashConstSize = 5;
-  static constexpr uint32_t kNumHashConsts = 2;
+  static constexpr uint32_t kHashConstsSize = 10;
   static constexpr uint32_t kMaskSize = 31;
-  static constexpr uint32_t kMaskSizePerfect =
-    kMaskSize - kNumHashConsts * kHashConstSize;
+  static constexpr uint32_t kMaskSizePerfect = kMaskSize - kHashConstsSize;
 
   bool isPerfectHash() const { return m_maskAndConst >> kMaskSize; }
   uint32_t mask() const {
@@ -79,8 +77,7 @@ private:
   }
   uint32_t hashConsts() const {
     assertx(isPerfectHash());
-    return (m_maskAndConst >> kMaskSizePerfect) &
-           ((1 << (kHashConstSize * kNumHashConsts)) - 1);
+    return (m_maskAndConst >> kMaskSizePerfect) & ((1 << kHashConstsSize) - 1);
   }
   void setMaskAndConsts(uint32_t mask, uint32_t consts = 0);
   uint32_t capacity() const { return mask() + 1; }

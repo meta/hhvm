@@ -17,6 +17,8 @@
 #include "hphp/runtime/base/runtime-error.h"
 #include "hphp/runtime/base/static-string-table.h"
 
+#include <bit>
+
 namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -28,17 +30,17 @@ namespace FSM {
 
 extern const StringData* null_key;
 
-inline int32_t hashImpl(const StringData* sd, uint32_t c1, uint32_t c2) {
-  auto const intval = reinterpret_cast<int64_t>(sd);
-  auto const hash = hash_int64(intval);
-  return (hash >> c1) ^ (hash >> c2);
-}
+constexpr uint32_t kHashMultiplier = 0x7f4a7c15;
 
-inline int32_t hash(const StringData* sd, uint32_t consts, uint32_t size) {
+// Multiply-shift: the top bits of the product, with an odd multiplier chosen by
+// the hash constants.
+inline uint32_t hash(const StringData* sd, uint32_t consts, uint32_t mask) {
+  static_assert(PackedStringPtr::bits == 35);
   assertx(consts);
-  auto const c1 = consts & ((1 << size) - 1);
-  auto const c2 = consts >> size;
-  return hashImpl(sd, c1, c2);
+  assertx((mask & (mask + 1)) == 0);
+  auto const multiplier = (consts * kHashMultiplier) | 1;
+  auto const product = PackedStringPtr::toRaw(sd) * multiplier;
+  return uint64_t(product) >> std::countl_zero(mask);
 }
 
 } // FSM
@@ -58,7 +60,7 @@ NEVER_INLINE
 void FixedStringMap<V,E>::setMaskAndConsts(uint32_t mask, uint32_t consts) {
   auto const perfect = consts != 0;
   always_assert(mask >> (perfect ? kMaskSizePerfect : kMaskSize) == 0 &&
-                consts >> (kHashConstSize * kNumHashConsts) == 0);
+                consts >> kHashConstsSize == 0);
   m_maskAndConst = mask |
                    (consts << (perfect ? kMaskSizePerfect : kMaskSize)) |
                    (perfect << kMaskSize);
@@ -97,7 +99,7 @@ void FixedStringMap<V,E>::add(const StringData* sd, const V& v) {
 
   if (LIKELY(isPerfectHash())) {
     // Perfect hashing
-    auto const hash = FSM::hash(sd, hashConsts(), kHashConstSize) & mask;
+    auto const hash = FSM::hash(sd, hashConsts(), mask);
     Elm* elm = &m_table[-1 - int32_t(hash)];
     elm->sd = sd;
     elm->data = v;
@@ -128,24 +130,17 @@ void FixedStringMap<V,E>::addFrom(Iter begin, Iter end) {
   auto const isPerfectHashFunction = [&](uint32_t consts) {
     bitset.reset();
     for (auto it = begin; it != end; ++it) {
-      auto const hash = FSM::hash(it->first, consts, kHashConstSize) & mask;
+      auto const hash = FSM::hash(it->first, consts, mask);
       if (bitset.test(hash)) return false;
       bitset.set(hash);
     }
     return true;
   };
 
-  // hash(c1, c2) == hash(c2, c1), and c1 == c2 always hashes to 0, so only
-  // c1 < c2 is worth trying.
-  static_assert(kNumHashConsts == 2);
-  constexpr uint32_t kNumShifts = 1u << kHashConstSize;
-  constexpr double kNumCandidates = kNumShifts * (kNumShifts - 1) / 2;
+  constexpr uint32_t kNumCandidates = (1u << kHashConstsSize) - 1;
   auto const findPerfectHashConsts = [&]() -> uint32_t {
-    for (uint32_t c2 = 1; c2 < kNumShifts; ++c2) {
-      for (uint32_t c1 = 0; c1 < c2; ++c1) {
-        auto const consts = c1 | (c2 << kHashConstSize);
-        if (isPerfectHashFunction(consts)) return consts;
-      }
+    for (uint32_t consts = 1; consts <= kNumCandidates; ++consts) {
+      if (isPerfectHashFunction(consts)) return consts;
     }
     return 0;
   };
@@ -161,9 +156,9 @@ void FixedStringMap<V,E>::addFrom(Iter begin, Iter end) {
     return odds;
   };
 
-  // For larger maps no candidate is likely to be perfect, and a failed search
-  // tries every one of them.
-  constexpr double kMinExpectedPerfect = 0.01;
+  // A failed search tries every candidate, so only search when at least one
+  // candidate is expected to be perfect.
+  constexpr double kMinExpectedPerfect = 1;
   if (capacity < (1 << kMaskSizePerfect) &&
       perfectOdds() * kNumCandidates >= kMinExpectedPerfect) {
     if (auto const consts = findPerfectHashConsts()) {
@@ -187,7 +182,7 @@ V* FixedStringMap<V,E>::find(const StringData* sd) const {
       if (UNLIKELY(!sstr)) return nullptr;
     }
     // Perfect hashing
-    auto const hash = FSM::hash(sstr, hashConsts(), kHashConstSize) & mask;
+    auto const hash = FSM::hash(sstr, hashConsts(), mask);
     Elm* elm = &m_table[-1 - int32_t(hash)];
     if (elm->sd == sstr) return &elm->data;
     assertx(!elm->sd || !sstr->same(elm->sd));
