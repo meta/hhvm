@@ -46,6 +46,7 @@
 #include "hphp/util/sha1.h"
 
 #include <map>
+#include <memory>
 #include <new>
 #include <ostream>
 #include <string>
@@ -63,6 +64,7 @@ struct PreClass;
 struct OptString;
 struct StringData;
 struct UnitExtended;
+struct UnitToken;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Unit enums.
@@ -182,6 +184,13 @@ public:
   void operator delete(Unit* p, std::destroying_delete_t);
 
   void startDestroy();
+
+  /*
+   * Has startDestroy() been called on this Unit?
+   */
+  bool isZombie() const;
+
+  std::shared_ptr<UnitToken> getUnitToken() const;
 
   /////////////////////////////////////////////////////////////////////////////
   // Basic accessors.                                                   [const]
@@ -475,6 +484,12 @@ public:
 
   bool isSystemLib() const;
 
+  /*
+   * Is this Unit never destroyed? True for every Unit in RepoAuthoritative
+   * mode and for systemlib Units.
+   */
+  bool isPersistent() const;
+
   /////////////////////////////////////////////////////////////////////////////
   // Info arrays.                                                      [static]
 
@@ -595,6 +610,7 @@ private:
   bool m_extended : 1;
   bool m_ICE : 1; // was this unit the result of an internal compiler error
   bool m_raiseStrictPackageDynamicClassLoadError : 1;
+  std::atomic<bool> m_zombie{false};
 
   FuncVec m_funcs;
   PreClassPtrVec m_preClasses;

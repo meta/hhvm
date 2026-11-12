@@ -71,6 +71,7 @@
 #include "hphp/runtime/vm/reverse-data-map.h"
 #include "hphp/runtime/vm/type-alias.h"
 #include "hphp/runtime/vm/unit-emitter.h"
+#include "hphp/runtime/vm/unit-token.h"
 #include "hphp/runtime/vm/unit-util.h"
 
 #include "hphp/runtime/server/memory-stats.h"
@@ -112,6 +113,10 @@ Unit::~Unit() {
     data_map::deregister(this);
   }
 
+  // A Unit is only destroyed without startDestroy() if it was never used, so
+  // no UnitToken can have been handed out for it.
+  UnitToken::assertNoValidToken(this);
+
   for (auto const func : funcs()) func->finishDestroy();
 
   // ExecutionContext and the TC may retain references to Class'es, so
@@ -149,6 +154,9 @@ void Unit::operator delete(Unit* p, std::destroying_delete_t) {
 }
 
 void Unit::startDestroy() {
+  m_zombie.store(true, std::memory_order_release);
+  UnitToken::setInvalid(this);
+
   for (auto const func : funcs()) func->startDestroy();
   for (auto const& pcls : m_preClasses) {
     Class* cls = pcls->namedType()->clsList();
@@ -173,6 +181,9 @@ void Unit::startDestroy() {
   );
 }
 
+std::shared_ptr<UnitToken> Unit::getUnitToken() const {
+  return UnitToken::get(this);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Code locations.
@@ -961,6 +972,10 @@ void Unit::mergeImpl() {
 
 bool Unit::isSystemLib() const {
   return FileUtil::isSystemName(m_origFilepath->slice());
+}
+
+bool Unit::isPersistent() const {
+  return Cfg::Repo::Authoritative || isSystemLib();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -67,6 +67,10 @@ inline bool Unit::isICE() const {
   return m_ICE;
 }
 
+inline bool Unit::isZombie() const {
+  return m_zombie.load(std::memory_order_acquire);
+}
+
 inline bool Unit::isSoftDeployedRepoOnly() const {
   assertx(Cfg::Repo::Authoritative);
   return m_softDeployedRepoOnly;
