@@ -1123,8 +1123,13 @@ struct FactsStoreImpl final
             INFO,
             "Suppression file found at {}, not updating native Facts.",
             suppressionFilePath.native());
-        rareSboxEvent(
-            "facts-store", "update supressed", suppressionFilePath.native());
+        sampleSboxEvent(
+            Cfg::Autoload::PerfSampleRate,
+            "facts-store",
+            "update supressed",
+            suppressionFilePath.native(),
+            0,
+            std::nullopt);
         return {};
       }
     }
