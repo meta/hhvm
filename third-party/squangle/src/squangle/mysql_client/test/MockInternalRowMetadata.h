@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "squangle/mysql_client/InternalConnection.h"
+#include "squangle/mysql_client/Row.h"
 
 namespace facebook::common::mysql_client::test {
 
@@ -24,8 +25,9 @@ struct MockFieldInfo {
   std::string tableName;
   enum_field_types type = MYSQL_TYPE_STRING;
   uint64_t flags = 0;
-  // 63 is `binary`; `std::nullopt` mocks a protocol that carries no charset.
-  std::optional<unsigned int> charsetnr = 63;
+  // `std::nullopt` mocks a protocol that carries no charset.
+  std::optional<unsigned int> charsetnr = kBinaryCharsetnr;
+  unsigned int decimals = kDecimalsNotSpecified;
 };
 
 /**
@@ -82,6 +84,13 @@ class MockInternalRowMetadata : public InternalRowMetadata {
       return std::nullopt;
     }
     return fields_[field].charsetnr;
+  }
+
+  unsigned int getFieldDecimals(size_t field) const override {
+    if (field >= fields_.size()) {
+      return kDecimalsNotSpecified;
+    }
+    return fields_[field].decimals;
   }
 
  private:

@@ -71,6 +71,9 @@ class InternalRowMetadata {
   // `MYSQL_FIELD::charsetnr`: the collation of the bytes this column's values
   // arrive in, or `std::nullopt` from a protocol that does not carry it.
   virtual std::optional<unsigned int> getFieldCharsetnr(size_t field) const = 0;
+
+  // `MYSQL_FIELD::decimals`. See RowFields::getFieldDecimals.
+  virtual unsigned int getFieldDecimals(size_t field) const = 0;
 };
 
 class InternalResult {

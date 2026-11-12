@@ -2281,6 +2281,26 @@ TEST_F(EphemeralRowFieldsTest, MakeBufferedFields) {
   EXPECT_EQ(bufferedFields->fieldName(1), "name");
 }
 
+TEST_F(EphemeralRowFieldsTest, DecimalsCarryIntoBufferedFields) {
+  auto metadata =
+      std::make_unique<MockInternalRowMetadata>(std::vector<MockFieldInfo>{
+          {"price", "t", MYSQL_TYPE_NEWDECIMAL, 0, 63, 2},
+          {"ratio", "t", MYSQL_TYPE_FLOAT, 0, 63, 8},
+          {"name", "t", MYSQL_TYPE_STRING, 0},
+      });
+
+  EphemeralRowFields ephemeralFields(std::move(metadata));
+  EXPECT_EQ(ephemeralFields.fieldDecimals(0), 2u);
+  EXPECT_EQ(ephemeralFields.fieldDecimals(2), kDecimalsNotSpecified);
+  EXPECT_THROW(ephemeralFields.fieldDecimals(3), std::out_of_range);
+
+  auto bufferedFields = ephemeralFields.makeBufferedFields();
+  ASSERT_NE(bufferedFields, nullptr);
+  EXPECT_EQ(bufferedFields->getFieldDecimals(0), 2u);
+  EXPECT_EQ(bufferedFields->getFieldDecimals("ratio"), 8u);
+  EXPECT_EQ(bufferedFields->getFieldDecimals(2), kDecimalsNotSpecified);
+}
+
 // =============================================================================
 // MockInternalConnection Tests
 //
@@ -2438,17 +2458,21 @@ TEST(EndToEndTest, ComplexQueryWithMultipleTypes) {
 // columns go in rather than surfacing as bad_optional_access later.
 TEST(RowFieldsBuilderTest, MixedCharsetAvailabilityIsRejected) {
   detail::RowFieldsColumns withCharset;
-  withCharset.add("a", "t", MYSQL_TYPE_LONG, 0, 63u);
+  withCharset.add("a", "t", MYSQL_TYPE_LONG, 0, 63u, kDecimalsNotSpecified);
   EXPECT_THROW(
-      withCharset.add("b", "t", MYSQL_TYPE_LONG, 0, std::nullopt),
+      withCharset.add(
+          "b", "t", MYSQL_TYPE_LONG, 0, std::nullopt, kDecimalsNotSpecified),
       std::logic_error);
   // The rejected column left nothing behind.
   EXPECT_EQ(withCharset.size(), 1);
 
   detail::RowFieldsColumns withoutCharset;
-  withoutCharset.add("a", "t", MYSQL_TYPE_LONG, 0, std::nullopt);
+  withoutCharset.add(
+      "a", "t", MYSQL_TYPE_LONG, 0, std::nullopt, kDecimalsNotSpecified);
   EXPECT_THROW(
-      withoutCharset.add("b", "t", MYSQL_TYPE_LONG, 0, 63u), std::logic_error);
+      withoutCharset.add(
+          "b", "t", MYSQL_TYPE_LONG, 0, 63u, kDecimalsNotSpecified),
+      std::logic_error);
   EXPECT_EQ(withoutCharset.size(), 1);
 }
 
@@ -2533,6 +2557,51 @@ TEST(RowFieldsBuilderTest, Builder_NoColumns_ProducesEmptyFields) {
 
   EXPECT_EQ(fields.numFields(), size_t{0});
   EXPECT_FALSE(fields.hasFieldCharsetnrs());
+}
+
+TEST(RowFieldsBuilderTest, Builder_Decimals_DefaultToNotSpecified) {
+  auto fields = RowFields::builder()
+                    .column("id", MYSQL_TYPE_LONG)
+                    .column(
+                        "price",
+                        MYSQL_TYPE_NEWDECIMAL,
+                        "t",
+                        /*flags=*/0,
+                        Charsetnr{kBinaryCharsetnr},
+                        Decimals{2})
+                    .buildShared();
+  auto withoutCharsets =
+      RowFields::builderWithoutCharsets()
+          .column("ratio", MYSQL_TYPE_FLOAT, "t", /*flags=*/0, Decimals{8})
+          .build();
+
+  EXPECT_EQ(fields->getFieldDecimals(0), kDecimalsNotSpecified);
+  EXPECT_EQ(fields->getFieldDecimals("price"), 2u);
+  EXPECT_EQ(withoutCharsets.getFieldDecimals(0), 8u);
+
+  RowBlock block(fields);
+  EXPECT_EQ(block.getFieldDecimals("price"), 2u);
+  EXPECT_EQ(block.getFieldDecimals(0), kDecimalsNotSpecified);
+}
+
+TEST(RowFieldsBuilderTest, Constructor_WithoutDecimals_ReportsNotSpecified) {
+  RowFields fields({{"a", 0}}, {"a"}, {"t"}, {0}, {MYSQL_TYPE_NEWDECIMAL});
+
+  EXPECT_EQ(fields.getFieldDecimals(0), kDecimalsNotSpecified);
+  EXPECT_THROW(fields.getFieldDecimals(1), std::out_of_range);
+}
+
+TEST(RowFieldsBuilderTest, Constructor_MisalignedDecimals_Throws) {
+  EXPECT_THROW(
+      RowFields(
+          {{"a", 0}, {"b", 1}},
+          {"a", "b"},
+          {"t", "t"},
+          {0, 0},
+          {MYSQL_TYPE_NEWDECIMAL, MYSQL_TYPE_NEWDECIMAL},
+          {},
+          {2}),
+      std::invalid_argument);
 }
 
 TEST(RowFieldsBuilderTest, BuildShared_ProducesUsableRowBlock) {

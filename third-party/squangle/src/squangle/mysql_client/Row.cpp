@@ -57,7 +57,8 @@ void RowFieldsColumns::add(
     std::string table,
     enum_field_types type,
     uint64_t flags,
-    std::optional<unsigned int> charsetnr) {
+    std::optional<unsigned int> charsetnr,
+    unsigned int decimals) {
   // Whether a charsetnr is reported at all is a property of the protocol, so
   // either every column carries one or none does. The values differ freely
   // per column; only their presence has to agree. build() reads that presence
@@ -77,7 +78,8 @@ void RowFieldsColumns::add(
             columns_.front().charsetnr.has_value() ? "do" : "do not"));
   }
   columns_.push_back(
-      Column{std::move(name), std::move(table), type, flags, charsetnr});
+      Column{
+          std::move(name), std::move(table), type, flags, charsetnr, decimals});
 }
 
 RowFields RowFieldsColumns::build() {
@@ -101,10 +103,12 @@ RowFields RowFieldsColumns::build() {
   std::vector<uint64_t> flags;
   std::vector<enum_field_types> types;
   std::vector<unsigned int> charsetnrs;
+  std::vector<unsigned int> decimals;
   names.reserve(numFields);
   tables.reserve(numFields);
   flags.reserve(numFields);
   types.reserve(numFields);
+  decimals.reserve(numFields);
   if (hasCharsets) {
     charsetnrs.reserve(numFields);
   }
@@ -117,6 +121,7 @@ RowFields RowFieldsColumns::build() {
     tables.push_back(std::move(column.table));
     flags.push_back(column.flags);
     types.push_back(column.type);
+    decimals.push_back(column.decimals);
     if (hasCharsets) {
       charsetnrs.push_back(*column.charsetnr);
     }
@@ -129,10 +134,19 @@ RowFields RowFieldsColumns::build() {
       std::move(tables),
       std::move(flags),
       std::move(types),
-      std::move(charsetnrs));
+      std::move(charsetnrs),
+      std::move(decimals));
 }
 
 } // namespace detail
+
+unsigned int RowFields::getFieldDecimals(size_t field_num) const {
+  detail::checkIndexInRange("field index", field_num, num_fields_);
+  if (mysql_field_decimals_.empty()) {
+    return kDecimalsNotSpecified;
+  }
+  return mysql_field_decimals_[field_num];
+}
 
 void RowFields::validateFieldAlignment() const {
   detail::checkPerFieldSize("table_names", table_names_.size(), num_fields_);
@@ -146,6 +160,10 @@ void RowFields::validateFieldAlignment() const {
   if (!mysql_field_charsetnrs_.empty()) {
     detail::checkPerFieldSize(
         "mysql_field_charsetnrs", mysql_field_charsetnrs_.size(), num_fields_);
+  }
+  if (!mysql_field_decimals_.empty()) {
+    detail::checkPerFieldSize(
+        "mysql_field_decimals", mysql_field_decimals_.size(), num_fields_);
   }
 
   // Duplicate column names are a legitimate MySQL result shape and collapse in
@@ -183,12 +201,14 @@ std::shared_ptr<RowFields> EphemeralRowFields::makeBufferedFields() const {
   std::vector<uint64_t> field_flags;
   std::vector<enum_field_types> field_types;
   std::vector<unsigned int> field_charsetnrs;
+  std::vector<unsigned int> field_decimals;
 
   field_names.reserve(num_fields);
   table_names.reserve(num_fields);
   field_flags.reserve(num_fields);
   field_types.reserve(num_fields);
   field_charsetnrs.reserve(num_fields);
+  field_decimals.reserve(num_fields);
   for (int i = 0; i < num_fields; ++i) {
     std::string field_name(metadata_->getFieldName(i));
     field_name_map[field_name] = i;
@@ -196,6 +216,7 @@ std::shared_ptr<RowFields> EphemeralRowFields::makeBufferedFields() const {
     table_names.emplace_back(metadata_->getTableName(i));
     field_flags.push_back(metadata_->getFieldFlags(i));
     field_types.push_back(metadata_->getFieldType(i));
+    field_decimals.push_back(metadata_->getFieldDecimals(i));
     if (auto charsetnr = metadata_->getFieldCharsetnr(i)) {
       field_charsetnrs.push_back(*charsetnr);
     }
@@ -210,7 +231,8 @@ std::shared_ptr<RowFields> EphemeralRowFields::makeBufferedFields() const {
       std::move(table_names),
       std::move(field_flags),
       std::move(field_types),
-      std::move(field_charsetnrs));
+      std::move(field_charsetnrs),
+      std::move(field_decimals));
 }
 
 InternalRow::Type EphemeralRow::getType(size_t col) const {

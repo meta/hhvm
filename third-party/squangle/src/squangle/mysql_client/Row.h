@@ -158,14 +158,16 @@ class RowFields {
       std::vector<std::string>&& table_names,
       std::vector<uint64_t>&& mysql_field_flags,
       std::vector<enum_field_types>&& mysql_field_types,
-      std::vector<unsigned int>&& mysql_field_charsetnrs = {})
+      std::vector<unsigned int>&& mysql_field_charsetnrs = {},
+      std::vector<unsigned int>&& mysql_field_decimals = {})
       : num_fields_(field_names.size()),
         field_name_map_(std::move(field_name_map)),
         field_names_(std::move(field_names)),
         table_names_(std::move(table_names)),
         mysql_field_flags_(std::move(mysql_field_flags)),
         mysql_field_types_(std::move(mysql_field_types)),
-        mysql_field_charsetnrs_(std::move(mysql_field_charsetnrs)) {
+        mysql_field_charsetnrs_(std::move(mysql_field_charsetnrs)),
+        mysql_field_decimals_(std::move(mysql_field_decimals)) {
     validateFieldAlignment();
   }
 
@@ -182,10 +184,10 @@ class RowFields {
   //       .column("name", MYSQL_TYPE_VARCHAR, "users")
   //       .buildShared();
   //
-  // Only `name` and `type` are required; `table`, `flags` and `charsetnr`
-  // default. Every column still contributes one entry to every vector, so a
-  // defaulted column is fully valid -- `tableName()` returns "" rather than
-  // reading out of bounds.
+  // Only `name` and `type` are required; `table`, `flags`, `charsetnr` and
+  // `decimals` default. Every column still contributes one entry to every
+  // vector, so a defaulted column is fully valid -- `tableName()` returns ""
+  // rather than reading out of bounds.
   //
   // There are two flavors because whether a charsetnr is reported is fixed by
   // the protocol, not chosen per column: the MySQL protocol carries one for
@@ -245,6 +247,17 @@ class RowFields {
     return getFieldCharsetnr(fieldIndex(field_name));
   }
 
+  // `MYSQL_FIELD::decimals`: the digits after the decimal point for DECIMAL,
+  // FLOAT(M,D) and DOUBLE(M,D) columns, or the fractional-seconds precision
+  // for temporal columns. `kDecimalsNotSpecified` when the column has none,
+  // or when the result set was built without decimals.
+  unsigned int getFieldDecimals(size_t field_num) const;
+
+  // Ditto, but by name.
+  unsigned int getFieldDecimals(folly::StringPiece field_name) const {
+    return getFieldDecimals(fieldIndex(field_name));
+  }
+
   // Check if the row contains the field name.
   bool containsFieldName(folly::StringPiece field_name) const {
     return field_name_map_.find(field_name) != field_name_map_.end();
@@ -299,6 +312,8 @@ class RowFields {
   std::vector<uint64_t> mysql_field_flags_;
   std::vector<enum_field_types> mysql_field_types_;
   std::vector<unsigned int> mysql_field_charsetnrs_;
+  // Empty when the result set was built without decimals.
+  std::vector<unsigned int> mysql_field_decimals_;
 
   friend class RowBlock;
 };
@@ -322,6 +337,17 @@ struct Charsetnr {
   unsigned int value;
 };
 
+// `MYSQL_FIELD::decimals` for a column with no fixed number of decimals, such
+// as FLOAT, DOUBLE or a string. The server's `DECIMAL_NOT_SPECIFIED`.
+inline constexpr unsigned int kDecimalsNotSpecified = 31;
+
+// Wrapped for the same reason as Charsetnr: it sits next to other integer
+// parameters in the builders' column().
+struct Decimals {
+  explicit constexpr Decimals(unsigned int v) : value(v) {}
+  unsigned int value;
+};
+
 namespace detail {
 
 // Column accumulation shared by both RowFields builder flavors. Held by value
@@ -340,7 +366,8 @@ class RowFieldsColumns {
       std::string table,
       enum_field_types type,
       uint64_t flags,
-      std::optional<unsigned int> charsetnr);
+      std::optional<unsigned int> charsetnr,
+      unsigned int decimals);
 
   size_t size() const {
     return columns_.size();
@@ -355,6 +382,7 @@ class RowFieldsColumns {
     enum_field_types type;
     uint64_t flags;
     std::optional<unsigned int> charsetnr;
+    unsigned int decimals;
   };
 
   std::vector<Column> columns_;
@@ -376,9 +404,15 @@ class RowFields::Builder {
       enum_field_types type,
       std::string table = "",
       uint64_t flags = 0,
-      Charsetnr charsetnr = Charsetnr{kBinaryCharsetnr}) {
+      Charsetnr charsetnr = Charsetnr{kBinaryCharsetnr},
+      Decimals decimals = Decimals{kDecimalsNotSpecified}) {
     columns_.add(
-        std::move(name), std::move(table), type, flags, charsetnr.value);
+        std::move(name),
+        std::move(table),
+        type,
+        flags,
+        charsetnr.value,
+        decimals.value);
     return *this;
   }
 
@@ -402,8 +436,15 @@ class RowFields::BuilderWithoutCharsets {
       std::string name,
       enum_field_types type,
       std::string table = "",
-      uint64_t flags = 0) {
-    columns_.add(std::move(name), std::move(table), type, flags, std::nullopt);
+      uint64_t flags = 0,
+      Decimals decimals = Decimals{kDecimalsNotSpecified}) {
+    columns_.add(
+        std::move(name),
+        std::move(table),
+        type,
+        flags,
+        std::nullopt,
+        decimals.value);
     return *this;
   }
 
@@ -568,6 +609,16 @@ class RowBlock {
   // Ditto, but by name.
   uint64_t getFieldFlags(folly::StringPiece field_name) const {
     return row_fields_info_->getFieldFlags(field_name);
+  }
+
+  // Get the MySQL decimals of the field. See RowFields::getFieldDecimals.
+  unsigned int getFieldDecimals(size_t field_num) const {
+    return row_fields_info_->getFieldDecimals(field_num);
+  }
+
+  // Ditto, but by name.
+  unsigned int getFieldDecimals(folly::StringPiece field_name) const {
+    return row_fields_info_->getFieldDecimals(field_name);
   }
 
   // Access the Nth row of this row block as a Row object.
@@ -881,6 +932,12 @@ class EphemeralRowFields {
   enum_field_types fieldType(size_t index) const {
     detail::checkIndexInRange("field index", index, metadata_->numFields());
     return metadata_->getFieldType(index);
+  }
+
+  // See RowFields::getFieldDecimals.
+  unsigned int fieldDecimals(size_t index) const {
+    detail::checkIndexInRange("field index", index, metadata_->numFields());
+    return metadata_->getFieldDecimals(index);
   }
 
   template <typename StringLike = folly::StringPiece>

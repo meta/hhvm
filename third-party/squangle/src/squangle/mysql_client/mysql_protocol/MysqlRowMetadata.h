@@ -49,6 +49,11 @@ class MysqlRowMetadata : public InternalRowMetadata {
     return fields_[index].charsetnr;
   }
 
+  [[nodiscard]] unsigned int getFieldDecimals(size_t index) const override {
+    DCHECK_LT(index, num_fields_);
+    return fields_[index].decimals;
+  }
+
  private:
   size_t num_fields_;
   const MYSQL_FIELD* fields_;
