@@ -310,19 +310,19 @@ struct AsyncRegionTranslationContext {
 struct AsyncPrologueContext {
   AsyncPrologueContext(
     TransKind kind,
-    FuncId funcId,
+    const Func* func,
     int nPassed,
     bool forJumpstart,
     pthread_t requestTid
   ) : kind(kind)
-    , funcId(funcId)
+    , funcToken(func->getFuncToken())
     , nPassed(nPassed)
     , forJumpstart(forJumpstart)
     , requestTid(requestTid)
   {}
 
   TransKind kind;
-  FuncId funcId;
+  std::shared_ptr<FuncToken> funcToken;
   int nPassed;
   bool forJumpstart;
   pthread_t requestTid;
@@ -531,12 +531,11 @@ struct AsyncTranslationWorker
                                                : ctx.requestTid;
     ViewHolder viewer{viewTid, true};
 
-    if (!Func::isFuncIdValid(ctx.funcId)) {
-      FTRACE(2, "Invalid func id {}\n", ctx.funcId.toInt());
+    auto const func = const_cast<Func*>(ctx.funcToken->getFunc());
+    if (func == nullptr) {
+      FTRACE(2, "Func destroyed since it was enqueued\n");
       return;
     }
-
-    auto const func = const_cast<Func*>(Func::fromFuncId(ctx.funcId));
 
     SCOPE_EXIT {
       if (!ctx.forJumpstart) {
@@ -546,11 +545,6 @@ struct AsyncTranslationWorker
     };
 
     s_activePrologue++;
-
-    if (func->atomicFlags().check(Func::Flags::Zombie)) {
-      FTRACE(2, "Zombie function {}\n", func->fullName());
-      return;
-    }
 
     tc::PrologueTranslator translator(func, ctx.nPassed, ctx.kind);
     translator.viewTid = viewTid;
@@ -755,8 +749,7 @@ void enqueueAsyncPrologueRequestImpl(TransKind kind, Func* func, int nPassed,
   if (forJumpstart ||
       !func->atomicFlags().set(Func::Flags::LockedForPrologueGen)) {
     dispatcher().enqueue(
-      AsyncPrologueContext {kind, func->getFuncId(), nPassed, forJumpstart,
-                            requestTid});
+      AsyncPrologueContext {kind, func, nPassed, forJumpstart, requestTid});
     FTRACE(2, "Enqueued func {} for prologue generation\n", func->name());
   } else {
     FTRACE(2,
