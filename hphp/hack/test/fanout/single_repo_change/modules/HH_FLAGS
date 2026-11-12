@@ -1,0 +1,2 @@
+--config include_enum_member_values=true
+--config check_duplicate_enum_values=true

@@ -1,0 +1,3 @@
+--config include_enum_member_values=true
+--config everything_sdt=false
+--show-errors
