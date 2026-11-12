@@ -1144,6 +1144,10 @@ class ReflectionClass implements Reflector {
     $this->name = HH\class_to_classname($cls);
   }
 
+  protected function setObject($object)[write_this_props]: void {
+    $this->obj = $object;
+  }
+
   <<__Native("NoRecording")>>
   private function __init(string $name)[]: ?class<mixed>;
 
@@ -2288,7 +2292,8 @@ class ReflectionObject extends ReflectionClass {
         .gettype($argument)
       );
     }
-    parent::__construct($argument);
+    parent::__construct(HH\get_class_from_object($argument));
+    $this->setObject($argument);
   }
 
   /**

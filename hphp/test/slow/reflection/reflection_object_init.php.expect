@@ -1,0 +1,10 @@
+Widget
+bool(true)
+bool(true)
+d
+declared,dyn,stat
+dict(1) {
+  ["stat"]=>
+  string(1) "s"
+}
+bool(true)
