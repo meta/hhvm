@@ -879,6 +879,8 @@ void Vgen::handleLiterals(Venv& env) {
         Instruction::Cast(literalAddress),
         Instruction::Cast(pl.patchAddress)
       );
+      auto const start = reinterpret_cast<CodeAddress>(patchStartActual);
+      DataBlock::syncDirect(start, start + kInstructionSize);
       continue;
     }
 
