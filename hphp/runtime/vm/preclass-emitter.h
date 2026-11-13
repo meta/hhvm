@@ -212,6 +212,8 @@ struct PreClassEmitter {
   FuncEmitter* lookupMethod(const StringData* name) const {
     return folly::get_default(m_methodMap, name);
   }
+  // The `__invoke` of a closure class; null for any other class.
+  FuncEmitter* closureBody() const;
   size_t numProperties() const { return m_propMap.size(); }
   bool hasProp(const StringData* name) const {
     return m_propMap.find(name) != m_propMap.end();

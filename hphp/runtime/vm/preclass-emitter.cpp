@@ -230,6 +230,11 @@ const StaticString
   s_invoke("__invoke"),
   s_coeffectsProp("86coeffects");
 
+FuncEmitter* PreClassEmitter::closureBody() const {
+  auto const invoke = lookupMethod(s_invoke.get());
+  return invoke && invoke->isClosureBody ? invoke : nullptr;
+}
+
 PreClass* PreClassEmitter::create(Unit& unit) const {
   Attr attrs = m_attrs;
   assertx(IMPLIES(unit.isSystemLib(), attrs & AttrBuiltin));
@@ -254,8 +259,7 @@ PreClass* PreClassEmitter::create(Unit& unit) const {
     return val(rate).num;
   }();
 
-  auto const invoke = lookupMethod(s_invoke.get());
-  if (invoke && invoke->isClosureBody) {
+  if (auto const invoke = closureBody()) {
     attrs |= AttrIsClosureClass;
     if (!invoke->coeffectRules.empty()) {
       assertx(invoke->coeffectRules.size() == 1);

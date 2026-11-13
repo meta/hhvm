@@ -605,6 +605,8 @@ void UnitEmitter::finish() {
   calculateEntryPointId();
   if (m_attributes.strictPackage) {
     for (auto const pce : preclasses()) {
+      // HHBBC clones trait closures into other units, so no closure is strict.
+      if (pce->closureBody()) continue;
       pce->setAttrs(pce->attrs() | AttrInStrictPackage);
     }
   }

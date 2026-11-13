@@ -1,0 +1,7 @@
+enforced-class:outside: denied
+enforced-closure:outside: allowed
+enforced-closure-in-loose-class:enforced: allowed
+enforced-closure-in-loose-class:outside: allowed
+enforced-closure-in-notice-class:enforced: allowed
+enforced-closure-in-notice-class:notice: allowed
+loose-closure-in-enforced-class:outside: allowed
