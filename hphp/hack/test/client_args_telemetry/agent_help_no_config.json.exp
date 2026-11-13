@@ -1,5 +1,5 @@
 === hh_client result ===
-argv: hh_client --agent-help --reason ignored --multi ../missing-list
+argv: hh_client --agent-help --reason ignored --multi ../missing-list --single a.php b.php
 cwd: <test_tmp>/no_config
 exit_code: 0
 stdout:
@@ -31,7 +31,7 @@ stderr:
 === telemetry ===
 [
   {
-    "argv": "hh_client --agent-help --reason ignored --multi ../missing-list",
+    "argv": "hh_client --agent-help --reason ignored --multi ../missing-list --single a.php b.php",
     "event": "AGENT_HELP",
     "process": "client"
   },

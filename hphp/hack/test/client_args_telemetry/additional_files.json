@@ -1,0 +1,1 @@
+{"args": ["--single", "test.php", "missing.php", "also_missing.php"]}

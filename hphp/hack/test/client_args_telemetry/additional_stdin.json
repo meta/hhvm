@@ -1,0 +1,1 @@
+{"args": ["--single", "test.php", "-", " nonexistent_root"]}

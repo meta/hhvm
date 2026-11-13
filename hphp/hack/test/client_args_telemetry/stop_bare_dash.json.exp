@@ -1,0 +1,25 @@
+=== hh_client result ===
+argv: hh_client stop -
+cwd: <test_tmp>/root
+exit_code: 64
+stdout:
+<empty>
+stderr:
+hh_client: unknown option '-'.
+Usage: hh_client stop [OPTION]... [WWW-ROOT]
+<usage omitted>
+=== telemetry ===
+[
+  {
+    "argv": "hh_client stop -",
+    "client_command": "Args",
+    "event": "CLIENT_BAD_ARGS",
+    "exception": "Stdlib.Arg.Bad(\"hh_client: unknown option '-'.\")",
+    "exit_code": 64,
+    "exit_status": "Exit_status.Client_bad_args",
+    "process": "client"
+  },
+  {
+    "event": "INIT_INFO"
+  }
+]

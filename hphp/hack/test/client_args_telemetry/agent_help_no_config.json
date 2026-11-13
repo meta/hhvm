@@ -1,4 +1,4 @@
 {
-  "args": ["--agent-help", "--reason", "ignored", "--multi", "../missing-list"],
+  "args": ["--agent-help", "--reason", "ignored", "--multi", "../missing-list", "--single", "a.php", "b.php"],
   "cwd": "no_config"
 }

@@ -1,0 +1,23 @@
+=== hh_client result ===
+argv: hh_client --single test.php missing.php also_missing.php
+cwd: <test_tmp>/root
+exit_code: 64
+stdout:
+<empty>
+stderr:
+Error: please provide at most one www directory
+=== telemetry ===
+[
+  {
+    "argv": "hh_client --single test.php missing.php also_missing.php",
+    "client_command": "Args",
+    "event": "CLIENT_BAD_ARGS",
+    "exception": "Stdlib.Arg.Bad(\"Error: please provide at most one www directory\")",
+    "exit_code": 64,
+    "exit_status": "Exit_status.Client_bad_args",
+    "process": "client"
+  },
+  {
+    "event": "INIT_INFO"
+  }
+]
