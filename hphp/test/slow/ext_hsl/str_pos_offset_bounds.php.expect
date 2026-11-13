@@ -1,0 +1,15 @@
+_Str\strpos_l('foo', '', 5) => throw: Offset 5 was out-of-bounds for length 3
+_Str\strpos_l('foo', '', -5) => throw: Offset -5 was out-of-bounds for length 3
+_Str\strpos_l('', 'foo', 5) => throw: Offset 5 was out-of-bounds for length 0
+_Str\stripos_l('foo', '', 5) => throw: Offset 5 was out-of-bounds for length 3
+_Str\strrpos_l('foo', '', 5) => throw: Offset 5 was out-of-bounds for length 3
+_Str\strripos_l('foo', '', 5) => throw: Offset 5 was out-of-bounds for length 3
+_Str\strripos_l('', '', 5) => throw: Offset 5 was out-of-bounds for length 0
+_Str\strpos_l('foo', '', 3) => -1
+_Str\strpos_l('', 'foo', 0) => -1
+_Str\strrpos_l('foo', '', -3) => -1
+Str\search('foo', '', 5) => throw: Offset 5 was out-of-bounds for length 3
+Str\search_ci('foo', '', 5) => throw: Offset 5 was out-of-bounds for length 3
+Str\search_last('foo', '', 5) => throw: Offset 5 was out-of-bounds for length 3
+Str\search('foo', '', 3) => null
+Str\search('foo', 'f', 5) => throw: Offset 5 was out-of-bounds for length 3

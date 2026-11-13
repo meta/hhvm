@@ -341,6 +341,37 @@ final class StrIntrospectTest extends HackTest {
       ->toThrow(InvalidArgumentException::class);
     expect(() ==> Str\search_last('hello world', 'World', -16))
       ->toThrow(InvalidArgumentException::class);
+
+    // Out-of-bounds offsets must be reported even when the needle or the
+    // haystack is empty.
+    expect(() ==> Str\search('foo', '', 5))
+      ->toThrow(InvalidArgumentException::class);
+    expect(() ==> Str\search('foo', '', -5))
+      ->toThrow(InvalidArgumentException::class);
+    expect(() ==> Str\search('', 'foo', 5))
+      ->toThrow(InvalidArgumentException::class);
+
+    expect(() ==> Str\search_ci('foo', '', 5))
+      ->toThrow(InvalidArgumentException::class);
+    expect(() ==> Str\search_ci('foo', '', -5))
+      ->toThrow(InvalidArgumentException::class);
+    expect(() ==> Str\search_ci('', 'foo', 5))
+      ->toThrow(InvalidArgumentException::class);
+
+    expect(() ==> Str\search_last('foo', '', 5))
+      ->toThrow(InvalidArgumentException::class);
+    expect(() ==> Str\search_last('foo', '', -5))
+      ->toThrow(InvalidArgumentException::class);
+    expect(() ==> Str\search_last('', 'foo', 5))
+      ->toThrow(InvalidArgumentException::class);
+
+    // In-range offsets, including `offset === length`, keep the empty
+    // needle's existing "not found" result.
+    expect(Str\search('foo', '', 0))->toEqual(null);
+    expect(Str\search('foo', '', 3))->toEqual(null);
+    expect(Str\search('', 'foo', 0))->toEqual(null);
+    expect(Str\search_ci('foo', '', 3))->toEqual(null);
+    expect(Str\search_last('foo', '', 3))->toEqual(null);
   }
 
   public static function provideStartsWith(): varray<mixed> {
