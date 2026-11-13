@@ -18,6 +18,7 @@
 
 #include "hphp/runtime/base/execution-context.h"
 #include "hphp/runtime/base/file-util.h"
+#include "hphp/runtime/base/init-fini-node.h"
 #include "hphp/runtime/base/program-functions.h"
 #include "hphp/runtime/debugger/debugger.h"
 #include "hphp/runtime/ext/std/ext_std_errorfunc.h"
@@ -42,6 +43,7 @@
 #include "hphp/util/logger.h"
 #include "hphp/util/process.h"
 #include "hphp/util/stack-trace.h"
+#include "hphp/util/thread-local.h"
 
 #include <fcntl.h>
 #include <signal.h>
@@ -52,6 +54,7 @@
 #include <folly/portability/Stdio.h>
 
 #include <atomic>
+#include <memory>
 
 namespace HPHP {
 
@@ -499,6 +502,44 @@ void install_crash_reporter() {
   }
   CHECK_ERR(sigaction(SIGABRT, &sa, &osa));
 }
+
+// RAII wrapper for an alternate signal stack of a HHVM worker thread.
+struct SigAltStack {
+  SigAltStack() {
+    // Do nothing if we somehow already have a signal handler stack
+    {
+      stack_t ss{};
+      sigaltstack(nullptr, &ss);
+      if (!(ss.ss_flags & SS_DISABLE)) {
+        return;
+      }
+    }
+    std::size_t size = size_t(SIGSTKSZ);
+    m_stack = std::make_unique<char[]>(size);
+
+    stack_t ss{};
+    ss.ss_sp = m_stack.get();
+    ss.ss_size = size;
+    ss.ss_flags = 0;
+    sigaltstack(&ss, nullptr);
+  }
+
+  ~SigAltStack() {
+    if (m_stack) {
+      stack_t ss{};
+      ss.ss_flags = SS_DISABLE;
+      sigaltstack(&ss, nullptr);
+    }
+  }
+
+private:
+  std::unique_ptr<char[]> m_stack;
+};
+
+THREAD_LOCAL_NO_CHECK(SigAltStack, s_sigAltStack);
+InitFiniNode t_altStack([]() {
+  s_sigAltStack.getCheck();
+}, InitFiniNode::When::ThreadInit);
 
 //////////////////////////////////////////////////////////////////////
 
