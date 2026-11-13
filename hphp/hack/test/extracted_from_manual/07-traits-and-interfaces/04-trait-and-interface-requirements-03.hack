@@ -2,12 +2,16 @@
 // @codegen-command : buck run fbcode//hphp/hack/src/hh_manual:hh_manual extract fbcode/hphp/hack/manual/hack/
 trait T {
   require class C;
+
   public function foo(): void {
     $this->bar();
   }
 }
 
-final class C {
+class C {
   use T;
-  public function bar(): void {}
+
+  private function bar(): void {}
 }
+
+class D extends C {} // Inherits T's members from C.

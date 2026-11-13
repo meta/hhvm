@@ -14,12 +14,6 @@ require class <class name>;
 require implements <interface name>;
 ```
 
-and the experimental
-
-```hack no-extract
-require this as <class name>;
-```
-
 To introduce an interface requirement, you can have one or more of following in your interface:
 
 ```hack no-extract
@@ -115,34 +109,14 @@ function run(): void {
 }
 ```
 
-The `require extends` constraints should be taken literally: the class that uses the trait *must* be a **strict** sub-class of that in the `require extends` constraint.  The strictness constraint can be circumvented using `require class` or `require this as`.
+The `require extends` constraints should be taken literally: the class that uses the trait *must* be a **strict** subclass of that in the `require extends` constraint.
 
-A `require class <class name>;` constraint in a trait specifies that the trait can only be used by the
-_non-generic, _final_, class `<class name>`.  This contrasts with the `require extends t;` constraints that allow the trait to be used by an arbitrary _strict_ subtype of `t`.
-By relaxing the strict subtype constraint of `require extends`, `require class` constraints allow splitting the implementation of a class into a
-class and one (or multiple) traits, as in the following:
+A `require class <class name>;` constraint in a trait specifies instead that the trait can only be used by the named, non-generic class.  The required class may be abstract, final, or non-final.  The required class must use the trait, either directly or transitively through another trait. Using the trait only in a subclass of the named class is an error.  The typical use of `require class` constraints is to split the implementation of a class into a class and one or more traits:
 
 ```hack
 trait T {
   require class C;
-  public function foo(): void {
-    $this->bar();
-  }
-}
 
-final class C {
-  use T;
-  public function bar(): void {}
-}
-```
-
-A `require this as <class name>;` constraint in a trait specifies that the trait can be used by any _non-generic_ class which is a subtype of `<class name>` - this include `<class name>` itself.  The class that uses the trait must not be _final_, as otherwise `require class` ought to be used instead.  Similarly to `require class`, `require this as` allow to splitting the implementation of a class into a class and one (or multiple) traits:
-
-```hack
-<<file:__EnableUnstableFeatures('require_constraint')>>
-
-trait T {
-  require this as C;
   public function foo(): void {
     $this->bar();
   }
@@ -150,13 +124,16 @@ trait T {
 
 class C {
   use T;
-  public function bar(): void {}
+
+  private function bar(): void {}
 }
 
-class D extends C {
-  // ...
-}
+class D extends C {} // Inherits T's members from C.
 ```
+
+When the required class is final, the typechecker can assume that `this` is exactly that class while checking the trait. When the required class is non-final, a trait method may execute on an instance of a subclass, so the typechecker assumes only that `this` is a subtype of the required class. For example, a trait requiring a non-final class `C` cannot return `new C()` from a function whose return type is `this`.
+
+*Note*: the `require this as <class name>;` constraint allowed the trait to be used by any non-generic class which is a subtype of `<class name>`, including `<class name>` itself.  This trait constraint will be **deprecated** and all instances can be replaced by `require class`.
 
 ## Interfaces
 
