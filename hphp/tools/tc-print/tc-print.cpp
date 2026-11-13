@@ -431,7 +431,7 @@ void sortTrans() {
     const auto trec = TREC(tid);
     if (trec->isValid() &&
         (selectedFuncId == INVALID_ID ||
-         selectedFuncId == trec->src.funcID().toInt()) &&
+         selectedFuncId == FuncId{trec->src.func()}.toInt()) &&
         (kindFilter == "all" || kindFilter == show(trec->kind).c_str())) {
       transPrintOrder.push_back(tid);
     }
@@ -666,7 +666,7 @@ dynamic getTransRec(const TransRec* tRec,
     : sk.offset();
 
   dynamic src = dynamic::object("sha1", tRec->sha1.toString())
-                                     ("funcId", sk.funcID().toInt())
+                                     ("funcId", FuncId{sk.func()}.toInt())
                                      ("funcName", tRec->funcName)
                                      ("resumeMode", resumeMode)
                                      ("hasThis", sk.hasThis())
@@ -995,13 +995,13 @@ void printCFGOutArcs(TransID transId) {
   TCA fallThru = transCode->getTransJmpTargets(
     g_transData->getTransRec(transId), &jmpTargets);
 
-  auto const srcFuncId = TREC(transId)->src.funcID();
+  auto const srcFuncId = FuncId{TREC(transId)->src.func()};
 
   for (size_t i = 0; i < jmpTargets.size(); i++) {
     TransID targetId = g_transData->getTransStartingAt(jmpTargets[i]);
     if (targetId != INVALID_ID &&
         // filter jumps to prologues of other funcs
-        TREC(targetId)->src.funcID() == srcFuncId &&
+        FuncId{TREC(targetId)->src.func()} == srcFuncId &&
         TREC(targetId)->kind != TransKind::Anchor) {
 
       bool retrans = TREC(transId)->src == TREC(targetId)->src;
@@ -1071,7 +1071,7 @@ void printTopFuncs() {
   for (uint32_t t = 0; t < NTRANS; t++) {
     auto tRec = TREC(t);
     if (!tRec->isValid()) continue;
-    auto funcId = tRec->src.funcID();
+    auto funcId = FuncId{tRec->src.func()};
     if (funcStrs.contains(funcId)) continue;
     auto funcName = tRec->funcName;
     funcStrs[funcId] = fmt::format("{:<6}: {}", funcId.toInt(), funcName);
@@ -1092,7 +1092,7 @@ void printTopFuncsBySize() {
   for (TransID t = 0; t < NTRANS; t++) {
     const auto trec = TREC(t);
     if (trec->isValid()) {
-      const auto funcId = trec->src.funcID();
+      const auto funcId = FuncId{trec->src.func()};
       funcSize[funcId] += trec->aLen;
     }
   }
@@ -1229,7 +1229,7 @@ void printTopBytecodes(const OfflineTransData* tdata,
 
     g_logger->printGeneric("\n====================\n");
     g_logger->printGeneric("{\n");
-    g_logger->printGeneric("  FuncID  = %u\n", trec->src.funcID());
+    g_logger->printGeneric("  FuncID  = %u\n", FuncId{trec->src.func()}.toInt());
     g_logger->printGeneric("  TransID = %u\n", tfrag.tid);
     tfragPerfEvents.printEventsHeader(tfrag);
     g_logger->printGeneric("}\n\n");
@@ -1268,7 +1268,7 @@ static uint32_t findSelectedFuncId() {
   for (uint32_t t = 0; t < NTRANS; t++) {
     auto tRec = TREC(t);
     if (tRec->isValid() && tRec->funcName == selectedFuncName) {
-      return tRec->src.funcID().toInt();
+      return FuncId{tRec->src.func()}.toInt();
     }
   }
   return INVALID_ID;

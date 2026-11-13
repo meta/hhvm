@@ -129,8 +129,7 @@ void OfflineTransData::loadTCData(RepoWrapper* repoWrapper) {
 
       auto const sha1 = SHA1(sha1Tmp);
       auto const func = repoWrapper->getFunc(sn, funcSn);
-      auto const funcId = func != nullptr ? func->getFuncId() : FuncId::Invalid;
-      auto const sk = SrcKey::fromAtomicInt(srcKeyIntTmp).withFuncID(funcId);
+      auto const sk = SrcKey::fromAtomicInt(srcKeyIntTmp).withFunc(func);
       tRec.blocks.emplace_back(TransRec::Block { sha1, sk, past });
     }
 
@@ -214,8 +213,7 @@ void OfflineTransData::loadTCData(RepoWrapper* repoWrapper) {
 
       bcMap.sha1 = SHA1(sha1Tmp);
       auto const func = repoWrapper->getFunc(bcMap.sn, funcSn);
-      auto const funcId = func != nullptr ? func->getFuncId() : FuncId::Invalid;
-      bcMap.sk = SrcKey::fromAtomicInt(srcKeyIntTmp).withFuncID(funcId);
+      bcMap.sk = SrcKey::fromAtomicInt(srcKeyIntTmp).withFunc(func);
       tRec.bcMapping.push_back(bcMap);
     }
 
@@ -233,7 +231,7 @@ void OfflineTransData::loadTCData(RepoWrapper* repoWrapper) {
                        "Translation {} has id {}", tid, tRec.id);
     addTrans(tRec);
 
-    funcIds.insert(tRec.src.funcID());
+    funcIds.insert(FuncId{tRec.src.func()});
 
     if (tRec.aStart) {
       transAddrRanges.push_back(
@@ -292,7 +290,7 @@ void OfflineTransData::findFuncTrans(uint32_t selectedFuncId,
   for (uint32_t tid = 0; tid < nTranslations; tid++) {
     if (!translations[tid].isValid() ||
         translations[tid].kind == TransKind::Anchor ||
-        translations[tid].src.funcID().toInt() != selectedFuncId) continue;
+        FuncId{translations[tid].src.func()}.toInt() != selectedFuncId) continue;
     inodes->push_back(tid);
   }
 }
@@ -309,13 +307,13 @@ void OfflineTransData::addControlArcs(uint32_t selectedFuncId,
     std::vector<TCA> jmpTargets;
     transCode->getTransJmpTargets(getTransRec(transId), &jmpTargets);
 
-    auto const srcFuncId = getTransRec(transId)->src.funcID();
+    auto const srcFuncId = FuncId{getTransRec(transId)->src.func()};
 
     for (size_t i2 = 0; i2 < jmpTargets.size(); i2++) {
       TransID targetId = getTransStartingAt(jmpTargets[i2]);
       if (targetId != INVALID_ID &&
           // filter jumps to prologues of other funcs for now
-          getTransRec(targetId)->src.funcID() == srcFuncId &&
+          FuncId{getTransRec(targetId)->src.func()} == srcFuncId &&
           getTransRec(targetId)->kind != TransKind::Anchor) {
 
         addControlArc(transId, targetId);
@@ -343,7 +341,7 @@ void OfflineTransData::printTransRec(TransID transId,
     "  src.bcStartOffset = {}\n",
     tRec->id,
     tRec->sha1.toString(),
-    tRec->src.funcID().toInt(),
+    FuncId{tRec->src.func()}.toInt(),
     tRec->funcName,
     static_cast<int32_t>(tRec->src.resumeMode()),
     tRec->src.prologue(),
@@ -436,7 +434,7 @@ void OfflineTransData::printTransRec(std::ostream& os,
     "  src.bcStartOffset = {}\n",
     tRec->id,
     tRec->sha1.toString(),
-    tRec->src.funcID().toInt(),
+    FuncId{tRec->src.func()}.toInt(),
     tRec->funcName,
     static_cast<int32_t>(tRec->src.resumeMode()),
     tRec->src.prologue(),

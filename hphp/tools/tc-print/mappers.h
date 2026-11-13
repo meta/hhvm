@@ -106,7 +106,7 @@ struct TransToFuncMapper : Mapper<TransID, FuncId> {
 
   Optional<FuncId> operator()(const TransID& tid) override {
     always_assert(tdata);
-    return tdata->getTransRec(tid)->src.funcID();
+    return FuncId{tdata->getTransRec(tid)->src.func()};
   }
 
 private:
