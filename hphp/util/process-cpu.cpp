@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cstring>
 #include <iomanip>
+#include <sstream>
 #include <thread>
 
 #include <sys/utsname.h>

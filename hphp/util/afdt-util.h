@@ -21,6 +21,7 @@
 #include <string>
 #include <stdexcept>
 #include <cstring>
+#include <type_traits>
 
 namespace HPHP {
 namespace afdt {
