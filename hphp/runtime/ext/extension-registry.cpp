@@ -44,7 +44,7 @@ static ExtensionRegistryUninitializer s_extension_registry_uninitializer;
 using OrderedExtensionVector = std::vector<Extension*>;
 static OrderedExtensionVector s_ordered;
 
-static bool s_sorted = false;
+[[maybe_unused]] static bool s_sorted = false;
 static bool s_initialized = false;
 
 static OrderedExtensionVector sortDependencies(const ExtensionMap& map);

@@ -118,7 +118,7 @@ PreAssignmentMap s_persistent_preassign;
 PreAssignmentMap s_local_preassign;
 PreAssignmentMap s_normal_preassign;
 
-__thread bool s_settingPreAssignments{false};
+[[maybe_unused]] __thread bool s_settingPreAssignments{false};
 
 __thread std::atomic<bool> s_hasFullInit{false};
 

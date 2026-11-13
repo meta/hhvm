@@ -132,7 +132,7 @@ static char **debugger_completion(const char *text, int start, int end) {
 static rl_hook_func_t *old_rl_startup_hook = nullptr;
 
 static int saved_history_line_to_use = -1;
-static int last_saved_history_line = -1;
+[[maybe_unused]] static int last_saved_history_line = -1;
 
 static bool history_full() {
   return (history_is_stifled() && history_length >= history_max_entries);
