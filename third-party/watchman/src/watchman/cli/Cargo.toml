@@ -13,7 +13,7 @@ ahash = { version = "0.8.11", features = ["runtime-rng"] }
 anyhow = "1.0.104"
 clap = { version = "4.6.2", features = ["derive", "env", "string", "unicode", "wrap_help"] }
 duct = "1.1.2"
-jwalk = "0.8.1"
+jwalk = "0.9.0"
 serde = { version = "1.0.229", features = ["derive", "rc"] }
 serde_json = { version = "1.0.154", features = ["alloc", "float_roundtrip", "raw_value", "unbounded_depth"] }
 sysinfo = "0.40.1"
