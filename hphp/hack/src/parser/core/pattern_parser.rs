@@ -160,7 +160,7 @@ where
 
     fn parse_constructor_or_refinement_pattern(&mut self) -> S::Output {
         let name = self.assert_token(TokenKind::Name);
-        let name = self.scan_remaining_qualified_name(name);
+        let name = self.scan_remaining_qualified_name(name, false);
 
         match self.peek_token_kind() {
             // NB: This is only a valid refinement pattern if `name` is a `Name`

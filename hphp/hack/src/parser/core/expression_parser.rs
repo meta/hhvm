@@ -13,6 +13,7 @@ use parser_core_types::syntax_error::SyntaxQuickfix;
 use parser_core_types::syntax_error::{self as Errors};
 use parser_core_types::token_factory::TokenFactory;
 use parser_core_types::token_kind::TokenKind;
+use parser_core_types::trivia_kind::TriviaKind;
 
 use crate::declaration_parser::DeclarationParser;
 use crate::lexer::Lexer;
@@ -302,8 +303,10 @@ where
         match token.kind() {
             TokenKind::Namespace | TokenKind::Name => {
                 self.continue_from(parser1);
+                let has_trailing_newline =
+                    token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                 let token = self.sc_mut().make_token(token);
-                let name = self.scan_remaining_qualified_name(token);
+                let name = self.scan_remaining_qualified_name(token, has_trailing_newline);
                 self.parse_name_or_collection_literal_expression(name)
             }
             kind if self.expects_here(kind) => {
@@ -525,8 +528,10 @@ where
     }
 
     fn parse_name(&mut self, token: Token<S>) -> S::Output {
+        let has_trailing_newline =
+            token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
         let token = self.sc_mut().make_token(token);
-        let qualified_name = self.scan_remaining_qualified_name(token);
+        let qualified_name = self.scan_remaining_qualified_name(token, has_trailing_newline);
         let mut parser1 = self.clone();
         let str_maybe = parser1.next_token_no_trailing();
         match str_maybe.kind() {
@@ -1607,8 +1612,10 @@ where
             let backslash = self.sc_mut().make_token(start_token);
             self.scan_qualified_name(missing, backslash)
         } else {
+            let has_trailing_newline =
+                start_token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
             let start_token = self.sc_mut().make_token(start_token);
-            self.scan_remaining_qualified_name(start_token)
+            self.scan_remaining_qualified_name(start_token, has_trailing_newline)
         };
         match self.peek_token_kind_with_possible_attributized_type_list() {
             TokenKind::LeftParen | TokenKind::LessThan => Some(name),

@@ -1,0 +1,36 @@
+[(Fun
+    { fd_namespace =
+      { Namespace_env.ns_ns_uses = <opaque>; ns_class_uses = <opaque>; 
+        ns_fun_uses = <opaque>; ns_const_uses = <opaque>; ns_name = (Some "N"); 
+        ns_mode = Namespace_env.ForTypecheck; ns_disable_xhp_element_mangling = false };
+      fd_file_attributes = []; fd_mode = Mstrict; fd_name = ([5:10-21], "\\N\\my_function");
+      fd_fun =
+      { f_span = [5:1-32]; f_readonly_this = None; f_annotation = (); 
+        f_readonly_ret = None; f_tparams = []; f_ret = ((), (Some ([5:25-29], (Hprim Tvoid)))); 
+        f_params = []; f_ctxs = None; f_unsafe_ctxs = None; f_body = { fb_ast = [([Pos.none], Noop)] }; 
+        f_fun_kind = FSync; f_user_attributes = [{ ua_name = ([5:10-21], "__SupportDynamicType"); ua_params = [] }]; 
+        f_external = false; f_hidden = false; f_doc_comment = None };
+      fd_internal = false; fd_module = None; fd_tparams = []; fd_where_constraints = []; 
+      fd_package = None });
+  (Fun
+     { fd_namespace =
+       { Namespace_env.ns_ns_uses = <opaque>; ns_class_uses = <opaque>; 
+         ns_fun_uses = <opaque>; ns_const_uses = <opaque>; ns_name = (Some "N"); 
+         ns_mode = Namespace_env.ForTypecheck; ns_disable_xhp_element_mangling = false };
+       fd_file_attributes = []; fd_mode = Mstrict; fd_name = ([7:10-11], "\\N\\f");
+       fd_fun =
+       { f_span = [7:1-13:2]; f_readonly_this = None; f_annotation = (); 
+         f_readonly_ret = None; f_tparams = []; f_ret = ((), (Some ([7:15-19], (Hprim Tvoid)))); 
+         f_params = []; f_ctxs = None; f_unsafe_ctxs = None;
+         f_body =
+         { fb_ast =
+           [([8:3-17], (Expr ((), [8:3-16], (Call { func = ((), [8:3-14], (Id ([8:3-14], "\\N\\my_function"))); targs = []; args = []; unpacked_arg = None }))));
+             ([9:3-28], (Expr ((), [9:3-27], (Call { func = ((), [9:3-25], (Id ([9:3-25], "\\some_root_ns_function"))); targs = []; args = []; unpacked_arg = None }))));
+             ([11:3-14], (Expr ((), [11:3-14], (Id ([11:3-14], "\\N\\my_function")))));
+             ([12:3-28], (Expr ((), [12:3-27], (Call { func = ((), [12:3-25], (Id ([12:3-25], "\\some_root_ns_function"))); targs = []; args = []; unpacked_arg = None }))))]
+           };
+         f_fun_kind = FSync; f_user_attributes = [{ ua_name = ([7:10-11], "__SupportDynamicType"); ua_params = [] }]; 
+         f_external = false; f_hidden = false; f_doc_comment = None };
+       fd_internal = false; fd_module = None; fd_tparams = []; fd_where_constraints = []; 
+       fd_package = None })
+  ]
