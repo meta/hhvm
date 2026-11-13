@@ -1,0 +1,8 @@
+<?hh
+
+<<__EntryPoint>>
+function skipif(): void {
+    if (!HHVM_FACEBOOK) {
+        exit('skip fb_serialize() not available in OSS');
+    }
+}

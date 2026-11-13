@@ -1,0 +1,6 @@
+<<__EntryPoint>>
+function skipif(): void {
+    if (!HHVM_FACEBOOK) {
+        exit('skip OSS version format may differ');
+    }
+}
