@@ -21,6 +21,8 @@
 #include "hphp/util/configs/debugger.h"
 #include "hphp/util/user-info.h"
 
+#include <algorithm>
+
 #include <pwd.h>
 #include <grp.h>
 #include <sys/socket.h>
@@ -160,9 +162,7 @@ void SocketTransport::listenForClientConnection() {
       freeaddrinfo(ai);
     }
 
-    for (auto it = socketFds.begin(); it != socketFds.end(); it++) {
-      close(*it);
-    }
+    std::for_each(socketFds.begin(), socketFds.end(), close);
 
     close(abortFd);
     m_abortPipeFd[0] = -1;
@@ -574,10 +574,6 @@ void SocketTransport::waitForConnection(
   SCOPE_EXIT {
     if (fds != nullptr) {
       free(fds);
-    }
-
-    for (const int fd : socketFds) {
-      close(fd);
     }
   };
 
