@@ -151,6 +151,13 @@ bool FieldGenerator::gen(char field, const std::string& arg, T& out) {
       }
     }
     break;
+  case 'm':
+    {
+      const char *method = transport->getMethodName();
+      if (!method || !method[0]) return false;
+      out = folly::to<T>(method);
+    }
+    break;
   case 'M':
     // current Unix timestamp in microseconds
     out = folly::to<T>(Timer::GetCurrentTimeMicros());
@@ -174,6 +181,14 @@ bool FieldGenerator::gen(char field, const std::string& arg, T& out) {
     break;
   case 'P':
     out = folly::to<T>(ServerStats::Get("request.timed_out.psp"));
+    break;
+  case 'q':
+    {
+      String b, q;
+      RequestURI::splitURL(transport->getUrl(), b, q);
+      if (q.isNull() || q.empty()) return false;
+      out = folly::to<T>(q.c_str());
+    }
     break;
   case 'r':
     {
