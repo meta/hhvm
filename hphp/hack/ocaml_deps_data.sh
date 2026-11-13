@@ -37,6 +37,7 @@ export HACK_OPAM_DEPS=(
   wtf8.1.0.2
   yojson.2.0.2
   ocamlbuild.0.14.3
+  ocamlformat.0.26.2
   ocaml-option-flambda
   ocaml-option-no-compression
 )
