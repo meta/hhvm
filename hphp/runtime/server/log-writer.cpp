@@ -51,7 +51,7 @@ std::string FieldGenerator::escapeData(const char* s, int len) {
 }
 
 ClassicWriter::~ClassicWriter() {
-  if (m_channel == LogChannel::REGULAR) {
+  if (m_filelog != nullptr && m_channel == LogChannel::REGULAR) {
     if (m_logdata.file[0] == '|') {
       pclose(m_filelog);
     } else {
