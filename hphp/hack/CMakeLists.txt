@@ -329,6 +329,9 @@ add_custom_command(
       --package "${HHVM_RUST_FFI_STATICLIB_NAME}"
       --target-dir "${RUST_FFI_CARGO_TARGET_DIR}"
       ${HHVM_RUST_FFI_PROFILE_ARGS}
+  COMMAND
+    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/rename_bundled_sqlite_symbols.sh"
+      "${CMAKE_NM}" "${CMAKE_OBJCOPY}" "${HHVM_RUST_FFI_STATICLIB}"
   WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
   DEPENDS
     hackc_options
