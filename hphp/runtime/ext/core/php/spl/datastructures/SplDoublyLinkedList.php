@@ -516,6 +516,12 @@ class SplDoublyLinkedList
    */
   public function unserialize($serialized) {
     list($data, $this->mode) = unserialize($serialized);
+    if (!$data is Container<_>) {
+      throw new Exception(
+        'SplDoublyLinkedList::unserialize() requires unserialized data to be
+         a Container to prevent invoking user-defined iterators.',
+      );
+    }
     foreach ($data as $elem) {
       $this->push($elem);
     }
