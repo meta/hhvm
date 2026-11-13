@@ -500,16 +500,14 @@ end = struct
       f
 
   let should_log_subtype_i env ~level ty_sub ty_super =
-    let level =
-      if
-        (TUtils.is_capability_i ty_sub || TUtils.is_capability_i ty_super)
-        && level < 3
-      then
-        3
-      else
-        level
-    in
+    (* Subtype checks involving capabilities are only logged from level 3, so
+       they can never be logged if [level] isn't. Check that first so that the
+       common case where logging is off doesn't pay for [is_capability_i]. *)
     Typing_log.should_log env ~category:"sub" ~level
+    && (level >= 3
+       || (not
+             (TUtils.is_capability_i ty_sub || TUtils.is_capability_i ty_super))
+       || Typing_log.should_log env ~category:"sub" ~level:3)
 
   let log_subtype_i
       ~(this_ty : locl_ty option) ~function_name env ty_sub ty_super f =
@@ -959,21 +957,18 @@ end = struct
       missing_shape_splat_assignment subtype_env env missing ~ty_sub ~ty_super
 
   module Log = struct
-    let level subtype_env ~ty_sub ~ty_super =
-      let level = subtype_env.Subtype_env.log_level in
-      if
-        (TUtils.is_capability ty_sub || TUtils.is_capability ty_super)
-        && level < 3
-      then
-        3
-      else
-        level
-
+    (* Subtype checks involving capabilities are only logged from level 3.
+       This is called for every subtype check, so check the unadjusted level
+       first so that the common case where logging is off doesn't pay for
+       [is_capability]. *)
     let should_log env subtype_env ~lhs ~rhs =
-      Typing_log.should_log
-        env
-        ~category:"sub"
-        ~level:(level subtype_env ~ty_sub:lhs.ty_sub ~ty_super:rhs.ty_super)
+      let level = subtype_env.Subtype_env.log_level in
+      Typing_log.should_log env ~category:"sub" ~level
+      && (level >= 3
+         || (not
+               (TUtils.is_capability lhs.ty_sub
+               || TUtils.is_capability rhs.ty_super))
+         || Typing_log.should_log env ~category:"sub" ~level:3)
 
     let function_name subtype_env ~sub_supportdyn ~super_like ~super_supportdyn
         =
