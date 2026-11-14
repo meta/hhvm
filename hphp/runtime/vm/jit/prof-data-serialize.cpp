@@ -295,9 +295,7 @@ void read_units_preload(ProfDataDeserializer& ser, const std::string& root) {
   BootStats::Block timer("DES_read_units_preload",
                          Cfg::Server::Mode);
   if (Cfg::Jit::DesUnitPreload) {
-    auto const threads =
-      std::max(1, std::min(Cfg::Jit::WorkerThreadsForSerdes,
-                           Cfg::Jit::MaxUnitLoaderThreads));
+    auto const threads = std::max(1, Cfg::Jit::MaxUnitLoaderThreads);
     s_preload_dispatcher = new UnitPreloadDispatcher(
         threads, threads, 0, false, nullptr
     );
