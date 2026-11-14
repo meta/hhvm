@@ -526,13 +526,22 @@ void deserializeBespokeLayouts(ProfDataDeserializer& des) {
   for (auto i = 0; i < runtimeStructs; i++) {
     RuntimeStructSerde::deserialize_runtime_struct(des);
   }
+  // Read every key before applying any layout. Reading a key can define its
+  // class, and a class copies its parent's property and constant values when
+  // it is defined. Applying a layout replaces the source's value in place with
+  // a bespoke array, so a subclass defined after its parent's source was
+  // applied would inherit that bespoke array as its own source's value.
   auto const sources = read_raw<size_t>(des);
+  std::vector<std::pair<bespoke::LoggingProfileKey, ArrayLayout>> decisions;
+  decisions.reserve(sources);
   for (auto i = 0; i < sources; i++) {
-    assertx(bespoke::countSources() == i);
     auto const key = read_source_key(des);
-    bespoke::deserializeSource(key, read_layout(des));
-    assertx(bespoke::countSources() == i + 1);
+    decisions.emplace_back(key, read_layout(des));
   }
+  for (auto const& [key, layout] : decisions) {
+    bespoke::deserializeSource(key, layout);
+  }
+  assertx(bespoke::countSources() == sources);
   auto const sinks = read_raw<size_t>(des);
   for (auto i = 0; i < sinks; i++) {
     assertx(bespoke::countSinks() == i);

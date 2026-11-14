@@ -116,7 +116,6 @@ Optional<std::string> s_deserializedFile{};
 enum class SeenType : uint8_t {
   Class,
   TypeAlias,
-  End
 };
 
 constexpr ProfDataSerializer::Id kSerializedIdBit =
@@ -523,30 +522,6 @@ std::unique_ptr<ProfTransRec> read_prof_trans_rec(ProfDataDeserializer& ser) {
   return ret;
 }
 
-bool write_seen_type(ProfDataSerializer& ser, const NamedType* ne) {
-  if (!ne) return false;
-  if (auto const cls = ne->clsList()) {
-    if (!(cls->attrs() & AttrPersistent)) return false;
-    auto const filepath = cls->preClass()->unit()->origFilepath();
-    if (!filepath || filepath->empty()) return false;
-    if (!ser.present(cls)) {
-      write_raw(ser, SeenType::Class);
-      write_class(ser, cls);
-    }
-    return true;
-  } else if (auto const td = ne->getCachedTypeAlias()) {
-    if (!ne->isPersistentTypeAlias()) return false;
-    auto const filepath = td->unit()->origFilepath();
-    if (!filepath || filepath->empty()) return false;
-    if (!ser.present(td)) {
-      write_raw(ser, SeenType::TypeAlias);
-      write_typealias(ser, td);
-    }
-    return true;
-  }
-  return false;
-}
-
 void write_named_type(ProfDataSerializer& ser, const NamedType* ne) {
   always_assert(ne);
   if (auto const cls = ne->clsList()) {
@@ -649,29 +624,6 @@ const TypeAlias* read_typealias_internal(ProfDataDeserializer& ser) {
   return TypeAlias::def(td);
 }
 
-/*
- * This reads in TypeAliases and Classes that are used for code gen,
- * but otherwise aren't needed for profiling. We just need them to be
- * loaded into the NamedType table, so this function just returns
- * whether or not to continue.
- */
-bool read_seen_type(ProfDataDeserializer& ser) {
-  auto const type = read_raw<SeenType>(ser);
-  switch (type) {
-    case SeenType::Class: {
-      read_class(ser);
-      return true;
-    }
-    case SeenType::TypeAlias: {
-      read_typealias(ser);
-      return true;
-    }
-    case SeenType::End: return false;
-    default:
-      always_assert(false);
-  }
-}
-
 void read_named_type(ProfDataDeserializer& ser) {
   auto const type = read_raw<SeenType>(ser);
   switch (type) {
@@ -697,38 +649,6 @@ void write_profiled_funcs(ProfDataSerializer& ser, ProfData* pd) {
 void read_profiled_funcs(ProfDataDeserializer& ser, ProfData* pd) {
   while (auto const func = read_func(ser)) {
     pd->setProfiling(func);
-  }
-}
-
-void write_seen_types(ProfDataSerializer& ser, ProfData* pd) {
-  // in an attempt to get a sensible order for these, start with the
-  // ones referenced by params and return constraints.
-  pd->forEachProfilingFunc([&](auto const& func) {
-    always_assert(func);
-    for (auto const& p : func->params()) {
-      for (auto const& tc : p.typeConstraints.range()) {
-        if (auto const ne = tc.anyNamedType()) {
-          write_seen_type(ser, ne);
-        }
-      }
-    }
-  });
-
-  // Now just iterate and write anything that remains
-  NamedType::foreach_name(
-    [&] (NamedType& ne) {
-      write_seen_type(ser, &ne);
-    }
-  );
-  write_raw(ser, SeenType::End);
-}
-
-void read_seen_types(ProfDataDeserializer& ser) {
-  BootStats::Block timer("DES_read_classes_and_type_aliases",
-                         Cfg::Server::Mode);
-  while (read_seen_type(ser)) {
-    // nothing to do. this was just to make sure everything is loaded
-    // into the NamedType table
   }
 }
 
@@ -2289,12 +2209,6 @@ std::string serializeProfData(const std::string& filename) {
     }
     write_container(ser, Class::serializeLazyAPCClasses(), write_class);
 
-    // We've written everything directly referenced by the profile
-    // data, but jitted code might still use Classes and TypeAliases
-    // that haven't been otherwise mentioned (eg TypeConstraint types,
-    // InstanceOfD etc).
-    write_seen_types(ser, pd);
-
     if (allowBespokeArrayLikes()) {
       serializeBespokeLayouts(ser);
     }
@@ -2584,8 +2498,6 @@ std::string deserializeProfData(const std::string& filename,
       read_container(ser, [&] { list.push_back(read_class(ser)); });
       Class::deserializeLazyAPCClasses(list);
     }
-
-    read_seen_types(ser);
 
     if (allowBespokeArrayLikes()) {
       deserializeBespokeLayouts(ser);
