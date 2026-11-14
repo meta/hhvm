@@ -220,7 +220,7 @@ void read_container(ProfDataDeserializer& ser, F f) {
   while (sz--) { f(); }
 }
 
-void write_unit_preload(ProfDataSerializer& ser, Unit* unit) {
+void write_unit_preload(ProfDataSerializer& ser, const Unit* unit) {
   write_raw_string(ser, unit->origFilepath());
 }
 
@@ -261,31 +261,33 @@ void read_unit_preload(ProfDataDeserializer& ser, const std::string& root) {
   }
 }
 
+void write_profiled_funcs(ProfDataSerializer& ser, ProfData* pd);
+
 void write_units_preload(ProfDataSerializer& ser) {
-  std::vector<Unit*> units;
-  hphp_fast_set<Unit*, pointer_hash<Unit>> seen;
-  auto const check_unit =
-    [] (Unit* unit) -> bool {
-      if (!unit) return false;
-      auto const filepath = unit->origFilepath();
-      if (filepath->empty()) return false;
-      // skip systemlib
-      if (filepath->size() >= 2 && filepath->data()[1] == ':') return false;
-      return true;
-    };
+  std::vector<const Unit*> units;
+  hphp_fast_set<const Unit*, pointer_hash<Unit>> seen;
+  auto const add_unit = [&] (const Unit* unit) {
+    if (!unit) return;
+    auto const filepath = unit->origFilepath();
+    if (filepath->empty()) return;
+    // skip systemlib
+    if (filepath->size() >= 2 && filepath->data()[1] == ':') return;
+    if (seen.insert(unit).second) units.push_back(unit);
+  };
   auto const pd = profData();
   assertx(pd);
+
+  // List units in the order read_profiled_funcs() will first look them up.
+  {
+    ProfDataSerializer dryRun{"", ProfDataSerializer::FileMode::Discard};
+    write_profiled_funcs(dryRun, pd);
+    for (auto const u : dryRun.unitsInSerializationOrder()) add_unit(u);
+  }
   pd->forEachProfilingFunc([&](auto const& func) {
     always_assert(func);
-    auto const u = func->unit();
-    if (!check_unit(u)) return;
-    if (seen.insert(u).second) units.push_back(u);
+    add_unit(func->unit());
   });
-  auto all_loaded = loadedUnitsRepoAuth();
-  for (auto u : all_loaded) {
-    if (!check_unit(u)) continue;
-    if (seen.insert(u).second) units.push_back(u);
-  }
+  for (auto const u : loadedUnitsRepoAuth()) add_unit(u);
   write_container(ser, units, write_unit_preload);
 }
 
@@ -1385,7 +1387,9 @@ ProfDataSerializer::ProfDataSerializer(const std::string& name, FileMode mode)
     throw std::runtime_error(msg);
   };
 
-  if (fileMode == FileMode::Append) {
+  if (fileMode == FileMode::Discard) {
+    fd = -1;
+  } else if (fileMode == FileMode::Append) {
     fileName = mangleFilenameForAppendInProgress(name);
     auto const mangled = mangleFilenameForAppendStart(name);
     fd = open(mangled.c_str(), O_CLOEXEC | O_WRONLY, 0644);
@@ -1405,6 +1409,7 @@ ProfDataSerializer::ProfDataSerializer(const std::string& name, FileMode mode)
 }
 
 void ProfDataSerializer::finalize() {
+  assertx(fileMode != FileMode::Discard);
   assertx(fd != -1);
   if (offset) ::write(fd, buffer, offset);
   offset = 0;
@@ -1483,6 +1488,7 @@ ProfDataSerializer::Mappers ProfDataDeserializer::getMappers() const {
 }
 
 void write_raw(ProfDataSerializer& ser, const void* data, size_t sz) {
+  if (ser.fileMode == ProfDataSerializer::FileMode::Discard) return;
   if (ser.offset + sz <= ProfDataSerializer::buffer_size) {
     memcpy(ser.buffer + ser.offset, data, sz);
     ser.offset += sz;
@@ -1657,6 +1663,13 @@ bool ProfDataSerializer::present(const Class* cls) const {
 
 bool ProfDataSerializer::present(const TypeAlias* ta) const {
   return mappers.typeAliasMap.present(ta);
+}
+
+std::vector<const Unit*> ProfDataSerializer::unitsInSerializationOrder() const {
+  auto const& unitMap = mappers.unitMap;
+  std::vector<const Unit*> units(unitMap.next - 1);
+  for (auto const& [unit, id] : unitMap.map) units[id - 1] = unit;
+  return units;
 }
 
 void write_raw_string(ProfDataSerializer& ser, const StringData* str) {

@@ -26,6 +26,7 @@
 #include "hphp/util/optional.h"
 
 #include <string>
+#include <vector>
 
 namespace HPHP {
 //////////////////////////////////////////////////////////////////////
@@ -68,7 +69,9 @@ inline bool operator!(SBWarmupFlags f) {
 struct ProfDataSerializer {
   enum class FileMode {
     Create,
-    Append
+    Append,
+    // Don't open or write any file; only populate the mappers.
+    Discard
   };
 
   explicit ProfDataSerializer(const std::string& name, FileMode mode);
@@ -89,6 +92,10 @@ struct ProfDataSerializer {
 
   bool present(const Class*) const;
   bool present(const TypeAlias*) const;
+
+  // Units in the order they were first serialized, which is the order in which
+  // the deserializer will first look them up.
+  std::vector<const Unit*> unitsInSerializationOrder() const;
 
   // Atomically create the output file, or throw runtime error upon failure.
   void finalize();
