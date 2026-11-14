@@ -17,6 +17,7 @@
 #pragma once
 
 #include "hphp/util/atomic-vector.h"
+#include "hphp/util/hash.h"
 #include "hphp/util/rds-local.h"
 
 #include "hphp/runtime/base/prof-counters.h"
@@ -654,8 +655,15 @@ private:
 
   /*
    * Map from (FuncId, nArgs) pairs to prologue TransID.
+   *
+   * The key (see PrologueID) holds the Func in its upper 32 bits, which
+   * AtomicHashMap's power-of-two anchor mask drops under an identity hash, so
+   * the key must be mixed.
    */
-  folly::AtomicHashMap<uint64_t, TransID> m_proflogueDB;
+  struct ProflogueHasher {
+    size_t operator()(uint64_t key) const { return hash_int64(key); }
+  };
+  folly::AtomicHashMap<uint64_t, TransID, ProflogueHasher> m_proflogueDB;
 
   /*
    * Map from SrcKey.toAtomicInt() to DV funclet TransID.
