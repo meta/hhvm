@@ -196,18 +196,6 @@ root_resolve(const char* filename_cstr, bool auto_watch, bool* created) {
     if (!root) {
       RootResolveError::throwf("directory {} is not watched", root_str);
     }
-
-    // Treat this as new activity for aging purposes; this roughly maps
-    // to a client querying something about the root and should extend
-    // the lifetime of the root
-
-    // Note that this write potentially races with the read in consider_reap
-    // but we're "OK" with it because the latter is performed under a write
-    // lock and the worst case side effect is that we (safely) decide to reap
-    // at the same instant that a new command comes in.  The reap intervals
-    // are typically on the order of days.
-    root->inner.last_cmd_timestamp.store(
-        std::chrono::steady_clock::now(), std::memory_order_release);
     return root;
   }
 

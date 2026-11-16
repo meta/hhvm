@@ -8,6 +8,7 @@
 #include <folly/ScopeGuard.h>
 
 #include "watchman/Client.h"
+#include "watchman/ClientContext.h"
 #include "watchman/Errors.h"
 #include "watchman/Logging.h"
 #include "watchman/PerfSample.h"
@@ -87,6 +88,23 @@ resolveRootByName(Client* client, const char* rootName, bool create) {
         create = false;
       }
       root = w_root_resolve(rootName, create);
+    }
+
+    // Treat this as new activity for aging purposes; this roughly maps
+    // to a client querying something about the root and should extend
+    // the lifetime of the root.  The sanity check thread connects to us
+    // and runs `clock` against every root once a minute; that is not
+    // client activity, and counting it would prevent idle roots from
+    // ever being reaped.
+
+    // Note that this write potentially races with the read in consider_reap
+    // but we're "OK" with it because the latter is performed under a write
+    // lock and the worst case side effect is that we (safely) decide to reap
+    // at the same instant that a new command comes in.  The reap intervals
+    // are typically on the order of days.
+    if (client->getClientInfo().clientPid != ::getpid()) {
+      root->inner.last_cmd_timestamp.store(
+          std::chrono::steady_clock::now(), std::memory_order_release);
     }
 
     if (client->dispatch_command) {
