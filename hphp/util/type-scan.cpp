@@ -26,6 +26,7 @@
 
 #include "hphp/util/build-info.h"
 #include "hphp/util/embedded-data.h"
+#include "hphp/util/logger.h"
 
 namespace {
 
@@ -151,8 +152,9 @@ void init(const std::string& extractPath,
   // scanners from being emitted (silently), which causes all sorts of
   // problems. Fixed in https://reviews.llvm.org/D56928. Clang builds also
   // need -fstandalone-debug to emit full types in DWARF.
+  Logger::Verbose("type-scan: Not attempting to load type scanners because clang was not setup to emit full types");
   return;
-#elif defined(__linux__) 
+#elif defined(__linux__)
 
   using init_func_t = const Metadata*(*)(std::size_t&);
 
@@ -164,6 +166,7 @@ void init(const std::string& extractPath,
     embedded_data data;
     if (!get_embedded_data("type_scanners", &data)) {
       // no embedded data was built; fall back to conservative scan.
+      Logger::Verbose("type-scan: no embedded data was built; fall back to conservative scan");
       return nullptr;
     }
 
@@ -184,6 +187,9 @@ void init(const std::string& extractPath,
     if (!init) {
       throw InitException { fmt::format("dlsym() fails: {}", dlerror()) };
     }
+
+    Logger::Verbose("type-scan: loaded embedded type scanners");
+
     return reinterpret_cast<init_func_t>(init);
   }();
 
