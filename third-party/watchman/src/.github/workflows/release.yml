@@ -14,15 +14,20 @@ permissions:
   contents: read  #  to fetch code (actions/checkout)
 
 jobs:
-  build:
+  linux:
     uses: ./.github/workflows/linux.yml
     with:
       release: ${{ github.ref_name }}
 
+  windows:
+    uses: ./.github/workflows/windows.yml
+    with:
+      release: ${{ github.ref_name }}
+
   # Creating the release only once its packages exist keeps the latest release
-  # one with binaries.
+  # one with binaries for every platform.
   publish:
-    needs: build
+    needs: [linux, windows]
     runs-on: ubuntu-24.04
     permissions:
       contents: write  #  to create the release and upload its assets
@@ -33,7 +38,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v7
       with:
-        name: linux-packages
+        pattern: "*-packages"
+        merge-multiple: true
         path: dist
     - name: Create the release
       run: >

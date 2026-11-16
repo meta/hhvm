@@ -37,6 +37,16 @@ the list above.
 3. It contains a `bin` folder. Move that somewhere appropriate and update your
    `PATH` environment to reference that location.
 
+Watchman needs the latest
+[Microsoft Visual C++ Redistributable](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist)
+for x64; with an older one it can crash when it starts.
+
+The `bin` folder includes the Python that `watchman-wait`, `watchman-make`,
+`watchman-replicate-subscription` and `watchman-diag` run on. With `bin` on
+`PATH`, programs that look for `python3.dll` there, such as Vim's `:py3`, load
+that Python instead of yours; set Vim's `pythonthreedll` to the full path of
+your own Python's `pythonXY.dll` to avoid this.
+
 If you encounter issues with the Windows version of watchman, please report them
 via GitHub!
 [You can find the list of known Windows issues here](https://github.com/meta/watchman/issues?utf8=%E2%9C%93&q=is%3Aopen+Windows).
