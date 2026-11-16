@@ -249,6 +249,7 @@ let get_old_names_batch
 
 let get_old_and_new_defs_in_files
     (old_naming_table : Naming_table.t)
+    ~(old_names_per_file : File_info.Old_names.t Relative_path.Map.t)
     (new_naming_table : Naming_table.t)
     (files : Relative_path.Set.t) :
     Decl_compare.VersionedNames.t Relative_path.Map.t =
@@ -258,9 +259,15 @@ let get_old_and_new_defs_in_files
       begin
         fun path acc ->
           let old_names =
-            Naming_table.get_file_info old_naming_table path
-            |> Option.map ~f:File_info.simplify
-            |> Option.map ~f:File_info.Old_names.of_names
+            (* TODO(T298623016): When remote_old_decl_fetching_include_non_class
+               is disabled, old_names_per_file is empty; use the names-only
+               fallback until hash population is unconditional. *)
+            match Relative_path.Map.find_opt old_names_per_file path with
+            | Some old_names -> Some old_names
+            | None ->
+              Naming_table.get_file_info old_naming_table path
+              |> Option.map ~f:File_info.simplify
+              |> Option.map ~f:File_info.Old_names.of_names
           in
           let new_names =
             Naming_table.get_file_info new_naming_table path

@@ -140,6 +140,7 @@ let get_old_and_new_defs
   let defs =
     Server_incremental.get_old_and_new_defs_in_files
       old_naming_table
+      ~old_names_per_file:Relative_path.Map.empty
       new_naming_table
       files_with_changes
   in

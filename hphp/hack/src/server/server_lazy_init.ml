@@ -572,6 +572,7 @@ let calculate_fanout_and_defer_or_do_type_check
     (genv : Server_env.genv)
     (env : Server_env.env)
     ~(old_naming_table : Naming_table.t)
+    ~(old_names_per_file : File_info.Old_names.t Relative_path.Map.t)
     ~(new_naming_table : Naming_table.t)
     ~(dirty_master_files_unchanged_decls : Relative_path.Set.t)
     ~(dirty_master_files_changed_decls : Relative_path.Set.t)
@@ -593,6 +594,7 @@ let calculate_fanout_and_defer_or_do_type_check
   let old_and_new_defs_per_dirty_files_changed_decls =
     Server_incremental.get_old_and_new_defs_in_files
       old_naming_table
+      ~old_names_per_file
       new_naming_table
       dirty_files_changed_decls
   in
@@ -1119,6 +1121,42 @@ let update_naming_table
       ~worker_call:Multi_worker.wrapper
   in
   let ctx = Provider_utils.ctx_from_server_env env in
+  let old_names_per_file =
+    (* TODO(T298623016): Populate old hashes independently of remote fetching. *)
+    if
+      Typechecker_options.remote_old_decl_fetching_include_non_class
+        (Provider_context.get_tcopt ctx)
+    then
+      let add_parsed_file path files =
+        let file_info =
+          Option.value
+            (Naming_table.get_file_info env.naming_table path)
+            ~default:File_info.empty_t
+        in
+        Relative_path.Map.add files ~key:path ~data:file_info
+      in
+      let defs_per_file_parsed =
+        (* Ignored files are not parsed or renamed, but old conflict owners
+           must remain in the metadata snapshot to include every old winner. *)
+        let snapshot_files =
+          Relative_path.Set.union naming_files old_error_files_and_owners
+        in
+        Relative_path.Set.fold
+          snapshot_files
+          ~init:Relative_path.Map.empty
+          ~f:add_parsed_file
+      in
+      (* Capture information about "old" decls that reflect the state as of the
+         saved state. Crucially, this must run before the reverse naming table
+         updates below, at which point the reverse naming table includes the
+         changes since the saved state. *)
+      Server_incremental.get_old_names_batch
+        ctx
+        old_naming_table
+        ~defs_per_file_parsed
+    else
+      Relative_path.Map.empty
+  in
   let t =
     remove_items_from_reverse_naming_table_or_build_new_reverse_naming_table
       ctx
@@ -1130,7 +1168,7 @@ let update_naming_table
   in
   if do_indexing then
     let (env, t) = write_symbol_info genv env cgroup_steps t in
-    (env, t, None)
+    (env, t, None, old_names_per_file)
   else
     (* Do global naming on all parsed files *)
     let (env, t) =
@@ -1153,7 +1191,7 @@ let update_naming_table
         needs_recheck = Relative_path.Set.union env.needs_recheck old_errors;
       }
     in
-    (env, t, Some new_naming_table)
+    (env, t, Some new_naming_table, old_names_per_file)
 
 let log_changed_files_counts
     ~dirty_local_files_unchanged_decls
@@ -1204,6 +1242,7 @@ let compute_fanout
     t
     ~cgroup_steps
     ~old_naming_table
+    ~(old_names_per_file : File_info.Old_names.t Relative_path.Map.t)
     ~new_naming_table
     ~dirty_master_files
     ~dirty_local_files =
@@ -1243,6 +1282,7 @@ let compute_fanout
       genv
       env
       ~old_naming_table
+      ~old_names_per_file
       ~new_naming_table
       ~dirty_master_files_unchanged_decls
       ~dirty_master_files_changed_decls
@@ -1377,7 +1417,7 @@ let post_saved_state_initialization
     NAMING TABLE.
     See doc of update_naming_table.
   *)
-  let (env, t, new_naming_table) =
+  let (env, t, new_naming_table, old_names_per_file) =
     update_naming_table env genv ~do_indexing ~state_result cgroup_steps
   in
 
@@ -1394,6 +1434,7 @@ let post_saved_state_initialization
       t
       ~cgroup_steps
       ~old_naming_table
+      ~old_names_per_file
       ~new_naming_table
       ~dirty_master_files
       ~dirty_local_files

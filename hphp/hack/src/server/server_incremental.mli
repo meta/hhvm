@@ -28,6 +28,7 @@ val get_old_names_batch :
 
 val get_old_and_new_defs_in_files :
   Naming_table.t ->
+  old_names_per_file:File_info.Old_names.t Relative_path.Map.t ->
   Naming_table.t ->
   Relative_path.Set.t ->
   Decl_compare.VersionedNames.t Relative_path.Map.t
