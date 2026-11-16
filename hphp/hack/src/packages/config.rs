@@ -17,6 +17,7 @@ pub use crate::types::ImplicitPackageMap;
 use crate::types::NameSet;
 pub use crate::types::Package;
 pub use crate::types::PackageMap;
+pub use crate::types::StrictIsolation;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -25,6 +26,8 @@ pub struct Config {
     /// `[implicit_packages]` families. Empty when the section is absent.
     #[serde(default)]
     pub implicit_packages: ImplicitPackageMap,
+    #[serde(default)]
+    pub strict_isolation: StrictIsolation,
 }
 
 /// Splits a (possibly synthesized) package name `F.D` into its family name `F`

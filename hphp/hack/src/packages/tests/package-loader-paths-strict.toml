@@ -1,0 +1,10 @@
+[packages]
+
+[strict_isolation]
+loader_paths = [
+  "//loader-paths/loader/",
+  "//loader-paths/nested/dir/marker.toml",
+  "//loader-paths/missing/",
+  "//loader-paths/loader",
+  "//loader-paths/nested/dir/marker.toml/",
+]

@@ -1,0 +1,10 @@
+[packages]
+
+[strict_isolation]
+loader_paths = [
+  "//loader/nested/",
+  "//loader/",
+  "//loader/deep/file.php",
+  "//loose/script",
+  "//loose/script_extra/",
+]

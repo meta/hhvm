@@ -63,6 +63,14 @@ pub struct Deployment {
     pub soft_packages: Option<NameSet>,
 }
 
+/// The top-level `[strict_isolation]` table.
+#[derive(Debug, Default, Deserialize, Clone, PartialEq, Eq)]
+pub struct StrictIsolation {
+    /// Paths, in `include_paths` syntax, whose code may load classes in any
+    /// strict package by name. None may overlap a strict package or nest under another.
+    pub loader_paths: Option<NameSet>,
+}
+
 impl<'a> Default for &'a NameSet {
     fn default() -> &'a NameSet {
         static SET: LazyLock<NameSet> = LazyLock::new(|| NameSet(IndexSet::default()));

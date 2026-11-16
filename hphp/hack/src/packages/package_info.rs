@@ -80,6 +80,99 @@ impl PackagePathValidator<'_> {
     }
 }
 
+/// Whether normalized package path `path` covers `other`. A directory, or the
+/// empty root, covers everything under it; a file covers only itself.
+fn covers(path: &str, other: &str) -> bool {
+    if path.is_empty() || path.ends_with('/') {
+        other.starts_with(path)
+    } else {
+        other == path
+    }
+}
+
+/// Normalizes `[strict_isolation] loader_paths`, dropping invalid and nested entries
+/// and any that overlap a strict package, so that no strict package can load another.
+fn validate_loader_paths(
+    config: &mut Config,
+    path_validator: &PackagePathValidator<'_>,
+    errors: &mut Vec<Error>,
+) -> Vec<String> {
+    let Some(loader_paths) = config.strict_isolation.loader_paths.take() else {
+        return vec![];
+    };
+    let strict_paths: Vec<(&str, String)> = config
+        .packages
+        .iter()
+        .filter(|(_, package)| package.enable_strict_isolation)
+        .flat_map(|(name, package)| {
+            package
+                .include_paths
+                .iter()
+                .flat_map(|paths| paths.iter())
+                .map(move |path| {
+                    let path = path.get_ref().as_str();
+                    let other =
+                        format!("include_path //{path} of strict package {}", name.get_ref());
+                    (path, other)
+                })
+        })
+        .chain(config.implicit_packages.iter().map(|(name, family)| {
+            let path = family.path.get_ref().as_str();
+            let other = format!(
+                "path //{path} of implicit_packages family {}",
+                name.get_ref()
+            );
+            (path, other)
+        }))
+        .collect();
+
+    let candidates: Vec<Spanned<String>> = loader_paths
+        .iter()
+        .filter_map(|loader_path| {
+            let mut loader_path = loader_path.clone();
+            let validation = path_validator.validate_and_normalize(&mut loader_path, errors);
+            if !validation.valid {
+                return None;
+            }
+            let path = loader_path.get_ref().as_str();
+            if validation.is_directory == Some(false) && path.ends_with('/') {
+                errors.push(Error::package_path_not_directory(
+                    path.to_owned(),
+                    loader_path.span(),
+                ));
+                return None;
+            }
+            // Package membership is a raw prefix match, so a strict file entry
+            // also claims the paths it prefixes.
+            if let Some((_, other)) = strict_paths
+                .iter()
+                .find(|(strict_path, _)| path.starts_with(strict_path) || covers(path, strict_path))
+            {
+                errors.push(Error::loader_path_overlaps_strict_package(
+                    &loader_path,
+                    other.clone(),
+                ));
+                return None;
+            }
+            Some(loader_path)
+        })
+        .collect();
+
+    candidates
+        .iter()
+        .filter(|inner| {
+            let outer = candidates.iter().find(|outer| {
+                outer.get_ref() != inner.get_ref() && covers(outer.get_ref(), inner.get_ref())
+            });
+            if let Some(outer) = outer {
+                errors.push(Error::nested_loader_path(inner, outer.get_ref()));
+            }
+            outer.is_none()
+        })
+        .map(|loader_path| loader_path.get_ref().clone())
+        .collect()
+}
+
 fn validate_implicit_member_paths(config: &Config, packages_toml: &str, errors: &mut Vec<Error>) {
     let packages_toml_path = Path::new(packages_toml).parent().unwrap_or(Path::new("/"));
     let validate_names = |names: &Option<NameSet>, errors: &mut Vec<Error>| {
@@ -133,6 +226,7 @@ pub struct PackageInfo {
     deployments: Option<DeploymentMap>,
     implicit_packages: ImplicitPackageMap,
     include_path_to_package_map: Vec<(String, PackageOrImplicitPackage)>,
+    loader_paths: Vec<String>,
     line_offsets: Vec<usize>,
     errors: Vec<Error>,
 }
@@ -209,6 +303,7 @@ impl PackageInfo {
         if strict {
             validate_implicit_member_paths(&config, packages_toml, &mut errors);
         }
+        let loader_paths = validate_loader_paths(&mut config, &path_validator, &mut errors);
         config.check_config(&mut errors);
 
         // Sort paths in reverse lexicographic order so the first prefix match
@@ -243,6 +338,7 @@ impl PackageInfo {
             deployments: config.deployments,
             implicit_packages: config.implicit_packages,
             include_path_to_package_map,
+            loader_paths,
             line_offsets,
             errors,
         })
@@ -278,6 +374,11 @@ impl PackageInfo {
     /// selects the most specific configured path first.
     pub fn include_path_to_package_map(&self) -> &[(String, PackageOrImplicitPackage)] {
         &self.include_path_to_package_map
+    }
+
+    /// Normalized `[strict_isolation] loader_paths` that passed validation.
+    pub fn loader_paths(&self) -> &[String] {
+        &self.loader_paths
     }
 
     pub fn errors(&self) -> &[Error] {
@@ -913,5 +1014,79 @@ mod test {
             "tmp must include all nested included packages. Missing prod, soft",
         )];
         assert!(errors[0] == expected[0]);
+    }
+
+    #[test]
+    fn test_loader_paths_must_not_overlap_strict_packages() {
+        let test_path = SRCDIR.as_path().join("tests/package-loader-paths.toml");
+        let info = PackageInfo::from_text(false, true, test_path.to_str().unwrap()).unwrap();
+
+        assert_eq!(
+            info.loader_paths(),
+            ["loader/", "loose/loader.php", "loose/script", "strictly/"],
+            "only well-formed paths outside every strict package survive"
+        );
+        assert_eq!(
+            info.errors().iter().map(Error::msg).collect::<Vec<_>>(),
+            vec![
+                "strict_isolation.loader_paths entry //strict/nested/ overlaps include_path //strict/ of strict package strict; entries must lie outside every strict package",
+                "strict_isolation.loader_paths entry //strict_file.php overlaps include_path //strict_file.php of strict package strict; entries must lie outside every strict package",
+                "strict_isolation.loader_paths entry //strict_file.php_extra/ overlaps include_path //strict_file.php of strict package strict; entries must lie outside every strict package",
+                "strict_isolation.loader_paths entry //family/member/ overlaps path //family/ of implicit_packages family family; entries must lie outside every strict package",
+                "strict_isolation.loader_paths entry // overlaps include_path //strict_file.php of strict package strict; entries must lie outside every strict package",
+                "include_path loader-without-slashes/ is malformed: paths must start with // and cannot include ./ or ../, directories must end with /",
+            ]
+        );
+    }
+
+    #[test]
+    fn test_loader_paths_strict_validation() {
+        let test_path = SRCDIR
+            .as_path()
+            .join("tests/package-loader-paths-strict.toml");
+
+        let non_strict = PackageInfo::from_text(false, true, test_path.to_str().unwrap()).unwrap();
+        assert!(
+            non_strict.errors().is_empty(),
+            "non-strict parsing does not consult the filesystem"
+        );
+
+        let strict = PackageInfo::from_text(true, true, test_path.to_str().unwrap()).unwrap();
+        assert_eq!(
+            strict.loader_paths(),
+            [
+                "loader-paths/loader/",
+                "loader-paths/nested/dir/marker.toml"
+            ]
+        );
+        assert_eq!(
+            strict.errors().iter().map(Error::msg).collect::<Vec<_>>(),
+            vec![
+                "include_path loader-paths/missing/ does not exist",
+                "include_path loader-paths/loader is malformed: paths must start with // and cannot include ./ or ../, directories must end with /",
+                "package path //loader-paths/nested/dir/marker.toml/ must be a directory",
+            ]
+        );
+    }
+
+    #[test]
+    fn test_loader_paths_must_not_nest() {
+        let test_path = SRCDIR
+            .as_path()
+            .join("tests/package-loader-paths-nested.toml");
+        let info = PackageInfo::from_text(false, true, test_path.to_str().unwrap()).unwrap();
+
+        assert_eq!(
+            info.loader_paths(),
+            ["loader/", "loose/script", "loose/script_extra/"],
+            "a file entry covers only itself, so it does not contain the directory it prefixes"
+        );
+        assert_eq!(
+            info.errors().iter().map(Error::msg).collect::<Vec<_>>(),
+            vec![
+                "strict_isolation.loader_paths entry //loader/nested/ is nested under entry //loader/; entries must not be nested",
+                "strict_isolation.loader_paths entry //loader/deep/file.php is nested under entry //loader/; entries must not be nested",
+            ]
+        );
     }
 }

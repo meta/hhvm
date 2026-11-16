@@ -85,6 +85,18 @@ pub enum Error {
         name: String,
         span: (usize, usize),
     },
+    LoaderPathOverlapsStrictPackage {
+        path: String,
+        /// The strict package's conflicting path, already rendered (e.g.
+        /// "include_path //a/ of strict package foo").
+        other: String,
+        span: (usize, usize),
+    },
+    NestedLoaderPath {
+        path: String,
+        outer: String,
+        span: (usize, usize),
+    },
 }
 
 impl Error {
@@ -235,6 +247,24 @@ impl Error {
         }
     }
 
+    pub fn loader_path_overlaps_strict_package(path: &Spanned<String>, other: String) -> Self {
+        let Range { start, end } = path.span();
+        Self::LoaderPathOverlapsStrictPackage {
+            path: path.get_ref().into(),
+            other,
+            span: (start, end),
+        }
+    }
+
+    pub fn nested_loader_path(path: &Spanned<String>, outer: &str) -> Self {
+        let Range { start, end } = path.span();
+        Self::NestedLoaderPath {
+            path: path.get_ref().into(),
+            outer: outer.into(),
+            span: (start, end),
+        }
+    }
+
     pub fn span(&self) -> (usize, usize) {
         match self {
             Self::DuplicateIncludePath { span, .. }
@@ -252,7 +282,9 @@ impl Error {
             | Self::ImplicitFamilyNameInvalid { span, .. }
             | Self::ImplicitMemberNameInvalid { span, .. }
             | Self::ImplicitMemberDoesNotExist { span, .. }
-            | Self::DynamicClassLoadErrorRequiresStrictIsolation { span, .. } => *span,
+            | Self::DynamicClassLoadErrorRequiresStrictIsolation { span, .. }
+            | Self::LoaderPathOverlapsStrictPackage { span, .. }
+            | Self::NestedLoaderPath { span, .. } => *span,
         }
     }
 
@@ -388,6 +420,20 @@ impl Display for Error {
                     f,
                     "Package {} must enable strict isolation to raise dynamic class load errors",
                     name
+                )?;
+            }
+            Self::LoaderPathOverlapsStrictPackage { path, other, .. } => {
+                write!(
+                    f,
+                    "strict_isolation.loader_paths entry //{} overlaps {}; entries must lie outside every strict package",
+                    path, other
+                )?;
+            }
+            Self::NestedLoaderPath { path, outer, .. } => {
+                write!(
+                    f,
+                    "strict_isolation.loader_paths entry //{} is nested under entry //{}; entries must not be nested",
+                    path, outer
                 )?;
             }
         };

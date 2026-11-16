@@ -1,0 +1,27 @@
+[packages]
+
+[packages.loose]
+include_paths = ["//loose/"]
+
+[packages.strict]
+include_paths = ["//strict/", "//strict_file.php", "//loose/script_helpers/"]
+enable_strict_isolation = true
+
+[implicit_packages]
+
+[implicit_packages.family]
+path = "//family/"
+
+[strict_isolation]
+loader_paths = [
+  "//loader/",
+  "//loose/loader.php",
+  "//loose/script",
+  "//strictly/",
+  "//strict/nested/",
+  "//strict_file.php",
+  "//strict_file.php_extra/",
+  "//family/member/",
+  "//",
+  "loader-without-slashes/",
+]
