@@ -121,27 +121,29 @@ let decl_files ~type_check_testing_hooks ctx filel =
 
 let compare_decls_and_get_fanout
     ctx
+    ~during_init
     (defs_per_file : Decl_compare.VersionedNames.t Relative_path.Map.t)
     (filel : Relative_path.t list) : Fanout.t * int =
   let all_defs =
-    List.fold filel ~init:Decl_compare.VersionedNames.empty ~f:(fun acc fn ->
-        Relative_path.Map.find defs_per_file fn
-        |> Decl_compare.VersionedNames.merge acc)
-  in
-  (* Fetching everything at once is faster *)
-  let (old_funs, old_types, old_consts, old_modules) =
-    let { File_info.n_classes = _; n_funs; n_types; n_consts; n_modules } =
-      File_info.Old_names.to_names
-        all_defs.Decl_compare.VersionedNames.old_names
+    let add_file acc fn =
+      Decl_compare.VersionedNames.merge
+        acc
+        (Relative_path.Map.find defs_per_file fn)
     in
-    Old_decl_provider.get_old_non_classes_batch
-      ~funs:n_funs
-      ~types:n_types
-      ~consts:n_consts
-      ~modules:n_modules
+    List.fold filel ~init:Decl_compare.VersionedNames.empty ~f:add_file
   in
   let { Decl_compare.VersionedFileInfo.Diff.funs; types; gconsts; modules } =
     Decl_compare.VersionedFileInfo.diff_names all_defs
+  in
+  let (old_funs, old_types, old_consts, old_modules) =
+    Old_decl_provider.get_old_non_classes_batch
+      ctx
+      ~during_init
+      ~old_names:all_defs.Decl_compare.VersionedNames.old_names
+      ~funs:funs.Decl_compare.VersionedSSet.kept
+      ~types:types.Decl_compare.VersionedSSet.kept
+      ~consts:gconsts.Decl_compare.VersionedSSet.kept
+      ~modules:modules.Decl_compare.VersionedSSet.kept
   in
   let acc = Fanout.empty in
   let (acc, old_funs_missing) =
@@ -179,12 +181,13 @@ let decl_files_job ctx filel =
     Out_channel.flush stdout;
     Exception.reraise e
 
-let load_defs_compare_and_get_fanout ctx _acc (filel : Relative_path.t list) :
+let load_defs_compare_and_get_fanout
+    ctx ~during_init _acc (filel : Relative_path.t list) :
     (Fanout.t * int) * int =
   try
     let defs_per_file = OnTheFlyStore.load () in
     let (fanout, old_decl_missing_count) =
-      compare_decls_and_get_fanout ctx defs_per_file filel
+      compare_decls_and_get_fanout ctx ~during_init defs_per_file filel
     in
     ((fanout, List.length filel), old_decl_missing_count)
   with
@@ -232,6 +235,7 @@ let merge_compute_deps
   Return errors raised during decling, fanout and missing old decl count. *)
 let parallel_redecl_compare_and_get_fanout
     (ctx : Provider_context.t)
+    ~during_init
     (workers : Multi_worker.worker list option)
     (bucket_size : int)
     (defs_per_file : Decl_compare.VersionedNames.t Relative_path.Map.t)
@@ -267,7 +271,7 @@ let parallel_redecl_compare_and_get_fanout
     let (fanout, old_decl_missing_count) =
       Multi_worker.call
         workers
-        ~job:(load_defs_compare_and_get_fanout ctx)
+        ~job:(load_defs_compare_and_get_fanout ctx ~during_init)
         ~neutral:compute_deps_neutral
         ~merge:(merge_compute_deps files_initial_count files_computed_count)
         ~next:(Multi_worker.next ~max_size:bucket_size workers fnl)
@@ -615,12 +619,18 @@ let redo_type_decl
     if List.length fnl < 10 then
       let () = decl_files ~type_check_testing_hooks ctx fnl in
       let (fanout, old_decl_missing_count) =
-        compare_decls_and_get_fanout ctx defs fnl
+        compare_decls_and_get_fanout ctx ~during_init defs fnl
       in
       (fanout, old_decl_missing_count)
     else
       let (fanout, old_decl_missing_count) =
-        parallel_redecl_compare_and_get_fanout ctx workers bucket_size defs fnl
+        parallel_redecl_compare_and_get_fanout
+          ctx
+          ~during_init
+          workers
+          bucket_size
+          defs
+          fnl
       in
       let fanout =
         reconcile_parallel_redecl_fanout

@@ -8,12 +8,17 @@
 
 val fetch_old_decls :
   ctx:Provider_context.t ->
-  string list ->
-  Shallow_decl_defs.shallow_class option S_map.t
+  Typing_deps.Dep.dependent Typing_deps.Dep.variant list ->
+  Shallow_decl_defs.named_decl list
 
 module Utils : sig
-  val name_to_file_hash_opt :
-    name:string ->
+  val dep_to_decl_hash_opt :
+    dep:Typing_deps.Dep.dependent Typing_deps.Dep.variant ->
+    db_path:Naming_sqlite.db_path ->
+    string option
+
+  val dep_to_file_hash_opt :
+    dep:Typing_deps.Dep.dependent Typing_deps.Dep.variant ->
     db_path:Naming_sqlite.db_path ->
     (Relative_path.t * string) option
 

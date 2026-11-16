@@ -9,7 +9,9 @@ open Hh_prelude
 
 type files = (string * string) list
 
-type action = Write_file of string * string
+type action =
+  | Write_file of string * string
+  | Evict_decls of File_info.names
 
 type type_check_step =
   | Check of {
@@ -148,9 +150,24 @@ let write_files root files =
       Sys_utils.write_file ~file contents)
 
 let action_files actions =
-  List.map actions ~f:(function Write_file (path, contents) -> (path, contents))
+  let written_file = function
+    | Write_file (path, contents) -> Some (path, contents)
+    | Evict_decls _ -> None
+  in
+  List.filter_map actions ~f:written_file
 
-let run_actions root actions = write_files root (action_files actions)
+let run_actions root actions =
+  let run_action = function
+    | Write_file (path, contents) -> write_files root [(path, contents)]
+    | Evict_decls names ->
+      if not (S_set.is_empty names.File_info.n_classes) then
+        invalid_arg "Evict_decls does not support classes";
+      (match Provider_backend.get () with
+      | Provider_backend.Rust_provider_backend backend ->
+        Rust_provider_backend.Decl.remove_defs backend names
+      | _ -> failwith "Declaration eviction requires the Rust provider")
+  in
+  List.iter actions ~f:run_action
 
 let parsing_paths root files =
   List.map files ~f:(fun suffix ->

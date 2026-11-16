@@ -21,6 +21,48 @@ let caller = "<?hh\nfunction caller(): int { return value(); }\n"
 
 let initial_files = [("value.php", int_definition); ("caller.php", caller)]
 
+(** Evicting a cached function before a comment-only edit must add its caller
+    to conservative fanout. The control run keeps the declaration cached and
+    checks only the edited file, so a no-op eviction action cannot pass. *)
+let test_evict_decls () : bool =
+  let open Scheduled_fanout in
+  let initial_files = [("defs.php", int_definition); ("use.php", caller)] in
+  let names : File_info.names =
+    { File_info.empty_names with n_funs = S_set.singleton "\\value" }
+  in
+  let iteration =
+    {
+      default_iteration with
+      before_type_check =
+        [Write_file ("defs.php", int_definition ^ "// comment-only edit\n")];
+      disk_needs_parsing = ["defs.php"];
+      type_check = [Check { file = "defs.php"; after_check = [] }];
+    }
+  in
+  (* The baseline check populates the function cache. Its unchanged declaration
+     excludes use.php from fanout when the cache is retained. *)
+  run ~expected_diagnostics:[] { initial_files; iterations = [iteration] };
+  (* Eviction removes the comparison baseline, requiring use.php to be checked
+     despite the declaration itself being unchanged. *)
+  run
+    ~expected_diagnostics:[]
+    {
+      initial_files;
+      iterations =
+        [
+          {
+            iteration with
+            before_type_check = Evict_decls names :: iteration.before_type_check;
+            type_check =
+              [
+                Check { file = "defs.php"; after_check = [] };
+                Check { file = "use.php"; after_check = [] };
+              ];
+          };
+        ];
+    };
+  true
+
 (** A second iteration must use the disk contents written after the first
     iteration's indexing, while retaining the existing caller dependency. The
     final return type is deliberately incompatible with the unchanged caller so
@@ -623,6 +665,7 @@ let () =
   Daemon.check_entry_point ();
   Unit_test.run_all
     [
+      ("evict_decls", test_evict_decls);
       ("change_after_indexing", test_change_after_indexing);
       ("change_between_redeclarations", test_change_between_redeclarations);
       ("redecl_hook_runs_after_file", test_redecl_hook_runs_after_file);

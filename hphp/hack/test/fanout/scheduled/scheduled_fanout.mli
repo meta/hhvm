@@ -13,6 +13,13 @@ type action =
   | Write_file of string * string
       (** Replace or create a file. Writes do not queue parsing or invalidate
           provider caches. *)
+  | Evict_decls of File_info.names
+      (** Remove the named current non-class declarations from shared memory
+          and the Rust local cache, and clear all OCaml declaration caches.
+          This is stronger than real shared-memory eviction, which can leave
+          local caches warm. It models observing eviction later with cold local
+          caches. Class eviction is unsupported: [n_classes] must be empty.
+          Names are fully qualified. Does not queue parsing or change naming. *)
 
 type type_check_step =
   | Check of {
@@ -145,7 +152,8 @@ val expect_known_fanout_bug :
 
     [remote_old_decls_include_non_class] sets the non-class fetching feature flag
     and enables old hash population. It defaults to [false]. Without a fixture,
-    remote fetching stays disabled even when this flag is [true].
+    remote fetching stays disabled even when this flag is [true]. With a fixture,
+    this flag also enables missing non-class recovery.
     TODO(T298623016): Populate old hashes independently of this flag.
 
     [disable_rust_provider_shallow_decl_invalidation] preserves Rust shallow

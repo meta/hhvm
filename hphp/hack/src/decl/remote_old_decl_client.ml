@@ -53,20 +53,34 @@ let fetch_old_decls_from_test_fixture
       None
   | _ -> None
 
+let dep_of_named_decl (decl : Shallow_decl_defs.named_decl) : Typing_deps.Dep.t
+    =
+  let open Shallow_decl_defs in
+  let open Typing_deps in
+  match decl with
+  | NClass (name, _)
+  | NTypedef (name, _) ->
+    Dep.make (Dep.Type name)
+  | NFun (name, _) -> Dep.make (Dep.Fun name)
+  | NConst (name, _) -> Dep.make (Dep.GConst name)
+  | NModule (name, _) -> Dep.make (Dep.Module name)
+
 module Utils = struct
   let db_path_of_ctx ~(ctx : Provider_context.t) : Naming_sqlite.db_path option
       =
     ctx |> Provider_context.get_backend |> Db_path_provider.get_naming_db_path
 
-  let name_to_decl_hash_opt ~(name : string) ~(db_path : Naming_sqlite.db_path)
-      =
-    let dep = Typing_deps.(Dep.make (Dep.Type name)) in
+  let dep_to_decl_hash_opt
+      ~(dep : Typing_deps.Dep.dependent Typing_deps.Dep.variant)
+      ~(db_path : Naming_sqlite.db_path) : string option =
+    let dep = Typing_deps.Dep.make dep in
     let decl_hash = Naming_sqlite.get_decl_hash_by_64bit_dep db_path dep in
     decl_hash
 
-  let name_to_file_hash_opt ~(name : string) ~(db_path : Naming_sqlite.db_path)
-      =
-    let dep = Typing_deps.(Dep.make (Dep.Type name)) in
+  let dep_to_file_hash_opt
+      ~(dep : Typing_deps.Dep.dependent Typing_deps.Dep.variant)
+      ~(db_path : Naming_sqlite.db_path) : (Relative_path.t * string) option =
+    let dep = Typing_deps.Dep.make dep in
     let file_hash = Naming_sqlite.get_file_hash_by_64bit_dep db_path dep in
     file_hash
 end
@@ -74,23 +88,39 @@ end
 let fetch_old_decls_via_file_hashes
     ~(ctx : Provider_context.t)
     ~(db_path : Naming_sqlite.db_path)
-    (names : string list) : Shallow_decl_defs.shallow_class option S_map.t =
-  (* TODO(bobren): names should really be a list of deps *)
-  let file_hashes =
-    List.filter_map
-      ~f:(fun name ->
-        match Utils.name_to_file_hash_opt ~name ~db_path with
-        | Some (path, hash) ->
-          Hh_logger.log
-            "Fetching decl for %s defined in %s from blob %s"
-            name
-            Relative_path.(suffix path)
-            hash;
-          Some (path, hash)
-        | None ->
-          Hh_logger.log "Missing entry for %s" name;
-          None)
-      names
+    (deps : Typing_deps.Dep.dependent Typing_deps.Dep.variant list) :
+    Shallow_decl_defs.named_decl list =
+  let add_requested_file (file_hashes, owners) dep =
+    let name = Typing_deps.Dep.extract_name dep in
+    match Utils.dep_to_file_hash_opt ~dep ~db_path with
+    | Some (path, hash) ->
+      Hh_logger.log
+        "Fetching decl for %s defined in %s from blob %s"
+        name
+        Relative_path.(suffix path)
+        hash;
+      ( (path, hash) :: file_hashes,
+        Typing_deps.DepMap.add (Typing_deps.Dep.make dep) path owners )
+    | None ->
+      Hh_logger.log "Missing entry for %s" name;
+      (file_hashes, owners)
+  in
+  let (file_hashes, owners) =
+    List.fold deps ~init:([], Typing_deps.DepMap.empty) ~f:add_requested_file
+  in
+  let is_requested_owner decl =
+    let open Shallow_decl_defs in
+    let pos =
+      match decl with
+      | NClass (_, decl) -> fst decl.sc_name
+      | NFun (_, decl) -> decl.Typing_defs.fe_pos
+      | NTypedef (_, decl) -> decl.Typing_defs.td_pos
+      | NConst (_, decl) -> decl.Typing_defs.cd_pos
+      | NModule (_, decl) -> decl.Typing_defs.mdt_pos
+    in
+    match Typing_deps.DepMap.find_opt (dep_of_named_decl decl) owners with
+    | None -> false
+    | Some path -> Relative_path.equal path (Pos_or_decl.filename pos)
   in
   let popt = Provider_context.get_popt ctx in
   let opts = Decl_parser_options.from_parser_options popt in
@@ -101,44 +131,40 @@ let fetch_old_decls_via_file_hashes
   in
   match result with
   | Ok named_old_decls ->
-    (* TODO(bobren) do funs typedefs consts and modules *)
-    let old_decls =
-      List.fold
-        ~init:S_map.empty
-        ~f:(fun acc ndecl ->
-          match ndecl with
-          | Shallow_decl_defs.NClass (name, cls) ->
-            S_map.add name (Some cls) acc
-          | _ -> acc)
-        named_old_decls
-    in
-    old_decls
+    (* Loading whole files also returns declarations we did not request.
+       Keep only requested dependencies whose declaration comes from the owner
+       file recorded in the saved-state naming DB. A duplicate in another loaded
+       file must not replace that owner's declaration. This applies equally to
+       fixture files and files downloaded from CAS. *)
+    List.filter named_old_decls ~f:is_requested_owner
   | Error msg ->
     Hh_logger.log "Error fetching remote decls: %s" msg;
-    S_map.empty
+    []
 
-let fetch_old_decls ~(ctx : Provider_context.t) (names : string list) :
-    Shallow_decl_defs.shallow_class option S_map.t =
+let fetch_old_decls
+    ~(ctx : Provider_context.t)
+    (deps : Typing_deps.Dep.dependent Typing_deps.Dep.variant list) :
+    Shallow_decl_defs.named_decl list =
   let db_path_opt = Utils.db_path_of_ctx ~ctx in
   match db_path_opt with
-  | None -> S_map.empty
+  | None -> []
   | Some db_path ->
     let decl_hashes =
       List.filter_map
-        ~f:(fun name -> Utils.name_to_decl_hash_opt ~name ~db_path)
-        names
+        ~f:(fun dep -> Utils.dep_to_decl_hash_opt ~dep ~db_path)
+        deps
     in
     let start_t = Unix.gettimeofday () in
-    let old_decls = fetch_old_decls_via_file_hashes ~ctx ~db_path names in
+    let old_decls = fetch_old_decls_via_file_hashes ~ctx ~db_path deps in
     let to_fetch = List.length decl_hashes in
     let telemetry =
       Telemetry.create ()
       |> Telemetry.int_ ~key:"to_fetch" ~value:to_fetch
-      |> Telemetry.int_ ~key:"fetched" ~value:(S_map.cardinal old_decls)
+      |> Telemetry.int_ ~key:"fetched" ~value:(List.length old_decls)
     in
     Hack_event_logger.remote_old_decl_end telemetry start_t;
     Hh_logger.log
       "Fetched %d/%d decls remotely"
-      (S_map.cardinal old_decls)
+      (List.length old_decls)
       to_fetch;
     old_decls

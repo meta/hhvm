@@ -14,6 +14,10 @@ incremental check to repair stale state before comparison.
 
 Tests use the Rust provider and serial execution, with declaration prefetching
 disabled. Temporary Hack sources are parsed and typechecked.
+`Evict_decls` actions remove selected current non-class declarations and clear
+local caches, so tests can force missing old declarations during redeclaration.
+This is stronger than real shared-memory eviction, which can leave local caches
+warm; it models observing the evicted state later with cold local caches.
 
 See [scheduled_fanout.mli](scheduled_fanout.mli) for the scenario API. Keep
 harness self-tests separate from active bug repros under
