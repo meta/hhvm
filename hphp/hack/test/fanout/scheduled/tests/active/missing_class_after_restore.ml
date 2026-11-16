@@ -175,7 +175,7 @@ function use_c(): void {
            full = [];
          })
     ~initialization:Saved_state
-    ~remote_old_decls:class_contents
+    ~remote_old_decls:[("ZC.php", class_contents)]
     scenario;
   true
 

@@ -20,6 +20,12 @@ harness self-tests separate from active bug repros under
 `tests/active/`. See [the active bug index](tests/active/README.md).
 Other tests belong directly in `tests/`.
 
+Remote old-declaration fixtures are files at their original repository-relative
+paths, provided through `remote_old_decls`. Only files selected by the normal
+saved-state lookup are loaded from the fixture folder, which lives outside the
+checked repository. `tests/remote_old_decls.ml` covers the class regression
+formerly in the Python integration suite.
+
 Tests for fanout bugs that have not been fixed yet can use
 `run_expect_bug` to specify the expected diagnostic difference or internal
 typechecker error. If the bug stops reproducing, the test fails with instructions

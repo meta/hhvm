@@ -44,7 +44,7 @@ let test_edit_after_dirty_snapshot () =
            after_dirty_snapshot =
              [Write_file ("Class.php", changed_class_contents)];
          })
-    ~remote_old_decls:initial_class_contents
+    ~remote_old_decls:[("Class.php", initial_class_contents)]
     {
       initial_files =
         [

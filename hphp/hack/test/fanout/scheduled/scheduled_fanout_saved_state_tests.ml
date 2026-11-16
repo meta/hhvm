@@ -108,7 +108,7 @@ class C {
   in
   run
     ~initialization:Saved_state
-    ~remote_old_decls:class_contents
+    ~remote_old_decls:[("C.php", class_contents)]
     {
       initial_files =
         [

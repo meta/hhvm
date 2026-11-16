@@ -166,15 +166,23 @@ let parser_options =
       use_legacy_experimental_feature_config = false;
     }
 
-let setup ~root ~hhi ~tmp ~remote_old_decls =
+let setup
+    ~root
+    ~hhi
+    ~tmp
+    ~remote_old_decls
+    ~(disable_rust_provider_shallow_decl_invalidation : bool) =
   Unix.putenv "HH_TEST_MODE" "1";
-  Option.iter remote_old_decls ~f:(fun contents ->
-      let directory = Filename.concat tmp "remote_old_decls" in
-      Sys_utils.mkdir_p directory;
-      Sys_utils.write_file
-        ~file:(Filename.concat directory ".hh_remote_old_decls_test")
-        contents;
-      Unix.putenv "HH_LOCALCONF_PATH" directory);
+  let write_fixture files =
+    let directory = Filename.concat tmp "remote_old_decls" in
+    let fixture_directory =
+      Filename.concat directory ".hh_remote_old_decls_test"
+    in
+    Sys_utils.mkdir_p fixture_directory;
+    write_files fixture_directory files;
+    Unix.putenv "HH_LOCALCONF_PATH" directory
+  in
+  Option.iter remote_old_decls ~f:write_fixture;
   Printexc.record_backtrace true;
   Folly.ensure_folly_init ();
   Event_logger.init_fake ();
@@ -197,6 +205,8 @@ let setup ~root ~hhi ~tmp ~remote_old_decls =
       ~po:parser_options
       ~tco_fetch_remote_old_decls:(Option.is_some remote_old_decls)
       ~tco_only_fetch_remote_old_decl_during_init:false
+      ~tco_disable_rust_provider_shallow_decl_invalidation:
+        disable_rust_provider_shallow_decl_invalidation
       ~tco_populate_member_heaps:false
       Global_options.default
   in
@@ -509,14 +519,31 @@ type child_request = {
   tmp: string;
   initialization: initialization;
   saved_state: Scheduled_fanout_saved_state.t option;
-  remote_old_decls: string option;
+  remote_old_decls: files option;
+  disable_rust_provider_shallow_decl_invalidation: bool;
   check: child_check;
 }
 
 let run_child
-    ({ root; hhi; tmp; initialization; saved_state; remote_old_decls; check } :
+    ({
+       root;
+       hhi;
+       tmp;
+       initialization;
+       saved_state;
+       remote_old_decls;
+       disable_rust_provider_shallow_decl_invalidation;
+       check;
+     } :
       child_request) =
-  let (genv, env) = setup ~root ~hhi ~tmp ~remote_old_decls in
+  let (genv, env) =
+    setup
+      ~root
+      ~hhi
+      ~tmp
+      ~remote_old_decls
+      ~disable_rust_provider_shallow_decl_invalidation
+  in
   let env =
     match check with
     | Incremental { initial_files; iterations } ->
@@ -643,6 +670,7 @@ let in_process ~name request =
 let run
     ?(initialization = Full_check)
     ?remote_old_decls
+    ?(disable_rust_provider_shallow_decl_invalidation : bool = false)
     ?(expected_diagnostics : (string * int * string) list option)
     ({ initial_files; iterations } as scenario) =
   if List.is_empty iterations then
@@ -685,6 +713,7 @@ let run
         initialization;
         saved_state;
         remote_old_decls;
+        disable_rust_provider_shallow_decl_invalidation;
         check = Incremental scenario;
       }
   in
@@ -734,6 +763,7 @@ let run
         initialization;
         saved_state;
         remote_old_decls = None;
+        disable_rust_provider_shallow_decl_invalidation;
         check = Fresh_check final_files;
       }
   in
@@ -768,8 +798,13 @@ let run
              expected
              (format full)))
 
-let run_expect_bug ?initialization ?remote_old_decls ~bug ~expectation scenario
-    =
+let run_expect_bug
+    ?initialization
+    ?remote_old_decls
+    ?disable_rust_provider_shallow_decl_invalidation
+    ~bug
+    ~expectation
+    scenario =
   let matches =
     match expectation with
     | Diagnostics { incremental; full } ->
@@ -779,5 +814,11 @@ let run_expect_bug ?initialization ?remote_old_decls ~bug ~expectation scenario
       | Internal_typechecker_error actual -> String.equal expected actual
       | _ -> false)
   in
-  expect_known_fanout_bug ~bug ~matches (fun () ->
-      run ?initialization ?remote_old_decls scenario)
+  let check () =
+    run
+      ?initialization
+      ?remote_old_decls
+      ?disable_rust_provider_shallow_decl_invalidation
+      scenario
+  in
+  expect_known_fanout_bug ~bug ~matches check

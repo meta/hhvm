@@ -134,16 +134,20 @@ val expect_known_fanout_bug :
     Positions and reason messages are ignored; order does not matter and
     duplicate entries are retained. An empty list requires no diagnostics.
 
-    [remote_old_decls] supplies Hack source for the old-declaration client's
-    existing test fixture. It enables fetching missing old class declarations
-    during initialization and incremental iterations; all fetches read that
-    fixture. Requires either saved-state initialization variant, because the
-    client requires a naming database.
-    The fixture is outside the repository, and the independent full check keeps
-    remote old declarations disabled. *)
+    [remote_old_decls] supplies fixture files at their original repository-relative
+    paths. It enables fetching missing old class declarations during initialization
+    and incremental iterations. Normal saved-state file selection determines
+    which fixture files are read; absent files act as unavailable remote blobs.
+    Requires either saved-state initialization variant, because the client requires
+    a naming database. The fixture folder is outside the repository, and the
+    independent full check keeps remote old declarations disabled.
+
+    [disable_rust_provider_shallow_decl_invalidation] preserves Rust shallow
+    declarations when invalidating folded classes. It defaults to [false]. *)
 val run :
   ?initialization:initialization ->
-  ?remote_old_decls:string ->
+  ?remote_old_decls:files ->
+  ?disable_rust_provider_shallow_decl_invalidation:bool ->
   ?expected_diagnostics:(string * int * string) list ->
   scenario ->
   unit
@@ -168,7 +172,8 @@ type bug_expectation =
     agree, fail with [bug] and instructions to remove the wrapper. *)
 val run_expect_bug :
   ?initialization:initialization ->
-  ?remote_old_decls:string ->
+  ?remote_old_decls:files ->
+  ?disable_rust_provider_shallow_decl_invalidation:bool ->
   bug:string ->
   expectation:bug_expectation ->
   scenario ->
