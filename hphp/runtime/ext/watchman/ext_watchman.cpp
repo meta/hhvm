@@ -374,7 +374,6 @@ struct WatchmanExtension final : Extension {
   // (INIT entry-point) this needs more fine grained control over locking as
   // described inline.
   void moduleShutdown() override {
-    WatchmanThreadEventBase::Get()->drain();
     WatchmanThreadEventBase::Free();
   }
 
