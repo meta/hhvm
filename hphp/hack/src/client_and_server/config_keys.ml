@@ -544,6 +544,9 @@ module Hhconf = struct
   let only_fetch_remote_old_decl_during_init =
     hhconf_key "only_fetch_remote_old_decl_during_init"
 
+  let remote_old_decl_fetching_include_non_class =
+    hhconf_key "remote_old_decl_fetching_include_non_class"
+
   let disable_rust_provider_shallow_decl_invalidation =
     hhconf_key "disable_rust_provider_shallow_decl_invalidation"
 

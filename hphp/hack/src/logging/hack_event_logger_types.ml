@@ -79,6 +79,8 @@ type rollout_flags = {
       (** POC: @bobren - Fetching old decls remotely to reduce fanout *)
   only_fetch_remote_old_decl_during_init: bool;
       (** POC: @mojpc2, whether remote old decl fetches are restricted to init *)
+  remote_old_decl_fetching_include_non_class: bool;
+      (** Include non-class declarations in remote old decl fetching. *)
   disable_rust_provider_shallow_decl_invalidation: bool;
       (** POC: @mojpc2, preserve Rust shallow decls when invalidating folded decls *)
   enable_annotation_agnostic_decl_diffing: bool;

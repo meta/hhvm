@@ -82,6 +82,7 @@ let default =
     populate_member_heaps = true;
     fetch_remote_old_decls = true;
     only_fetch_remote_old_decl_during_init = true;
+    remote_old_decl_fetching_include_non_class = false;
     disable_rust_provider_shallow_decl_invalidation = false;
     enable_annotation_agnostic_decl_diffing = false;
     skip_hierarchy_checks = false;
@@ -693,6 +694,13 @@ let load_
       ~current_version
       config
   in
+  let remote_old_decl_fetching_include_non_class =
+    bool_if_min_version
+      Config_keys.Hhconf.remote_old_decl_fetching_include_non_class
+      ~default:default.remote_old_decl_fetching_include_non_class
+      ~current_version
+      config
+  in
   let disable_rust_provider_shallow_decl_invalidation =
     bool_if_min_version
       Config_keys.Hhconf.disable_rust_provider_shallow_decl_invalidation
@@ -1285,6 +1293,7 @@ let load_
     populate_member_heaps;
     fetch_remote_old_decls;
     only_fetch_remote_old_decl_during_init;
+    remote_old_decl_fetching_include_non_class;
     disable_rust_provider_shallow_decl_invalidation;
     enable_annotation_agnostic_decl_diffing;
     skip_hierarchy_checks;
@@ -1421,6 +1430,8 @@ let to_rollout_flags (options : t) : Hack_event_logger.rollout_flags =
       fetch_remote_old_decls = options.fetch_remote_old_decls;
       only_fetch_remote_old_decl_during_init =
         options.only_fetch_remote_old_decl_during_init;
+      remote_old_decl_fetching_include_non_class =
+        options.remote_old_decl_fetching_include_non_class;
       disable_rust_provider_shallow_decl_invalidation =
         options.disable_rust_provider_shallow_decl_invalidation;
       enable_annotation_agnostic_decl_diffing =

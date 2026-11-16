@@ -113,6 +113,7 @@ type t = {
   log_levels: int S_map.t;
   tco_fetch_remote_old_decls: bool;
   tco_only_fetch_remote_old_decl_during_init: bool;
+  tco_remote_old_decl_fetching_include_non_class: bool;
   tco_disable_rust_provider_shallow_decl_invalidation: bool;
   tco_enable_annotation_agnostic_decl_diffing: bool;
   tco_populate_member_heaps: bool;
@@ -224,6 +225,7 @@ let default =
     log_levels = S_map.empty;
     tco_fetch_remote_old_decls = true;
     tco_only_fetch_remote_old_decl_during_init = true;
+    tco_remote_old_decl_fetching_include_non_class = false;
     tco_disable_rust_provider_shallow_decl_invalidation = false;
     tco_enable_annotation_agnostic_decl_diffing = false;
     tco_populate_member_heaps = true;
@@ -334,6 +336,7 @@ let set
     ?log_levels
     ?tco_fetch_remote_old_decls
     ?tco_only_fetch_remote_old_decl_during_init
+    ?tco_remote_old_decl_fetching_include_non_class
     ?tco_disable_rust_provider_shallow_decl_invalidation
     ?tco_enable_annotation_agnostic_decl_diffing
     ?tco_populate_member_heaps
@@ -482,6 +485,10 @@ let set
       setting
         tco_only_fetch_remote_old_decl_during_init
         options.tco_only_fetch_remote_old_decl_during_init;
+    tco_remote_old_decl_fetching_include_non_class =
+      setting
+        tco_remote_old_decl_fetching_include_non_class
+        options.tco_remote_old_decl_fetching_include_non_class;
     tco_disable_rust_provider_shallow_decl_invalidation =
       setting
         tco_disable_rust_provider_shallow_decl_invalidation

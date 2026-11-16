@@ -298,6 +298,8 @@ type t = {
       (** Option to fetch old decls from remote decl store *)
   only_fetch_remote_old_decl_during_init: bool;
       (** Restrict remote old decl fetches to init-time fanout. *)
+  remote_old_decl_fetching_include_non_class: bool;
+      (** Include non-class declarations in remote old decl fetching. *)
   disable_rust_provider_shallow_decl_invalidation: bool;
       (** Preserve Rust shallow decls when invalidating folded decls. *)
   enable_annotation_agnostic_decl_diffing: bool;

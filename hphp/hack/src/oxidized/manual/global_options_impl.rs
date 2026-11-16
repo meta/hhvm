@@ -63,6 +63,7 @@ impl Default for GlobalOptions {
             log_levels: s_map::SMap::new(),
             tco_fetch_remote_old_decls: true,
             tco_only_fetch_remote_old_decl_during_init: true,
+            tco_remote_old_decl_fetching_include_non_class: false,
             tco_disable_rust_provider_shallow_decl_invalidation: false,
             tco_enable_annotation_agnostic_decl_diffing: false,
             tco_populate_member_heaps: true,

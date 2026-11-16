@@ -489,6 +489,8 @@ module Hhconf : sig
 
   val only_fetch_remote_old_decl_during_init : string
 
+  val remote_old_decl_fetching_include_non_class : string
+
   val disable_rust_provider_shallow_decl_invalidation : string
 
   val enable_annotation_agnostic_decl_diffing : string
