@@ -153,10 +153,11 @@
   (pps ppx_deriving.std)))
 
 (library
- (name old_shallow_classes_provider)
- (modules old_shallow_classes_provider)
+ (name old_decl_provider)
+ (modules old_decl_provider)
  (libraries
   bloom_filter
+  decl_heap
   direct_decl_utils
   provider_backend
   provider_context

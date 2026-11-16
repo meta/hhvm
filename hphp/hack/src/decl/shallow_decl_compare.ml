@@ -54,7 +54,7 @@ let compute_class_diffs
       acc
   in
   let old_classes =
-    Old_shallow_classes_provider.get_old_batch ctx ~during_init kept
+    Old_decl_provider.get_old_classes_batch ctx ~during_init kept
   in
   let new_classes =
     S_set.fold

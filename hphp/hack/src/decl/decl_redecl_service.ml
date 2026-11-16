@@ -133,26 +133,11 @@ let compare_decls_and_get_fanout
     let { File_info.n_classes = _; n_funs; n_types; n_consts; n_modules } =
       all_defs.Decl_compare.VersionedNames.old_names
     in
-    match Provider_backend.get () with
-    | Provider_backend.Rust_provider_backend be ->
-      let non_class_defs =
-        {
-          File_info.n_funs;
-          n_classes = S_set.empty;
-          n_types;
-          n_consts;
-          n_modules;
-        }
-      in
-      let (_classes, old_funs, old_types, old_consts, old_modules) =
-        Rust_provider_backend.Decl.get_old_defs be non_class_defs
-      in
-      (old_funs, old_types, old_consts, old_modules)
-    | _ ->
-      ( Decl_heap.Funs.get_old_batch n_funs,
-        Decl_heap.Typedefs.get_old_batch n_types,
-        Decl_heap.GConsts.get_old_batch n_consts,
-        Decl_heap.Modules.get_old_batch n_modules )
+    Old_decl_provider.get_old_non_classes_batch
+      ~funs:n_funs
+      ~types:n_types
+      ~consts:n_consts
+      ~modules:n_modules
   in
   let { Decl_compare.VersionedFileInfo.Diff.funs; types; gconsts; modules } =
     Decl_compare.VersionedFileInfo.diff_names all_defs
@@ -319,7 +304,7 @@ let[@warning "-21"] oldify_defs (* -21 for dune stubs *)
     Decl_heap.Funs.oldify_batch n_funs;
     Decl_class_elements.oldify_all elems;
     Decl_heap.Classes.oldify_batch n_classes;
-    Old_shallow_classes_provider.oldify_batch ctx n_classes;
+    Old_decl_provider.oldify_classes_batch ctx n_classes;
     Decl_heap.Typedefs.oldify_batch n_types;
     Decl_heap.GConsts.oldify_batch n_consts;
     Decl_heap.Modules.oldify_batch n_modules;
@@ -337,7 +322,7 @@ let[@warning "-21"] remove_old_defs (* -21 for dune stubs *)
     Decl_heap.Funs.remove_old_batch n_funs;
     Decl_class_elements.remove_old_all elems;
     Decl_heap.Classes.remove_old_batch n_classes;
-    Old_shallow_classes_provider.remove_old_batch ctx n_classes;
+    Old_decl_provider.remove_old_classes_batch ctx n_classes;
     Decl_heap.Typedefs.remove_old_batch n_types;
     Decl_heap.GConsts.remove_old_batch n_consts;
     Decl_heap.Modules.remove_old_batch n_modules;
