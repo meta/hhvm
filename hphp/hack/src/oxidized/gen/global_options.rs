@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<ba03c3a66716c82bebf1acddaf942799>>
+// @generated SignedSource<<f96409f78a90d5cccf9f1c3bbddbf5a0>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -408,8 +408,6 @@ pub struct GlobalOptions {
     pub tco_missing_targs_as_fresh_generics: bool,
     /// Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics.
     pub tco_ban_memoize_erased_generic_return: bool,
-    /// Reject places where `$this` escapes the constructor of a non-final class or a trait, such as passing `$this` or calling a non-private method, wherever they are in the constructor and not only before every property is initialized. A subclass constructor may run that constructor before initializing its own properties, which a method it overrides could then read.
-    pub tco_ban_this_escape_in_overridable_constructors: bool,
     /// Don't refine reads of an XHP attribute such as `$x->:attr` with `is`, `as`, null checks or `match`: each read calls `getAttribute`, which may return something else the next time.
     pub tco_xhp_attribute_reads_not_refined: bool,
 }

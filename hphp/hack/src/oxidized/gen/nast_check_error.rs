@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<0530ca8f1d87a4bc381d7646717c833d>>
+// @generated SignedSource<<24422564e313d7ece0ae4d3ece5b0047>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -112,11 +112,6 @@ pub enum NastCheckError {
         pos: pos::Pos,
         class_name: String,
         props: Vec<(pos_or_decl::PosOrDecl, String)>,
-    },
-    #[rust_to_ocaml(name = "This_escapes_overridable_constructor")]
-    ThisEscapesOverridableConstructor {
-        pos: pos::Pos,
-        class_name: String,
     },
     #[rust_to_ocaml(name = "Call_before_init")]
     CallBeforeInit {

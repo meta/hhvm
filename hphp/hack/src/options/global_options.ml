@@ -198,7 +198,6 @@ type t = {
   tco_tests_bypass_visibility_static_properties: bool;
   tco_missing_targs_as_fresh_generics: bool;
   tco_ban_memoize_erased_generic_return: bool;
-  tco_ban_this_escape_in_overridable_constructors: bool;
   tco_xhp_attribute_reads_not_refined: bool;
 }
 [@@deriving eq, show]
@@ -311,7 +310,6 @@ let default =
     tco_tests_bypass_visibility_static_properties = false;
     tco_missing_targs_as_fresh_generics = false;
     tco_ban_memoize_erased_generic_return = false;
-    tco_ban_this_escape_in_overridable_constructors = false;
     tco_xhp_attribute_reads_not_refined = false;
   }
 
@@ -422,7 +420,6 @@ let set
     ?tco_missing_targs_as_fresh_generics
     ?tco_ban_memoize_erased_generic_return
     ?tco_xhp_attribute_reads_not_refined
-    ?tco_ban_this_escape_in_overridable_constructors
     options =
   let setting setting option =
     match setting with
@@ -727,10 +724,6 @@ let set
       setting
         tco_ban_memoize_erased_generic_return
         options.tco_ban_memoize_erased_generic_return;
-    tco_ban_this_escape_in_overridable_constructors =
-      setting
-        tco_ban_this_escape_in_overridable_constructors
-        options.tco_ban_this_escape_in_overridable_constructors;
     tco_xhp_attribute_reads_not_refined =
       setting
         tco_xhp_attribute_reads_not_refined

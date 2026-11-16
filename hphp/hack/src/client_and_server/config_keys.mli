@@ -34,8 +34,6 @@ module Hhconfig : sig
 
   val ban_memoize_erased_generic_return : string
 
-  val ban_this_escape_in_overridable_constructors : string
-
   val const_static_props : string
 
   val deregister_php_stdlib : string

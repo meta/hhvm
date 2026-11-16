@@ -615,10 +615,6 @@ impl HhConfig {
                 "ban_memoize_erased_generic_return",
                 default.tco_ban_memoize_erased_generic_return,
             )?,
-            tco_ban_this_escape_in_overridable_constructors: hhconfig.get_bool_or(
-                "ban_this_escape_in_overridable_constructors",
-                default.tco_ban_this_escape_in_overridable_constructors,
-            )?,
             tco_xhp_attribute_reads_not_refined: hhconfig.get_bool_or(
                 "xhp_attribute_reads_not_refined",
                 default.tco_xhp_attribute_reads_not_refined,

@@ -33,9 +33,6 @@ module Hhconfig = struct
   let ban_memoize_erased_generic_return =
     key "ban_memoize_erased_generic_return"
 
-  let ban_this_escape_in_overridable_constructors =
-    key "ban_this_escape_in_overridable_constructors"
-
   let const_static_props = key "const_static_props"
 
   let deregister_php_stdlib = key "deregister_php_stdlib"
