@@ -21,6 +21,7 @@ target_link_libraries(
   userenv.lib
   bcrypt.lib
   ntdll.lib
+  synchronization.lib
 )
 
 install(
