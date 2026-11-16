@@ -65,6 +65,16 @@ jobs:
     - name: Install Python modules
       run: pip install setuptools
 
+    # Watchman and its Meta dependencies are exported from one repository
+    # within minutes of each other, but build/deps/github_hashes is refreshed
+    # about once a day, so a change that spans projects breaks a pinned build
+    # until then. FB_FETCH_AS_OF builds every Meta dependency from the commit
+    # that was on its main at this commit's time instead. ShipIt dates every
+    # exported commit with the time its fbsource commit landed, so that's the
+    # code this commit was exported with, on a rerun too.
+    - name: Find this commit's time
+      run: echo "COMMIT_TIME=$(git log -1 --format=%cI)" >> "$GITHUB_ENV"
+
     # This builds the release binaries: they link Homebrew's libraries
     # statically, so they need only macOS itself.
     - name: Configure
@@ -72,6 +82,7 @@ jobs:
         cmake -B _build -G Ninja
         -DCMAKE_BUILD_TYPE=RelWithDebInfo
         -DCMAKE_PROJECT_INCLUDE="$PWD/watchman/build/package/prefer-static.cmake"
+        -DFB_FETCH_AS_OF="$COMMIT_TIME"
         -DPython3_EXECUTABLE="$(which python)"
         -DCMAKE_C_COMPILER_LAUNCHER=sccache
         -DCMAKE_CXX_COMPILER_LAUNCHER=sccache

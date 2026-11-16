@@ -103,6 +103,17 @@ jobs:
     # name the image's, which installed the dependencies.
     - uses: ilammy/msvc-dev-cmd@v1
 
+    # Watchman and its Meta dependencies are exported from one repository
+    # within minutes of each other, but build/deps/github_hashes is refreshed
+    # about once a day, so a change that spans projects breaks a pinned build
+    # until then. FB_FETCH_AS_OF builds every Meta dependency from the commit
+    # that was on its main at this commit's time instead. ShipIt dates every
+    # exported commit with the time its fbsource commit landed, so that's the
+    # code this commit was exported with, on a rerun too.
+    - name: Find this commit's time
+      run: echo "COMMIT_TIME=$(git log -1 --format=%cI)" >> "$GITHUB_ENV"
+      shell: bash
+
     # Ninja keeps this single-config like the other platforms, and unlike the
     # Visual Studio generator it honours the compiler launcher that sccache
     # needs. vcpkg's toolchain file finds the static libraries under the names
@@ -115,6 +126,7 @@ jobs:
       run: >
         cmake -B _build -G Ninja
         -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DFB_FETCH_AS_OF=%COMMIT_TIME%
         -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake
         -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
         -DCMAKE_PREFIX_PATH=%VCPKG_INSTALLATION_ROOT%/installed/x64-windows
