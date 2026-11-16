@@ -16,7 +16,7 @@
 
 #include "hphp/util/build-info.h"
 
-#include "hphp/util/embedded-data.h"
+#include "hphp/util/embedded-data-reader.h"
 
 #include <folly/Conv.h>
 #include <folly/Range.h>
@@ -50,19 +50,10 @@ void readBuildInfo() {
   std::unique_lock<std::mutex> lock(mtx);
   if (inited.load(std::memory_order_acquire)) return;
 
+  EmbeddedDataReader reader;
   auto const get = [&] (const char* section) -> std::string {
-    auto constexpr bad = "(UNKNOWN)";
-
-    embedded_data desc;
-    if (!get_embedded_data(section, &desc)) {
-      return bad;
-    }
-
-    auto const data = read_embedded_data(desc);
-    if (data.empty()) {
-      return bad;
-    }
-
+    auto data = reader.readSection(section);
+    if (data.empty()) return "(UNKNOWN)";
     return data;
   };
 

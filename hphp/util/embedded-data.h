@@ -16,8 +16,6 @@
 
 #pragma once
 
-#ifdef __cplusplus
-
 #include <cstdint>
 #include <string>
 
@@ -33,10 +31,6 @@ struct embedded_data {
   void* m_handle;
 #endif
 };
-
-bool get_embedded_data(const char* section, embedded_data* desc);
-
-std::string read_embedded_data(const embedded_data& desc);
 
 /*
  * dlopen() the embedded shared object given by `desc'.
@@ -70,14 +64,4 @@ void embedded_data_cleanup();
 
 }
 
-#else //__cplusplus
-
-/*
- * Read data from the named section and place it into the given buffer (of size
- * len) Returns the number of bytes (not null-terminated) read or -1 if
- * unsuccessful
- */
-ssize_t hphp_read_embedded_data(const char* section, char* buf, size_t len);
-
-#endif //__cplusplus
 

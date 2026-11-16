@@ -26,7 +26,7 @@
 #include "hphp/compiler/compiler-systemlib.h"
 #include "hphp/hhbbc/hhbbc.h"
 
-#include "hphp/util/embedded-data.h"
+#include "hphp/util/embedded-data-reader.h"
 #include "hphp/util/embedded-vfs.h"
 #include "hphp/util/extern-worker.h"
 #include "hphp/util/logger.h"
@@ -91,14 +91,14 @@ int main(int argc, char** argv) {
     return HPHP::emulate_zend(args.size(), args.data());
   }
 
-  HPHP::embedded_data data;
-  if (!HPHP::get_embedded_data("repo", &data)) {
+  auto const data = HPHP::EmbeddedDataReader::find("repo");
+  if (!data) {
     return HPHP::execute_program(argc, argv);
   }
   std::string repo;
   HPHP::string_printf(repo, "%s:%u:%u",
-                      data.m_filename.c_str(),
-                      (unsigned)data.m_start, (unsigned)data.m_len);
+                      data->m_filename.c_str(),
+                      (unsigned)data->m_start, (unsigned)data->m_len);
   HPHP::sqlite3_embedded_initialize(nullptr, true);
 
   std::vector<char*> args;

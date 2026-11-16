@@ -26,6 +26,7 @@
 
 #include "hphp/util/build-info.h"
 #include "hphp/util/embedded-data.h"
+#include "hphp/util/embedded-data-reader.h"
 
 namespace {
 
@@ -161,15 +162,15 @@ void init(const std::string& extractPath,
     if (result != nullptr) return reinterpret_cast<init_func_t>(result);
 
     // Find the shared object embedded within a custom section.
-    embedded_data data;
-    if (!get_embedded_data("type_scanners", &data)) {
+    auto const data = EmbeddedDataReader::find("type_scanners");
+    if (!data) {
       // no embedded data was built; fall back to conservative scan.
       return nullptr;
     }
 
     // Link in the embedded object.
     auto const handle = dlopen_embedded_data(
-      data,
+      *data,
       extractPath,
       fallbackPath,
       buildId().toString(),

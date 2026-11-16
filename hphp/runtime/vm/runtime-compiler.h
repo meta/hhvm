@@ -22,6 +22,7 @@
 namespace HPHP {
 
 struct AutoloadMap;
+struct EmbeddedDataReader;
 struct Extension;
 struct Unit;
 struct UnitEmitter;
@@ -60,7 +61,9 @@ Unit* compile_string(folly::StringPiece s,
 
 Unit* compile_debugger_string(folly::StringPiece s, const RepoOptions&);
 
-Unit* get_systemlib(const std::string& section, const Extension* extension);
+Unit* get_systemlib(const EmbeddedDataReader& reader,
+                    const std::string& section,
+                    const Extension* extension);
 
 std::unique_ptr<UnitEmitter> compile_systemlib_string_to_ue(
    const char* s, size_t sz, const char* fname,

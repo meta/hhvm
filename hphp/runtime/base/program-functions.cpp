@@ -2529,22 +2529,6 @@ OptString canonicalize_path(const OptString& p, const char* root, int rootLen) {
   return path;
 }
 
-namespace {
-  std::string get_section_name(const std::string& path) {
-    std::string section("ext.");
-    return section + HHVM_FN(md5)(std::string(path), false).substr(0, 12).data();
-  }
-}
-
-// Retrieve a embed section of the HHVM binary
-std::string get_embedded_section(const std::string& path) {
-  auto section_name = get_section_name(path);
-
-  embedded_data desc;
-  if (!get_embedded_data(section_name.c_str(), &desc)) return "";
-  return read_embedded_data(desc);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // C++ ffi
 

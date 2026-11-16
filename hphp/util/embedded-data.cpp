@@ -16,11 +16,9 @@
 
 #include "hphp/util/embedded-data.h"
 
-#include "hphp/util/current-executable.h"
 #include "hphp/util/logger.h"
 
 #include <folly/FileUtil.h>
-#include <folly/container/F14Map.h>
 #include <folly/Range.h>
 #include <folly/ScopeGuard.h>
 #include <folly/String.h>
@@ -35,8 +33,6 @@
 
 #include <memory>
 #include <vector>
-
-#include <folly/debugging/symbolizer/Elf.h>
 
 namespace HPHP {
 
@@ -68,60 +64,6 @@ std::string insertBuildId(std::string path, const std::string& buildId) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-namespace {
-
-struct SectionTable {
-  std::string filename;
-  // Section name -> (file offset, size).
-  folly::F14FastMap<std::string, std::pair<uint64_t, uint64_t>> sections;
-};
-
-const SectionTable& sectionTable() {
-  static auto const table = [] {
-    auto t = new SectionTable;
-    t->filename = current_executable_path();
-
-    folly::symbolizer::ElfFile file;
-    if (file.openNoThrow(t->filename.c_str()) != 0) return t;
-
-    file.iterateSections([&] (const folly::symbolizer::ElfShdr& shdr) {
-      if (auto const name = file.getSectionName(shdr)) {
-        t->sections.emplace(name, std::make_pair(shdr.sh_offset, shdr.sh_size));
-      }
-      return false;
-    });
-    return t;
-  }();
-  return *table;
-}
-
-}
-
-bool get_embedded_data(const char* section, embedded_data* desc) {
-  auto const& table = sectionTable();
-  auto const it = table.sections.find(section);
-  if (it == table.sections.end()) return false;
-
-  desc->m_filename = table.filename;
-  desc->m_start = it->second.first;
-  desc->m_len = it->second.second;
-  return true;
-}
-
-std::string read_embedded_data(const embedded_data& desc) {
-  auto const fd = ::open(desc.m_filename.c_str(), O_RDONLY | O_CLOEXEC);
-  if (fd < 0) return "";
-  SCOPE_EXIT { ::close(fd); };
-
-  std::string data(desc.m_len, '\0');
-  auto const amountRead =
-    folly::preadFull(fd, data.data(), desc.m_len, desc.m_start);
-  if (amountRead < 0 || static_cast<uint64_t>(amountRead) != desc.m_len) {
-    return "";
-  }
-  return data;
-}
 
 void* dlopen_embedded_data(const embedded_data& desc,
                            std::string extractPath,
@@ -251,22 +193,5 @@ void embedded_data_cleanup() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-extern "C" {
-
-ssize_t hphp_read_embedded_data(const char* section, char* buf, size_t len) {
-  embedded_data data;
-  if (get_embedded_data(section, &data)) {
-    auto str = read_embedded_data(data);
-    auto data_len = str.length();
-    auto real_len = data_len < len ? data_len : len;
-    memcpy(buf, str.data(), real_len * sizeof(char));
-    return real_len;
-  } else {
-    return -1;
-  }
-}
-
-}
 
 } // namespace HPHP

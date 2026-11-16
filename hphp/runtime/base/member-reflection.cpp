@@ -18,6 +18,7 @@
 
 #include "hphp/util/build-info.h"
 #include "hphp/util/embedded-data.h"
+#include "hphp/util/embedded-data-reader.h"
 #include "hphp/util/logger.h"
 
 #include <cstdio>
@@ -52,8 +53,8 @@ bool init_member_reflection(const std::string& extractPath,
     );
   if (g_member_reflection_vtable) return true;
 
-  embedded_data desc;
-  if (!get_embedded_data("member_reflection", &desc)) {
+  auto const desc = EmbeddedDataReader::find("member_reflection");
+  if (!desc) {
     // We might not be embedding the shared object, depending on platform, so
     // don't cry too loudly if we don't find it.
     Logger::Verbose("init_member_reflection: Unable to find embedded data");
@@ -61,7 +62,7 @@ bool init_member_reflection(const std::string& extractPath,
   }
 
   auto const handle = dlopen_embedded_data(
-    desc,
+    *desc,
     extractPath,
     fallbackPath,
     buildId().toString(),

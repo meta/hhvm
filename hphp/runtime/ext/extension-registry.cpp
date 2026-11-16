@@ -6,6 +6,7 @@
 
 #include "hphp/runtime/base/array-init.h"
 #include "hphp/runtime/vm/jit/prof-data-serialize.h"
+#include "hphp/util/embedded-data-reader.h"
 #include "hphp/util/timer.h"
 
 #ifdef HAVE_LIBDL
@@ -164,6 +165,7 @@ void moduleInit() {
   };
 
   assertx(s_sorted);
+  EmbeddedDataReader reader;
   for (auto& ext : s_ordered) {
     std::optional<Timer> timer;
     if (Cfg::Server::Mode) {
@@ -173,7 +175,7 @@ void moduleInit() {
     ext->moduleInit();
     assertx(ext->nativeFuncs().empty());
     ext->moduleRegisterNative();
-    ext->loadEmitters();
+    ext->loadEmitters(reader);
   }
   s_initialized = true;
 }
@@ -188,8 +190,9 @@ void moduleRegisterNative() {
 
 void moduleDeclInit() {
   assertx(s_sorted);
+  EmbeddedDataReader reader;
   for (auto& ext : s_ordered) {
-    ext->loadDecls();
+    ext->loadDecls(reader);
   }
 }
 

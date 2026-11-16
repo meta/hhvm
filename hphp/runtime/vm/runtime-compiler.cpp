@@ -33,6 +33,7 @@
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/configs/eval.h"
+#include "hphp/util/embedded-data-reader.h"
 #include "hphp/util/sha1.h"
 
 #include "hphp/zend/zend-string.h"
@@ -227,7 +228,9 @@ Unit* compile_string(folly::StringPiece s,
   )->create().release();
 }
 
-Unit* get_systemlib(const std::string& path, const Extension* extension) {
+Unit* get_systemlib(const EmbeddedDataReader& reader,
+                    const std::string& path,
+                    const Extension* extension) {
   assertx(path[0] == '/' && path[1] == ':');
 
   if (Cfg::Repo::Authoritative) {
@@ -236,7 +239,7 @@ Unit* get_systemlib(const std::string& path, const Extension* extension) {
     }
   }
 
-  auto buffer = get_embedded_section(path+".ue");
+  auto buffer = reader.readSectionForPath(path+".ue");
 
   if (buffer.empty()) {
     throw std::invalid_argument("Missing systemlib unit emitter for path: " + path);

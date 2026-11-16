@@ -31,6 +31,7 @@
 namespace HPHP {
 
 struct ArrayData;
+struct EmbeddedDataReader;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -65,11 +66,8 @@ struct Extension {
 
   // Look for "ext.{namehash}" in the binary and compile/merge it
 private:
-  void loadSystemlib() { loadSystemlib(m_name); }
-  void loadSystemlib(const char* name) {
-    loadSystemlib(std::string(name));
-  }
-  void loadSystemlib(const std::string& name);
+  void loadSystemlib(const EmbeddedDataReader& reader,
+                     const std::string& name);
 
 public:
   explicit Extension(const char name[],
@@ -101,7 +99,7 @@ public:
 
   virtual std::vector<std::string> hackFiles() const;
 
-  void loadEmitters();
+  void loadEmitters(const EmbeddedDataReader& reader);
 
   // Override this function when your extension calls anything other than:
   //
@@ -114,14 +112,15 @@ public:
   // - ext_collections*, which calls `loadSystemlib` for each collection kind
   // - ext_datetime, which happens to use a different name for the extension
   //   versus the binary section
-  void loadDecls();
+  void loadDecls(const EmbeddedDataReader& reader);
   // Load the source contained in the binary section corresponding to [name],
   // parse it's decls, then store them in `s_builtin_symbols`. This is generally
   // going to be given the same string as whatever `loadSystemlib` takes, and
   // by default will be passed *just* the extension name.
 
 private:
-  void loadDeclsFrom(const std::string& name);
+  void loadDeclsFrom(const EmbeddedDataReader& reader,
+                     const std::string& name);
 
 public:
   // override this to control extension_loaded() return value

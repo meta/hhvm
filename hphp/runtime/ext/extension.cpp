@@ -27,6 +27,7 @@
 
 #include "hphp/util/assertions.h"
 #include "hphp/util/blob-encoder.h"
+#include "hphp/util/embedded-data-reader.h"
 #include "hphp/util/trace.h"
 #include "hphp/runtime/ext/apache/ext_apache.h"
 #include "hphp/runtime/ext/apc/ext_apc.h"
@@ -58,9 +59,10 @@ bool Extension::IsSystemlibPath(const std::string& name) {
  *
  * If {name} is not passed, then {m_name} is assumed.
  */
-void Extension::loadSystemlib(const std::string& name) {
+void Extension::loadSystemlib(const EmbeddedDataReader& reader,
+                              const std::string& name) {
   auto const moduleName = std::string("/:"+name);
-  auto const unit = get_systemlib(moduleName, this);
+  auto const unit = get_systemlib(reader, moduleName, this);
   always_assert_flog(unit, "No unit created for systemlib `{}'", moduleName);
   if (auto const info = unit->getFatalInfo()) {
     std::fprintf(stderr, "Systemlib `%s' contains a fataling unit: %s, %d\n",
@@ -128,21 +130,22 @@ std::vector<std::string> Extension::hackFiles() const {
   return {"ext_" + toLower(std::string(m_name) + ".php")};
 }
 
-void Extension::loadEmitters() {
+void Extension::loadEmitters(const EmbeddedDataReader& reader) {
   for (auto const& name : hackFiles()) {
-    loadSystemlib(name);
+    loadSystemlib(reader, name);
   }
 }
 
-void Extension::loadDecls() {
+void Extension::loadDecls(const EmbeddedDataReader& reader) {
   // Look for "ext.{namehash}" in the binary and grab its decls
   for (auto const& name : hackFiles()) {
-    loadDeclsFrom(name);
+    loadDeclsFrom(reader, name);
   }
 }
 
-void Extension::loadDeclsFrom(const std::string& name) {
-  auto serialized_decls = get_embedded_section("/:" + name + ".decls");
+void Extension::loadDeclsFrom(const EmbeddedDataReader& reader,
+                              const std::string& name) {
+  auto serialized_decls = reader.readSectionForPath("/:" + name + ".decls");
   always_assert(serialized_decls.size() > 0);
   Native::registerBuiltinSymbols(serialized_decls);
 }
