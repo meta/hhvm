@@ -631,10 +631,6 @@ impl HhConfig {
                 "foreach_key_after_value",
                 default.tco_foreach_key_after_value,
             )?,
-            tco_type_structure_fields_may_be_absent: hhconfig.get_bool_or(
-                "type_structure_fields_may_be_absent",
-                default.tco_type_structure_fields_may_be_absent,
-            )?,
             tco_forget_one_branch_tconst_refinements: hhconfig.get_bool_or(
                 "forget_one_branch_tconst_refinements",
                 default.tco_forget_one_branch_tconst_refinements,

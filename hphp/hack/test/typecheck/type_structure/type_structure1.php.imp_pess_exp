@@ -6,22 +6,22 @@ File "type_structure1.php", line 24, characters 5-57:
   classname<D>
 File "type_structure1.php", line 27, characters 5-30:
   classname<Vector<int>>
-File "type_structure1.php", line 28, characters 5-34:
-  (TypeStructure<int>)
+File "type_structure1.php", line 28, characters 5-42:
+  ?(TypeStructure<int>)
 File "type_structure1.php", line 31, characters 5-30:
   classname<C<string>>
-File "type_structure1.php", line 32, characters 5-34:
-  (TypeStructure<string>)
+File "type_structure1.php", line 32, characters 5-42:
+  ?(TypeStructure<string>)
 File "type_structure1.php", line 35, characters 5-32:
   (TypeStructure<(C<int>, C<int>)>)
-File "type_structure1.php", line 36, characters 5-72:
-  TypeStructure<int>
+File "type_structure1.php", line 36, characters 5-80:
+  ?TypeStructure<int>
 File "type_structure1.php", line 37, characters 5-32:
   (TypeStructure<~Vector<C<int>>>)
 File "type_structure1.php", line 38, characters 5-48:
   nothing
-File "type_structure1.php", line 39, characters 5-68:
-  nothing
+File "type_structure1.php", line 39, characters 5-76:
+  null
 File "type_structure1.php", line 42, characters 5-17:
   shape('bar' => TypeStructure<shape('x' => (num, num))>, 'foo' => TypeStructure<D>)
 File "type_structure1.php", line 43, characters 5-24:
@@ -32,11 +32,11 @@ error: Typing[4165] The field `classname` may not be present in this shape. Use 
 -> This is where the field was declared as optional. [2]
 
 type_structure1.php:38:36
-36 |     hh_show($tc5['param_types'][0]['elem_types'][1]['generic_types'][0]);
+36 |     hh_show($tc5['param_types'][0]['elem_types'][1]['generic_types'][0] ?? null);
 37 |     hh_show($tc5['return_type']);
 38 |     hh_show($tc5['return_type'][0]['classname']);
    |                                    ^^^^^^^^^^^ [1]
-39 |     hh_show($tc5['return_type'][0]['generic_types'][0]['classname']);
+39 |     hh_show($tc5['return_type'][0]['generic_types'][0]['classname'] ?? null);
 40 | 
 
 typestructure.hhi:64:6
@@ -47,22 +47,23 @@ typestructure.hhi:64:6
 65 |     ?'elem_types' => varray<mixed>,
 66 |     ?'optional_elem_types' => varray<mixed>,
 
-error: Typing[4165] The field `generic_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
--> This is where the field was declared as optional. [2]
+error: Typing[4110] Typing error [1]
+-> Expected an array that can be indexed [1]
+-> But got `nonnull` [2]
 
-type_structure1.php:39:36
+type_structure1.php:39:13
 37 |     hh_show($tc5['return_type']);
 38 |     hh_show($tc5['return_type'][0]['classname']);
-39 |     hh_show($tc5['return_type'][0]['generic_types'][0]['classname']);
-   |                                    ^^^^^^^^^^^^^^^ [1]
+39 |     hh_show($tc5['return_type'][0]['generic_types'][0]['classname'] ?? null);
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
 40 | 
 41 |     $tc6 = type_structure(D::class, 'TC6')['fields'];
 
-typestructure.hhi:70:6
+typestructure.hhi:70:32
 68 |     ?'return_type' => mixed,
 69 |     ?'param_types' => varray<mixed>,
 70 |     ?'generic_types' => varray<mixed>,
-   |      ^^^^^^^^^^^^^^^ [2]
+   |                                ^^^^^ [2]
 71 |     ?'root_name' => string,
 72 |     ?'access_list' => varray<string>,
 

@@ -635,8 +635,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt Config_keys.Hhconfig.list_assign_right_to_left config)
     ?tco_foreach_key_after_value:
       (bool_opt Config_keys.Hhconfig.foreach_key_after_value config)
-    ?tco_type_structure_fields_may_be_absent:
-      (bool_opt Config_keys.Hhconfig.type_structure_fields_may_be_absent config)
     ?tco_xhp_attribute_reads_not_refined:
       (bool_opt Config_keys.Hhconfig.xhp_attribute_reads_not_refined config)
     ?tco_ban_this_escape_in_overridable_constructors:

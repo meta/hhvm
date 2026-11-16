@@ -1,11 +1,11 @@
 File "bad_type_structure_array.php", line 4, characters 3-22:
   TypeStructureKind
-File "bad_type_structure_array.php", line 5, characters 3-23:
-  string
-File "bad_type_structure_array.php", line 6, characters 3-22:
-  string
-File "bad_type_structure_array.php", line 7, characters 3-31:
-  (TypeStructure<int>)
+File "bad_type_structure_array.php", line 5, characters 3-31:
+  ?string
+File "bad_type_structure_array.php", line 6, characters 3-30:
+  ?string
+File "bad_type_structure_array.php", line 7, characters 3-39:
+  ?(TypeStructure<int>)
 File "bad_type_structure_array.php", line 10, characters 3-27:
   nothing
 File "bad_type_structure_array.php", line 11, characters 3-26:
@@ -22,12 +22,12 @@ File "bad_type_structure_array.php", line 18, characters 3-22:
   TypeStructureKind
 File "bad_type_structure_array.php", line 22, characters 3-22:
   TypeStructureKind
-File "bad_type_structure_array.php", line 23, characters 3-23:
-  string
-File "bad_type_structure_array.php", line 24, characters 3-22:
-  string
-File "bad_type_structure_array.php", line 25, characters 3-31:
-  vec<mixed>
+File "bad_type_structure_array.php", line 23, characters 3-31:
+  ?string
+File "bad_type_structure_array.php", line 24, characters 3-30:
+  ?string
+File "bad_type_structure_array.php", line 25, characters 3-39:
+  ?vec<mixed>
 File "bad_type_structure_array.php", line 28, characters 3-27:
   nothing
 File "bad_type_structure_array.php", line 29, characters 3-26:

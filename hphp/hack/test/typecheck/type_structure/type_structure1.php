@@ -25,18 +25,18 @@ class D extends C<int> {
 
     $tc3 = type_structure(D::class, 'TC3');
     hh_show($tc3['classname']);
-    hh_show($tc3['generic_types']);
+    hh_show($tc3['generic_types'] ?? null);
 
     $tc4 = type_structure(D::class, 'TC4');
     hh_show($tc4['classname']);
-    hh_show($tc4['generic_types']);
+    hh_show($tc4['generic_types'] ?? null);
 
     $tc5 = type_structure(D::class, 'TC5');
     hh_show($tc5['param_types']);
-    hh_show($tc5['param_types'][0]['elem_types'][1]['generic_types'][0]);
+    hh_show($tc5['param_types'][0]['elem_types'][1]['generic_types'][0] ?? null);
     hh_show($tc5['return_type']);
     hh_show($tc5['return_type'][0]['classname']);
-    hh_show($tc5['return_type'][0]['generic_types'][0]['classname']);
+    hh_show($tc5['return_type'][0]['generic_types'][0]['classname'] ?? null);
 
     $tc6 = type_structure(D::class, 'TC6')['fields'];
     hh_show($tc6);

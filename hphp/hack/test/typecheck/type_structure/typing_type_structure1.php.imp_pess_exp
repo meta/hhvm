@@ -2,12 +2,12 @@ File "typing_type_structure1.php", line 18, characters 5-23:
   TypeStructureKind
 File "typing_type_structure1.php", line 19, characters 5-28:
   classname<Vector<int>>
-File "typing_type_structure1.php", line 20, characters 5-32:
-  (TypeStructure<int>)
+File "typing_type_structure1.php", line 20, characters 5-40:
+  ?(TypeStructure<int>)
 File "typing_type_structure1.php", line 21, characters 5-28:
   classname<C<string>>
-File "typing_type_structure1.php", line 22, characters 5-32:
-  (TypeStructure<string>)
+File "typing_type_structure1.php", line 22, characters 5-40:
+  ?(TypeStructure<string>)
 File "typing_type_structure1.php", line 23, characters 5-29:
   (TypeStructure<bool>, TypeStructure<?bool>)
 File "typing_type_structure1.php", line 24, characters 5-44:
@@ -22,7 +22,7 @@ error: Typing[4165] The field `nullable` may not be present in this shape. Use `
 -> This is where the field was declared as optional. [2]
 
 typing_type_structure1.php:24:33
-22 |     hh_show($c['generic_types']);
+22 |     hh_show($c['generic_types'] ?? null);
 23 |     hh_show($d['elem_types']);
 24 |     hh_show($d['elem_types'][1]['nullable']);
    |                                 ^^^^^^^^^^ [1]

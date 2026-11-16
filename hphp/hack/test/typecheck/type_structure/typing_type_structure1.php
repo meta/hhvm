@@ -17,9 +17,9 @@ class D extends C<int> {
   ): void {
     hh_show($a['kind']);
     hh_show($b['classname']);
-    hh_show($b['generic_types']);
+    hh_show($b['generic_types'] ?? null);
     hh_show($c['classname']);
-    hh_show($c['generic_types']);
+    hh_show($c['generic_types'] ?? null);
     hh_show($d['elem_types']);
     hh_show($d['elem_types'][1]['nullable']);
     hh_show($e['param_types']);

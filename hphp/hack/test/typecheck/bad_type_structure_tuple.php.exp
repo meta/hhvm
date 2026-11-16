@@ -1,9 +1,9 @@
 File "bad_type_structure_tuple.php", line 4, characters 3-22:
   TypeStructureKind
-File "bad_type_structure_tuple.php", line 5, characters 3-23:
-  string
-File "bad_type_structure_tuple.php", line 6, characters 3-22:
-  string
+File "bad_type_structure_tuple.php", line 5, characters 3-31:
+  ?string
+File "bad_type_structure_tuple.php", line 6, characters 3-30:
+  ?string
 File "bad_type_structure_tuple.php", line 7, characters 3-28:
   (TypeStructure<arraykey>, TypeStructure<?num>)
 File "bad_type_structure_tuple.php", line 10, characters 3-27:
@@ -22,10 +22,10 @@ File "bad_type_structure_tuple.php", line 18, characters 3-22:
   TypeStructureKind
 File "bad_type_structure_tuple.php", line 22, characters 3-22:
   TypeStructureKind
-File "bad_type_structure_tuple.php", line 23, characters 3-23:
-  string
-File "bad_type_structure_tuple.php", line 24, characters 3-22:
-  string
+File "bad_type_structure_tuple.php", line 23, characters 3-31:
+  ?string
+File "bad_type_structure_tuple.php", line 24, characters 3-30:
+  ?string
 File "bad_type_structure_tuple.php", line 25, characters 3-28:
   (TypeStructure<arraykey>, TypeStructure<?num>)
 File "bad_type_structure_tuple.php", line 28, characters 3-27:
@@ -39,7 +39,7 @@ File "bad_type_structure_tuple.php", line 31, characters 3-29:
 File "bad_type_structure_tuple.php", line 32, characters 3-29:
   nothing
 File "bad_type_structure_tuple.php", line 33, characters 3-31:
-  vec<mixed>
+  nothing
 File "bad_type_structure_tuple.php", line 36, characters 3-22:
   TypeStructureKind
 error: Typing[4165] The field `classname` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
@@ -251,4 +251,23 @@ typestructure.hhi:68:6
 69 |     ?'param_types' => varray<mixed>,
 70 |     ?'generic_types' => varray<mixed>,
 
-11 errors found
+error: Typing[4165] The field `generic_types` may not be present in this shape. Use `??` or `Shapes::idx()` instead. [1]
+-> This is where the field was declared as optional. [2]
+
+bad_type_structure_tuple.php:33:15
+31 |   hh_show($ts['param_types']);
+32 |   hh_show($ts['return_type']);
+33 |   hh_show($ts['generic_types']);
+   |               ^^^^^^^^^^^^^^^ [1]
+34 | 
+35 |   // make sure kind still works
+
+typestructure.hhi:70:6
+68 |     ?'return_type' => mixed,
+69 |     ?'param_types' => varray<mixed>,
+70 |     ?'generic_types' => varray<mixed>,
+   |      ^^^^^^^^^^^^^^^ [2]
+71 |     ?'root_name' => string,
+72 |     ?'access_list' => varray<string>,
+
+12 errors found

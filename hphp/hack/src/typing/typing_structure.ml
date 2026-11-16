@@ -133,11 +133,7 @@ let rec transform_shapemap ?(nullable = false) env pos ty shape =
       (* HHVM can omit these: `generic_types` when `this` resolves to its
          class alone, `alias` unless the type went through an alias. *)
       let acc_field_maybe_absent sft_ty =
-        let sft_optional =
-          Typechecker_options.type_structure_fields_may_be_absent
-            (Env.get_tcopt env)
-        in
-        TShapeMap.add field { sft_optional; sft_ty } shape
+        TShapeMap.add field { sft_optional = true; sft_ty } shape
       in
       let (env, sft_ty) = Env.expand_type env sft_ty in
       match (field, deref sft_ty, deref base_type) with

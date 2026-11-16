@@ -2,8 +2,8 @@
 
 function concrete(TypeStructure<?num> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
   hh_show($ts['nullable']);
 
   // any other field will fail
@@ -20,8 +20,8 @@ function concrete(TypeStructure<?num> $ts): void {
 
 function generic<T as ?num>(TypeStructure<T> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
   hh_show($ts['nullable']);
 
   // any other field will fail

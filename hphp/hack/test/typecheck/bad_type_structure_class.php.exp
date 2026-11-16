@@ -1,13 +1,13 @@
 File "bad_type_structure_class.php", line 6, characters 3-22:
   TypeStructureKind
-File "bad_type_structure_class.php", line 7, characters 3-23:
-  string
-File "bad_type_structure_class.php", line 8, characters 3-22:
-  string
+File "bad_type_structure_class.php", line 7, characters 3-31:
+  ?string
+File "bad_type_structure_class.php", line 8, characters 3-30:
+  ?string
 File "bad_type_structure_class.php", line 9, characters 3-27:
   classname<C<int>>
-File "bad_type_structure_class.php", line 10, characters 3-31:
-  (TypeStructure<int>)
+File "bad_type_structure_class.php", line 10, characters 3-39:
+  ?(TypeStructure<int>)
 File "bad_type_structure_class.php", line 13, characters 3-26:
   nothing
 File "bad_type_structure_class.php", line 14, characters 3-28:
@@ -22,14 +22,14 @@ File "bad_type_structure_class.php", line 20, characters 3-22:
   TypeStructureKind
 File "bad_type_structure_class.php", line 24, characters 3-22:
   TypeStructureKind
-File "bad_type_structure_class.php", line 25, characters 3-23:
-  string
-File "bad_type_structure_class.php", line 26, characters 3-22:
-  string
+File "bad_type_structure_class.php", line 25, characters 3-31:
+  ?string
+File "bad_type_structure_class.php", line 26, characters 3-30:
+  ?string
 File "bad_type_structure_class.php", line 27, characters 3-27:
   classname<T> where T as C<int>
-File "bad_type_structure_class.php", line 28, characters 3-31:
-  vec<mixed>
+File "bad_type_structure_class.php", line 28, characters 3-39:
+  ?vec<mixed>
 File "bad_type_structure_class.php", line 31, characters 3-26:
   nothing
 File "bad_type_structure_class.php", line 32, characters 3-28:

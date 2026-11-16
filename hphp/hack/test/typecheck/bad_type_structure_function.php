@@ -2,8 +2,8 @@
 
 function concrete(TypeStructure<(function(int): arraykey)> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
   hh_show($ts['param_types']);
   hh_show($ts['return_type']);
 
@@ -20,8 +20,8 @@ function concrete(TypeStructure<(function(int): arraykey)> $ts): void {
 
 function generic<T as (function(): arraykey)>(TypeStructure<T> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
   hh_show($ts['param_types']);
   hh_show($ts['return_type']);
 

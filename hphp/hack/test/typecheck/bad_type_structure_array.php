@@ -2,9 +2,9 @@
 
 function concrete(TypeStructure<varray<int>> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
-  hh_show($ts['generic_types']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
+  hh_show($ts['generic_types'] ?? null);
 
   // any other field will fail
   hh_show($ts['classname']);
@@ -20,9 +20,9 @@ function concrete(TypeStructure<varray<int>> $ts): void {
 
 function generic<T as varray<int>>(TypeStructure<T> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
-  hh_show($ts['generic_types']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
+  hh_show($ts['generic_types'] ?? null);
 
   // any other field will fail
   hh_show($ts['classname']);

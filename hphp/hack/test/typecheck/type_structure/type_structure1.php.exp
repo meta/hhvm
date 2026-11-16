@@ -6,22 +6,22 @@ File "type_structure1.php", line 24, characters 5-57:
   classname<D>
 File "type_structure1.php", line 27, characters 5-30:
   classname<Vector<int>>
-File "type_structure1.php", line 28, characters 5-34:
-  (TypeStructure<int>)
+File "type_structure1.php", line 28, characters 5-42:
+  ?(TypeStructure<int>)
 File "type_structure1.php", line 31, characters 5-30:
   classname<C<string>>
-File "type_structure1.php", line 32, characters 5-34:
-  (TypeStructure<string>)
+File "type_structure1.php", line 32, characters 5-42:
+  ?(TypeStructure<string>)
 File "type_structure1.php", line 35, characters 5-32:
   (TypeStructure<(C<int>, C<int>)>)
-File "type_structure1.php", line 36, characters 5-72:
-  TypeStructure<int>
+File "type_structure1.php", line 36, characters 5-80:
+  ?TypeStructure<int>
 File "type_structure1.php", line 37, characters 5-32:
   (TypeStructure<Vector<C<int>>>)
 File "type_structure1.php", line 38, characters 5-48:
   classname<Vector<C<int>>>
-File "type_structure1.php", line 39, characters 5-68:
-  classname<C<int>>
+File "type_structure1.php", line 39, characters 5-76:
+  ?classname<C<int>>
 File "type_structure1.php", line 42, characters 5-17:
   shape('bar' => TypeStructure<shape('x' => (num, num))>, 'foo' => TypeStructure<D>)
 File "type_structure1.php", line 43, characters 5-24:

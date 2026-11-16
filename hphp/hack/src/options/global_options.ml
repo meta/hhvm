@@ -203,7 +203,6 @@ type t = {
   tco_list_assign_right_to_left: bool;
   tco_forget_one_branch_tconst_refinements: bool;
   tco_foreach_key_after_value: bool;
-  tco_type_structure_fields_may_be_absent: bool;
   tco_ban_this_escape_in_overridable_constructors: bool;
   tco_xhp_attribute_reads_not_refined: bool;
 }
@@ -322,7 +321,6 @@ let default =
     tco_list_assign_right_to_left = false;
     tco_forget_one_branch_tconst_refinements = false;
     tco_foreach_key_after_value = false;
-    tco_type_structure_fields_may_be_absent = false;
     tco_ban_this_escape_in_overridable_constructors = false;
     tco_xhp_attribute_reads_not_refined = false;
   }
@@ -438,7 +436,6 @@ let set
     ?tco_list_assign_right_to_left
     ?tco_forget_one_branch_tconst_refinements
     ?tco_foreach_key_after_value
-    ?tco_type_structure_fields_may_be_absent
     ?tco_xhp_attribute_reads_not_refined
     ?tco_ban_this_escape_in_overridable_constructors
     options =
@@ -763,10 +760,6 @@ let set
         options.tco_forget_one_branch_tconst_refinements;
     tco_foreach_key_after_value =
       setting tco_foreach_key_after_value options.tco_foreach_key_after_value;
-    tco_type_structure_fields_may_be_absent =
-      setting
-        tco_type_structure_fields_may_be_absent
-        options.tco_type_structure_fields_may_be_absent;
     tco_ban_this_escape_in_overridable_constructors =
       setting
         tco_ban_this_escape_in_overridable_constructors

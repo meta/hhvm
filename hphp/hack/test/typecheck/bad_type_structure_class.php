@@ -4,10 +4,10 @@ class C<T> {}
 
 function concrete(TypeStructure<C<int>> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
   hh_show($ts['classname']);
-  hh_show($ts['generic_types']);
+  hh_show($ts['generic_types'] ?? null);
 
   // any other field will fail
   hh_show($ts['nullable']);
@@ -22,10 +22,10 @@ function concrete(TypeStructure<C<int>> $ts): void {
 
 function generic<T as C<int>>(TypeStructure<T> $ts): void {
   hh_show($ts['kind']);
-  hh_show($ts['alias']);
-  hh_show($ts['name']);
+  hh_show($ts['alias'] ?? null);
+  hh_show($ts['name'] ?? null);
   hh_show($ts['classname']);
-  hh_show($ts['generic_types']);
+  hh_show($ts['generic_types'] ?? null);
 
   // any other field will fail
   hh_show($ts['nullable']);

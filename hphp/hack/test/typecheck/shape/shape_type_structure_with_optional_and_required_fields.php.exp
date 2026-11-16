@@ -1,9 +1,9 @@
 File "shape_type_structure_with_optional_and_required_fields.php", line 9, characters 3-34:
   TypeStructureKind
-File "shape_type_structure_with_optional_and_required_fields.php", line 10, characters 3-35:
-  string
-File "shape_type_structure_with_optional_and_required_fields.php", line 11, characters 3-34:
-  string
+File "shape_type_structure_with_optional_and_required_fields.php", line 10, characters 3-43:
+  ?string
+File "shape_type_structure_with_optional_and_required_fields.php", line 11, characters 3-42:
+  ?string
 File "shape_type_structure_with_optional_and_required_fields.php", line 12, characters 3-36:
   shape(?'a' => TypeStructure<int>, 'b' => TypeStructure<bool>)
 No errors
