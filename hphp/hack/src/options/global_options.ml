@@ -201,7 +201,6 @@ type t = {
   tco_missing_targs_as_fresh_generics: bool;
   tco_ban_memoize_erased_generic_return: bool;
   tco_list_assign_right_to_left: bool;
-  tco_forget_one_branch_tconst_refinements: bool;
   tco_foreach_key_after_value: bool;
   tco_ban_this_escape_in_overridable_constructors: bool;
   tco_xhp_attribute_reads_not_refined: bool;
@@ -319,7 +318,6 @@ let default =
     tco_missing_targs_as_fresh_generics = false;
     tco_ban_memoize_erased_generic_return = false;
     tco_list_assign_right_to_left = false;
-    tco_forget_one_branch_tconst_refinements = false;
     tco_foreach_key_after_value = false;
     tco_ban_this_escape_in_overridable_constructors = false;
     tco_xhp_attribute_reads_not_refined = false;
@@ -434,7 +432,6 @@ let set
     ?tco_missing_targs_as_fresh_generics
     ?tco_ban_memoize_erased_generic_return
     ?tco_list_assign_right_to_left
-    ?tco_forget_one_branch_tconst_refinements
     ?tco_foreach_key_after_value
     ?tco_xhp_attribute_reads_not_refined
     ?tco_ban_this_escape_in_overridable_constructors
@@ -754,10 +751,6 @@ let set
       setting
         tco_list_assign_right_to_left
         options.tco_list_assign_right_to_left;
-    tco_forget_one_branch_tconst_refinements =
-      setting
-        tco_forget_one_branch_tconst_refinements
-        options.tco_forget_one_branch_tconst_refinements;
     tco_foreach_key_after_value =
       setting tco_foreach_key_after_value options.tco_foreach_key_after_value;
     tco_ban_this_escape_in_overridable_constructors =

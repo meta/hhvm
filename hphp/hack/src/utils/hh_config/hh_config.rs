@@ -631,10 +631,6 @@ impl HhConfig {
                 "foreach_key_after_value",
                 default.tco_foreach_key_after_value,
             )?,
-            tco_forget_one_branch_tconst_refinements: hhconfig.get_bool_or(
-                "forget_one_branch_tconst_refinements",
-                default.tco_forget_one_branch_tconst_refinements,
-            )?,
             tco_ban_this_escape_in_overridable_constructors: hhconfig.get_bool_or(
                 "ban_this_escape_in_overridable_constructors",
                 default.tco_ban_this_escape_in_overridable_constructors,

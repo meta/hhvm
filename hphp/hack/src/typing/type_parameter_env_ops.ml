@@ -57,8 +57,8 @@ let join_upper_bounds env u1 u2 =
  * and tpenv2 |- tpenv
  *
  * A type parameter defined on only one input is kept: it may be a fresh generic
- * the other input never had. Under forget_one_branch_tconst_refinements, one in
- * the global tpenv (a type constant) is dropped, leaving its global bounds.
+ * the other input never had. One in the global tpenv (a type constant) is
+ * dropped, leaving its global bounds.
  * If it appears in both, supposing we have
  *     l1 <: T <: u1 in tpenv1
  * and l2 <: T <: u2 in tpenv2
@@ -73,9 +73,6 @@ let join env tpenv1 tpenv2 =
     else
       p1
   in
-  let forget_one_sided_global =
-    Typechecker_options.forget_one_branch_tconst_refinements (Env.get_tcopt env)
-  in
   let global_tpenv = Env.get_global_tpenv env in
   TPEnv.merge_env env tpenv1 tpenv2 ~combine:(fun env tparam info1 info2 ->
       match (info1, info2) with
@@ -88,7 +85,7 @@ let join env tpenv1 tpenv2 =
         (env, Some (pos, KDefs.{ info1 with lower_bounds; upper_bounds }))
       | (Some _, None)
       | (None, Some _)
-        when forget_one_sided_global && TPEnv.mem tparam global_tpenv ->
+        when TPEnv.mem tparam global_tpenv ->
         (env, None)
       | (Some (pos, info), _) -> (env, Some (pos, info))
       | (_, Some (pos, info)) -> (env, Some (pos, info))

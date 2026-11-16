@@ -304,8 +304,6 @@ type t = {
       (** Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics. *)
   tco_list_assign_right_to_left: bool;
       (** Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right. *)
-  tco_forget_one_branch_tconst_refinements: bool;
-      (** When merging control-flow branches, forget a type-constant refinement (such as `this::T = int` from an `is` test) made in only one branch, rather than keep it for code after the merge. *)
   tco_foreach_key_after_value: bool;
       (** In `foreach ($e as $k => $v)`, type the write to the value target before the write to the key target, the order HHVM performs them in, so in `foreach ($d as $a => $a)` `$a` ends up with the key, and an index in the value target reads the key local's previous value. `await as` writes the key first and is unchanged. *)
   tco_ban_this_escape_in_overridable_constructors: bool;
@@ -424,7 +422,6 @@ val set :
   ?tco_missing_targs_as_fresh_generics:bool ->
   ?tco_ban_memoize_erased_generic_return:bool ->
   ?tco_list_assign_right_to_left:bool ->
-  ?tco_forget_one_branch_tconst_refinements:bool ->
   ?tco_foreach_key_after_value:bool ->
   ?tco_xhp_attribute_reads_not_refined:bool ->
   ?tco_ban_this_escape_in_overridable_constructors:bool ->

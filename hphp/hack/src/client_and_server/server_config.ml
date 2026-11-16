@@ -641,10 +641,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.ban_this_escape_in_overridable_constructors
          config)
-    ?tco_forget_one_branch_tconst_refinements:
-      (bool_opt
-         Config_keys.Hhconfig.forget_one_branch_tconst_refinements
-         config)
     options
 
 let warn_on_did_you_mean
