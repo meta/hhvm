@@ -584,14 +584,10 @@ impl HhConfig {
             class_sub_classname: hhconfig
                 .get_bool_or("class_sub_classname", default.class_sub_classname)?,
             class_class_type: hhconfig.get_bool_or("class_class_type", default.class_class_type)?,
-            needs_concrete_class_call_check: get_tristate(
-                &hhconfig,
-                "needs_concrete_class_call_check",
-                default.needs_concrete_class_call_check,
-            )?,
-            needs_concrete_class_function_pointer_check: get_optional_tristate(
+            needs_concrete_class_function_pointer_check: get_tristate(
                 &hhconfig,
                 "needs_concrete_class_function_pointer_check",
+                default.needs_concrete_class_function_pointer_check,
             )?,
             strict_consistent_construct: hhconfig.get_bool_or(
                 "strict_consistent_construct",
@@ -762,31 +758,22 @@ mod test {
     }
 
     #[test]
-    fn test_needs_concrete_fine_grained() {
-        let hhconf = from_slice(b"needs_concrete_class_call_check=2").unwrap();
-        assert_eq!(hhconf.common.opts.needs_concrete_class_call_check, 2);
-        assert_eq!(
-            hhconf
-                .common
-                .opts
-                .needs_concrete_class_function_pointer_check,
-            None
-        );
-    }
-
-    #[test]
     fn test_needs_concrete_class_function_pointer_check() {
-        let hhconf = from_slice(
-            b"needs_concrete_class_call_check=2\nneeds_concrete_class_function_pointer_check=1",
-        )
-        .unwrap();
-        assert_eq!(hhconf.common.opts.needs_concrete_class_call_check, 2);
+        let hhconf = from_slice(b"").unwrap();
         assert_eq!(
             hhconf
                 .common
                 .opts
                 .needs_concrete_class_function_pointer_check,
-            Some(1)
+            2
+        );
+        let hhconf = from_slice(b"needs_concrete_class_function_pointer_check=1").unwrap();
+        assert_eq!(
+            hhconf
+                .common
+                .opts
+                .needs_concrete_class_function_pointer_check,
+            1
         );
         assert!(from_slice(b"needs_concrete_class_function_pointer_check=3").is_err());
     }

@@ -1,3 +1,2 @@
---config needs_concrete_class_call_check=2
 --config needs_concrete_class_function_pointer_check=1
 --error-format plain_highlighted

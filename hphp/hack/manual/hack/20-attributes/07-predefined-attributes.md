@@ -430,9 +430,9 @@ class Dog extends Animal {
 
 ### How the attribute affects call sites
 
-Once you add `<<__NeedsConcrete>>`, the type checker will warn about calls where the receiver class might not be concrete.
+Once you add `<<__NeedsConcrete>>`, the type checker reports an error on calls where the receiver class might not be concrete.
 
-```hack warning
+```hack error
 abstract class Animal {
   <<__NeedsConcrete>>
   public static function introduce(): void {
@@ -444,7 +444,7 @@ abstract class Animal {
 
 <<__EntryPoint>>
 function main(): void {
-  Animal::introduce(); // Warning: Animal is not concrete
+  Animal::introduce(); // Error: Animal is not concrete
 }
 ```
 

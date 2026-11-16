@@ -1,4 +1,4 @@
-warning: Warn[12024] Dangerous call to `C2::m` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `C2` is not concrete. [1]
+error: Typing[4528] Dangerous call to `C2::m` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `C2` is not concrete. [1]
 -> Declaration is here [2]
 
 needs_concrete_abstract_concrete_3.php:28:7

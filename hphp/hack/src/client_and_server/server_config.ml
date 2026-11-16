@@ -595,12 +595,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
     ?class_sub_classname:
       (bool_opt Config_keys.Hhconfig.class_sub_classname config)
     ?class_class_type:(bool_opt Config_keys.Hhconfig.class_class_type config)
-    ?needs_concrete_class_call_check:
-      (int_opt Config_keys.Hhconfig.needs_concrete_class_call_check config
-      |> Option.map ~f:(fun value ->
-             if value < 0 || value > 2 then
-               invalid_arg "needs_concrete_class_call_check must be 0, 1, or 2";
-             value))
     ?needs_concrete_class_function_pointer_check:
       (int_opt
          Config_keys.Hhconfig.needs_concrete_class_function_pointer_check
@@ -609,7 +603,7 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
              if value < 0 || value > 2 then
                invalid_arg
                  "needs_concrete_class_function_pointer_check must be 0, 1, or 2";
-             Some value))
+             value))
     ?strict_consistent_construct:
       (bool_opt Config_keys.Hhconfig.strict_consistent_construct config)
     ?allow_class_string_cast:

@@ -265,13 +265,8 @@ let class_sub_classname t = t.Global_options.class_sub_classname
 
 let class_class_type t = t.Global_options.class_class_type
 
-let needs_concrete_class_call_check t =
-  t.Global_options.needs_concrete_class_call_check
-
 let needs_concrete_class_function_pointer_check t =
-  Option.value
-    t.Global_options.needs_concrete_class_function_pointer_check
-    ~default:(needs_concrete_class_call_check t)
+  t.Global_options.needs_concrete_class_function_pointer_check
 
 let strict_consistent_construct t = t.Global_options.strict_consistent_construct
 

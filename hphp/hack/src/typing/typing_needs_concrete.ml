@@ -77,7 +77,7 @@ let check_class_get
       Typechecker_options.needs_concrete_class_function_pointer_check
         env.genv.tcopt
     else
-      Typechecker_options.needs_concrete_class_call_check env.genv.tcopt
+      2
   in
   let callee_is_needs_concrete_method : bool =
     is_method && Typing_defs.get_ce_readonly_prop_or_needs_concrete ce

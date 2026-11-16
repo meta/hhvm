@@ -1,57 +1,3 @@
-warning: Warn[12024] Dangerous call to `A::m` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `A` is not concrete. [1]
--> Declaration is here [2]
-
-needs_concrete_function_pointer_1.php:28:6
- 5 | 
- 6 |   <<__NeedsConcrete>>
- 7 |   public static function m(): int {
-   |                          ^ [2]
- 8 |     return static::hook();
- 9 |   }
-   :
-26 | 
-27 | function f(): void {
-28 |   A::m();
-   |      ^ [1]
-29 |   $_ = A::m<>;
-30 |   $_ = A::g<int>;
-
-warning: Warn[12024] Dangerous call to `A::m` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `A` is not concrete. [1]
--> Declaration is here [2]
-
-needs_concrete_function_pointer_1.php:29:11
- 5 | 
- 6 |   <<__NeedsConcrete>>
- 7 |   public static function m(): int {
-   |                          ^ [2]
- 8 |     return static::hook();
- 9 |   }
-   :
-27 | function f(): void {
-28 |   A::m();
-29 |   $_ = A::m<>;
-   |           ^ [1]
-30 |   $_ = A::g<int>;
-31 |   $_ = C::m<>;
-
-warning: Warn[12024] Dangerous call to `A::g` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `A` is not concrete. [1]
--> Declaration is here [2]
-
-needs_concrete_function_pointer_1.php:30:11
-10 | 
-11 |   <<__NeedsConcrete>>
-12 |   public static function g<T>(T $_): int {
-   |                          ^ [2]
-13 |     return static::hook();
-14 |   }
-   :
-28 |   A::m();
-29 |   $_ = A::m<>;
-30 |   $_ = A::g<int>;
-   |           ^ [1]
-31 |   $_ = C::m<>;
-32 | }
-
 error: Typing[4528] Dangerous call to `A::m` (a `<<__NeedsConcrete>>` method) via `static`. It requires `static` to refer to a concrete class but `static` may not be concrete. [1]
 -> Declaration is here [2]
 
@@ -69,5 +15,59 @@ needs_concrete_function_pointer_1.php:17:18
    |                  ^ [1]
 18 |   }
 19 | }
+
+error: Typing[4528] Dangerous call to `A::m` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `A` is not concrete. [1]
+-> Declaration is here [2]
+
+needs_concrete_function_pointer_1.php:28:6
+ 5 | 
+ 6 |   <<__NeedsConcrete>>
+ 7 |   public static function m(): int {
+   |                          ^ [2]
+ 8 |     return static::hook();
+ 9 |   }
+   :
+26 | 
+27 | function f(): void {
+28 |   A::m();
+   |      ^ [1]
+29 |   $_ = A::m<>;
+30 |   $_ = A::g<int>;
+
+error: Typing[4528] Dangerous call to `A::m` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `A` is not concrete. [1]
+-> Declaration is here [2]
+
+needs_concrete_function_pointer_1.php:29:11
+ 5 | 
+ 6 |   <<__NeedsConcrete>>
+ 7 |   public static function m(): int {
+   |                          ^ [2]
+ 8 |     return static::hook();
+ 9 |   }
+   :
+27 | function f(): void {
+28 |   A::m();
+29 |   $_ = A::m<>;
+   |           ^ [1]
+30 |   $_ = A::g<int>;
+31 |   $_ = C::m<>;
+
+error: Typing[4528] Dangerous call to `A::g` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `A` is not concrete. [1]
+-> Declaration is here [2]
+
+needs_concrete_function_pointer_1.php:30:11
+10 | 
+11 |   <<__NeedsConcrete>>
+12 |   public static function g<T>(T $_): int {
+   |                          ^ [2]
+13 |     return static::hook();
+14 |   }
+   :
+28 |   A::m();
+29 |   $_ = A::m<>;
+30 |   $_ = A::g<int>;
+   |           ^ [1]
+31 |   $_ = C::m<>;
+32 | }
 
 4 errors found

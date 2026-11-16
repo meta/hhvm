@@ -1,4 +1,4 @@
-warning: Warn[12024] Dangerous call to `Base::concreteOnly` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `Base` is not concrete. [1]
+error: Typing[4528] Dangerous call to `Base::concreteOnly` (a `<<__NeedsConcrete>>` method). It is expecting a concrete receiver but `Base` is not concrete. [1]
 -> Declaration is here [2]
 
 needs_concrete_fine_grained.php:4:9

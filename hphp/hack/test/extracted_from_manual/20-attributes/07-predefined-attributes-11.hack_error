@@ -11,5 +11,5 @@ abstract class Animal {
 
 <<__EntryPoint>>
 function main(): void {
-  Animal::introduce(); // Warning: Animal is not concrete
+  Animal::introduce(); // Error: Animal is not concrete
 }

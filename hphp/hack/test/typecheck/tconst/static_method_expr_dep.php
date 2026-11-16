@@ -1,7 +1,7 @@
 <?hh
 
 <<__ConsistentConstruct>>
-abstract class P {
+class P {
   <<__NeedsConcrete>>
   public static function create(): this {
     return new static();
