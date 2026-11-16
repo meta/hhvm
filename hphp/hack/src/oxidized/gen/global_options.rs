@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<4566873408b6081ab6403bf6b49b1ec3>>
+// @generated SignedSource<<b935a09d0f912062e852b432c907cc37>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -406,8 +406,6 @@ pub struct GlobalOptions {
     pub class_pointer_ban_class_array_key: bool,
     pub tco_permits_bypassing_visibility: Vec<String>,
     pub tco_tests_bypass_visibility_static_properties: bool,
-    /// Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments.
-    pub tco_ban_this_refinement_in_generic_class: bool,
     /// Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables.
     pub tco_missing_targs_as_fresh_generics: bool,
     /// Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics.

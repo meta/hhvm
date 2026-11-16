@@ -623,10 +623,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.tests_bypass_visibility_static_properties
          config)
-    ?tco_ban_this_refinement_in_generic_class:
-      (bool_opt
-         Config_keys.Hhconfig.ban_this_refinement_in_generic_class
-         config)
     ?tco_missing_targs_as_fresh_generics:
       (bool_opt Config_keys.Hhconfig.missing_targs_as_fresh_generics config)
     ?tco_ban_memoize_erased_generic_return:

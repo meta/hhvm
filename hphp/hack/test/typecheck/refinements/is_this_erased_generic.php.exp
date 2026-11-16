@@ -2,4 +2,18 @@ File "is_this_erased_generic.php", line 6, characters 7-17:
   this as C<T>
 File "is_this_erased_generic.php", line 8, characters 7-17:
   ?not this
-No errors
+error: Typing[4536] `is this` and `as this` check only the class at runtime, not the type arguments of generic class `C`, so they cannot refine to `this`. Refine to the class with wildcard type arguments instead. [1]
+-> The generic class is declared here [2]
+
+is_this_erased_generic.php:5:15
+1 | <?hh
+2 | 
+3 | class C<T> {
+  |       ^ [2]
+4 |   public function test(mixed $x): void {
+5 |     if ($x is this) {
+  |               ^^^^ [1]
+6 |       hh_show($x);
+7 |     } else {
+
+1 error found

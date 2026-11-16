@@ -197,7 +197,6 @@ type t = {
   class_pointer_ban_class_array_key: bool;
   tco_permits_bypassing_visibility: string list;
   tco_tests_bypass_visibility_static_properties: bool;
-  tco_ban_this_refinement_in_generic_class: bool;
   tco_missing_targs_as_fresh_generics: bool;
   tco_ban_memoize_erased_generic_return: bool;
   tco_ban_this_escape_in_overridable_constructors: bool;
@@ -312,7 +311,6 @@ let default =
     class_pointer_ban_class_array_key = false;
     tco_permits_bypassing_visibility = [];
     tco_tests_bypass_visibility_static_properties = false;
-    tco_ban_this_refinement_in_generic_class = false;
     tco_missing_targs_as_fresh_generics = false;
     tco_ban_memoize_erased_generic_return = false;
     tco_ban_this_escape_in_overridable_constructors = false;
@@ -424,7 +422,6 @@ let set
     ?class_pointer_ban_class_array_key
     ?tco_permits_bypassing_visibility
     ?tco_tests_bypass_visibility_static_properties
-    ?tco_ban_this_refinement_in_generic_class
     ?tco_missing_targs_as_fresh_generics
     ?tco_ban_memoize_erased_generic_return
     ?tco_xhp_attribute_reads_not_refined
@@ -729,10 +726,6 @@ let set
       setting
         tco_tests_bypass_visibility_static_properties
         options.tco_tests_bypass_visibility_static_properties;
-    tco_ban_this_refinement_in_generic_class =
-      setting
-        tco_ban_this_refinement_in_generic_class
-        options.tco_ban_this_refinement_in_generic_class;
     tco_missing_targs_as_fresh_generics =
       setting
         tco_missing_targs_as_fresh_generics

@@ -296,8 +296,6 @@ type t = {
       (** Error on dict[$c => 1] when $c: class<T>  *)
   tco_permits_bypassing_visibility: string list;
   tco_tests_bypass_visibility_static_properties: bool;
-  tco_ban_this_refinement_in_generic_class: bool;
-      (** Error on `is this` and `as this` in generic classes, where the runtime checks only the class and not its type arguments. *)
   tco_missing_targs_as_fresh_generics: bool;
       (** Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables. *)
   tco_ban_memoize_erased_generic_return: bool;
@@ -414,7 +412,6 @@ val set :
   ?class_pointer_ban_class_array_key:bool ->
   ?tco_permits_bypassing_visibility:string list ->
   ?tco_tests_bypass_visibility_static_properties:bool ->
-  ?tco_ban_this_refinement_in_generic_class:bool ->
   ?tco_missing_targs_as_fresh_generics:bool ->
   ?tco_ban_memoize_erased_generic_return:bool ->
   ?tco_xhp_attribute_reads_not_refined:bool ->

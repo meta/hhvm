@@ -150,7 +150,6 @@ impl Default for GlobalOptions {
             class_pointer_ban_class_array_key: false,
             tco_permits_bypassing_visibility: Default::default(),
             tco_tests_bypass_visibility_static_properties: false,
-            tco_ban_this_refinement_in_generic_class: false,
             tco_missing_targs_as_fresh_generics: false,
             tco_ban_memoize_erased_generic_return: false,
             tco_xhp_attribute_reads_not_refined: false,
