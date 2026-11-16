@@ -171,6 +171,7 @@ let setup
     ~hhi
     ~tmp
     ~remote_old_decls
+    ~(remote_old_decls_include_non_class : bool)
     ~(disable_rust_provider_shallow_decl_invalidation : bool) =
   Unix.putenv "HH_TEST_MODE" "1";
   let write_fixture files =
@@ -204,6 +205,8 @@ let setup
     Global_options.set
       ~po:parser_options
       ~tco_fetch_remote_old_decls:(Option.is_some remote_old_decls)
+      ~tco_remote_old_decl_fetching_include_non_class:
+        remote_old_decls_include_non_class
       ~tco_only_fetch_remote_old_decl_during_init:false
       ~tco_disable_rust_provider_shallow_decl_invalidation:
         disable_rust_provider_shallow_decl_invalidation
@@ -520,6 +523,7 @@ type child_request = {
   initialization: initialization;
   saved_state: Scheduled_fanout_saved_state.t option;
   remote_old_decls: files option;
+  remote_old_decls_include_non_class: bool;
   disable_rust_provider_shallow_decl_invalidation: bool;
   check: child_check;
 }
@@ -532,6 +536,7 @@ let run_child
        initialization;
        saved_state;
        remote_old_decls;
+       remote_old_decls_include_non_class;
        disable_rust_provider_shallow_decl_invalidation;
        check;
      } :
@@ -542,6 +547,7 @@ let run_child
       ~hhi
       ~tmp
       ~remote_old_decls
+      ~remote_old_decls_include_non_class
       ~disable_rust_provider_shallow_decl_invalidation
   in
   let env =
@@ -670,6 +676,7 @@ let in_process ~name request =
 let run
     ?(initialization = Full_check)
     ?remote_old_decls
+    ?(remote_old_decls_include_non_class : bool = false)
     ?(disable_rust_provider_shallow_decl_invalidation : bool = false)
     ?(expected_diagnostics : (string * int * string) list option)
     ({ initial_files; iterations } as scenario) =
@@ -713,6 +720,7 @@ let run
         initialization;
         saved_state;
         remote_old_decls;
+        remote_old_decls_include_non_class;
         disable_rust_provider_shallow_decl_invalidation;
         check = Incremental scenario;
       }
@@ -763,6 +771,7 @@ let run
         initialization;
         saved_state;
         remote_old_decls = None;
+        remote_old_decls_include_non_class = false;
         disable_rust_provider_shallow_decl_invalidation;
         check = Fresh_check final_files;
       }
@@ -801,6 +810,7 @@ let run
 let run_expect_bug
     ?initialization
     ?remote_old_decls
+    ?remote_old_decls_include_non_class
     ?disable_rust_provider_shallow_decl_invalidation
     ~bug
     ~expectation
@@ -818,6 +828,7 @@ let run_expect_bug
     run
       ?initialization
       ?remote_old_decls
+      ?remote_old_decls_include_non_class
       ?disable_rust_provider_shallow_decl_invalidation
       scenario
   in

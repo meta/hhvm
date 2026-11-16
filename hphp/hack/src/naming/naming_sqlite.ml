@@ -987,6 +987,37 @@ let sqlite_exn_wrapped_get_db_and_stmt_cache db_path name =
       name;
     Exception.reraise e
 
+let get_file_info_with_decl_hashes (db_path : db_path) (path : Relative_path.t)
+    : File_info.t option =
+  let (db, stmt_cache) = get_db_and_stmt_cache db_path in
+  let add_hash make_dep id =
+    let dep = Typing_deps.Dep.make (make_dep id.File_info.name) in
+    let decl_hash =
+      match SymbolTable.get db stmt_cache dep SymbolTable.get_sqlite with
+      | None -> None
+      | Some (_, _, hash, _) ->
+        Some (File_info.Decl_hash.from_naming_table (Int64.of_string hash))
+    in
+    { id with File_info.decl_hash }
+  in
+  let add_hashes make_dep ids = List.map ids ~f:(add_hash make_dep) in
+  let add_file_hashes file_info =
+    let { File_info.funs; classes; typedefs; consts; modules } =
+      file_info.File_info.ids
+    in
+    let ids =
+      {
+        File_info.funs = add_hashes (fun name -> Typing_deps.Dep.Fun name) funs;
+        classes = add_hashes (fun name -> Typing_deps.Dep.Type name) classes;
+        typedefs = add_hashes (fun name -> Typing_deps.Dep.Type name) typedefs;
+        consts = add_hashes (fun name -> Typing_deps.Dep.GConst name) consts;
+        modules = add_hashes (fun name -> Typing_deps.Dep.Module name) modules;
+      }
+    in
+    { file_info with File_info.ids }
+  in
+  Option.map (FileInfoTable.get_file_info db stmt_cache path) ~f:add_file_hashes
+
 let get_type_wrapper
     (result :
       (Relative_path.t * Naming_types.name_kind * string * string) option) :

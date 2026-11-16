@@ -49,6 +49,13 @@ val get_files_changed_since_baseline :
 
 val get_file_info : t -> Relative_path.t -> File_info.t option
 
+(** Like [get_file_info], but entries read from SQLite include declaration hashes
+    from its primary symbol table. These describe the database's winning
+    declarations, which may belong to another file or declaration kind.
+    Local and unbacked entries retain their own declaration hashes unchanged. *)
+val get_file_info_with_db_decl_hashes :
+  t -> Relative_path.t -> File_info.t option
+
 exception File_info_not_found
 
 (** Might raise {!File_info_not_found} *)

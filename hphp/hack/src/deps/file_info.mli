@@ -169,6 +169,56 @@ type saved
 
 val empty_names : names
 
+module Old_names : sig
+  (** Each key is a symbol in a file's old contents (i.e., previous contents
+      before the ongoing incremental re-check). The hashes describe the old hash
+      of the winning decl for that symbol.
+      The "winning" part is subtle:
+      - If there was no duplicate naming error it just means "the previous
+        version of this decl in this file"
+      - if there was a duplicate naming error, the winning (i.e., actually used)
+        definition may have been in a different file. In that case, the hash is
+        for that declaration in a different file!
+
+      These hashes are used for validating the old version of the decl (if we
+      can recover it), prior to old decl comparison. That's why we only care
+      about the winning decl: If there was a duplicate name error before and we
+      have access to an old decl, it will only ever be the winning version.
+
+      Note that this validation is different from deciding fanout:
+      - What these hashes are used for: Deciding whether a given decl is indeed
+        a valid baseline (i.e., it represents the state of the decl prior to the
+        current re-check).
+      - What they are not used for: Deciding whether a decl hash changed between
+        the previous and current recheck.
+
+      [None] means that the expected hash is unknown; the old declaration may
+      still be available in the old decl store. *)
+  type t = {
+    n_funs: Decl_hash.t option S_map.t;
+    n_classes: Decl_hash.t option S_map.t;
+    n_types: Decl_hash.t option S_map.t;
+    n_consts: Decl_hash.t option S_map.t;
+    n_modules: Decl_hash.t option S_map.t;
+  }
+  [@@deriving show]
+
+  val empty : t
+
+  val of_names : names -> t
+
+  (** Keep the first occurrence of each exact name within a declaration kind,
+      including an unknown hash. IDs must be supplied in source order, and their
+      hashes must already describe the previous winning declarations. *)
+  val of_ids : ids -> t
+
+  val to_names : t -> names
+
+  (** Preserve matching winning hashes when the same symbol occurs in several
+      files. Conflicting or unknown hashes merge to an unknown hash. *)
+  val merge : t -> t -> t
+end
+
 (*****************************************************************************)
 (* Functions simplifying the file information. *)
 (*****************************************************************************)

@@ -241,6 +241,18 @@ let get_file_info a key =
 
 exception File_info_not_found
 
+let get_file_info_with_db_decl_hashes
+    (naming_table : t) (path : Relative_path.t) : File_info.t option =
+  match naming_table with
+  | Unbacked files -> Relative_path.Map.find_opt files path
+  | Backed (local_changes, db_path) ->
+    (match
+       Relative_path.Map.find_opt local_changes.Naming_sqlite.file_deltas path
+     with
+    | Some (Naming_sqlite.Modified file_info) -> Some file_info
+    | Some Naming_sqlite.Deleted -> None
+    | None -> Naming_sqlite.get_file_info_with_decl_hashes db_path path)
+
 let get_file_info_exn a key =
   match get_file_info a key with
   | Some info -> info

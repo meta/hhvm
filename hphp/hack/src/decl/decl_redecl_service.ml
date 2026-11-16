@@ -131,7 +131,8 @@ let compare_decls_and_get_fanout
   (* Fetching everything at once is faster *)
   let (old_funs, old_types, old_consts, old_modules) =
     let { File_info.n_classes = _; n_funs; n_types; n_consts; n_modules } =
-      all_defs.Decl_compare.VersionedNames.old_names
+      File_info.Old_names.to_names
+        all_defs.Decl_compare.VersionedNames.old_names
     in
     Old_decl_provider.get_old_non_classes_batch
       ~funs:n_funs
@@ -589,7 +590,9 @@ let redo_type_decl
       ~init:Decl_compare.VersionedNames.empty
       ~f:(fun _fn names acc -> Decl_compare.VersionedNames.merge names acc)
   in
-  let all_old_defs = all_defs.Decl_compare.VersionedNames.old_names in
+  let all_old_defs =
+    File_info.Old_names.to_names all_defs.Decl_compare.VersionedNames.old_names
+  in
   (* Some of the definitions are already in the old heap, left there by a
    * previous lazy check *)
   let (oldified_defs, current_defs) =

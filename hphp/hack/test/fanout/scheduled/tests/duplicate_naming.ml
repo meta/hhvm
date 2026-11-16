@@ -8,8 +8,43 @@
 let class_a_names : File_info.names =
   { File_info.empty_names with File_info.n_classes = S_set.singleton "\\A" }
 
-let unchanged_class_a : Decl_compare.VersionedNames.t =
-  { old_names = class_a_names; new_names = class_a_names }
+(** Compute expected old hashes from the explicitly chosen winning source. *)
+let old_names_of_contents ~(file : string) (contents : string) :
+    File_info.Old_names.t =
+  let path = Relative_path.from_root ~suffix:file in
+  let parsed =
+    Direct_decl_parser.parse_and_hash_decls
+      (Decl_parser_options.from_parser_options Parser_options.default)
+      false
+      path
+      contents
+  in
+  let file_info = Direct_decl_parser.decls_to_fileinfo path parsed in
+  File_info.Old_names.of_ids file_info.File_info.ids
+
+let int_class_a_from_a : File_info.Old_names.t =
+  old_names_of_contents
+    ~file:"a.php"
+    "<?hh\nclass A { public static function value(): int { return 1; } }\n"
+
+let int_class_a_from_z : File_info.Old_names.t =
+  old_names_of_contents
+    ~file:"z.php"
+    "<?hh\nclass A { public static function value(): int { return 1; } }\n"
+
+let string_class_a_from_a : File_info.Old_names.t =
+  old_names_of_contents
+    ~file:"a.php"
+    "<?hh\nclass A { public static function value(): string { return 'value'; } }\n"
+
+let class_a_with_int_a_baseline : Decl_compare.VersionedNames.t =
+  { old_names = int_class_a_from_a; new_names = class_a_names }
+
+let class_a_with_int_z_baseline : Decl_compare.VersionedNames.t =
+  { old_names = int_class_a_from_z; new_names = class_a_names }
+
+let class_a_with_string_a_baseline : Decl_compare.VersionedNames.t =
+  { old_names = string_class_a_from_a; new_names = class_a_names }
 
 let duplicate_files =
   [
@@ -26,6 +61,7 @@ let duplicate_files =
 let test_duplicate_winner_removed () : bool =
   let open Scheduled_fanout in
   run
+    ~remote_old_decls_include_non_class:true
     ~initialization:Full_check
     ~expected_diagnostics:[("use.php", 4110, "Invalid return type")]
     {
@@ -41,10 +77,10 @@ let test_duplicate_winner_removed () : bool =
                 [
                   ( "a.php",
                     {
-                      old_names = class_a_names;
+                      old_names = int_class_a_from_a;
                       new_names = File_info.empty_names;
                     } );
-                  ("z.php", unchanged_class_a);
+                  ("z.php", class_a_with_int_a_baseline);
                 ];
           };
         ];
@@ -56,6 +92,7 @@ let test_duplicate_winner_removed () : bool =
 let test_duplicate_loser_removed () : bool =
   let open Scheduled_fanout in
   run
+    ~remote_old_decls_include_non_class:true
     ~initialization:Full_check
     ~expected_diagnostics:[]
     {
@@ -69,10 +106,10 @@ let test_duplicate_loser_removed () : bool =
             expected_versioned_names =
               Some
                 [
-                  ("a.php", unchanged_class_a);
+                  ("a.php", class_a_with_int_a_baseline);
                   ( "z.php",
                     {
-                      old_names = class_a_names;
+                      old_names = int_class_a_from_a;
                       new_names = File_info.empty_names;
                     } );
                 ];
@@ -86,6 +123,7 @@ let test_duplicate_loser_removed () : bool =
 let test_duplicate_created () : bool =
   let open Scheduled_fanout in
   run
+    ~remote_old_decls_include_non_class:true
     ~expected_diagnostics:[("z.php", 2012, "Name already bound: `A`")]
     {
       initial_files =
@@ -110,10 +148,10 @@ let test_duplicate_created () : bool =
             expected_versioned_names =
               Some
                 [
-                  ("a.php", unchanged_class_a);
+                  ("a.php", class_a_with_int_a_baseline);
                   ( "z.php",
                     {
-                      old_names = File_info.empty_names;
+                      old_names = File_info.Old_names.empty;
                       new_names = class_a_names;
                     } );
                 ];
@@ -157,10 +195,10 @@ let test_duplicate_created_then_retried () : bool =
                 [
                   ( "a.php",
                     {
-                      old_names = File_info.empty_names;
+                      old_names = File_info.Old_names.empty;
                       new_names = class_a_names;
                     } );
-                  ("z.php", unchanged_class_a);
+                  ("z.php", class_a_with_int_z_baseline);
                 ];
           };
         ];
@@ -175,6 +213,7 @@ let test_duplicate_created_then_retried () : bool =
   (* Initially z.php still wins, so only a.php has a duplicate-name error.
      A fresh check instead picks a.php and rejects the consumer's return type. *)
   run_expect_bug
+    ~remote_old_decls_include_non_class:true
     ~bug:"history-dependent duplicate winner documented on do_naming"
     ~expectation:
       (Diagnostics
@@ -187,6 +226,7 @@ let test_duplicate_created_then_retried () : bool =
      be rechecked against its string return type. In the real world, any edit to
      an unrelated file would trigger this. *)
   run
+    ~remote_old_decls_include_non_class:true
     ~expected_diagnostics:expected_after_retry
     {
       scenario with
@@ -197,14 +237,20 @@ let test_duplicate_created_then_retried () : bool =
               default_iteration with
               expected_versioned_names =
                 Some
-                  [("a.php", unchanged_class_a); ("z.php", unchanged_class_a)];
+                  [
+                    ("a.php", class_a_with_int_z_baseline);
+                    ("z.php", class_a_with_int_z_baseline);
+                  ];
             };
             (* A further retry observes the now-established winner. *)
             {
               default_iteration with
               expected_versioned_names =
                 Some
-                  [("a.php", unchanged_class_a); ("z.php", unchanged_class_a)];
+                  [
+                    ("a.php", class_a_with_string_a_baseline);
+                    ("z.php", class_a_with_string_a_baseline);
+                  ];
             };
           ];
     };
@@ -217,6 +263,7 @@ let test_duplicate_created_then_retried () : bool =
 let test_saved_duplicate_winner_removed () : bool =
   let open Scheduled_fanout in
   run
+    ~remote_old_decls_include_non_class:true
     ~initialization:
       (Saved_state_with_loading_schedule
          { before_dirty_snapshot = []; after_dirty_snapshot = [] })
@@ -236,10 +283,10 @@ let test_saved_duplicate_winner_removed () : bool =
                 [
                   ( "a.php",
                     {
-                      old_names = class_a_names;
+                      old_names = int_class_a_from_a;
                       new_names = File_info.empty_names;
                     } );
-                  ("z.php", unchanged_class_a);
+                  ("z.php", class_a_with_int_a_baseline);
                 ];
           };
         ];
@@ -252,6 +299,7 @@ let test_saved_duplicate_winner_removed () : bool =
 let test_saved_duplicate_loser_removed () : bool =
   let open Scheduled_fanout in
   run
+    ~remote_old_decls_include_non_class:true
     ~initialization:
       (Saved_state_with_loading_schedule
          { before_dirty_snapshot = []; after_dirty_snapshot = [] })
@@ -269,10 +317,10 @@ let test_saved_duplicate_loser_removed () : bool =
             expected_versioned_names =
               Some
                 [
-                  ("a.php", unchanged_class_a);
+                  ("a.php", class_a_with_int_a_baseline);
                   ( "z.php",
                     {
-                      old_names = class_a_names;
+                      old_names = int_class_a_from_a;
                       new_names = File_info.empty_names;
                     } );
                 ];
@@ -287,6 +335,7 @@ let test_saved_duplicate_loser_removed () : bool =
 let test_saved_duplicate_removed_during_startup () : bool =
   let open Scheduled_fanout in
   run
+    ~remote_old_decls_include_non_class:true
     ~initialization:
       (Saved_state_with_loading_schedule
          {

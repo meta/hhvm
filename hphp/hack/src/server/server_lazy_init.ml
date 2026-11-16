@@ -449,7 +449,7 @@ let names_to_deps (names : Decl_compare.VersionedNames.t) : Typing_deps.DepSet.t
     =
   let { Decl_compare.VersionedNames.old_names; new_names } = names in
   Typing_deps.DepSet.make ()
-  |> file_names_to_deps old_names
+  |> file_names_to_deps (File_info.Old_names.to_names old_names)
   |> file_names_to_deps new_names
 
 let log_fanout_information to_recheck_deps files_to_recheck =
@@ -516,7 +516,7 @@ let get_files_to_recheck
       defs_per_dirty_file
       ~init:File_info.empty_names
       ~f:(fun _fn { Decl_compare.VersionedNames.old_names; new_names = _ } acc
-         -> File_info.merge_names old_names acc)
+         -> File_info.merge_names (File_info.Old_names.to_names old_names) acc)
   in
   let ctx = Provider_utils.ctx_from_server_env env in
   Decl_redecl_service.oldify_decls_and_remove_descendants

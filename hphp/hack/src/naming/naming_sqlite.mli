@@ -64,6 +64,12 @@ val fold :
 
 val get_file_info : db_path -> Relative_path.t -> File_info.t option
 
+(** Like [get_file_info], but populate hashes from the primary symbol entries.
+    Each hash describes the database's winner for that symbol, which may belong
+    to another file or declaration kind. *)
+val get_file_info_with_decl_hashes :
+  db_path -> Relative_path.t -> File_info.t option
+
 val get_path_by_64bit_dep :
   db_path ->
   Typing_deps.Dep.t ->

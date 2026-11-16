@@ -12,7 +12,7 @@ open Decl_heap
 
 module VersionedNames : sig
   type t = {
-    old_names: File_info.names;
+    old_names: File_info.Old_names.t;
     new_names: File_info.names;
   }
   [@@deriving show]

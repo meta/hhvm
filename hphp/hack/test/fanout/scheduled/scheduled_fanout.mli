@@ -38,8 +38,9 @@ type iteration = {
       (** Actions performed after indexing returns, before naming begins. *)
   expected_versioned_names:
     (string * Decl_compare.VersionedNames.t) list option;
-      (** When supplied, assert the complete map of files and old/new names
-          passed to redeclaration before oldification. [None] skips observation;
+      (** When supplied, assert the complete map of files, old names and their
+          expected winning hashes, and new names passed to redeclaration before
+          oldification. [None] skips observation;
           [Some []] requires an empty map. *)
   after_redeclaring: (string * action list) list;
       (** Actions after the named file's declarations are parsed and its classes
@@ -142,11 +143,17 @@ val expect_known_fanout_bug :
     a naming database. The fixture folder is outside the repository, and the
     independent full check keeps remote old declarations disabled.
 
+    [remote_old_decls_include_non_class] sets the non-class fetching feature flag
+    and enables old hash population. It defaults to [false]. Without a fixture,
+    remote fetching stays disabled even when this flag is [true].
+    TODO(T298623016): Populate old hashes independently of this flag.
+
     [disable_rust_provider_shallow_decl_invalidation] preserves Rust shallow
     declarations when invalidating folded classes. It defaults to [false]. *)
 val run :
   ?initialization:initialization ->
   ?remote_old_decls:files ->
+  ?remote_old_decls_include_non_class:bool ->
   ?disable_rust_provider_shallow_decl_invalidation:bool ->
   ?expected_diagnostics:(string * int * string) list ->
   scenario ->
@@ -173,6 +180,7 @@ type bug_expectation =
 val run_expect_bug :
   ?initialization:initialization ->
   ?remote_old_decls:files ->
+  ?remote_old_decls_include_non_class:bool ->
   ?disable_rust_provider_shallow_decl_invalidation:bool ->
   bug:string ->
   expectation:bug_expectation ->

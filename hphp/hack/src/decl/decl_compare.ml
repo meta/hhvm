@@ -24,22 +24,22 @@ open Typing_deps
 
 module VersionedNames = struct
   type t = {
-    old_names: File_info.names;
+    old_names: File_info.Old_names.t;
     new_names: File_info.names;
   }
   [@@deriving show]
 
   let empty : t =
-    { old_names = File_info.empty_names; new_names = File_info.empty_names }
+    { old_names = File_info.Old_names.empty; new_names = File_info.empty_names }
 
   let make_unchanged (names : File_info.names) : t =
-    { old_names = names; new_names = names }
+    { old_names = File_info.Old_names.of_names names; new_names = names }
 
   let merge left right : t =
     let { old_names = left_old_names; new_names = left_new_names } = left in
     let { old_names = right_old_names; new_names = right_new_names } = right in
     {
-      old_names = File_info.merge_names left_old_names right_old_names;
+      old_names = File_info.Old_names.merge left_old_names right_old_names;
       new_names = File_info.merge_names left_new_names right_new_names;
     }
 end
@@ -61,7 +61,10 @@ module VersionedSSet = struct
   let project (project : File_info.names -> S_set.t) (names : VersionedNames.t)
       : t =
     let { VersionedNames.old_names; new_names } = names in
-    { old = project old_names; new_ = project new_names }
+    {
+      old = project (File_info.Old_names.to_names old_names);
+      new_ = project new_names;
+    }
 
   let get_classes = project (fun names -> names.File_info.n_classes)
 
@@ -109,7 +112,7 @@ module VersionedFileInfo = struct
       n_consts = old_gconsts;
       n_modules = old_modules;
     } =
-      old_names
+      File_info.Old_names.to_names old_names
     in
     let {
       File_info.n_funs = new_funs;

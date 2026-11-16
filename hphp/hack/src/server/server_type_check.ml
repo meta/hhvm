@@ -76,21 +76,30 @@ let print_fast defs_per_file =
 (*****************************************************************************)
 
 let add_old_decls
+    (ctx : Provider_context.t)
     (old_naming_table : Naming_table.t)
-    (defs_per_file : File_info.names Relative_path.Map.t) :
+    (old_names_per_file : File_info.Old_names.t Relative_path.Map.t)
+    (new_names_per_file : File_info.names Relative_path.Map.t) :
     Decl_compare.VersionedNames.t Relative_path.Map.t =
-  Relative_path.Map.mapi
-    defs_per_file
-    ~f:
-      begin
-        fun filename new_names ->
-          let old_names =
-            match Naming_table.get_file_info old_naming_table filename with
-            | None -> File_info.empty_names
-            | Some old_info -> File_info.simplify old_info
-          in
-          { Decl_compare.VersionedNames.old_names; new_names }
-      end
+  let add_old_names filename new_names =
+    let old_names =
+      (* TODO(T298623016): Populate old hashes independently of remote fetching. *)
+      if
+        Typechecker_options.remote_old_decl_fetching_include_non_class
+          (Provider_context.get_tcopt ctx)
+      then
+        match Relative_path.Map.find_opt old_names_per_file filename with
+        | None -> File_info.Old_names.empty
+        | Some old_names -> old_names
+      else
+        match Naming_table.get_file_info old_naming_table filename with
+        | None -> File_info.Old_names.empty
+        | Some old_info ->
+          File_info.Old_names.of_names (File_info.simplify old_info)
+    in
+    { Decl_compare.VersionedNames.old_names; new_names }
+  in
+  Relative_path.Map.mapi new_names_per_file ~f:add_old_names
 
 (*****************************************************************************)
 (* Parses the set of modified files *)
@@ -172,6 +181,10 @@ let get_classes_from_old_and_new ~new_naming_table ~old_naming_table path =
 type naming_result = {
   failed_naming: Relative_path.Set.t;
   naming_table: Naming_table.t;
+  old_names_per_file: File_info.Old_names.t Relative_path.Map.t;
+      (** When hash tracking is enabled, has entries for each file
+          [add_old_decls] may ask for. Empty when tracking is disabled.
+          TODO(T298623016): Populate this independently of remote fetching. *)
   telemetry: Telemetry.t;
 }
 
@@ -181,6 +194,9 @@ type naming_result = {
   in the return value.
   Also runs [Naming_global.ndecl_file_and_get_conflict_files] which updates
   the global reverse naming table.
+  When hash tracking is enabled, returns old names and winning declaration
+  hashes captured before these updates.
+  TODO(T298623016): Populate these hashes independently of remote fetching.
 
   The "winner" in case of duplicate definitions? All filenames involved in any
   duplicate definition were stored by the caller in [env.failed_parsing], and
@@ -201,6 +217,21 @@ let do_naming
     ~(cgroup_steps : Cgroup_profiler.step_group) : naming_result =
   let telemetry = Telemetry.create () in
   let start_t = Unix.gettimeofday () in
+
+  let old_names_per_file =
+    (* TODO(T298623016): Populate old hashes independently of remote fetching. *)
+    if
+      Typechecker_options.remote_old_decl_fetching_include_non_class
+        (Provider_context.get_tcopt ctx)
+    then
+      Server_incremental.get_old_names_batch
+        ctx
+        env.naming_table
+        ~defs_per_file_parsed
+    else
+      Relative_path.Map.empty
+  in
+
   let count = Relative_path.Map.cardinal defs_per_file_parsed in
   Cgroup_profiler.step_start_end cgroup_steps "naming" @@ fun _cgroup_step ->
   Server_incremental.remove_defs_from_reverse_naming_table
@@ -240,7 +271,7 @@ let do_naming
          ~key:"failed_naming_count"
          ~value:(Relative_path.Set.cardinal failed_naming)
   in
-  { failed_naming; naming_table; telemetry }
+  { failed_naming; naming_table; old_names_per_file; telemetry }
 
 type redecl_result = {
   changed: Typing_deps.DepSet.t;
@@ -609,7 +640,12 @@ let type_check_core
     Telemetry.duration telemetry ~key:"naming_start" ~start_time
   in
   let ctx = Provider_utils.ctx_from_server_env env in
-  let { failed_naming; naming_table; telemetry = naming_telemetry } =
+  let {
+    failed_naming;
+    naming_table;
+    old_names_per_file;
+    telemetry = naming_telemetry;
+  } =
     do_naming env ctx ~defs_per_file_parsed ~cgroup_steps
     (* Note: although do_naming updates global reverse-naming-table maps,
        the updated forward-naming-table "naming_table" only gets assigned
@@ -646,7 +682,9 @@ let type_check_core
       naming_table
       failed_naming
   in
-  let defs_per_file = add_old_decls env.naming_table defs_per_file in
+  let defs_per_file =
+    add_old_decls ctx env.naming_table old_names_per_file defs_per_file
+  in
 
   let count = Relative_path.Map.cardinal defs_per_file in
   let logstring = Printf.sprintf "Type declaration for %d files" count in

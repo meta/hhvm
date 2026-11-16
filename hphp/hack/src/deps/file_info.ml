@@ -229,6 +229,89 @@ let empty_names =
     n_modules = S_set.empty;
   }
 
+module Old_names = struct
+  type t = {
+    n_funs: Decl_hash.t option S_map.t;
+    n_classes: Decl_hash.t option S_map.t;
+    n_types: Decl_hash.t option S_map.t;
+    n_consts: Decl_hash.t option S_map.t;
+    n_modules: Decl_hash.t option S_map.t;
+  }
+  [@@deriving show]
+
+  let empty : t =
+    {
+      n_funs = S_map.empty;
+      n_classes = S_map.empty;
+      n_types = S_map.empty;
+      n_consts = S_map.empty;
+      n_modules = S_map.empty;
+    }
+
+  let of_names (names : names) : t =
+    let unknown_hashes names =
+      S_set.fold (fun name acc -> S_map.add name None acc) names S_map.empty
+    in
+    let ({ n_funs; n_classes; n_types; n_consts; n_modules } : names) = names in
+    {
+      n_funs = unknown_hashes n_funs;
+      n_classes = unknown_hashes n_classes;
+      n_types = unknown_hashes n_types;
+      n_consts = unknown_hashes n_consts;
+      n_modules = unknown_hashes n_modules;
+    }
+
+  let of_ids (ids : ids) : t =
+    let add_id acc { name; decl_hash; _ } =
+      if S_map.mem name acc then
+        acc
+      else
+        S_map.add name decl_hash acc
+    in
+    let hashes ids = List.fold ids ~init:S_map.empty ~f:add_id in
+    let { funs; classes; typedefs; consts; modules } = ids in
+    {
+      n_funs = hashes funs;
+      n_classes = hashes classes;
+      n_types = hashes typedefs;
+      n_consts = hashes consts;
+      n_modules = hashes modules;
+    }
+
+  let to_names (old_names : t) : names =
+    let names hashes = S_set.of_list (S_map.keys hashes) in
+    let { n_funs; n_classes; n_types; n_consts; n_modules } = old_names in
+    {
+      n_funs = names n_funs;
+      n_classes = names n_classes;
+      n_types = names n_types;
+      n_consts = names n_consts;
+      n_modules = names n_modules;
+    }
+
+  let merge (left : t) (right : t) : t =
+    let merge_hash _name left right =
+      match (left, right) with
+      | (Some left, Some right) ->
+        Some
+          (if Option.equal Decl_hash.equal left right then
+            left
+          else
+            None)
+      | (Some _, None) -> left
+      | (None, Some _) -> right
+      | (None, None) -> None
+    in
+    let merge_hashes = S_map.merge merge_hash in
+    {
+      n_funs = merge_hashes left.n_funs right.n_funs;
+      n_classes = merge_hashes left.n_classes right.n_classes;
+      n_types = merge_hashes left.n_types right.n_types;
+      n_consts = merge_hashes left.n_consts right.n_consts;
+      n_modules = merge_hashes left.n_modules right.n_modules;
+    }
+end
+
 (*****************************************************************************)
 (* Functions simplifying the file information. *)
 (*****************************************************************************)
