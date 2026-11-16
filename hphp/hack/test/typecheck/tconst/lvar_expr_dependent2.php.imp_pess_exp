@@ -27,15 +27,19 @@ File "lvar_expr_dependent2.php", line 63, characters 7-24:
 File "lvar_expr_dependent2.php", line 67, characters 5-22:
   ~<expr#30>::T where <expr#30>::T as C::T
 error: Typing[4240] This comparison has invalid types.  Only comparisons in which both arguments are strings, nums, DateTime, or DateTimeImmutable are allowed [1]
--> This is an object of type C [2]
--> This is an object of type C [2]
+-> This is a dynamic value or an object of type C [2]
+->   from this definition [3]
+-> This is a dynamic value or an object of type C [4]
+->   from this definition [3]
 
 lvar_expr_dependent2.php:22:9
 14 |   }
 15 | 
 16 |   public function test(Vector<C> $vec): void {
-   |                               ^ [2]
-17 |     list($c1, $c2) = $vec;
+   |                               ^ [3]
+17 |     $c1 = $vec[0]; $c2 = $vec[1];
+   |           ^^^^^^^ [2]
+   |                          ^^^^^^^ [4]
 18 |     // $c1 and $c2 have different expression ids
 19 |     hh_show($c1->get());
 20 |     hh_show($c2->get());

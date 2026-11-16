@@ -14,7 +14,7 @@ abstract class C {
   }
 
   public function test(Vector<C> $vec): void {
-    list($c1, $c2) = $vec;
+    $c1 = $vec[0]; $c2 = $vec[1];
     // $c1 and $c2 have different expression ids
     hh_show($c1->get());
     hh_show($c2->get());

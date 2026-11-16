@@ -623,10 +623,6 @@ impl HhConfig {
                 "ban_memoize_erased_generic_return",
                 default.tco_ban_memoize_erased_generic_return,
             )?,
-            tco_list_assign_right_to_left: hhconfig.get_bool_or(
-                "list_assign_right_to_left",
-                default.tco_list_assign_right_to_left,
-            )?,
             tco_foreach_key_after_value: hhconfig.get_bool_or(
                 "foreach_key_after_value",
                 default.tco_foreach_key_after_value,

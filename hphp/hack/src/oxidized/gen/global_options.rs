@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<d6871f681a75ad1a30605e678b28dba2>>
+// @generated SignedSource<<e691bc4e92fbdeadc9d2b4d9d3bcc32e>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -412,8 +412,6 @@ pub struct GlobalOptions {
     pub tco_missing_targs_as_fresh_generics: bool,
     /// Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics.
     pub tco_ban_memoize_erased_generic_return: bool,
-    /// Type the element writes of a `list()` assignment right to left, the order HHVM performs them in, rather than left to right.
-    pub tco_list_assign_right_to_left: bool,
     /// In `foreach ($e as $k => $v)`, type the write to the value target before the write to the key target, the order HHVM performs them in, so in `foreach ($d as $a => $a)` `$a` ends up with the key, and an index in the value target reads the key local's previous value. `await as` writes the key first and is unchanged.
     pub tco_foreach_key_after_value: bool,
     /// Reject places where `$this` escapes the constructor of a non-final class or a trait, such as passing `$this` or calling a non-private method, wherever they are in the constructor and not only before every property is initialized. A subclass constructor may run that constructor before initializing its own properties, which a method it overrides could then read.

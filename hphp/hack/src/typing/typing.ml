@@ -13433,13 +13433,6 @@ end = struct
     let ty_mismatch = mk_ty_mismatch_opt ty2 ty1 ty_err_opt in
     (env, te1, ty2, ty_mismatch)
 
-  (* HHVM writes a list()'s elements right to left. *)
-  let list_writes_in_order env l =
-    if TCO.list_assign_right_to_left (Env.get_tcopt env) then
-      List.rev l
-    else
-      l
-
   let rec assign_with_subtype_err_
       ?expr_for_string_check p ur env (e1 : Nast.expr) pos2 ty2 =
     match e1 with
@@ -13533,14 +13526,13 @@ end = struct
           let (env, results) =
             List.map_env
               env
-              (list_writes_in_order env (List.zip_exn el tyl))
+              (* HHVM writes a list()'s elements right to left. *)
+              (List.rev (List.zip_exn el tyl))
               ~f:(fun env ((lvalue : Nast.expr), ty2) ->
                 let (env, te, _, err_opt) = assign p env lvalue pos2 ty2 in
                 (env, (te, err_opt)))
           in
-          let (tel, subtype_errs) =
-            List.unzip (list_writes_in_order env results)
-          in
+          let (tel, subtype_errs) = List.unzip (List.rev results) in
           let (_, p1, _) = e1 in
           let (env, te, ty) = make_result env p1 (Aast.List tel) ty2 in
           (env, te, ty, subtype_errs)
