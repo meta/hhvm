@@ -249,6 +249,12 @@ type redecl_result = {
   old_decl_missing_count: int;
 }
 
+let invoke_testing_hook_before_redecl
+    (hooks : Server_env.type_check_testing_hooks option)
+    (defs_per_file : Decl_compare.VersionedNames.t Relative_path.Map.t) : unit =
+  let invoke hooks = hooks.Server_env.before_redecl defs_per_file in
+  Option.iter hooks ~f:invoke
+
 (** Oldify defs and compute files to recheck. *)
 let do_redecl
     (genv : genv)
@@ -257,6 +263,7 @@ let do_redecl
     ~(defs_per_file : Decl_compare.VersionedNames.t Relative_path.Map.t)
     ~(naming_table : Naming_table.t)
     ~(cgroup_steps : Cgroup_profiler.step_group) : redecl_result =
+  invoke_testing_hook_before_redecl env.type_check_testing_hooks defs_per_file;
   let get_classes =
     get_classes_from_old_and_new
       ~new_naming_table:naming_table

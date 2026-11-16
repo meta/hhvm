@@ -52,6 +52,7 @@ function g(): int {
             (* First iteration: C observes A's edit before the server has
                processed A's change notification. *)
             {
+              default_iteration with
               (* 2. Queue a comment-only edit to C. A and B still match the
                  saved state when this iteration begins. *)
               before_type_check =

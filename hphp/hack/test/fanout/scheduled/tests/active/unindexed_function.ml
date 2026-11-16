@@ -48,6 +48,7 @@ function caller(): int {
       iterations =
         [
           {
+            default_iteration with
             (* The reproducer indexes Producer without g; the control adds g
                before indexing instead. An ordinary caller edit makes
                Caller.php part of this iteration's selected files. *)
@@ -151,6 +152,7 @@ let scenario ~transient ~use =
       iterations =
         [
           {
+            default_iteration with
             (* 1. Queue comment-only edits to F.php and AControl.php. *)
             before_type_check =
               [
@@ -297,6 +299,7 @@ let run ~temporary_function ~index_temporary ~repair_files =
       iterations =
         [
           {
+            default_iteration with
             before_type_check =
               [
                 Write_file

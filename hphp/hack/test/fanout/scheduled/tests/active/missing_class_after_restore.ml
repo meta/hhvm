@@ -48,6 +48,7 @@ function late_c(): void {
             (* First iteration: check a consumer against missing C, then let
                a later consumer repopulate C's declaration cache. *)
             {
+              default_iteration with
               (* 1. Make a comment-only edit and queue ZC.php for parsing.
                  Indexing will still see C; its name and signature have
                  not changed. *)

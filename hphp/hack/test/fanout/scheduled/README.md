@@ -1,4 +1,4 @@
-# Scheduled fanout regressions
+# Scheduled fanout tests
 
 This harness gives tests deterministic control over when disk changes happen,
 including at phase boundaries within a typechecking iteration. It describes
@@ -17,8 +17,8 @@ disabled. Temporary Hack sources are parsed and typechecked.
 
 See [scheduled_fanout.mli](scheduled_fanout.mli) for the scenario API. Keep
 harness self-tests separate from active bug repros under
-`regressions/active/`. See [the active bug index](regressions/active/README.md).
-Fixed regressions belong directly in `regressions/`.
+`tests/active/`. See [the active bug index](tests/active/README.md).
+Other tests belong directly in `tests/`.
 
 Tests for fanout bugs that have not been fixed yet can use
 `run_expect_bug` to specify the expected diagnostic difference or internal

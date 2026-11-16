@@ -206,6 +206,9 @@ end
 type type_check_testing_hooks = {
   after_indexing: unit -> unit;
       (** Called from [Server_type_check.type_check_core] after [indexing] *)
+  before_redecl: Decl_compare.VersionedNames.t Relative_path.Map.t -> unit;
+      (** Called at entry to [Server_type_check.do_redecl] with its old and new
+          names per file, before oldification. *)
   after_file_redecl: Relative_path.t -> unit;
       (** Called from [Decl_redecl_service.redeclare_files] after a file's declarations are parsed
           and its classes folded, before the next file or declaration comparison. Only called

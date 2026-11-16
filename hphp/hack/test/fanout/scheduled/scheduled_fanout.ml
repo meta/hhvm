@@ -22,6 +22,8 @@ type iteration = {
   before_type_check: action list;
   disk_needs_parsing: string list;
   after_indexing: action list;
+  expected_versioned_names:
+    (string * Decl_compare.VersionedNames.t) list option;
   after_redeclaring: (string * action list) list;
   type_check: type_check_step list;
   cancelled_checks: string list;
@@ -32,6 +34,7 @@ let default_iteration =
     before_type_check = [];
     disk_needs_parsing = [];
     after_indexing = [];
+    expected_versioned_names = None;
     after_redeclaring = [];
     type_check = [Remaining];
     cancelled_checks = [];
@@ -288,11 +291,37 @@ let split_type_check_schedule steps =
   in
   split [] steps
 
+(** Check all files and their versioned names entering redeclaration. *)
+let assert_redecls
+    ~(check : string)
+    ~(expected : (string * Decl_compare.VersionedNames.t) list)
+    (actual : Decl_compare.VersionedNames.t Relative_path.Map.t) : unit =
+  let show (file, names) =
+    file ^ ": " ^ Decl_compare.VersionedNames.show names
+  in
+  let add_file path names acc = (Relative_path.suffix path, names) :: acc in
+  let actual = Relative_path.Map.fold actual ~init:[] ~f:add_file in
+  let format entries =
+    String.concat
+      ~sep:"\n"
+      (List.sort (List.map entries ~f:show) ~compare:String.compare)
+  in
+  let expected = format expected in
+  let actual = format actual in
+  if not (String.equal expected actual) then
+    failwith
+      (Printf.sprintf
+         "Unexpected redeclaration inputs during %s.\nExpected:\n%s\nActual:\n%s"
+         check
+         expected
+         actual)
+
 let run_iteration genv env ~root ~check iteration =
   let {
     before_type_check;
     disk_needs_parsing;
     after_indexing;
+    expected_versioned_names;
     after_redeclaring;
     type_check;
     cancelled_checks;
@@ -338,9 +367,18 @@ let run_iteration genv env ~root ~check iteration =
     failwith "cancelled_checks requires typechecking cancellation mocking";
   run_actions root before_type_check;
   let pending_checks = ref scheduled_checks in
+  let observed_redecls = ref false in
+  let before_redecl defs_per_file =
+    let check_expected expected =
+      assert_redecls ~check ~expected defs_per_file
+    in
+    Option.iter expected_versioned_names ~f:check_expected;
+    observed_redecls := true
+  in
   let type_check_testing_hooks =
     if
       List.is_empty after_indexing
+      && Option.is_none expected_versioned_names
       && List.is_empty after_redeclaring
       && List.is_empty scheduled_checks
       && check_remaining
@@ -352,6 +390,7 @@ let run_iteration genv env ~root ~check iteration =
         Server_env.
           {
             after_indexing = (fun () -> run_actions root after_indexing);
+            before_redecl;
             after_file_redecl =
               (fun path ->
                 match Relative_path.Map.find_opt !pending_redecls path with
@@ -436,6 +475,8 @@ let run_iteration genv env ~root ~check iteration =
     @@ Server_type_check.type_check genv env (Unix.gettimeofday ())
   in
   reject_internal_errors ~check env;
+  if Option.is_some expected_versioned_names && not !observed_redecls then
+    failwith ("Redeclaration inputs were not observed during " ^ check);
   if not (Relative_path.Map.is_empty !pending_redecls) then
     failwith
       "Typechecking returned before all scheduled redeclaration hooks ran";

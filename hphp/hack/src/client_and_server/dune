@@ -333,6 +333,7 @@
  (libraries
   ci_util
   client_provider
+  decl_compare
   sandcastle
   server_config
   server_notifier)

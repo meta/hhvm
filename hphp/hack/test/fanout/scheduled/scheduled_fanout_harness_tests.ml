@@ -7,7 +7,7 @@
 
 (* These tests validate the harness. Some deliberately expect diagnostic
    mismatches to check the runner's ordering and final-state comparison. Real
-   fanout bug reproducers belong in separate files under regressions/. *)
+   fanout bug reproducers belong in separate files under tests/. *)
 
 open Hh_prelude
 

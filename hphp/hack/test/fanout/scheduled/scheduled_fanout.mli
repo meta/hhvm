@@ -36,6 +36,11 @@ type iteration = {
           already pending in the previous iteration's environment are retained. *)
   after_indexing: action list;
       (** Actions performed after indexing returns, before naming begins. *)
+  expected_versioned_names:
+    (string * Decl_compare.VersionedNames.t) list option;
+      (** When supplied, assert the complete map of files and old/new names
+          passed to redeclaration before oldification. [None] skips observation;
+          [Some []] requires an empty map. *)
   after_redeclaring: (string * action list) list;
       (** Actions after the named file's declarations are parsed and its classes
           folded, before comparison. Names must be unique and actually redeclared.
@@ -52,7 +57,7 @@ type iteration = {
           server retains these files for retry in the next iteration. *)
 }
 
-(** No actions, additional parsing inputs, or cancellations, and
+(** No actions, additional parsing inputs, redeclaration expectations, or cancellations, and
     [type_check = [Remaining]].
     The default iteration still runs one invocation. *)
 val default_iteration : iteration
