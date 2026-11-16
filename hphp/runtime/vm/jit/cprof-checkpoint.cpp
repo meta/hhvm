@@ -47,8 +47,12 @@
 #include "hphp/runtime/vm/jit/cprof-key.h"
 #include "hphp/runtime/vm/jit/cprof-serde.h"
 #include "hphp/runtime/vm/jit/prof-data.h"
+#include "hphp/runtime/vm/repo-file.h"
+#include "hphp/runtime/vm/repo-global-data.h"
 #include "hphp/runtime/vm/treadmill.h"
+#include "hphp/util/build-info.h"
 #include "hphp/util/configs/jit.h"
+#include "hphp/util/configs/repo.h"
 #include "hphp/util/configs/server.h"
 #include "hphp/util/logger.h"
 #include "hphp/util/service-data.h"
@@ -104,6 +108,9 @@ auto const s_filesOversized =
 // Includes schema mismatches: the checkpoint decoder rejects the whole file.
 auto const s_filesInvalid =
   ContProfCounter("jit.cprof.reader.files_invalid");
+// Subset of files_invalid with a readable header but a different repo schema.
+auto const s_filesSchemaMismatch =
+  ContProfCounter("jit.cprof.reader.files_schema_mismatch");
 // Invalid extension snapshots skipped while preserving the file's records.
 auto const s_readerExtensionSkips =
   ContProfCounter("jit.cprof.reader.extension_skips");
@@ -222,6 +229,23 @@ private:
   size_t m_remaining;
 };
 
+std::optional<std::vector<uint8_t>> encodeCheckpointHeader(
+  const ContProfCheckpointHeader& header
+) {
+  Writer writer{kMaxCheckpointBytes};
+  if (!writeProfileMetadata(header.metadata, [&](const void* data, size_t size) {
+        return writer.writeBytes(data, size);
+      }) ||
+      !writer.writeValue(header.recordCount) ||
+      !writer.writeValue(header.unitCount) ||
+      !writer.writeValue(header.extensionCount) ||
+      !writer.writeValue(header.extensionOffset) ||
+      !writer.writeValue(header.extensionBytes)) {
+    return std::nullopt;
+  }
+  return std::move(writer).takeBytes();
+}
+
 std::vector<const ContProfProfileRecord*>
 selectContProfCheckpointRecords(
   const std::vector<ContProfProfileRecord>& records
@@ -335,6 +359,7 @@ encodeContProfCheckpoint(
   const std::vector<ContProfProfileRecord>& records,
   const std::vector<std::string>& unitPaths,
   const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData,
+  const ProfileMetadata& metadata,
   CheckpointEncodeStats* stats = nullptr
 ) {
   auto const selected = selectContProfCheckpointRecords(records);
@@ -364,7 +389,17 @@ encodeContProfCheckpoint(
     }
   }
   auto const manifestBytes = std::move(manifest).takeBytes();
-  Writer writer{kMaxCheckpointBytes - manifestBytes.size()};
+  ContProfCheckpointHeader header;
+  header.metadata = metadata;
+  header.unitCount = static_cast<uint32_t>(paths.size());
+  auto encodedHeader = encodeCheckpointHeader(header);
+  if (!encodedHeader ||
+      manifestBytes.size() > kMaxCheckpointBytes - encodedHeader->size()) {
+    return std::nullopt;
+  }
+  Writer writer{
+    kMaxCheckpointBytes - encodedHeader->size() - manifestBytes.size()
+  };
 
   if (!writer.writeValue(EncodedRecordCount{0})) return std::nullopt;
 
@@ -398,9 +433,14 @@ encodeContProfCheckpoint(
   bytes.insert(bytes.end(), manifestBytes.begin(), manifestBytes.end());
   if (extensionData) {
     auto const encodedExtensions = encodeExtensionData(
-      *extensionData, kMaxCheckpointBytes - bytes.size()
+      *extensionData,
+      kMaxCheckpointBytes - encodedHeader->size() - bytes.size()
     );
     if (encodedExtensions) {
+      header.extensionCount = static_cast<uint32_t>(extensionData->size());
+      header.extensionOffset =
+        static_cast<uint32_t>(encodedHeader->size() + bytes.size());
+      header.extensionBytes = static_cast<uint32_t>(encodedExtensions->size());
       bytes.insert(
         bytes.end(), encodedExtensions->begin(), encodedExtensions->end()
       );
@@ -408,6 +448,11 @@ encodeContProfCheckpoint(
       ++stats->extensionSkips;
     }
   }
+  header.recordCount = recordCount;
+  header.metadata.extraDataOffset = encodedHeader->size() + bytes.size();
+  encodedHeader = encodeCheckpointHeader(header);
+  if (!encodedHeader) return std::nullopt;
+  bytes.insert(bytes.begin(), encodedHeader->begin(), encodedHeader->end());
   return EncodedCheckpoint{std::move(bytes), recordCount};
 }
 
@@ -449,29 +494,56 @@ std::optional<std::vector<uint8_t>>
 serializeContProfCheckpoint(
   const std::vector<ContProfProfileRecord>& records,
   const std::vector<std::string>& unitPaths,
-  const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData
+  const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData,
+  const ProfileMetadata& metadata
 ) {
-  auto encoded = encodeContProfCheckpoint(records, unitPaths, extensionData);
+  auto encoded = encodeContProfCheckpoint(
+    records, unitPaths, extensionData, metadata
+  );
   if (!encoded) return std::nullopt;
   return std::move(encoded->bytes);
 }
 
-std::optional<ContProfCheckpoint>
-deserializeContProfCheckpoint(folly::ByteRange encoded) {
-  if (encoded.size() < sizeof(EncodedRecordCount) ||
-      encoded.size() > kMaxCheckpointBytes) {
+std::optional<ContProfCheckpointHeader>
+deserializeContProfCheckpointHeader(folly::ByteRange& encoded) {
+  Reader reader{encoded};
+  ContProfCheckpointHeader header;
+  if (!readProfileMetadata(header.metadata, [&](void* data, size_t size) {
+        return reader.readBytes(static_cast<uint8_t*>(data), size);
+      }, encoded.size()) ||
+      header.metadata.magic != kContProfCheckpointMagic ||
+      !reader.readValue(header.recordCount) ||
+      !reader.readValue(header.unitCount) ||
+      !reader.readValue(header.extensionCount) ||
+      !reader.readValue(header.extensionOffset) ||
+      !reader.readValue(header.extensionBytes)) {
     return std::nullopt;
   }
+  encoded.advance(encoded.size() - reader.remaining());
+  return header;
+}
 
-  Reader reader{encoded};
+std::optional<ContProfCheckpoint>
+deserializeContProfCheckpoint(folly::ByteRange encoded) {
+  if (encoded.size() > kMaxCheckpointBytes) return std::nullopt;
+
+  auto body = encoded;
+  auto decodedHeader = deserializeContProfCheckpointHeader(body);
+  if (!decodedHeader || decodedHeader->metadata.repoSchema != repoSchemaId()) {
+    return std::nullopt;
+  }
+  ContProfCheckpoint checkpoint;
+  checkpoint.header = std::move(*decodedHeader);
+  auto const& header = checkpoint.header;
+  Reader reader{body};
 
   EncodedRecordCount recordCount{};
   if (!reader.readValue(recordCount) || recordCount == 0 ||
-      recordCount > kMaxCheckpointRecords) {
+      recordCount > kMaxCheckpointRecords ||
+      header.recordCount != recordCount) {
     return std::nullopt;
   }
 
-  ContProfCheckpoint checkpoint;
   auto& records = checkpoint.records;
   records.reserve(recordCount);
 
@@ -497,7 +569,8 @@ deserializeContProfCheckpoint(folly::ByteRange encoded) {
   // do not provide the preload context needed by startup replay.
   EncodedUnitCount unitCount{};
   if (!reader.readValue(unitCount) ||
-      unitCount > reader.remaining() / sizeof(EncodedUnitPathSize)) {
+      unitCount > reader.remaining() / sizeof(EncodedUnitPathSize) ||
+      header.unitCount != unitCount) {
     return std::nullopt;
   }
   auto& paths = checkpoint.unitPaths;
@@ -514,8 +587,16 @@ deserializeContProfCheckpoint(folly::ByteRange encoded) {
     paths.push_back(std::move(path));
   }
 
-  if (reader.remaining() != 0) {
-    checkpoint.extensionData = readExtensionData(reader);
+  if (reader.remaining() != 0 || header.extensionCount ||
+      header.extensionOffset || header.extensionBytes) {
+    if (header.extensionOffset == encoded.size() - reader.remaining() &&
+        header.extensionBytes == reader.remaining()) {
+      checkpoint.extensionData = readExtensionData(reader);
+    }
+    if (checkpoint.extensionData &&
+        header.extensionCount != checkpoint.extensionData->size()) {
+      checkpoint.extensionData.reset();
+    }
     if (!checkpoint.extensionData) s_readerExtensionSkips->increment();
   }
   return checkpoint;
@@ -540,7 +621,11 @@ bool writeContProfCheckpointFile(
     s_checkpointExtensionSkips->addValue(stats.extensionSkips);
   };
   auto const encoded = encodeContProfCheckpoint(
-    records, unitPaths, extensionData, &stats
+    records, unitPaths, extensionData,
+    currentProfileMetadata(
+      kContProfCheckpointMagic,
+      Cfg::Repo::Authoritative ? RepoFile::globalData().Signature : 0
+    ), &stats
   );
   if (!encoded) return false;
 
@@ -584,7 +669,25 @@ readContProfCheckpointFile(const std::string& path) {
   auto result = deserializeContProfCheckpoint(
     folly::ByteRange{encoded.data(), encoded.size()}
   );
-  if (!result) s_filesInvalid->increment();
+  if (!result) {
+    s_filesInvalid->increment();
+    auto bytes = folly::ByteRange{encoded.data(), encoded.size()};
+    auto const header = deserializeContProfCheckpointHeader(bytes);
+    if (header && header->metadata.repoSchema != repoSchemaId()) {
+      s_filesSchemaMismatch->increment();
+      Logger::Warning(
+        "Ignoring cont-prof checkpoint %s: repo schema mismatch "
+        "(expected '%s', got '%s')",
+        path.c_str(), repoSchemaId().str().c_str(),
+        header->metadata.repoSchema.c_str()
+      );
+    } else {
+      Logger::Warning(
+        "Ignoring cont-prof checkpoint %s: invalid %s",
+        path.c_str(), header ? "body" : "header"
+      );
+    }
+  }
   return result;
 }
 

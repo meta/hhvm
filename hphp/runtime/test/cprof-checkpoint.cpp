@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -41,8 +42,10 @@
 #include "hphp/runtime/vm/jit/cprof-consume.h"
 #include "hphp/runtime/vm/jit/cprof-controller.h"
 #include "hphp/runtime/vm/jit/cprof-reader.h"
+#include "hphp/runtime/vm/jit/cprof-serde.h"
 #include "hphp/runtime/vm/treadmill.h"
 #include "hphp/util/blob-encoder.h"
+#include "hphp/util/build-info.h"
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/configs/server.h"
 #include "hphp/util/service-data.h"
@@ -99,6 +102,13 @@ void appendUint32(std::vector<uint8_t>& bytes, uint32_t value) {
   bytes.insert(bytes.end(), data, data + sizeof(value));
 }
 
+ProfileMetadata checkpointMetadata() {
+  return {
+    kContProfCheckpointMagic, 0, 0,
+    repoSchemaId().str(), "checkpoint-test-host", "checkpoint-test", 12345
+  };
+}
+
 std::vector<std::string> directoryEntries(const std::filesystem::path& path) {
   std::vector<std::string> names;
   for (auto const& entry : std::filesystem::directory_iterator{path}) {
@@ -115,8 +125,10 @@ TEST(ContProfCheckpoint, RoundTripsRecordsAndCanonicalUnitPaths) {
   };
 
   std::vector<std::string> const unitPaths{"src/alpha.php", "src/beta.php"};
+  auto const metadata = checkpointMetadata();
   auto const encoded = serializeContProfCheckpoint(
-    expected, {"src/beta.php", "src/alpha.php", "src/beta.php"}
+    expected, {"src/beta.php", "src/alpha.php", "src/beta.php"},
+    std::nullopt, metadata
   );
   ASSERT_TRUE(encoded);
 
@@ -126,15 +138,201 @@ TEST(ContProfCheckpoint, RoundTripsRecordsAndCanonicalUnitPaths) {
   ASSERT_TRUE(decoded);
   EXPECT_EQ(expected, decoded->records);
   EXPECT_EQ(unitPaths, decoded->unitPaths);
-  EXPECT_EQ(encoded, serializeContProfCheckpoint(expected, unitPaths));
+  EXPECT_EQ(encoded, serializeContProfCheckpoint(
+    expected, unitPaths, std::nullopt, metadata
+  ));
+}
+
+TEST(ContProfCheckpoint, ReadsHeaderWithoutDecodingBody) {
+  std::vector<ContProfProfileRecord> const records{
+    makeRecord("alpha", 1, 7), makeRecord("beta", 2, 11)
+  };
+  ExtensionRegistry::SerializedExtensions const extensions{
+    {"apc", {'a', '\0', 'b'}}, {"servicerouter", {}}
+  };
+  auto metadata = checkpointMetadata();
+  metadata.repoSignature = 0x123456789abcdef0;
+  auto const encoded = serializeContProfCheckpoint(
+    records, {"src/b.php", "src/a.php", "src/b.php"}, extensions, metadata
+  );
+  ASSERT_TRUE(encoded);
+  auto body = folly::ByteRange{encoded->data(), encoded->size()};
+  auto const header = deserializeContProfCheckpointHeader(body);
+  ASSERT_TRUE(header);
+  EXPECT_EQ(metadata.magic, header->metadata.magic);
+  EXPECT_EQ(static_cast<off_t>(encoded->size()), header->metadata.extraDataOffset);
+  EXPECT_EQ(metadata.repoSignature, header->metadata.repoSignature);
+  uint32_t magic;
+  off_t extraDataOffset;
+  uint64_t signature;
+  std::memcpy(&magic, encoded->data(), sizeof(magic));
+  std::memcpy(&extraDataOffset, encoded->data() + sizeof(uint32_t),
+              sizeof(extraDataOffset));
+  std::memcpy(&signature, encoded->data() + sizeof(uint32_t) + sizeof(off_t),
+              sizeof(signature));
+  EXPECT_EQ(0x46525043, magic);
+  EXPECT_EQ(static_cast<off_t>(encoded->size()), extraDataOffset);
+  EXPECT_EQ(metadata.repoSignature, signature);
+  EXPECT_EQ(metadata.repoSchema, header->metadata.repoSchema);
+  EXPECT_EQ(metadata.producerHost, header->metadata.producerHost);
+  EXPECT_EQ(metadata.tag, header->metadata.tag);
+  EXPECT_EQ(metadata.createdAt, header->metadata.createdAt);
+  EXPECT_EQ(2, header->recordCount);
+  EXPECT_EQ(2, header->unitCount);
+  EXPECT_EQ(extensions.size(), header->extensionCount);
+  auto expectedExtensionBytes = sizeof(uint32_t);
+  for (auto const& [name, payload] : extensions) {
+    expectedExtensionBytes += 2 * sizeof(uint32_t) + name.size() + payload.size();
+  }
+  ASSERT_EQ(expectedExtensionBytes, header->extensionBytes);
+  ASSERT_EQ(encoded->size(), header->extensionOffset + header->extensionBytes);
+  uint32_t extensionCount;
+  std::memcpy(&extensionCount, encoded->data() + header->extensionOffset,
+              sizeof(extensionCount));
+  EXPECT_EQ(extensions.size(), extensionCount);
+
+  auto const headerBytes = encoded->size() - body.size();
+  auto prefix = folly::ByteRange{encoded->data(), headerBytes};
+  auto const prefixHeader = deserializeContProfCheckpointHeader(prefix);
+  ASSERT_TRUE(prefixHeader);
+  EXPECT_TRUE(prefix.empty());
+  EXPECT_EQ(header->metadata.extraDataOffset,
+            prefixHeader->metadata.extraDataOffset);
+  EXPECT_EQ(metadata.repoSignature, prefixHeader->metadata.repoSignature);
+  EXPECT_EQ(metadata.repoSchema, prefixHeader->metadata.repoSchema);
+  EXPECT_EQ(header->extensionOffset, prefixHeader->extensionOffset);
+  EXPECT_EQ(header->extensionBytes, prefixHeader->extensionBytes);
+  for (size_t size = 0; size < headerBytes; ++size) {
+    auto truncated = folly::ByteRange{encoded->data(), size};
+    EXPECT_FALSE(deserializeContProfCheckpointHeader(truncated)) << size;
+    EXPECT_EQ(size, truncated.size());
+  }
+  auto const decoded = deserializeContProfCheckpoint(
+    folly::ByteRange{encoded->data(), encoded->size()}
+  );
+  ASSERT_TRUE(decoded);
+  EXPECT_EQ(records, decoded->records);
+}
+
+TEST(ContProfCheckpoint, ExposesForeignSchemaButRejectsReplay) {
+  std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
+  auto metadata = checkpointMetadata();
+  metadata.repoSchema += "-foreign";
+  auto const encoded = serializeContProfCheckpoint(
+    records, {}, std::nullopt, metadata
+  );
+  ASSERT_TRUE(encoded);
+  auto body = folly::ByteRange{encoded->data(), encoded->size()};
+  auto const header = deserializeContProfCheckpointHeader(body);
+  ASSERT_TRUE(header);
+  EXPECT_EQ(metadata.repoSchema, header->metadata.repoSchema);
+  EXPECT_FALSE(deserializeContProfCheckpoint(
+    folly::ByteRange{encoded->data(), encoded->size()}
+  ));
+  EXPECT_FALSE(deserializeContProfCheckpoint(body));
+}
+
+TEST(ContProfCheckpoint, CountsFileSchemaMismatches) {
+  folly::test::TemporaryDirectory temp{"cont-prof-checkpoint"};
+  auto const path = (temp.path() / "jit.cprof").native();
+  auto const counter = [](const char* name) {
+    return ServiceData::exportCounterByKey(name).value_or(0);
+  };
+  auto invalid = counter("jit.cprof.reader.files_invalid");
+  auto mismatches = counter("jit.cprof.reader.files_schema_mismatch");
+  std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
+
+  auto metadata = checkpointMetadata();
+  metadata.repoSchema += "-foreign";
+  auto encoded = serializeContProfCheckpoint(records, {}, std::nullopt, metadata);
+  ASSERT_TRUE(encoded);
+  EXPECT_FALSE(deserializeContProfCheckpoint(
+    folly::ByteRange{encoded->data(), encoded->size()}
+  ));
+  EXPECT_EQ(invalid, counter("jit.cprof.reader.files_invalid"));
+  EXPECT_EQ(mismatches, counter("jit.cprof.reader.files_schema_mismatch"));
+
+  ASSERT_TRUE(folly::writeFile(
+    folly::StringPiece{reinterpret_cast<const char*>(encoded->data()),
+                       encoded->size()},
+    path.c_str()
+  ));
+  EXPECT_FALSE(readContProfCheckpointFile(path));
+  EXPECT_EQ(++invalid, counter("jit.cprof.reader.files_invalid"));
+  EXPECT_EQ(++mismatches, counter("jit.cprof.reader.files_schema_mismatch"));
+
+  encoded = serializeContProfCheckpoint(records);
+  ASSERT_TRUE(encoded);
+  auto body = folly::ByteRange{encoded->data(), encoded->size()};
+  ASSERT_TRUE(deserializeContProfCheckpointHeader(body));
+  auto const headerBytes = encoded->size() - body.size();
+  // An invalid header and an intact header with a missing body.
+  for (auto const size : {size_t{0}, headerBytes}) {
+    ASSERT_TRUE(folly::writeFile(
+      folly::StringPiece{reinterpret_cast<const char*>(encoded->data()), size},
+      path.c_str()
+    ));
+    EXPECT_FALSE(readContProfCheckpointFile(path));
+    EXPECT_EQ(++invalid, counter("jit.cprof.reader.files_invalid"));
+    EXPECT_EQ(mismatches, counter("jit.cprof.reader.files_schema_mismatch"));
+  }
+
+  ASSERT_TRUE(writeContProfCheckpointFile(path, records));
+  expectCheckpointRecords(path, records);
+  EXPECT_EQ(invalid, counter("jit.cprof.reader.files_invalid"));
+  EXPECT_EQ(mismatches, counter("jit.cprof.reader.files_schema_mismatch"));
+}
+
+TEST(ContProfCheckpoint, RejectsHeaderlessBody) {
+  auto const record = makeRecord("alpha", 1, 7);
+  auto const encodedRecord = serializeContProfProfileRecord(record);
+  ASSERT_TRUE(encodedRecord);
+  std::string const path{"src/dependency.php"};
+  ExtensionRegistry::SerializedExtensions const extensions{{"apc", {'x', '\0'}}};
+  std::vector<uint8_t> legacy;
+  appendUint32(legacy, 1);
+  appendUint32(legacy, static_cast<uint32_t>(encodedRecord->size()));
+  legacy.insert(legacy.end(), encodedRecord->begin(), encodedRecord->end());
+  appendUint32(legacy, 1);
+  appendUint32(legacy, static_cast<uint32_t>(path.size()));
+  legacy.insert(legacy.end(), path.begin(), path.end());
+  appendUint32(legacy, 1);
+  for (auto const& [name, payload] : extensions) {
+    appendUint32(legacy, static_cast<uint32_t>(name.size()));
+    legacy.insert(legacy.end(), name.begin(), name.end());
+    appendUint32(legacy, static_cast<uint32_t>(payload.size()));
+    legacy.insert(legacy.end(), payload.begin(), payload.end());
+  }
+  EXPECT_FALSE(deserializeContProfCheckpoint(
+    folly::ByteRange{legacy.data(), legacy.size()}
+  ));
+
+  auto const encoded = serializeContProfCheckpoint(
+    {record}, {path}, extensions, checkpointMetadata()
+  );
+  ASSERT_TRUE(encoded);
+  auto body = folly::ByteRange{encoded->data(), encoded->size()};
+  ASSERT_TRUE(deserializeContProfCheckpointHeader(body));
+  EXPECT_EQ(legacy, std::vector<uint8_t>(body.begin(), body.end()));
 }
 
 TEST(ContProfCheckpoint, RoundTripsOptionalExtensionData) {
   std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
-  auto const legacy = serializeContProfCheckpoint(records);
-  ASSERT_TRUE(legacy);
+  auto const metadata = checkpointMetadata();
+  auto const withoutExtensions = serializeContProfCheckpoint(
+    records, {}, std::nullopt, metadata
+  );
+  ASSERT_TRUE(withoutExtensions);
+  auto baseBody = folly::ByteRange{
+    withoutExtensions->data(), withoutExtensions->size()
+  };
+  auto const baseHeader = deserializeContProfCheckpointHeader(baseBody);
+  ASSERT_TRUE(baseHeader);
+  EXPECT_EQ(0, baseHeader->extensionCount);
+  EXPECT_EQ(0, baseHeader->extensionOffset);
+  EXPECT_EQ(0, baseHeader->extensionBytes);
   auto const oldCheckpoint = deserializeContProfCheckpoint(
-    folly::ByteRange{legacy->data(), legacy->size()}
+    folly::ByteRange{withoutExtensions->data(), withoutExtensions->size()}
   );
   ASSERT_TRUE(oldCheckpoint);
   EXPECT_FALSE(oldCheckpoint->extensionData);
@@ -149,14 +347,23 @@ TEST(ContProfCheckpoint, RoundTripsOptionalExtensionData) {
       {"a_consumer", {}},
     },
   }) {
-    auto const encoded = serializeContProfCheckpoint(records, {}, snapshot);
+    auto const encoded = serializeContProfCheckpoint(
+      records, {}, snapshot, metadata
+    );
     ASSERT_TRUE(encoded);
-    auto expectedSize = legacy->size() + sizeof(uint32_t);
+    auto expectedExtensionBytes = sizeof(uint32_t);
     for (auto const& [name, payload] : snapshot) {
-      expectedSize += 2 * sizeof(uint32_t) + name.size() + payload.size();
+      expectedExtensionBytes += 2 * sizeof(uint32_t) + name.size() + payload.size();
     }
-    ASSERT_EQ(expectedSize, encoded->size());
-    EXPECT_TRUE(std::equal(legacy->begin(), legacy->end(), encoded->begin()));
+    ASSERT_EQ(withoutExtensions->size() + expectedExtensionBytes, encoded->size());
+    auto body = folly::ByteRange{encoded->data(), encoded->size()};
+    auto const header = deserializeContProfCheckpointHeader(body);
+    ASSERT_TRUE(header);
+    EXPECT_EQ(snapshot.size(), header->extensionCount);
+    EXPECT_EQ(withoutExtensions->size(), header->extensionOffset);
+    EXPECT_EQ(expectedExtensionBytes, header->extensionBytes);
+    ASSERT_LE(baseBody.size(), body.size());
+    EXPECT_TRUE(std::equal(baseBody.begin(), baseBody.end(), body.begin()));
     auto const decoded = deserializeContProfCheckpoint(
       folly::ByteRange{encoded->data(), encoded->size()}
     );
@@ -183,6 +390,7 @@ TEST(ContProfCheckpoint, BoundsTheWholeExtensionBatch) {
   ASSERT_TRUE(decoded);
   ASSERT_TRUE(decoded->extensionData);
   EXPECT_EQ(data, *decoded->extensionData);
+  EXPECT_EQ(kMaxContProfExtensionPayloadBytes, decoded->header.extensionBytes);
   data.back().payload.push_back('x');
   encoded = serializeContProfCheckpoint(records, {}, data);
   ASSERT_TRUE(encoded);
@@ -192,6 +400,9 @@ TEST(ContProfCheckpoint, BoundsTheWholeExtensionBatch) {
   ASSERT_TRUE(decoded);
   EXPECT_EQ(records, decoded->records);
   EXPECT_FALSE(decoded->extensionData);
+  EXPECT_EQ(0, decoded->header.extensionCount);
+  EXPECT_EQ(0, decoded->header.extensionOffset);
+  EXPECT_EQ(0, decoded->header.extensionBytes);
 }
 
 TEST(ContProfCheckpoint, MalformedExtensionDataPreservesRecords) {
@@ -200,12 +411,13 @@ TEST(ContProfCheckpoint, MalformedExtensionDataPreservesRecords) {
   ExtensionRegistry::SerializedExtensions const snapshot{
     {"apc", payload}, {"servicerouter", payload}
   };
-  auto const legacy = serializeContProfCheckpoint(records);
+  auto const withoutExtensions = serializeContProfCheckpoint(records);
   auto const encoded = serializeContProfCheckpoint(records, {}, snapshot);
-  ASSERT_TRUE(legacy);
+  ASSERT_TRUE(withoutExtensions);
   ASSERT_TRUE(encoded);
 
-  for (size_t size = legacy->size() + 1; size < encoded->size(); ++size) {
+  for (size_t size = withoutExtensions->size() + 1;
+       size < encoded->size(); ++size) {
     auto const decoded = deserializeContProfCheckpoint(
       folly::ByteRange{encoded->data(), size}
     );
@@ -214,7 +426,7 @@ TEST(ContProfCheckpoint, MalformedExtensionDataPreservesRecords) {
     EXPECT_FALSE(decoded->extensionData);
   }
 
-  for (auto bytes : {*legacy, *encoded}) {
+  for (auto bytes : {*withoutExtensions, *encoded}) {
     bytes.push_back(0);
     auto const decoded = deserializeContProfCheckpoint(
       folly::ByteRange{bytes.data(), bytes.size()}
@@ -237,19 +449,15 @@ TEST(ContProfCheckpoint, MalformedExtensionDataPreservesRecords) {
   EXPECT_EQ(records, decoded->records);
   EXPECT_FALSE(decoded->extensionData);
 
-  for (auto const& names : std::vector<std::vector<std::string>>{
-    {""}, {std::string{"apc\0suffix", 10}},
+  for (auto const& name : std::vector<std::string>{
+    "", std::string{"apc\0suffix", 10},
   }) {
-    auto bytes = *legacy;
-    appendUint32(bytes, static_cast<uint32_t>(names.size()));
-    for (auto const& name : names) {
-      appendUint32(bytes, static_cast<uint32_t>(name.size()));
-      bytes.insert(bytes.end(), name.begin(), name.end());
-      appendUint32(bytes, static_cast<uint32_t>(payload.size()));
-      bytes.insert(bytes.end(), payload.begin(), payload.end());
-    }
+    auto const bytes = serializeContProfCheckpoint(
+      records, {}, ExtensionRegistry::SerializedExtensions{{name, payload}}
+    );
+    ASSERT_TRUE(bytes);
     auto const invalid = deserializeContProfCheckpoint(
-      folly::ByteRange{bytes.data(), bytes.size()}
+      folly::ByteRange{bytes->data(), bytes->size()}
     );
     ASSERT_TRUE(invalid);
     EXPECT_EQ(records, invalid->records);
@@ -278,6 +486,7 @@ TEST(ContProfCheckpoint, SkipsInvalidRecords) {
   std::vector<ContProfProfileRecord> const expected{first, last};
   EXPECT_EQ(expected, decoded->records);
   EXPECT_TRUE(decoded->unitPaths.empty());
+  EXPECT_EQ(expected.size(), decoded->header.recordCount);
 }
 
 TEST(ContProfCheckpoint, RejectsMalformedOrNoncanonicalInput) {
@@ -299,31 +508,55 @@ TEST(ContProfCheckpoint, RejectsMalformedOrNoncanonicalInput) {
     ));
   }
 
-  auto wrongRecordCount = *encoded;
-  wrongRecordCount[0] ^= 1;
-  EXPECT_FALSE(deserializeContProfCheckpoint(
-    folly::ByteRange{wrongRecordCount.data(), wrongRecordCount.size()}
-  ));
+  auto body = folly::ByteRange{encoded->data(), encoded->size()};
+  auto const header = deserializeContProfCheckpointHeader(body);
+  ASSERT_TRUE(header);
+  auto const countsOffset = encoded->size() - body.size() - 5 * sizeof(uint32_t);
+  for (size_t field = 0; field < 2; ++field) {
+    auto wrongCount = *encoded;
+    auto const count = field == 0 ? header->recordCount + 1 : header->unitCount + 1;
+    std::memcpy(wrongCount.data() + countsOffset + field * sizeof(uint32_t),
+                &count, sizeof(count));
+    EXPECT_FALSE(deserializeContProfCheckpoint(
+      folly::ByteRange{wrongCount.data(), wrongCount.size()}
+    ));
+  }
 }
 
 TEST(ContProfCheckpoint, RequiresCanonicalUnitManifestFrame) {
   std::vector<ContProfProfileRecord> const records{makeRecord("alpha", 1, 7)};
-  auto legacy = serializeContProfCheckpoint(records);
-  ASSERT_TRUE(legacy);
-  legacy->resize(legacy->size() - sizeof(uint32_t));
+  auto const encoded = serializeContProfCheckpoint(records);
+  ASSERT_TRUE(encoded);
+  auto body = folly::ByteRange{encoded->data(), encoded->size()};
+  ASSERT_TRUE(deserializeContProfCheckpointHeader(body));
+  auto const unitCountOffset = encoded->size() - body.size() -
+    4 * sizeof(uint32_t);
+  auto withoutManifest = *encoded;
+  ASSERT_GE(body.size(), sizeof(uint32_t));
+  withoutManifest.resize(withoutManifest.size() - sizeof(uint32_t));
   EXPECT_FALSE(deserializeContProfCheckpoint(
-    folly::ByteRange{legacy->data(), legacy->size()}
+    folly::ByteRange{withoutManifest.data(), withoutManifest.size()}
   ));
 
   auto const withManifest = [&](const std::vector<std::string>& paths) {
-    auto bytes = *legacy;
-    appendUint32(bytes, static_cast<uint32_t>(paths.size()));
+    auto bytes = withoutManifest;
+    auto const count = static_cast<uint32_t>(paths.size());
+    std::memcpy(bytes.data() + unitCountOffset, &count, sizeof(count));
+    appendUint32(bytes, count);
     for (auto const& path : paths) {
       appendUint32(bytes, static_cast<uint32_t>(path.size()));
       bytes.insert(bytes.end(), path.begin(), path.end());
     }
     return bytes;
   };
+  std::vector<std::string> const validPaths{"src/a.php", "src/b.php"};
+  auto const validBytes = withManifest(validPaths);
+  auto const valid = deserializeContProfCheckpoint(
+    folly::ByteRange{validBytes.data(), validBytes.size()}
+  );
+  ASSERT_TRUE(valid);
+  EXPECT_EQ(records, valid->records);
+  EXPECT_EQ(validPaths, valid->unitPaths);
   for (auto const& paths : std::vector<std::vector<std::string>>{
     {""}, {"/absolute.php"}, {"../outside.php"},
     {std::string{"src/a\0.php", 10}},
@@ -338,8 +571,10 @@ TEST(ContProfCheckpoint, RequiresCanonicalUnitManifestFrame) {
     EXPECT_FALSE(serializeContProfCheckpoint(records, {path}));
   }
 
-  auto oversizedCount = *legacy;
-  appendUint32(oversizedCount, uint32_t{0xffffffff});
+  auto oversizedCount = withoutManifest;
+  auto const count = uint32_t{0xffffffff};
+  std::memcpy(oversizedCount.data() + unitCountOffset, &count, sizeof(count));
+  appendUint32(oversizedCount, count);
   EXPECT_FALSE(deserializeContProfCheckpoint(
     folly::ByteRange{oversizedCount.data(), oversizedCount.size()}
   ));
@@ -413,6 +648,7 @@ TEST(ContProfCheckpoint, SelectsHottestRecordsWithinLimit) {
 
   records.erase(records.end() - 2);
   EXPECT_EQ(records, decoded->records);
+  EXPECT_EQ(recordLimit, decoded->header.recordCount);
 }
 
 void writeRetainedCheckpointGeneration(

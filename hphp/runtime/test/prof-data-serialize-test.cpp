@@ -18,22 +18,125 @@
 #include "hphp/runtime/ext/core/ext_core_closure.h"
 #include "hphp/runtime/vm/class.h"
 #include "hphp/runtime/vm/func-emitter.h"
+#include "hphp/runtime/vm/jit/prof-data-metadata.h"
 #include "hphp/runtime/vm/named-entity.h"
 #include "hphp/runtime/vm/preclass-emitter.h"
 #include "hphp/runtime/vm/unit-emitter.h"
 #include "hphp/runtime/vm/unit.h"
 
+#include <folly/FileUtil.h>
 #include <folly/ScopeGuard.h>
 #include <folly/testing/TestUtil.h>
 #include <gtest/gtest.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace HPHP::jit {
 namespace {
+
+TEST(ProfDataSerialize, MetadataPreservesNativeWireEncoding) {
+  for (auto const& metadata : std::vector<ProfileMetadata>{
+    {
+      0x4d564848, 1234, 0x123456789abcdef0,
+      "schema-v1", "producer.example.com", std::string{"canary\0tag", 10}, 123456789
+    },
+    {},
+  }) {
+    std::vector<uint8_t> expected;
+    auto const appendValue = [&](auto value) {
+      auto const bytes = reinterpret_cast<const uint8_t*>(&value);
+      expected.insert(expected.end(), bytes, bytes + sizeof(value));
+    };
+    appendValue(metadata.magic);
+    appendValue(metadata.extraDataOffset);
+    appendValue(metadata.repoSignature);
+    for (auto const& value : {
+      metadata.repoSchema, metadata.producerHost, metadata.tag
+    }) {
+      appendValue(value.size());
+      expected.insert(expected.end(), value.begin(), value.end());
+    }
+    appendValue(metadata.createdAt);
+
+    std::vector<uint8_t> encoded;
+    ASSERT_TRUE(writeProfileMetadata(metadata, [&](const void* data, size_t size) {
+      if (size) {
+        auto const bytes = static_cast<const uint8_t*>(data);
+        encoded.insert(encoded.end(), bytes, bytes + size);
+      }
+      return true;
+    }));
+    EXPECT_EQ(expected, encoded);
+  }
+}
+
+TEST(ProfDataSerialize, MetadataRemainsReadableByNativeProfileReader) {
+  folly::test::TemporaryDirectory temp{"profile-metadata"};
+  auto const path = (temp.path() / "jit.prof").native();
+  constexpr uint32_t magic = 0x4d564848;
+  constexpr uint64_t signature = 0x123456789abcdef0;
+  constexpr uint32_t sentinel = 0xaabbccdd;
+  ProfileMetadata const metadata{
+    magic, 0, signature, "schema-v1", "profile-host", "canary", 123456789
+  };
+  {
+    ProfDataSerializer ser{path, ProfDataSerializer::FileMode::Create};
+    ASSERT_TRUE(writeProfileMetadata(metadata, [&](const void* data, size_t size) {
+      write_raw(ser, data, size);
+      return true;
+    }));
+    write_raw(ser, sentinel);
+    ser.finalize();
+  }
+
+  std::vector<uint8_t> expected;
+  auto const appendValue = [&](auto value) {
+    auto const bytes = reinterpret_cast<const uint8_t*>(&value);
+    expected.insert(expected.end(), bytes, bytes + sizeof(value));
+  };
+  auto const fileSize = sizeof(magic) + sizeof(off_t) + sizeof(signature) +
+    3 * sizeof(size_t) + metadata.repoSchema.size() + metadata.producerHost.size() +
+    metadata.tag.size() + sizeof(int64_t) + sizeof(sentinel);
+  appendValue(magic);
+  appendValue(static_cast<off_t>(fileSize));
+  appendValue(signature);
+  for (auto const& value : {
+    metadata.repoSchema, metadata.producerHost, metadata.tag
+  }) {
+    appendValue(value.size());
+    expected.insert(expected.end(), value.begin(), value.end());
+  }
+  appendValue(metadata.createdAt);
+  appendValue(sentinel);
+  std::vector<uint8_t> encoded;
+  ASSERT_TRUE(folly::readFile(path.c_str(), encoded));
+  ASSERT_EQ(expected, encoded);
+
+  ProfDataDeserializer des{path};
+  EXPECT_EQ(magic, read_raw<uint32_t>(des));
+  auto const extraDataOffset = read_raw<off_t>(des);
+  EXPECT_EQ(fileSize, extraDataOffset);
+  des.setExtraDataOffset(extraDataOffset);
+  EXPECT_EQ(signature, read_raw<uint64_t>(des));
+  for (auto const& expectedString : {
+    metadata.repoSchema, metadata.producerHost, metadata.tag
+  }) {
+    auto const size = read_raw<size_t>(des);
+    std::string value(size, '\0');
+    read_raw(des, value.data(), size);
+    EXPECT_EQ(expectedString, value);
+  }
+  EXPECT_EQ(metadata.createdAt, read_raw<int64_t>(des));
+  EXPECT_EQ(sentinel, read_raw<uint32_t>(des));
+  EXPECT_TRUE(des.done());
+}
 
 TEST(ProfDataSerialize, InitializerIdentity) {
   auto const oldHHBBC = std::exchange(Cfg::Eval::UseHHBBC, false);

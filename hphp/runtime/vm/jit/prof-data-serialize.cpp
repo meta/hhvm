@@ -49,6 +49,7 @@
 #include "hphp/runtime/vm/jit/mcgen-async.h"
 #include "hphp/runtime/vm/jit/meth-profile.h"
 #include "hphp/runtime/vm/jit/prof-data.h"
+#include "hphp/runtime/vm/jit/prof-data-metadata.h"
 #include "hphp/runtime/vm/jit/prof-data-sb.h"
 #include "hphp/runtime/vm/jit/region-selection.h"
 #include "hphp/runtime/vm/jit/switch-profile.h"
@@ -2178,20 +2179,13 @@ std::string serializeProfData(const std::string& filename) {
   try {
     ProfDataSerializer ser{filename, ProfDataSerializer::FileMode::Create};
 
-    write_raw(ser, kMagic);
-    write_raw(ser, off_t(0));
-    write_raw(ser, RepoFile::globalData().Signature);
-    auto schema = repoSchemaId();
-    write_raw(ser, schema.size());
-    write_raw(ser, schema.begin(), schema.size());
-
-    auto host = Process::GetHostName();
-    write_raw(ser, host.size());
-    write_raw(ser, &host[0], host.size());
-    auto& tag = Cfg::Eval::ProfDataTag;
-    write_raw(ser, tag.size());
-    write_raw(ser, &tag[0], tag.size());
-    write_raw(ser, TimeStamp::Current());
+    writeProfileMetadata(
+      currentProfileMetadata(kMagic, RepoFile::globalData().Signature),
+      [&](const void* data, size_t size) {
+        write_raw(ser, data, size);
+        return true;
+      }
+    );
 
     Func::s_treadmill = true;
     hphp_session_init(Treadmill::SessionKind::ProfData);

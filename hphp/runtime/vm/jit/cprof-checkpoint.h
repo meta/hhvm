@@ -26,10 +26,13 @@
 
 #include "hphp/runtime/ext/extension-registry.h"
 #include "hphp/runtime/vm/jit/cprof-record.h"
+#include "hphp/runtime/vm/jit/prof-data-metadata.h"
 
 namespace HPHP::jit::cprof {
 
 constexpr auto kContProfCheckpointFilename = "jit.cprof";
+// "CPRF" on little endian, distinguishing jit.cprof from jit.prof.
+constexpr uint32_t kContProfCheckpointMagic = 0x46525043;
 
 /* Whether the process-wide checkpoint writer is accepting profile data. */
 bool contProfActive();
@@ -45,7 +48,23 @@ void stopContProfCheckpointWriter();
 /* Encoded batch limit, not a bound on serializer scans or temporary buffers. */
 constexpr size_t kMaxContProfExtensionPayloadBytes = 32U << 20;
 
+/*
+ * Wire prefix: ProfileMetadata followed by the five uint32 fields below.
+ * Counts describe the encoded body. The extension offset is absolute and its
+ * size includes framing; both are zero when extension data is absent.
+ * The repo signature is provenance; replay matches individual function hashes.
+ */
+struct ContProfCheckpointHeader {
+  ProfileMetadata metadata;
+  uint32_t recordCount{0};
+  uint32_t unitCount{0};
+  uint32_t extensionCount{0};
+  uint32_t extensionOffset{0};
+  uint32_t extensionBytes{0};
+};
+
 struct ContProfCheckpoint {
+  ContProfCheckpointHeader header;
   std::vector<ContProfProfileRecord> records;
   std::vector<std::string> unitPaths;
   std::optional<ExtensionRegistry::SerializedExtensions> extensionData;
@@ -59,7 +78,13 @@ std::optional<std::vector<uint8_t>> serializeContProfCheckpoint(
   const std::vector<ContProfProfileRecord>& records,
   const std::vector<std::string>& unitPaths = {},
   const std::optional<ExtensionRegistry::SerializedExtensions>& extensionData =
-    std::nullopt);
+    std::nullopt,
+  const ProfileMetadata& metadata =
+    currentProfileMetadata(kContProfCheckpointMagic));
+
+/* Read only the header, advancing to the body; accepts foreign repo schemas. */
+std::optional<ContProfCheckpointHeader>
+deserializeContProfCheckpointHeader(folly::ByteRange&);
 
 /* Decode a checkpoint blob, validating untrusted input. */
 std::optional<ContProfCheckpoint>
