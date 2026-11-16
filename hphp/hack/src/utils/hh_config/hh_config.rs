@@ -623,10 +623,6 @@ impl HhConfig {
                 "ban_memoize_erased_generic_return",
                 default.tco_ban_memoize_erased_generic_return,
             )?,
-            tco_foreach_key_after_value: hhconfig.get_bool_or(
-                "foreach_key_after_value",
-                default.tco_foreach_key_after_value,
-            )?,
             tco_ban_this_escape_in_overridable_constructors: hhconfig.get_bool_or(
                 "ban_this_escape_in_overridable_constructors",
                 default.tco_ban_this_escape_in_overridable_constructors,

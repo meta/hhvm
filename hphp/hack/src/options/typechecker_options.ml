@@ -305,8 +305,6 @@ let missing_targs_as_fresh_generics t =
 let ban_memoize_erased_generic_return t =
   t.Global_options.tco_ban_memoize_erased_generic_return
 
-let foreach_key_after_value t = t.Global_options.tco_foreach_key_after_value
-
 let ban_this_escape_in_overridable_constructors t =
   t.Global_options.tco_ban_this_escape_in_overridable_constructors
 

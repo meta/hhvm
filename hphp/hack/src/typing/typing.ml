@@ -13259,15 +13259,11 @@ end = struct
     | Await_as_v (p, ev) ->
       let (env, te) = bind_foreach_target env p ty2 ev in
       (env, Aast.Await_as_v (p, te))
-    | As_kv (ek, ev) when TCO.foreach_key_after_value (Env.get_tcopt env) ->
+    | As_kv (ek, ev) ->
       (* HHVM writes the value before the key; `await as` writes the key
          first. *)
       let (env, te) = bind_foreach_target env p ty2 ev in
       let (env, tk) = bind_foreach_target env p ty1 ek in
-      (env, Aast.As_kv (tk, te))
-    | As_kv (ek, ev) ->
-      let (env, tk) = bind_foreach_target env p ty1 ek in
-      let (env, te) = bind_foreach_target env p ty2 ev in
       (env, Aast.As_kv (tk, te))
     | Await_as_kv (await_pos, ek, ev) ->
       let (env, tk) = bind_foreach_target env p ty1 ek in

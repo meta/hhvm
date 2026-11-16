@@ -58,8 +58,6 @@ module Hhconfig : sig
 
   val everything_sdt : string
 
-  val foreach_key_after_value : string
-
   val ignore_string_methods : string
 
   val interpret_soft_types_as_like_types : string

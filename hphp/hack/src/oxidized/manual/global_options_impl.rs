@@ -153,7 +153,6 @@ impl Default for GlobalOptions {
             tco_ban_this_refinement_in_generic_class: false,
             tco_missing_targs_as_fresh_generics: false,
             tco_ban_memoize_erased_generic_return: false,
-            tco_foreach_key_after_value: false,
             tco_xhp_attribute_reads_not_refined: false,
             tco_ban_this_escape_in_overridable_constructors: false,
             tco_repo_stdlib_path: None,

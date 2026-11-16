@@ -7,9 +7,9 @@ File "lvar_expr_dependent4.php", line 16, characters 5-22:
 File "lvar_expr_dependent4.php", line 17, characters 5-22:
   ~<expr#10>::T where <expr#10>::T as C::T
 File "lvar_expr_dependent4.php", line 21, characters 7-24:
-  ~<expr#12>::T where <expr#12>::T as C::T
-File "lvar_expr_dependent4.php", line 22, characters 7-24:
   ~<expr#13>::T where <expr#13>::T as C::T
+File "lvar_expr_dependent4.php", line 22, characters 7-24:
+  ~<expr#12>::T where <expr#12>::T as C::T
 File "lvar_expr_dependent4.php", line 26, characters 5-22:
   ~<expr#15>::T where <expr#15>::T as C::T
 File "lvar_expr_dependent4.php", line 27, characters 5-22:
