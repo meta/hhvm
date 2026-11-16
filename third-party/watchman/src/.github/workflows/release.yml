@@ -24,10 +24,15 @@ jobs:
     with:
       release: ${{ github.ref_name }}
 
+  macos:
+    uses: ./.github/workflows/macos.yml
+    with:
+      release: ${{ github.ref_name }}
+
   # Creating the release only once its packages exist keeps the latest release
   # one with binaries for every platform.
   publish:
-    needs: [linux, windows]
+    needs: [linux, windows, macos]
     runs-on: ubuntu-24.04
     permissions:
       contents: write  #  to create the release and upload its assets

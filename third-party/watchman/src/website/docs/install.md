@@ -96,6 +96,8 @@ $ sudo port install watchman
 
 ### Prebuilt Binaries
 
+The macOS release runs on Apple Silicon Macs with macOS 15 or newer.
+
 1. Download and extract the macOS release from the
    [latest release](https://github.com/meta/watchman/releases/latest)
 2. It will be named something like `watchman-vYYYY.MM.DD.00-macos.zip`
@@ -103,15 +105,16 @@ $ sudo port install watchman
 ```bash
 $ unzip watchman-*-macos.zip
 $ cd watchman-vYYYY.MM.DD.00-macos
-$ sudo mkdir -p /usr/local/{bin,lib} /usr/local/var/run/watchman
+$ xattr -dr com.apple.quarantine bin
+$ sudo mkdir -p /usr/local/bin /usr/local/var/run/watchman
 $ sudo cp bin/* /usr/local/bin
-$ sudo cp lib/* /usr/local/lib
 $ sudo chmod 755 /usr/local/bin/watchman
 $ sudo chmod 2777 /usr/local/var/run/watchman
 ```
 
-The Watchman binaries are not signed, so manual approval in Security & Privacy
-in System Preferences may be necessary.
+The Watchman binaries are not notarized by Apple, so macOS won't run them while
+they have the quarantine attribute that browsers add to downloads. The `xattr`
+command removes it.
 
 ## Linux
 

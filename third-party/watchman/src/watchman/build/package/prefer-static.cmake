@@ -7,6 +7,14 @@
 # static archives of system libraries, so they run without those installed.
 # It runs after every project(), the fetched dependencies' too. project() sets
 # this variable itself, which hides a value given on the command line.
-set(CMAKE_FIND_LIBRARY_SUFFIXES .a .so)
-# Debian's gflags-config.cmake picks gflags_static by this.
+if (APPLE)
+  # The SDK's own libraries, such as zlib, have only .tbd stubs.
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .a .tbd .dylib)
+  # Otherwise CMake puts the directories of link_directories(), such as
+  # Homebrew's lib for libevent, in each binary's LC_RPATH.
+  set(CMAKE_SKIP_BUILD_RPATH ON)
+else ()
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .a .so)
+endif ()
+# Debian's and Homebrew's gflags-config.cmake pick gflags_static by this.
 set(GFLAGS_SHARED OFF)
