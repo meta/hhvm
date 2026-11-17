@@ -90,6 +90,9 @@ final class RpcOptions implements IPureStringishObject {
   public function setRoutingKey(string $routing_key)[write_props]: RpcOptions;
 
   <<__Native>>
+  public function setRoutingObjectiveKey(string $routing_objective_key)[write_props]: RpcOptions;
+
+  <<__Native>>
   public function setShardId(string $shard_id)[write_props]: RpcOptions;
 
   <<__Native>>

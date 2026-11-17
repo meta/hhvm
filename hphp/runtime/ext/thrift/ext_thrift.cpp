@@ -251,6 +251,14 @@ Object HHVM_METHOD(RpcOptions, setRoutingKey, const OptString& routing_key) {
   return Object(this_);
 }
 
+Object HHVM_METHOD(RpcOptions, setRoutingObjectiveKey,
+                   const OptString& routing_objective_key) {
+  auto data = RpcOptions::GetDataOrThrowException(this_);
+  data->rpcOptions.setRoutingObjectiveKey(std::string(
+    routing_objective_key.c_str(), routing_objective_key.size()));
+  return Object(this_);
+}
+
 Object HHVM_METHOD(RpcOptions, setShardId, const OptString& shard_id) {
   auto data = RpcOptions::GetDataOrThrowException(this_);
   data->rpcOptions.setShardId(std::string(shard_id.c_str(), shard_id.size()));
@@ -317,6 +325,10 @@ String HHVM_METHOD(RpcOptions, __toString) {
   result += "chunkBufferSize: " +
     std::to_string(data->rpcOptions.getChunkBufferSize()) + "; ";
   result += "routingKey: \"" + data->rpcOptions.getRoutingKey() + "\"; ";
+  if (!data->rpcOptions.getRoutingObjectiveKey().empty()) {
+    result += "routingObjectiveKey: \"" +
+      data->rpcOptions.getRoutingObjectiveKey() + "\"; ";
+  }
   result += "shardId: \"" + data->rpcOptions.getShardId() + "\"; ";
   result += "loggingContext: \"" + data->rpcOptions.getLoggingContext() + "\"; ";
   result += "overallTimeout: " +
@@ -364,6 +376,7 @@ static struct ThriftExtension final : Extension {
     Native::registerNativeDataInfo<RpcOptions>();
     HHVM_ME(RpcOptions, setChunkBufferSize);
     HHVM_ME(RpcOptions, setRoutingKey);
+    HHVM_ME(RpcOptions, setRoutingObjectiveKey);
     HHVM_ME(RpcOptions, setShardId);
     HHVM_ME(RpcOptions, setWriteHeader);
     HHVM_ME(RpcOptions, setHeader);
