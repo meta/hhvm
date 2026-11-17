@@ -141,7 +141,10 @@ inline void record_frame(Venv& env, TCA start) {
 
   auto const& block = env.unit.blocks[env.current];
   auto const frameIt = env.unit.fpToFrame.find(env.origin->marker().fp());
-  assertx(frameIt != env.unit.fpToFrame.end());
+  if (frameIt == env.unit.fpToFrame.end()) {
+    assertx(env.origin->marker().sk().prologue());
+    return;
+  }
 
   auto const frame = frameIt->second;
   auto& frames = env.unit.frames;

@@ -1562,10 +1562,12 @@ To string conversions:
   Defines a new frame pointer for an ActRec at callBCOff for use in an inlined
   region. The frame is defined relative to S0, and S1 is the parent frame.
 
-| EnterInlineFrame, ND, S(FramePtr), NF
+| EnterInlineFrame<copy,numInitPositionals>, ND, S(FramePtr), NF
 
   Marks the start of an inlined function whose stack resides offset cells below
-  the SP.
+  the SP. If copy is true, the function-entry inputs are teleported from the
+  stack into the locals. numInitPositionals records how many positional
+  parameters contain passed values rather than TUninit.
 
 | LeaveInlineFrame, ND, S(FramePtr), NF
 
@@ -1628,13 +1630,14 @@ ReqBindJmp and CallFuncEntry.
   S1 is the current caller frame pointer. S3 is the context (nullptr, $this or
   static::class). S4 is the ambient coeffects.
 
-| CallFuncEntry<target,spOffset,arFlags>,
+| CallFuncEntry<calleePrototype,numInitPositionals,arFlags,formingRegion,
+|               addedUninitNamedParams>,
 |   DCall,
-|   S(StkPtr) S(FramePtr) S(Func) S(Cls|Obj|Nullptr,MMR),
+|   S(FramePtr) S(FramePtr) S(Func) S(Cls|Obj|Nullptr,MMR),
 |   PRc
 
   Transfer control to the func entry of a callee S2, based on the pre-live
-  activation record and set of args on the stack pointed to by S0 at `spOffset'.
+  activation record and set of args in the callee frame pointed to by S0.
   The callee's prologue must match the compile-time known calleePrototype's prologue.
   S1 is the current caller frame pointer. S3 is the context (nullptr, $this or
   static::class). If the callee is not statically known, the number of

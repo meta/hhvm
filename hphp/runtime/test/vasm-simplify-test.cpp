@@ -86,7 +86,12 @@ IRInstruction* makeEnterInlineFrameOrigin(IRUnit& unit, BCContext bcctx) {
     },
     sp
   )->dst();
-  return unit.gen(EnterInlineFrame, bcctx, calleeFP);
+  return unit.gen(
+    EnterInlineFrame,
+    bcctx,
+    EnterInlineFrameData::NoCopy(),
+    calleeFP
+  );
 }
 
 // Used only as a stable direct-call address for Vasm call/vinvoke tests.

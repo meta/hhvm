@@ -50,14 +50,16 @@ void cgDefCalleeFP(IRLS& env, const IRInstruction* inst) {
   // We could use callerFP in a non-resumed context but vasm-copy should clean
   // this up for us since callerSP was computed as an lea{} from rvmfp.
   v << lea{callerSP[cellsToBytes(extra->spOffset.offset)], calleeFP};
-  v.unit().allocFrame(inst);
+  if (!inst->marker().sk().prologue()) v.unit().allocFrame(inst);
 }
 
 void cgEnterInlineFrame(IRLS& env, const IRInstruction* inst) {
   auto& v = vmain(env);
-  auto const it = v.unit().fpToFrame.find(inst->src(0));
-  assertx(it != v.unit().fpToFrame.end());
-  v.unit().frames[it->second].entry_weight = vmain(env).weight();
+  if (!inst->marker().sk().prologue()) {
+    auto const it = v.unit().fpToFrame.find(inst->src(0));
+    assertx(it != v.unit().fpToFrame.end());
+    v.unit().frames[it->second].entry_weight = vmain(env).weight();
+  }
 
   v << inlinestart{};
 }

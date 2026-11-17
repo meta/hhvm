@@ -33,6 +33,7 @@
 #include "hphp/runtime/vm/jit/irgen.h"
 #include "hphp/runtime/vm/jit/irgen-control.h"
 #include "hphp/runtime/vm/jit/irgen-exit.h"
+#include "hphp/runtime/vm/jit/irgen-inlining.h"
 #include "hphp/runtime/vm/jit/irgen-internal.h"
 #include "hphp/runtime/vm/jit/irgen-minstr.h"
 #include "hphp/runtime/vm/jit/irgen-state.h"
@@ -661,7 +662,7 @@ void emitInitFuncInputsInline(IRGS& env, const Func* callee, uint32_t posArgc,
 
   // Make the new FramePtr live (marking the caller stack below the frame as
   // killed).
-  gen(env, EnterInlineFrame, fp);
+  gen(env, EnterInlineFrame, EnterInlineFrameData::NoCopy(), fp);
   updateMarker(env);
 
   int loc = 0;
@@ -670,10 +671,23 @@ void emitInitFuncInputsInline(IRGS& env, const Func* callee, uint32_t posArgc,
   }
 }
 
-void emitInitFuncInputs(IRGS& env, const Func* callee, uint32_t posArgc) {
+void emitInitFuncInputs(IRGS& env, const Func* callee, uint32_t posArgc,
+                        SSATmp* fp) {
   auto argc = callee->numNamedParams() + posArgc;
   assertx(argc <= callee->numParams());
-  if (argc == callee->numParams()) return;
+  auto const numInitPositionals =
+    std::min(callee->numPositionalParams(), posArgc);
+
+  if (argc == callee->numParams()) {
+    gen(
+      env,
+      EnterInlineFrame,
+      EnterInlineFrameData::Copy(numInitPositionals),
+      fp
+    );
+    updateStackOffsetAndExceptionBoundary(env);
+    return;
+  }
 
   // Generics and coeffects are already initialized
   auto const coeffects = callee->hasCoeffectsLocal()
@@ -710,6 +724,12 @@ void emitInitFuncInputs(IRGS& env, const Func* callee, uint32_t posArgc) {
   if (generics != nullptr) push(env, generics);
   if (coeffects != nullptr) push(env, coeffects);
 
+  gen(
+    env,
+    EnterInlineFrame,
+    EnterInlineFrameData::Copy(numInitPositionals),
+    fp
+  );
   updateStackOffsetAndExceptionBoundary(env);
 }
 
@@ -814,7 +834,7 @@ void emitFuncPrologue(IRGS& env, const Func* callee, uint32_t positionals,
   }
   emitPrologueEntry(env, callee, positionals, transID);
   emitCalleeChecks(env, callee, positionals, prologueFlags, prologueCtx, namedArgNames);
-  emitInitFuncInputs(env, callee, positionals);
+  emitInitFuncInputs(env, callee, positionals, genCalleeFP(env, callee, 0));
   auto [arFlags, calleeId] = emitPrologueExit(env, callee, prologueFlags);
   // Func entries are identified by the number of positional arguments passed.
   emitJmpFuncBody(env, callee, positionals, fp(env), arFlags, calleeId, prologueCtx);

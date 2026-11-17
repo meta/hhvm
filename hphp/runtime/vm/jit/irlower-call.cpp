@@ -202,7 +202,7 @@ void cgCall(IRLS& env, const IRInstruction* inst) {
 }
 
 void cgCallFuncEntry(IRLS& env, const IRInstruction* inst) {
-  auto const sp = srcLoc(env, inst, 0).reg();
+  auto const calleeFP = srcLoc(env, inst, 0).reg();
   auto const callee = srcLoc(env, inst, 2).reg();
   auto const ctx = srcLoc(env, inst, 3).reg();
   auto const extra = inst->extra<CallFuncEntry>();
@@ -221,12 +221,7 @@ void cgCallFuncEntry(IRLS& env, const IRInstruction* inst) {
     setCtxReg(v, calleePrototype, inst->src(3), ctx, r_func_entry_ctx());
 
   // Make vmsp() point to the future vmfp().
-  auto const ssp = v.makeReg();
-  v << lea{
-    sp[cellsToBytes(extra->spOffset.offset + calleePrototype->numFuncEntryInputs())],
-    ssp
-  };
-  v << syncvmsp{ssp};
+  v << syncvmsp{calleeFP};
 
   auto const done = v.makeBlock();
   auto const numPosArgs = std::min(extra->numInitPositionals,
@@ -259,9 +254,7 @@ void cgCallFuncEntry(IRLS& env, const IRInstruction* inst) {
   // all inputs, ActRec and empty space reserved for inouts.
   auto const marker = inst->marker();
   auto const fixupBcOff = marker.fixupBcOff();
-  auto const fixupSpOff = marker.fixupBcSPOff()
-    - calleePrototype->numFuncEntryInputs() - kNumActRecCells
-    - calleePrototype->numInOutParams();
+  auto const fixupSpOff = marker.fixupBcSPOff() - calleePrototype->numInOutParams();
   v << syncpoint{Fixup::direct(fixupBcOff, fixupSpOff)};
   v << unwind{done, label(env, inst->taken())};
   v = done;

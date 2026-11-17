@@ -1,0 +1,17 @@
+compute optional default
+vec(2) {
+  int(42)
+  int(7)
+}
+vec(2) {
+  int(42)
+  int(7)
+}
+vec(2) {
+  int(42)
+  int(7)
+}
+compute many defaults
+int(108)
+int(108)
+int(108)

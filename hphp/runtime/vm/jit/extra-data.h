@@ -1344,13 +1344,11 @@ struct CallData : IRExtraData {
 
 struct CallFuncEntryData : IRExtraData {
   explicit CallFuncEntryData(const Func* calleePrototype,
-                             IRSPRelOffset spOffset,
                              uint32_t numInitPositionals,
                              uint32_t arFlags,
                              bool formingRegion,
                              bool addedUninitNamedParams)
     : calleePrototype(calleePrototype)
-    , spOffset(spOffset)
     , numInitPositionals(numInitPositionals)
     , arFlags(arFlags)
     , formingRegion(formingRegion)
@@ -1359,8 +1357,8 @@ struct CallFuncEntryData : IRExtraData {
 
   std::string show() const {
     return fmt::format(
-      "{}, IRSP {}, numInitPositionals {}, arFlags {}{}{}",
-      calleePrototype->fullName()->data(), spOffset.offset, numInitPositionals, arFlags,
+      "{}, numInitPositionals {}, arFlags {}{}{}",
+      calleePrototype->fullName()->data(), numInitPositionals, arFlags,
       formingRegion ? ",formingRegion" : "",
       addedUninitNamedParams ? ",addedUninitNamedParams" :""
     );
@@ -1369,7 +1367,6 @@ struct CallFuncEntryData : IRExtraData {
   size_t stableHash() const {
     return folly::hash::hash_combine(
       calleePrototype->stableHash(),
-      std::hash<int32_t>()(spOffset.offset),
       std::hash<uint32_t>()(numInitPositionals),
       std::hash<uint32_t>()(arFlags),
       std::hash<bool>()(formingRegion),
@@ -1379,7 +1376,6 @@ struct CallFuncEntryData : IRExtraData {
 
   bool equals(const CallFuncEntryData& o) const {
     return calleePrototype == o.calleePrototype &&
-           spOffset == o.spOffset &&
            numInitPositionals == o.numInitPositionals &&
            arFlags == o.arFlags &&
            formingRegion == o.formingRegion &&
@@ -1390,12 +1386,7 @@ struct CallFuncEntryData : IRExtraData {
     return arFlags & (1 << ActRec::AsyncEagerRet);
   }
 
-  void updateStackOffsets(int32_t delta) {
-    spOffset.offset += delta;
-  }
-
   const Func* calleePrototype;
-  IRSPRelOffset spOffset;
   uint32_t numInitPositionals;
   uint32_t arFlags;
   bool formingRegion;
@@ -3171,6 +3162,44 @@ struct StrToClassData : IRExtraData {
   StrToClassKind kind;
 };
 
+struct EnterInlineFrameData : IRExtraData {
+  EnterInlineFrameData(bool copy, uint32_t numInitPositionals)
+    : copy(copy)
+    , numInitPositionals(numInitPositionals)
+  {}
+
+  static EnterInlineFrameData Copy(uint32_t numInitPositionals) {
+    return EnterInlineFrameData {true, numInitPositionals};
+  }
+
+  static EnterInlineFrameData NoCopy() {
+    return EnterInlineFrameData {false, 0};
+  }
+
+  std::string show() const {
+    return fmt::format(
+      "{}numInitPositionals {}",
+      copy ? "copy, " : "",
+      numInitPositionals
+    );
+  }
+  size_t hash() const {
+    return folly::hash::hash_combine(
+      copy ? 1 : 0,
+      std::hash<uint32_t>()(numInitPositionals)
+    );
+  }
+  size_t stableHash() const { return hash(); }
+
+  bool equals(const EnterInlineFrameData& o) const {
+    return copy == o.copy &&
+           numInitPositionals == o.numInitPositionals;
+  }
+
+  bool copy;
+  uint32_t numInitPositionals;
+};
+
 //////////////////////////////////////////////////////////////////////
 
 #define X(op, data)                                                   \
@@ -3250,6 +3279,7 @@ X(CallBuiltin,                  CallBuiltinData);
 X(CallFuncEntry,                CallFuncEntryData);
 X(InlineSideExit,               InlineSideExitData);
 X(InlineSideExitSyncStack,      StackRange);
+X(EnterInlineFrame,             EnterInlineFrameData);
 X(RetCtrl,                      RetCtrlData);
 X(AsyncFuncRet,                 IRSPRelOffsetData);
 X(AsyncFuncRetSlow,             IRSPRelOffsetData);

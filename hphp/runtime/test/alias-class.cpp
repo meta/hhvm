@@ -160,6 +160,33 @@ TEST(AliasClass, AliasIdSet) {
 
 //////////////////////////////////////////////////////////////////////
 
+TEST(AliasClass, BoundedIdRanges) {
+  for (auto const range : {
+         IdRange{0, 0}, IdRange{0, 62}, IdRange{60, 62}, IdRange{61, 63},
+         IdRange{62, 63}, IdRange{65, 66}, IdRange{65, 70},
+         IdRange{62}, IdRange{65}}) {
+    auto const atMost = AliasIdSet::atMostIdRange(range);
+    auto const atLeast = AliasIdSet::atLeastIdRange(range);
+    for (auto const id : {0u, 60u, 61u, 62u, 63u, 64u, 65u, 66u, 69u, 70u,
+                         AliasIdSet::Max - 1}) {
+      auto const contains = range.l <= id && id < range.h;
+      EXPECT_TRUE(!atMost.test(id) || contains);
+      EXPECT_TRUE(!contains || atLeast.test(id));
+    }
+  }
+
+  EXPECT_EQ(AliasIdSet::atMostIdRange(IdRange{61, 63}), AliasIdSet{61u});
+  EXPECT_EQ(AliasIdSet::atMostIdRange(IdRange{62, 63}), AliasIdSet{62u});
+  EXPECT_EQ(AliasIdSet::atMostIdRange(IdRange{65, 66}), AliasIdSet{65u});
+  EXPECT_TRUE(AliasIdSet::atMostIdRange(IdRange{65, 70}).empty());
+  EXPECT_EQ(AliasIdSet::atMostIdRange(IdRange{62}), AliasIdSet{IdRange{62}});
+  EXPECT_TRUE(AliasIdSet::atMostIdRange(IdRange{65}).empty());
+
+  auto const kills = *AliasClass{AActRec{0u}}.precise_union(ALocal{0u, 65u});
+  EXPECT_FALSE(kills.precise_union(ALocal{0u, 66u}));
+  EXPECT_FALSE(kills.maybe(ALocal{0u, 64u}));
+}
+
 TEST(AliasClass, Basic) {
   IRUnit unit{test_context};
   auto const specialized = specialized_classes(unit);

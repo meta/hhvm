@@ -881,6 +881,22 @@ TEST(RefcountOpts, ReleaseReceiverAfterThrowingCall) {
     unit.defLabel(0, caught, bcctx);
     auto const returned = unit.defBlock();
     auto const callee = SystemLib::getExceptionClass()->getCtor();
+    unit.entry()->push_back({
+      fp, sp, ctx,
+      unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(), unit.cns(TInitNull)),
+      retain
+    });
+    auto callFP = sp->dst();
+    if (op == CallFuncEntry) {
+      auto const calleeFP = unit.gen(
+        DefCalleeFP, bcctx,
+        DefCalleeFPData{IRSPRelOffset{0}, callee, 1, SrcKey{},
+                        IRSPRelOffset{0}, SBInvOffset{0}, 0},
+        sp->dst(), fp->dst()
+      );
+      unit.entry()->push_back(calleeFP);
+      callFP = calleeFP->dst();
+    }
     auto const call = op == Call
       ? unit.gen(Call, bcctx,
                  CallData{IRSPRelOffset{0}, 0, 0, 0, nullptr, 0,
@@ -888,14 +904,10 @@ TEST(RefcountOpts, ReleaseReceiverAfterThrowingCall) {
                  caught, sp->dst(), fp->dst(), unit.cns(callee), ctx->dst(),
                  unit.cns(int64_t{0}))
       : unit.gen(CallFuncEntry, bcctx,
-                 CallFuncEntryData{callee, IRSPRelOffset{0}, 0, 0, false, false},
-                 caught, sp->dst(), fp->dst(), unit.cns(callee), ctx->dst());
+                 CallFuncEntryData{callee, 0, 0, false, false},
+                 caught, callFP, fp->dst(), unit.cns(callee), ctx->dst());
     call->setNext(returned);
-    unit.entry()->push_back({
-      fp, sp, ctx,
-      unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(), unit.cns(TInitNull)),
-      retain, call
-    });
+    unit.entry()->push_back(call);
     auto const catchDec = unit.gen(DecRef, bcctx, DecRefData{}, ctx->dst());
     auto const returnDec = unit.gen(DecRef, bcctx, DecRefData{}, ctx->dst());
     caught->push_back({unit.gen(BeginCatch, bcctx, TObj | TNullptr), catchDec,

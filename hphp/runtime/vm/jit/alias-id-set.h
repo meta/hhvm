@@ -90,6 +90,13 @@ struct AliasIdSet {
   /* implicit */ AliasIdSet(IdRange r);
 
   /*
+   * Return a representable superset or subset of the requested range.
+   * Use atMostIdRange for must-kill effects, which must not include extra IDs.
+   */
+  static AliasIdSet atLeastIdRange(IdRange range);
+  static AliasIdSet atMostIdRange(IdRange range);
+
+  /*
    * A fancier constructor that initializes the set from an arbitrary
    * number of integers and ranges, e.g.,
    *

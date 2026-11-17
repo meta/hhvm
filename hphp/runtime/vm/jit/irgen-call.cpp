@@ -300,7 +300,8 @@ SSATmp* callImpl(IRGS& env, SSATmp* callee, const FCallArgs& fca,
 
 SSATmp* callFuncEntry(IRGS& env, const Func* calleePrototype,
                       SSATmp* callee, SSATmp* objOrClass,
-                      uint32_t posArgcInclUnpack, bool asyncEagerReturn,
+                      SSATmp* calleeFP, uint32_t posArgcInclUnpack,
+                      bool asyncEagerReturn,
                       bool addedUninitNamedParams) {
   if (objOrClass == nullptr) objOrClass = cns(env, TNullptr);
   assertx(objOrClass->isA(TNullptr) || objOrClass->isA(TObj|TCls));
@@ -319,13 +320,12 @@ SSATmp* callFuncEntry(IRGS& env, const Func* calleePrototype,
 
   auto const data = CallFuncEntryData {
     calleePrototype,
-    spOffBCFromIRSP(env),
     posArgcInclUnpack,
     arFlags,
     env.formingRegion,
     addedUninitNamedParams,
   };
-  return gen(env, CallFuncEntry, data, sp(env), pubFP, callee, objOrClass);
+  return gen(env, CallFuncEntry, data, calleeFP, pubFP, callee, objOrClass);
 }
 
 void handleCallReturn(IRGS& env, const Func* callee, SSATmp* retVal,
@@ -729,6 +729,9 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
     if (env.irb->inUnreachableState()) return;
 
     auto const inputTypes = funcEntryTypes(env, callee, posArgc);
+    auto const numInputs = posArgc + callee->numNamedParams()
+      + (callee->hasReifiedGenerics() ? 1 : 0)
+      + (callee->hasCoeffectsLocal() ? 1 : 0);
 
     auto const hasRdsCache =
       hasConstParamMemoCache(env, callee, objOrClass, inputTypes);
@@ -746,9 +749,16 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
       }
     }
 
-    // We didn't end up inlining the callee, discard the frame pointer
-    if (!calleeFP->isA(TBottom)) calleeFP->inst()->convertToNop();
-    emitInitFuncInputs(env, callee, posArgc);
+    auto const initInputAndCall = [&] {
+      emitInitFuncInputs(env, callee, posArgc, calleeFP);
+
+      env.irb->fs().endInliningForSideExit();
+      updateMarker(env);
+      env.irb->exceptionStackBoundary();
+
+      return callFuncEntry(env, callee, cns(env, callee), objOrClass, calleeFP,
+                           posArgc, asyncEagerReturn, addedUninitNamed);
+    };
 
     if (hasRdsCache) {
       auto const link = constParamCacheLink(env, callee, objOrClass,
@@ -764,7 +774,7 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
           gen(env, CheckRDSInitialized, taken, RDSHandleData { data });
         },
         [&] {
-          for (auto i = 0; i < callee->numFuncEntryInputs(); ++i) {
+          for (auto i = 0; i < numInputs; ++i) {
             popDecRef(env, static_cast<DecRefProfileId>(i));
           }
           for (auto i = 0; i < kNumActRecCells; ++i) popU(env);
@@ -774,9 +784,7 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
         },
         [&] {
           hint(env, Block::Hint::Unlikely);
-          auto const retVal = callFuncEntry(env, callee, cns(env, callee),
-                                            objOrClass, posArgc,
-                                            asyncEagerReturn, addedUninitNamed);
+          auto const retVal = initInputAndCall();
           gen(env, StTVInRDS, data, retVal);
           gen(env, IncRef, retVal);
           gen(env, MarkRDSInitialized, RDSHandleData { data });
@@ -786,9 +794,7 @@ void prepareAndCallKnown(IRGS& env, const Func* callee, const FCallArgs& fca,
       handleCallReturn(env, callee, res, asyncEagerOffset,
                        false /* unlikely */);
     } else {
-      auto const retVal = callFuncEntry(env, callee, cns(env, callee),
-                                        objOrClass, posArgc,
-                                        asyncEagerReturn, addedUninitNamed);
+      auto const retVal = initInputAndCall();
       handleCallReturn(env, callee, retVal, asyncEagerOffset,
                        false /* unlikely */);
     }

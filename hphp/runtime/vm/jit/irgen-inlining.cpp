@@ -374,7 +374,7 @@ void conjureBeginInlining(IRGS& env,
   updateStackOffsetAndExceptionBoundary(env);
 
   auto const fp = genCalleeFP(env, callee, 0);
-  gen(env, EnterInlineFrame, fp);
+  gen(env, EnterInlineFrame, EnterInlineFrameData::NoCopy(), fp);
 
   for (uint32_t i = 0; i < inputs.size(); ++i) {
     gen(env, AssertLoc, inputs[i], LocalId(i), fp);
@@ -692,8 +692,7 @@ void sideExitFromInlined(IRGS& env, SrcKey target) {
 
   if (target.anyFuncEntry()) {
     // FIXME: Func entries may contain guards that might fail. Ideally we would
-    // CallFuncEntry in these situations, but CallFuncEntry accepts arguments on
-    // the stack and we already converted them to the locals.
+    // reuse CallFuncEntry here instead of spilling and binding directly.
     spillInlinedFrames(env);
 
     auto const invSP = spOffBCFromStackBase(env);

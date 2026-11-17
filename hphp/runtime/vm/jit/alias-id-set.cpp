@@ -40,6 +40,19 @@ namespace HPHP::jit {
   assertx(checkInvariants());
 }
 
+AliasIdSet AliasIdSet::atLeastIdRange(IdRange range) {
+  return AliasIdSet{range};
+}
+
+AliasIdSet AliasIdSet::atMostIdRange(IdRange range) {
+  auto const limit = BitsetMax + 1;
+  if (range.empty() || range.hasSingleValue() ||
+      (range.l <= limit && range.h == Max)) {
+    return AliasIdSet{range};
+  }
+  return AliasIdSet{IdRange{range.l, std::min(range.h, limit)}};
+}
+
 bool AliasIdSet::checkInvariants() const {
   if (isBigInteger()) {
     // Must use bitset mode for single integers below BitsetMax.
