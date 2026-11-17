@@ -1,7 +1,7 @@
 <?hh
 
 class C<Tm> {
-  public function __construct(private classname<Tm> $className) {
+  public function __construct(private class<Tm> $className) {
     $class = $this->className;
     new $class();
   }
@@ -15,5 +15,5 @@ class D {
 
 <<__EntryPoint>>
 function main(): void {
-  new C(nameof D);
+  new C(D::class);
 }

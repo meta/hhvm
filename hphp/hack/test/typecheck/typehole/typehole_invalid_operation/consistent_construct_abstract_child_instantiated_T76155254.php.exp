@@ -1,14 +1,1 @@
-error: Typing[4482] It is no longer allowed to use a `classname<Hgoldstein>` in this position. Please use a `class<Hgoldstein>` instead. [1]
--> Definition is here [2]
-
-consistent_construct_abstract_child_instantiated_T76155254.php:12:12
- 9 | final class HgoldsteinGrandChild extends HgoldsteinChild {}
-10 | 
-11 | function make_hgoldstein(classname<Hgoldstein> $cls): void {
-   |                          ^^^^^^^^^^^^^^^^^^^^^ [2]
-12 |   $_ = new $cls();
-   |            ^^^^ [1]
-13 | }
-14 | 
-
-1 error found
+No errors
