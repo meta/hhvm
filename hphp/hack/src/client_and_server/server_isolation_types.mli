@@ -17,13 +17,20 @@ type cluster = {
           taken, leaving it a prefix of a package rather than a package. *)
 }
 
+(** A file outside a set of files that references into it. *)
+type blocker = {
+  file: string;
+  references: string list;
+      (** The files of the set that it references, which is what it blocks. *)
+}
+
 (** Whether a named set of files can move as it stands, judged from the
     dependency graph alone. [Blocked] lists every file outside the set that
     references into it. [Movable] does not promise that a typecheck of the
     moved files will pass. *)
 type movability =
   | Movable
-  | Blocked of string list
+  | Blocked of blocker list
 
 type result = {
   refused: string option;

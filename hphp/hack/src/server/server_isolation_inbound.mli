@@ -55,3 +55,13 @@ val referrers :
   Naming_table.t ->
   Relative_path.Set.t ->
   Relative_path.Set.t
+
+(** [referrers_by_target ctx naming_table candidate] is each of the files that
+    [referrers] gives, with the files of [candidate] that it references. It asks
+    once for each file of [candidate], where [referrers] asks once for all of
+    them, so it is for saying why a set is blocked, not for deciding it. *)
+val referrers_by_target :
+  Provider_context.t ->
+  Naming_table.t ->
+  Relative_path.Set.t ->
+  Relative_path.Set.t Relative_path.Map.t

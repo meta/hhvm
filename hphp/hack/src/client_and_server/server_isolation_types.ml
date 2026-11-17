@@ -12,9 +12,14 @@ type cluster = {
   truncated: bool;
 }
 
+type blocker = {
+  file: string;
+  references: string list;
+}
+
 type movability =
   | Movable
-  | Blocked of string list
+  | Blocked of blocker list
 
 type result = {
   refused: string option;

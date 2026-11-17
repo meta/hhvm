@@ -617,6 +617,47 @@ class TestFreshInit(common_tests.CommonTests):
             self.assertEqual(usage_error_exit_code, retcode, (flag, stderr))
             self.assertIn("percentage", stderr)
 
+    def test_movability_names_the_files_that_block_a_set(self) -> None:
+        repo_dir = self.test_driver.repo_dir
+        files = {
+            "blocked_a.php": "<?hh\nfunction blocked_a(): void {}\n",
+            "blocked_b.php": "<?hh\nfunction blocked_b(): void {}\n",
+            "blocked_user_one.php": (
+                "<?hh\nfunction blocked_user_one(): void {\n  blocked_a();\n}\n"
+            ),
+            "blocked_user_two.php": (
+                "<?hh\nfunction blocked_user_two(): void {\n"
+                "  blocked_a();\n  blocked_b();\n}\n"
+            ),
+        }
+        for filename, contents in files.items():
+            with open(os.path.join(repo_dir, filename), "w") as f:
+                f.write(contents)
+        seed_list = os.path.join(repo_dir, "blocked_seeds.txt")
+        with open(seed_list, "w") as f:
+            f.write("blocked_a.php\nblocked_b.php\n")
+        self.test_driver.start_hh_server(
+            changed_files=list(files.keys()), args=["--no-load"]
+        )
+
+        output, _ = self.test_driver.check_cmd(
+            expected_output=None,
+            options=[
+                "--isolation",
+                "--isolation-movable",
+                "--isolation-seed-list",
+                seed_list,
+                "--json",
+            ],
+        )
+
+        (_, result) = parse_isolation_json(output)
+        self.assertEqual("blocked", result["movability"])
+        self.assertEqual(
+            ["blocked_user_one.php", "blocked_user_two.php"],
+            sorted(result["blockers"]),
+        )
+
     def test_isolation_move_to_refuses_a_missing_seed_dir(self) -> None:
         self.test_driver.start_hh_server(changed_files=[], args=["--no-load"])
         stdout, _, retcode = self.test_driver.run_check(

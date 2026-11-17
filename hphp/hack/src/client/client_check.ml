@@ -87,7 +87,7 @@ let output_isolation_result
         ( "blockers",
           match result.movability with
           | Some (Blocked blockers) ->
-            `List (List.map blockers ~f:(fun f -> `String f))
+            `List (List.map blockers ~f:(fun (b : blocker) -> `String b.file))
           | _ -> `Null );
         ( "summary",
           `Assoc
@@ -111,10 +111,11 @@ let output_isolation_result
         "Movable: %s, nothing outside references in.\n"
         (Utils.print_count result.total_isolatable_files "file")
     | (None, Some (Blocked blockers)) ->
+      let files = List.map blockers ~f:(fun (b : blocker) -> b.file) in
       Printf.printf
         "Blocked: referenced from %s outside.\n"
-        (Utils.print_count (List.length blockers) "file");
-      Utils.print_capped_list blockers ~more_note:"; --json lists them all"
+        (Utils.print_count (List.length files) "file");
+      Utils.print_capped_list files ~more_note:"; --json lists them all"
     | (None, None) ->
       Printf.printf
         "Started from %s.\n"

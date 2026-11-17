@@ -164,8 +164,33 @@ let reset () =
   computed_count := 0;
   served_count := 0
 
-let referrers ctx naming_table candidate =
+(* The files outside [candidate] that reference a symbol defined in [files]. *)
+let dependents_outside ctx naming_table ~candidate files =
   let deps_mode = Provider_context.get_deps_mode ctx in
-  let own = symbols_of_files naming_table candidate in
+  let own = symbols_of_files naming_table files in
   let dependents = Typing_deps.add_typing_deps deps_mode own in
   Relative_path.Set.diff (Naming_provider.get_files ctx dependents) candidate
+
+let referrers ctx naming_table candidate =
+  dependents_outside ctx naming_table ~candidate candidate
+
+let referrers_by_target ctx naming_table candidate =
+  Relative_path.Set.fold
+    candidate
+    ~init:Relative_path.Map.empty
+    ~f:(fun target acc ->
+      dependents_outside
+        ctx
+        naming_table
+        ~candidate
+        (Relative_path.Set.singleton target)
+      |> Relative_path.Set.fold ~init:acc ~f:(fun referrer acc ->
+             let targets =
+               Option.value
+                 (Relative_path.Map.find_opt acc referrer)
+                 ~default:Relative_path.Set.empty
+             in
+             Relative_path.Map.add
+               acc
+               ~key:referrer
+               ~data:(Relative_path.Set.add targets target)))

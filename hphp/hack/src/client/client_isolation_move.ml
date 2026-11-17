@@ -210,7 +210,7 @@ end
 module Output = struct
   type outcome =
     | Refused of string
-    | Blocked of string list
+    | Blocked of Server_isolation_types.blocker list
     | Not_moved of {
         errors: Move_error.t list;
         baseline_restored: bool;
@@ -238,7 +238,12 @@ module Output = struct
     | Moved { files } -> [("files", `Int files)]
     | Refused reason -> [("refused", `String reason)]
     | Blocked blockers ->
-      [("blockers", `List (List.map blockers ~f:(fun file -> `String file)))]
+      [
+        ( "blockers",
+          `List
+            (List.map blockers ~f:(fun { Server_isolation_types.file; _ } ->
+                 `String file)) );
+      ]
     | Not_moved { errors; baseline_restored } ->
       [
         ("new_errors", `List (List.map errors ~f:error_to_json));
@@ -268,10 +273,13 @@ module Output = struct
   let shown_errors = 10
 
   let print_blocked blockers =
+    let files =
+      List.map blockers ~f:(fun { Server_isolation_types.file; _ } -> file)
+    in
     Printf.printf
       "Not moved: referenced from %s outside.\n"
-      (Utils.print_count (List.length blockers) "file");
-    Utils.print_capped_list blockers ~more_note:"; --json lists them all"
+      (Utils.print_count (List.length files) "file");
+    Utils.print_capped_list files ~more_note:"; --json lists them all"
 
   let print_not_moved ~errors ~baseline_restored =
     Printf.printf

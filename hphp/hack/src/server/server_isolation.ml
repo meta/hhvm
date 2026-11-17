@@ -658,9 +658,29 @@ let movability_of_seeds r seeds =
         };
     (Server_isolation_types.Movable, [List.length files])
   end else begin
-    let blockers =
-      Relative_path.Set.elements blockers |> List.map ~f:Relative_path.suffix
+    let since = Unix.gettimeofday () in
+    let by_target =
+      Server_isolation_inbound.referrers_by_target
+        r.ctx
+        r.naming_table
+        candidate
     in
+    let blockers =
+      Relative_path.Set.elements blockers
+      |> List.map ~f:(fun referrer ->
+             let references =
+               Option.value
+                 (Relative_path.Map.find_opt by_target referrer)
+                 ~default:Relative_path.Set.empty
+             in
+             {
+               Server_isolation_types.file = Relative_path.suffix referrer;
+               references =
+                 Relative_path.Set.elements references
+                 |> List.map ~f:Relative_path.suffix;
+             })
+    in
+    let _t = Hh_logger.log_duration "[isolation] blockers by target" since in
     Hh_logger.log
       "[isolation] movability: %d files reference in"
       (List.length blockers);
