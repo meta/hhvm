@@ -18,8 +18,9 @@ Events are consolidated and settled before they are dispatched to your build
 tool so that it won't start executing until after the files have stopped
 changing. The `--settle` argument controls the settle duration.
 
-`watchman-make` requires `pywatchman` (and thus requires `python`) as well as
-`watchman`.
+`watchman-make` is part of [pywatchman](https://pypi.org/project/pywatchman/),
+Watchman's Python client, so it needs Python as well as `watchman`. The Windows
+release includes it. On other systems, install it with `pip install pywatchman`.
 
 ### Example
 

@@ -24,8 +24,9 @@ Events are consolidated and settled by the watchman server before they are
 dispatched to `watchman-wait` so that your script won't start executing until
 after the files have stopped changing.
 
-`watchman-wait` requires `pywatchman` (and thus requires `python`) as well as
-`watchman`.
+`watchman-wait` is part of [pywatchman](https://pypi.org/project/pywatchman/),
+Watchman's Python client, so it needs Python as well as `watchman`. The Windows
+release includes it. On other systems, install it with `pip install pywatchman`.
 
 ### Paths and Patterns
 

@@ -39,8 +39,10 @@ output in JSON format.
 Events are consolidated and settled by the watchman server before they are
 dispatched to watchman-replicate-subscription.
 
-`watchman-replicate-subscription` requires pywatchman (and thus requires python)
-as well as watchman.
+`watchman-replicate-subscription` is part of
+[pywatchman](https://pypi.org/project/pywatchman/), Watchman's Python client, so
+it needs Python as well as `watchman`. The Windows release includes it. On other
+systems, install it with `pip install pywatchman`.
 
 ### Source subscription
 
