@@ -2257,6 +2257,10 @@ void analyze_mem_effects(Env& env,
  */
 bool consumes_reference_taken(const IRInstruction& inst, uint32_t srcID) {
   switch (inst.op()) {
+  // Calls consume their context on both normal and exceptional exits.
+  case Call:
+  case CallFuncEntry:
+    return srcID == 3;
   // The following consume some arguments only in the event of an exception.
   case SuspendHookAwaitEF:
   case SuspendHookAwaitEG:
@@ -2277,7 +2281,8 @@ bool consumes_reference_taken(const IRInstruction& inst, uint32_t srcID) {
  */
 bool consumes_reference_next_not_taken(const IRInstruction& inst,
                                        uint32_t srcID) {
-  return inst.consumesReference(srcID);
+  return inst.consumesReference(srcID) &&
+    !consumes_reference_taken(inst, srcID);
 }
 
 /*

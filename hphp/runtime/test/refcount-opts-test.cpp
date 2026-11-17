@@ -855,6 +855,64 @@ TEST(RefcountOpts, ReleaseAfterReturnHookTaken) {
 }
 
 /*
+ *                  ctx = LdLoc 0: Obj
+ *                   StLoc 0, null
+ *                     IncRef ctx
+ *                Call/CallFuncEntry ctx
+ *                   /             \
+ *              exception         normal
+ *              BeginCatch
+ *              DecRef ctx        DecRef ctx
+ *
+ * The caller and callee each own a reference. Both return and unwinding
+ * consume the callee's receiver, so either cleanup can release the object.
+ */
+TEST(RefcountOpts, ReleaseReceiverAfterThrowingCall) {
+  for (auto const op : {Call, CallFuncEntry}) {
+    SCOPED_TRACE(opcodeName(op));
+    IRUnit unit{test_context};
+    BCContext const bcctx{test_marker(), 0};
+    auto const fp = unit.gen(DefFP, bcctx, DefFPData{std::nullopt});
+    auto const sp = unit.gen(DefRegSP, bcctx,
+                            DefStackData{SBInvOffset{0}, SBInvOffset{0}});
+    auto const ctx = unit.gen(LdLoc, bcctx, TObj, LocalId{0}, fp->dst());
+    auto const retain = unit.gen(IncRef, bcctx, ctx->dst());
+    auto const caught = unit.defBlock();
+    unit.defLabel(0, caught, bcctx);
+    auto const returned = unit.defBlock();
+    auto const callee = SystemLib::getExceptionClass()->getCtor();
+    auto const call = op == Call
+      ? unit.gen(Call, bcctx,
+                 CallData{IRSPRelOffset{0}, 0, 0, 0, nullptr, 0,
+                          false, false, true, false, false, false},
+                 caught, sp->dst(), fp->dst(), unit.cns(callee), ctx->dst(),
+                 unit.cns(int64_t{0}))
+      : unit.gen(CallFuncEntry, bcctx,
+                 CallFuncEntryData{callee, IRSPRelOffset{0}, 0, 0, false, false},
+                 caught, sp->dst(), fp->dst(), unit.cns(callee), ctx->dst());
+    call->setNext(returned);
+    unit.entry()->push_back({
+      fp, sp, ctx,
+      unit.gen(StLoc, bcctx, LocalId{0}, fp->dst(), unit.cns(TInitNull)),
+      retain, call
+    });
+    auto const catchDec = unit.gen(DecRef, bcctx, DecRefData{}, ctx->dst());
+    auto const returnDec = unit.gen(DecRef, bcctx, DecRefData{}, ctx->dst());
+    caught->push_back({unit.gen(BeginCatch, bcctx, TObj | TNullptr), catchDec,
+                      unit.gen(Unreachable, bcctx, ASSERT_REASON)});
+    returned->push_back({returnDec,
+                        unit.gen(Unreachable, bcctx, ASSERT_REASON)});
+
+    optimizeRefcounts(unit);
+
+    EXPECT_EQ(IncRef, retain->op());
+    EXPECT_EQ(DecRef, catchDec->op());
+    EXPECT_EQ(DecRef, returnDec->op());
+    EXPECT_TRUE(checkEverything(unit));
+  }
+}
+
+/*
  *                 value = LdLoc 0: CountedVec
  *                        IncRef value
  *                     CheckArrayCOW value
