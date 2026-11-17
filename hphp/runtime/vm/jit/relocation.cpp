@@ -92,40 +92,41 @@ void RelocationInfo::rewind(TCA start, TCA end) {
     m_srcRanges.pop_back();
     m_dstRanges.pop_back();
   }
-  auto it = m_adjustedAddresses.lower_bound(start);
-  if (it == m_adjustedAddresses.end()) return;
-
   // convenience function for erasing a m_smashableRelocations entry
   auto eraseSmashableRelocation = [this](TCA addr) {
     auto it = m_smashableRelocations.find(addr);
     if (it != m_smashableRelocations.end()) m_smashableRelocations.erase(it);
   };
 
-  if (it->first == start) {
-    // if it->second.first is set, start is also the end
-    // of an existing region. Don't erase it in that case
-    if (it->second.first) {
-      eraseSmashableRelocation(it->second.second);
-      it++->second.second = 0;
+  // m_adjustedAddresses is unordered, so scan all of it. This only runs when
+  // relocate() retries a range.
+  std::vector<TCA> toErase;
+  for (auto& [addr, adjusted] : m_adjustedAddresses) {
+    if (addr < start || addr > end) continue;
+    if (addr == start) {
+      // if adjusted.first is set, start is also the end
+      // of an existing region. Don't erase it in that case
+      if (adjusted.first) {
+        eraseSmashableRelocation(adjusted.second);
+        adjusted.second = nullptr;
+      } else {
+        toErase.push_back(addr);
+      }
+    } else if (addr == end) {
+      // Similar to start above, end could be the start of an
+      // existing region.
+      if (adjusted.second) {
+        eraseSmashableRelocation(adjusted.second);
+        adjusted.first = nullptr;
+      } else {
+        toErase.push_back(addr);
+      }
     } else {
-      m_adjustedAddresses.erase(it++);
+      eraseSmashableRelocation(adjusted.second);
+      toErase.push_back(addr);
     }
   }
-  while (it != m_adjustedAddresses.end() && it->first < end) {
-    eraseSmashableRelocation(it->second.second);
-    m_adjustedAddresses.erase(it++);
-  }
-  if (it == m_adjustedAddresses.end()) return;
-  if (it->first == end) {
-    // Similar to start above, end could be the start of an
-    // existing region.
-    if (it->second.second) {
-      eraseSmashableRelocation(it->second.second);
-      it++->second.first = 0;
-    } else {
-      m_adjustedAddresses.erase(it++);
-    }
-  }
+  for (auto const addr : toErase) m_adjustedAddresses.erase(addr);
 }
 
 //////////////////////////////////////////////////////////////////////

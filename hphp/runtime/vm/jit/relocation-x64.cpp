@@ -54,6 +54,9 @@ size_t relocateImpl(RelocationInfo& rel,
   size_t asm_count{0};
   TCA keepNopLow = nullptr;
   TCA keepNopHigh = nullptr;
+  // src only moves forward, so walk the alignments alongside it.
+  auto alignIt = fixups.alignments.lower_bound(start);
+  auto const alignEnd = fixups.alignments.end();
   try {
     while (src != end) {
       assertx(src < end);
@@ -108,9 +111,9 @@ size_t relocateImpl(RelocationInfo& rel,
         }
       }
 
-      auto af = fixups.alignments.equal_range(src);
-      while (af.first != af.second) {
-        auto const alignPair = af.first->second;
+      while (alignIt != alignEnd && alignIt->first < src) ++alignIt;
+      for (; alignIt != alignEnd && alignIt->first == src; ++alignIt) {
+        auto const alignPair = alignIt->second;
         auto const alignInfo = alignment_info(alignPair.first);
 
         auto const low = src + alignInfo.offset;
@@ -127,7 +130,6 @@ size_t relocateImpl(RelocationInfo& rel,
           destRange += destBlock.frontier() - tmp;
           internalRefsNeedUpdating = true;
         }
-        ++af.first;
       }
 
       bool preserveAlignment = keepNopLow && keepNopHigh &&

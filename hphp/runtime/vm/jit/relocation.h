@@ -15,6 +15,7 @@
 */
 #pragma once
 
+#include "hphp/runtime/vm/jit/containers.h"
 #include "hphp/runtime/vm/jit/types.h"
 #include "hphp/util/data-block.h"
 
@@ -122,7 +123,7 @@ struct RelocationInfo {
    * instruction corresponding to the src instruction; but eg
    * the fixup map would want the address of the nop.
    */
-  std::map<TCA,std::pair<TCA,TCA>> m_adjustedAddresses;
+  jit::fast_map<TCA,std::pair<TCA,TCA>> m_adjustedAddresses;
   std::set<TCA> addressImmediates;
   std::set<TCA> m_addressImmediatesInvalidToMap;
   std::set<TCA> m_smashableRelocations;
