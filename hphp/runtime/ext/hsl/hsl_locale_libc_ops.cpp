@@ -165,10 +165,10 @@ OptString HSLLocaleLibcOps::strip_suffix(const OptString& str, const OptString& 
 }
 
 int64_t HSLLocaleLibcOps::strpos(const OptString& haystack, const OptString& needle, int64_t offset) const {
+  offset = normalize_offset(offset, haystack.length());
   if (needle.empty() || haystack.empty()) {
     return -1;
   }
-  offset = normalize_offset(offset, haystack.length());
   auto pos = HHVM_FN(strpos)(haystack, needle, offset);
   if (pos.m_type == KindOfBoolean) {
     return -1;
@@ -177,13 +177,13 @@ int64_t HSLLocaleLibcOps::strpos(const OptString& haystack, const OptString& nee
 }
 
 int64_t HSLLocaleLibcOps::strrpos(const OptString& haystack, const OptString& needle, int64_t offset) const {
-  if (needle.empty() || haystack.empty()) {
-    return -1;
-  }
   // Don't store the normalized version, just validate the bounds: strrpos
   // has special behavior:
   // https://github.com/facebook/hhvm/pull/8847
   normalize_offset(offset, haystack.length());
+  if (needle.empty() || haystack.empty()) {
+    return -1;
+  }
   auto pos = HHVM_FN(strrpos)(haystack, needle, offset);
   if (pos.m_type == KindOfBoolean) {
     return -1;
@@ -192,10 +192,10 @@ int64_t HSLLocaleLibcOps::strrpos(const OptString& haystack, const OptString& ne
 }
 
 int64_t HSLLocaleLibcOps::stripos(const OptString& haystack, const OptString& needle, int64_t offset) const {
+  offset = normalize_offset(offset, haystack.length());
   if (needle.empty() || haystack.empty()) {
     return -1;
   }
-  offset = normalize_offset(offset, haystack.length());
   auto pos = HHVM_FN(stripos)(haystack, needle, offset);
   if (pos.m_type == KindOfBoolean) {
     return -1;
@@ -204,11 +204,11 @@ int64_t HSLLocaleLibcOps::stripos(const OptString& haystack, const OptString& ne
 }
 
 int64_t HSLLocaleLibcOps::strripos(const OptString& haystack, const OptString& needle, int64_t offset) const {
+  // As for strrpos, just validate bounds, don't store/use normalized value
+  normalize_offset(offset, haystack.length());
   if (needle.empty() || haystack.empty()) {
     return -1;
   }
-  // As for strrpos, just validate bounds, don't store/use normalized value
-  normalize_offset(offset, haystack.length());
   auto pos = HHVM_FN(strripos)(haystack, needle, offset);
   if (pos.m_type == KindOfBoolean) {
     return -1;
