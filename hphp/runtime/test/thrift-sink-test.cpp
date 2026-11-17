@@ -135,8 +135,8 @@ struct ThriftSinkTest : testing::Test {
   bool oldFastPath = false;
 };
 
-TEST(ThriftSinkConfig, DisabledByDefault) {
-  EXPECT_FALSE(Cfg::Eval::EnableThriftSinkBufferedReadFastPath);
+TEST(ThriftSinkConfig, EnabledByDefault) {
+  EXPECT_TRUE(Cfg::Eval::EnableThriftSinkBufferedReadFastPath);
 }
 
 enum class Reply { Credits, Zero, Final, EmptyFinal, EncodedError, Error };
