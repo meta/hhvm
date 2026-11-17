@@ -29,8 +29,12 @@ class TestNice(unittest.TestCase):
         self.assertRegex(stderr, "refusing to start")
 
     def test_failing_to_start_when_nice_foreground(self) -> None:
+        # The `skipIf` on the class does not stop the type check of this method.
+        # On Windows, the type checker does not check the `elif` branch.
+        if sys.platform == "win32":
+            self.skipTest("N/A on windows")
         # `nice` adds 10, and watchman only refuses to start above 0.
-        if os.nice(0) + 10 <= 0:
+        elif os.nice(0) + 10 <= 0:
             self.skipTest(
                 f"nice can't lower watchman below the default from {os.nice(0)}"
             )
