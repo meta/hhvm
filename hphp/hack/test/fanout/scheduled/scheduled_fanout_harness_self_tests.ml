@@ -663,7 +663,7 @@ let test_rejects_unfinished_cancelled_check () =
 
 let () =
   Daemon.check_entry_point ();
-  Unit_test.run_all
+  let tests =
     [
       ("evict_decls", test_evict_decls);
       ("change_after_indexing", test_change_after_indexing);
@@ -694,3 +694,13 @@ let () =
         test_rejects_unfinished_cancelled_check );
       ("initialized_parent", test_initialized_parent);
     ]
+  in
+  let tests =
+    match Array.to_list Sys.argv with
+    | [_] -> tests
+    | [_; (("0" | "1" | "2" | "3") as shard)] ->
+      let shard = int_of_string shard in
+      List.filteri tests ~f:(fun index _ -> index mod 4 = shard)
+    | _ -> invalid_arg "Expected a harness self-test shard from 0 to 3"
+  in
+  Unit_test.run_all tests

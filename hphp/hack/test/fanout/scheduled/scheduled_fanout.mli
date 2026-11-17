@@ -88,7 +88,7 @@ type initialization =
           are queued for the first iteration; there is no baseline check.
 
           Requires HH_DISTC_PATH and WORKER_PATH, as supplied by the
-          saved_state_tests Buck target. *)
+          saved_state_self_tests Buck target. *)
   | Saved_state_with_loading_schedule of {
       before_dirty_snapshot: action list;
           (** Edits included in the saved-state loader's dirty-file snapshot. *)

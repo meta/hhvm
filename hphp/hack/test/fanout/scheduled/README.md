@@ -38,5 +38,15 @@ to remove the wrapper and keep the correctness check.
 Run the harness self-tests with:
 
 ```sh
-buck test @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/test/fanout/scheduled:harness_tests
+buck test @fbcode//mode/dev-nosan-lg \
+  fbcode//hphp/hack/test/fanout/scheduled:harness_self_tests_0 \
+  fbcode//hphp/hack/test/fanout/scheduled:harness_self_tests_1 \
+  fbcode//hphp/hack/test/fanout/scheduled:harness_self_tests_2 \
+  fbcode//hphp/hack/test/fanout/scheduled:harness_self_tests_3
+```
+
+Run the saved-state self-tests with:
+
+```sh
+buck test @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/test/fanout/scheduled:saved_state_self_tests
 ```
