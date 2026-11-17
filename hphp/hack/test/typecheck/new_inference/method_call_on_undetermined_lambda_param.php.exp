@@ -2,7 +2,7 @@ error: Typing[4297] Was expecting an object but type is unknown [1]
 -> It is unknown because type parameter `T` of `just_return_it` could not be determined. Please add explicit type parameters to the invocation of `just_return_it` [2]
 ->   via this generic `T` [3]
 
-lambda_tyvar.php:7:31
+method_call_on_undetermined_lambda_param.php:7:31
 2 | // Copyright 2004-present Facebook. All Rights Reserved.
 3 | 
 4 | function just_return_it<T>((function(T):void) $f):(function(T):void) { return $f; }
@@ -19,7 +19,7 @@ error: Typing[4297] Was expecting an object but type is unknown [1]
 -> It is unknown because type parameter `T` of `just_return_it` could not be determined. Please add explicit type parameters to the invocation of `just_return_it` [2]
 ->   via this generic `T` [3]
 
-lambda_tyvar.php:8:42
+method_call_on_undetermined_lambda_param.php:8:42
  2 | // Copyright 2004-present Facebook. All Rights Reserved.
  3 | 
  4 | function just_return_it<T>((function(T):void) $f):(function(T):void) { return $f; }

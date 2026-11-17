@@ -1,6 +1,6 @@
 error: Naming[2129] Type access is only valid for a class, `self`, or `this`. To relate type parameters and type constants, you likely want to use the 'with refinement' feature instead. [1]
 
-t30337175.php:14:54
+type_constant_of_tparam_with_two_bounds_T30337175.php:14:54
 12 | }
 13 | function expectString(string $x):void { }
 14 | function foo<T as E as D, Tx>(Tx $x):void where Tx = T::Tc {
@@ -16,7 +16,7 @@ error: Typing[4323] Some type arguments violate their constraints [1]
 ->   resulting from accessing the type constant 'Tc' [3]
 ->   on an object of type E [6]
 
-t30337175.php:18:3
+type_constant_of_tparam_with_two_bounds_T30337175.php:18:3
  6 | }
  7 | class D extends C {
  8 |   const type Tc = string;
@@ -46,7 +46,7 @@ error: Typing[4323] Some type arguments violate their constraints [1]
 ->   resulting from accessing the type constant 'Tc' [3]
 ->   on an object of type D [6]
 
-t30337175.php:18:3
+type_constant_of_tparam_with_two_bounds_T30337175.php:18:3
  6 | }
  7 | class D extends C {
  8 |   const type Tc = string;

@@ -4,7 +4,7 @@ error: Typing[4323] Invalid argument [1]
 -> Expected `num` [3]
 -> But got `vec<int>` [1]
 
-t22199694.php:12:15
+coalesce_in_arg_violates_tparam_bound_T22199694.php:12:15
  3 | 
  4 | abstract final class A1 {
  5 |   public static function max<T as num>(T $first_number): T {
@@ -25,7 +25,7 @@ error: Typing[4110] Invalid argument [1]
 ->   via this generic `T` [3]
 -> But got `vec<(int | (nonnull & dynamic))>` [1]
 
-t22199694.php:12:15
+coalesce_in_arg_violates_tparam_bound_T22199694.php:12:15
  3 | 
  4 | abstract final class A1 {
  5 |   public static function max<T as num>(T $first_number): T {

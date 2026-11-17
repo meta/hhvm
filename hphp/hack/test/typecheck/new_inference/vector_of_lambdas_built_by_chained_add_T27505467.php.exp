@@ -2,7 +2,7 @@ error: Typing[4053] No instance method `foo` in `D` [1]
 -> This is why I think it is an object of type D [2]
 -> Declaration of `D` is here [3]
 
-t27505467.php:15:7
+vector_of_lambdas_built_by_chained_add_T27505467.php:15:7
  5 |   public function foo():void { }
  6 | }
  7 | class D {

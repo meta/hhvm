@@ -2,7 +2,7 @@ error: Typing[4110] Typing error [1]
 -> Expected `arraykey` because only array keys can be used to index into a `Map`, `dict`, `darray`, `Set`, or `keyset` [2]
 -> But got `B` [3]
 
-t28704048.php:14:8
+index_dict_with_object_from_branches_T28704048.php:14:8
 10 |     $y = new A();
 11 |   } else {
 12 |     $y = new B();

@@ -2,7 +2,7 @@ error: Typing[4110] Invalid return type [1]
 -> Expected `int` [2]
 -> But got `string` [3]
 
-t29284550.php:15:24
+inline_lambda_arg_with_super_bound_T29284550.php:15:24
 12 | }
 13 | 
 14 | function breakit(): <<__Soft>> int {

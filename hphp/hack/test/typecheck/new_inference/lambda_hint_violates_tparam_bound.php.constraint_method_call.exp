@@ -1,10 +1,10 @@
-error: Typing[4323] Invalid argument [1]
+error: Typing[4323] Typing error [1]
 -> `T` is a constrained type parameter [2]
 -> This type constraint is violated [3]
 -> Expected `I` [3]
 -> But got `C` [4]
 
-lambda_constraint_bad.php:18:15
+lambda_hint_violates_tparam_bound.php:18:3
  9 | }
 10 | class C { }
 11 | class Wrap<T as I> extends B<T> {
@@ -16,7 +16,7 @@ lambda_constraint_bad.php:18:15
 16 | function testit(): void {
 17 |   $w = new Wrap((C $x) ==> 5);
 18 |   $w->breakit(new C());
-   |               ^^^^^^^ [1]
+   |   ^^^^^^^^^^^^^^^^^^^^ [1]
    |                   ^ [4]
 19 | }
 

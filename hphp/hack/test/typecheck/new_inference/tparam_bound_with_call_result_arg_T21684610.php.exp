@@ -4,7 +4,7 @@ error: Typing[4323] Invalid argument [1]
 -> Expected `I1<_>` [3]
 -> But got `int` [1]
 
-t21684610.php:23:27
+tparam_bound_with_call_result_arg_T21684610.php:23:27
  7 | 
  8 | abstract class A1 {
  9 |   final public static function do<T, Ti as I1<T>>(
@@ -26,7 +26,7 @@ error: Typing[4323] Invalid argument [1]
 -> Expected `I1<_>` [3]
 -> But got `int` [1]
 
-t21684610.php:27:16
+tparam_bound_with_call_result_arg_T21684610.php:27:16
  7 | 
  8 | abstract class A1 {
  9 |   final public static function do<T, Ti as I1<T>>(

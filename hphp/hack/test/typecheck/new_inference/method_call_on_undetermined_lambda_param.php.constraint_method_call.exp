@@ -2,7 +2,7 @@ error: Typing[4053] No instance method `this_method_does_not_exist` in `string` 
 -> This is why I think it is an object of type HH\string [2]
 -> Declaration of `string` is here [3]
 
-lambda_tyvar.php:7:35
+method_call_on_undetermined_lambda_param.php:7:35
  5 | 
  6 | function break_it(string $ss):void {
  7 |   $g1 = just_return_it($y ==> $y->this_method_does_not_exist());

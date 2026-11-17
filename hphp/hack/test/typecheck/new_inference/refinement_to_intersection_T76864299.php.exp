@@ -1,6 +1,6 @@
 warning: Warn[12011] This `as` assertion will always succeed and hence is redundant. The expression on the left has a type `(T & J)` which is a subtype of `J`. [1]
 
-t76864299.php:9:8
+refinement_to_intersection_T76864299.php:9:8
  7 |   invariant($q is J, 'haha');
  8 | 
  9 |   $q = $q as J;
@@ -12,7 +12,7 @@ error: Typing[4110] Invalid return type [1]
 -> Expected `T` [2]
 -> But got `J` [3]
 
-t76864299.php:10:10
+refinement_to_intersection_T76864299.php:10:10
  4 | interface J {  }
  5 | 
  6 | function bar<T>(T $q, J $j): T {

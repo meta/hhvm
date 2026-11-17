@@ -4,7 +4,7 @@ error: Typing[4110] Invalid return type [1]
 -> This type argument to `Vector` must match exactly (it is invariant) [3]
 -> This type argument to `Vector` must match exactly (it is invariant) [3]
 
-t28246566.php:12:12
+vector_literal_stored_in_wider_property_T28246566.php:12:12
  4 | class C {
  5 |   public function __construct(
  6 |     private Vector<arraykey> $y,

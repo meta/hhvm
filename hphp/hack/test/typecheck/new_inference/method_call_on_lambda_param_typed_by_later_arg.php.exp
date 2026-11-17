@@ -3,7 +3,7 @@ error: Typing[4297] Was expecting an object but type is unknown [1]
 ->   via this generic `T` [3]
 -> This type argument to `Func` only allows supertypes (it is contravariant) [2]
 
-lambda_with_invoke.php:21:36
+method_call_on_lambda_param_typed_by_later_arg.php:21:36
  2 | // Copyright 2004-present Facebook. All Rights Reserved.
  3 | 
  4 | function add<T>(vec<Func<T>> $rules, T $val):void {
