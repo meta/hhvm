@@ -7,9 +7,9 @@
 # Usage: package-linux.sh BUILD_DIR RELEASE OUT_DIR
 #
 # Packages the watchman and watchmanctl that a Linux build linked with
-# prefer-static.cmake as watchman-RELEASE-linux.zip, a .deb and an .rpm in
-# OUT_DIR. They install to /usr/local, where the binaries look for their state
-# directory.
+# prefer-static.cmake as a zip, a .deb and an .rpm in OUT_DIR, for the CPU
+# architecture of this machine. They install to /usr/local, where the binaries
+# look for their state directory.
 set -euo pipefail
 
 build=$1
@@ -24,7 +24,16 @@ for sig in 1 2 3 13 15; do eval "trap 'exit $((sig + 128))' $sig"; done
 trap 'rc=$?; set +e; rm -rf "$tmp"; exit $rc' EXIT
 tmp=$(mktemp -d) || exit 1
 
-name="watchman-$release-linux"
+arch=$(dpkg --print-architecture)
+# Only the x86-64 zip has no architecture in its name: installers download it
+# by that name.
+if [ "$arch" = amd64 ]; then
+  name="watchman-$release-linux"
+  loader='ld-linux-x86-64\.so\.2'
+else
+  name="watchman-$release-linux-$arch"
+  loader='ld-linux-aarch64\.so\.1'
+fi
 tree="$tmp/$name"
 # install.md and other installers copy lib/, so the zip keeps it, empty.
 mkdir -p "$tree/bin" "$tree/lib"
@@ -32,7 +41,7 @@ cp "$build/bin/watchman" "$build/watchman/cli/release/watchmanctl" "$tree/bin/"
 strip "$tree"/bin/*
 
 # What every supported distribution has.
-allowed='libstdc\+\+\.so\.6|libm\.so\.6|libgcc_s\.so\.1|libc\.so\.6|ld-linux-x86-64\.so\.2'
+allowed="libstdc\+\+\.so\.6|libm\.so\.6|libgcc_s\.so\.1|libc\.so\.6|$loader"
 for bin in "$tree"/bin/*; do
   if readelf -d "$bin" | grep -E '\((RPATH|RUNPATH)\)'; then
     echo "$bin has an RPATH or RUNPATH" >&2
@@ -63,9 +72,10 @@ touch "$tmp/shlibs/debian/control"
 depends=$(cd "$tmp/shlibs" && dpkg-shlibdeps -O "$deb"/usr/local/bin/* | sed -n 's/^shlibs:Depends=//p')
 control=$(<"$deb/DEBIAN/control")
 control=${control//%VERSION%/$version}
+control=${control//%ARCH%/$arch}
 control=${control//%DEPENDS%/$depends}
 printf '%s\n' "$control" > "$deb/DEBIAN/control"
-dpkg-deb --root-owner-group -b "$deb" "$out/watchman_${release}_amd64.deb"
+dpkg-deb --root-owner-group -b "$deb" "$out/watchman_${release}_${arch}.deb"
 
 rpmbuild -bb \
   --define "_topdir $tmp/rpmbuild" \

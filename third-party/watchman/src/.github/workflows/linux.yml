@@ -25,7 +25,15 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runs-on: ubuntu-24.04
+          arch: x64
+        - runs-on: ubuntu-24.04-arm
+          arch: arm64
+    runs-on: ${{ matrix.runs-on }}
     timeout-minutes: 180
     env:
       SCCACHE_GHA_ENABLED: "on"
@@ -105,7 +113,7 @@ jobs:
     - uses: actions/upload-artifact@v6
       if: inputs.release != ''
       with:
-        name: linux-packages
+        name: linux-${{ matrix.arch }}-packages
         path: _packages
 
     - name: Show sccache stats

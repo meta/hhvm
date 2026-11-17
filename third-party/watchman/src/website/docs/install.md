@@ -103,7 +103,7 @@ The macOS release runs on Apple Silicon Macs with macOS 15 or newer.
 2. It will be named something like `watchman-vYYYY.MM.DD.00-macos.zip`
 
 ```bash
-$ unzip watchman-*-macos.zip
+$ unzip watchman-vYYYY.MM.DD.00-macos.zip
 $ cd watchman-vYYYY.MM.DD.00-macos
 $ xattr -dr com.apple.quarantine bin
 $ sudo mkdir -p /usr/local/bin /usr/local/var/run/watchman
@@ -133,8 +133,8 @@ The .rpm works on Fedora 40, RHEL 10 and newer.
 
 1. From the
    [latest release](https://github.com/meta/watchman/releases/latest),
-   download the .rpm
-2. `sudo dnf install ./watchman-$VERSION-1.x86_64.rpm`
+   download the .rpm for your CPU: `x86_64`, or `aarch64` for 64-bit ARM
+2. `sudo dnf install ./watchman-$VERSION-1.x86_64.rpm` (or `.aarch64.rpm`)
 3. Confirm successful installation by running `watchman version`
 
 ### Ubuntu and Debian (Prebuilt Deb)
@@ -146,8 +146,8 @@ The .deb works on Ubuntu 24.04, Debian 13 and newer.
 
 1. From the
    [latest release](https://github.com/meta/watchman/releases/latest),
-   download the .deb
-2. `sudo apt install ./watchman_vYYYY.MM.DD.00_amd64.deb`
+   download the .deb for your CPU: `amd64`, or `arm64` for 64-bit ARM
+2. `sudo apt install ./watchman_vYYYY.MM.DD.00_amd64.deb` (or `_arm64.deb`)
 3. Confirm successful installation by running `watchman version`
 
 ### Prebuilt Binaries
@@ -170,11 +170,12 @@ some or all of the binaries may not be present for any given tag.
 
 1. Download and extract the release for your system from the
    [latest release](https://github.com/meta/watchman/releases/latest)
-2. It will be named something like `watchman-vYYYY.MM.DD.00-linux.zip`
+2. It will be named something like `watchman-vYYYY.MM.DD.00-linux.zip`, or
+   `watchman-vYYYY.MM.DD.00-linux-arm64.zip` for 64-bit ARM
 
 ```bash
-$ unzip watchman-*-linux.zip
-$ cd watchman-vYYYY.MM.DD.00-linux
+$ unzip watchman-vYYYY.MM.DD.00-linux.zip  # or watchman-vYYYY.MM.DD.00-linux-arm64.zip
+$ cd watchman-vYYYY.MM.DD.00-linux  # or watchman-vYYYY.MM.DD.00-linux-arm64
 $ sudo mkdir -p /usr/local/bin /usr/local/var/run/watchman
 $ sudo cp bin/* /usr/local/bin
 $ sudo chmod 755 /usr/local/bin/watchman

@@ -1,6 +1,6 @@
 Package: watchman
 Version: %VERSION%
-Architecture: amd64
+Architecture: %ARCH%
 Maintainer: Meta Platforms, Inc.
 Standards-Version: 4.6.1.1
 Description: A file watching service
