@@ -19,6 +19,7 @@ setup(
     ],
     zip_safe=True,
     scripts=[
+        "bin/watchman-diag",
         "bin/watchman-make",
         "bin/watchman-wait",
         "bin/watchman-replicate-subscription",

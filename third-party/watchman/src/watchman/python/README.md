@@ -8,8 +8,8 @@ This directory contains the Watchman client for Python.
 pip install pywatchman
 ```
 
-This also installs `watchman-wait`, `watchman-make` and
-`watchman-replicate-subscription`.
+This also installs `watchman-wait`, `watchman-make`,
+`watchman-replicate-subscription` and `watchman-diag`.
 
 ## Build
 
