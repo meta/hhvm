@@ -22,34 +22,22 @@ understand what actions will and will not be tolerated.
 
 ### Getting Started
 
-You need to be able to build watchman from source and run its test suite. You
-will need:
-
-- python
-- automake
-- autoconf
-- cmake
-- libtool (or glibtool on macOS)
-- libpcre
-- libfolly (only needed if building the cppclient library)
-- nodejs (for fb-watchman)
-
-The build time dependencies can be installed by running
-`getdeps.py --install-deps`. This is run for you when you run `autogen.sh` in
-the example below:
+You need the [Watchman repository](https://github.com/meta/watchman/), and to be
+able to build watchman from source and run its test suite.
+[Building from Source](install.md#building-from-source) lists what to install
+first:
 
 ```bash
-$ git clone https://github.com/meta/watchman.git
 $ cd watchman
-$ ./autogen.sh
-$ make
+$ cmake -B _build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+$ cmake --build _build
 ```
 
-After making a change, run the integration tests to make sure that things are
-still working well before you submit your pull request:
+After making a change, run the tests to make sure that things are still working
+well before you submit your pull request:
 
 ```bash
-$ make integration
+$ ctest --test-dir _build --output-on-failure -j 8
 ```
 
 We'll probably ask you to augment the test suite to cover the functionality that

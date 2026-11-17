@@ -150,24 +150,6 @@ The .deb works on Ubuntu 24.04, Debian 13 and newer.
 2. `sudo apt install ./watchman_vYYYY.MM.DD.00_amd64.deb`
 3. Confirm successful installation by running `watchman version`
 
-### <a name="building-from-source"></a> Building from Source
-
-Download a
-[source snapshot from the latest release](https://github.com/meta/watchman/releases/latest)
-or [clone from GitHub](https://github.com/meta/watchman/).
-
-```bash
-$ cd watchman
-
-# Ensure Cargo is installed. Either through your OS's package manager or https://rustup.rs/
-$ cargo version
-
-# Optionally, to save time, you can ask Watchman's build process to install system dependencies
-$ sudo ./install-system-packages.sh
-
-$ ./autogen.sh
-```
-
 ### Prebuilt Binaries
 
 **Note**: Our binaries are built from the main branch only. We don't provide
@@ -198,6 +180,68 @@ $ sudo cp bin/* /usr/local/bin
 $ sudo chmod 755 /usr/local/bin/watchman
 $ sudo chmod 2777 /usr/local/var/run/watchman
 ```
+
+## <a name="building-from-source"></a> Building from Source
+
+You need the [Watchman repository](https://github.com/meta/watchman/) or a
+[source snapshot from the latest release](https://github.com/meta/watchman/releases/latest).
+
+The build needs CMake, Ninja, a C++20 compiler, Python 3 with setuptools, and
+Cargo, either from your OS's package manager or https://rustup.rs/.
+
+It uses git to download folly, fbthrift and the other Meta libraries that
+Watchman uses from GitHub, and compiles them, so the first build takes a while.
+
+### Linux
+
+These are the packages for Ubuntu and Debian:
+
+```bash
+$ sudo apt-get install -y cmake g++ git ninja-build \
+    libevent-dev libgflags-dev libpcre2-dev libsodium-dev libssl-dev \
+    libxxhash-dev libzstd-dev python3-dev python3-setuptools zlib1g-dev
+$ cd watchman
+$ cmake -B _build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+$ cmake --build _build
+```
+
+### macOS
+
+```bash
+$ brew install cmake gflags libevent libsodium ninja openssl@4 pcre2 pkgconf xxhash zstd
+$ python3 -m venv _venv
+$ _venv/bin/pip install setuptools
+$ cd watchman
+$ cmake -B _build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DPython3_EXECUTABLE="$PWD/../_venv/bin/python"
+$ cmake --build _build
+```
+
+### Windows
+
+The steps in
+[windows.yml](https://github.com/meta/watchman/blob/main/.github/workflows/windows.yml)
+build Watchman with Visual Studio 2022 and vcpkg.
+
+### Testing and Installing
+
+```bash
+$ ctest --test-dir _build --output-on-failure -j 8
+```
+
+The build puts `watchman` in `_build/bin` and `watchmanctl` in
+`_build/watchman/cli/release`. On Linux and macOS, install them the same way as
+the prebuilt binaries:
+
+```bash
+$ sudo mkdir -p /usr/local/bin /usr/local/var/run/watchman
+$ sudo cp _build/bin/watchman _build/watchman/cli/release/watchmanctl /usr/local/bin
+$ sudo chmod 2777 /usr/local/var/run/watchman
+```
+
+A build from a source snapshot has no git history to take its version from. Add
+`-DWATCHMAN_VERSION_OVERRIDE=YYYY.MM.DD.00` to the first `cmake` command,
+otherwise `watchman --version` prints `0.0.0`.
 
 ## System Specific Preparation
 
