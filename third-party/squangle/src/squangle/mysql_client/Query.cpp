@@ -82,6 +82,10 @@ bool QueryArgument::isInt() const {
   return std::holds_alternative<int64_t>(value_);
 }
 
+bool QueryArgument::isUInt() const {
+  return std::holds_alternative<uint64_t>(value_);
+}
+
 bool QueryArgument::isTwoTuple() const {
   return std::holds_alternative<QualifiedColumn>(value_);
 }
@@ -118,7 +122,7 @@ folly::fbstring QueryArgument::asString() const {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (
             std::is_same_v<T, double> || std::is_same_v<T, int64_t> ||
-            std::is_same_v<T, folly::fbstring>) {
+            std::is_same_v<T, uint64_t> || std::is_same_v<T, folly::fbstring>) {
           return folly::to<folly::fbstring>(arg);
         }
 
@@ -139,6 +143,8 @@ std::string_view QueryArgument::typeName() const {
           return "double";
         } else if constexpr (std::is_same_v<T, int64_t>) {
           return "int64_t";
+        } else if constexpr (std::is_same_v<T, uint64_t>) {
+          return "uint64_t";
         } else if constexpr (std::is_same_v<T, folly::fbstring>) {
           return "string";
         } else if constexpr (std::is_same_v<T, std::monostate>) {
@@ -176,6 +182,10 @@ double QueryArgument::getDouble() const {
 
 int64_t QueryArgument::getInt() const {
   return std::get<int64_t>(value_);
+}
+
+uint64_t QueryArgument::getUInt() const {
+  return std::get<uint64_t>(value_);
 }
 
 const Query& QueryArgument::getQuery() const {

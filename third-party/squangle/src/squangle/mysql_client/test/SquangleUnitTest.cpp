@@ -1134,6 +1134,139 @@ TEST_F(QueryTest, CheckedQueryValueRowMatrixWithSubQueryCell) {
   EXPECT_EQ(checked.renderInsecure(), legacy.renderInsecure());
 }
 
+TEST_F(QueryTest, QueryArgumentStoresUnsignedTypesAsUInt) {
+  constexpr uint64_t kHighBit = 17806372450682679996ULL;
+  enum class Mask : uint64_t { High = kHighBit };
+  enum class Small : uint8_t { One = 1 };
+
+  const QueryArgument high(kHighBit);
+  EXPECT_TRUE(high.isUInt());
+  EXPECT_FALSE(high.isInt());
+  EXPECT_EQ(high.getUInt(), kHighBit);
+  EXPECT_EQ(high.typeName(), "uint64_t");
+  EXPECT_EQ(high.asString(), std::to_string(kHighBit));
+
+  // The C++ type decides, not the value.
+  const QueryArgument small(uint64_t{42});
+  EXPECT_TRUE(small.isUInt());
+  EXPECT_FALSE(small.isInt());
+  EXPECT_EQ(small.getUInt(), 42);
+  EXPECT_TRUE(QueryArgument(uint32_t{7}).isUInt());
+  EXPECT_TRUE(QueryArgument(size_t{7}).isUInt());
+  EXPECT_TRUE(QueryArgument(Mask::High).isUInt());
+  EXPECT_TRUE(QueryArgument(Small::One).isUInt());
+  EXPECT_TRUE(QueryArgument(std::optional<uint64_t>{kHighBit}).isUInt());
+
+  EXPECT_TRUE(QueryArgument(int64_t{-1}).isInt());
+  EXPECT_TRUE(QueryArgument(7).isInt());
+  EXPECT_TRUE(QueryArgument(true).isInt());
+  EXPECT_TRUE(QueryArgument('a').isInt());
+}
+
+TEST_F(QueryTest, HighBitUnsignedRendersUnsignedUnderEverySpecifier) {
+  // A uint64_t above INT64_MAX renders as unsigned under every integer path,
+  // not only %u: %d, %m, %V cells and pair-list values included.
+  constexpr uint64_t kHighBit = 17806372450682679996ULL;
+  const auto high = std::to_string(kHighBit);
+
+  EXPECT_EQ(Query::checked("%d", kHighBit).renderInsecure(), high);
+  EXPECT_EQ(Query::checked("%u", kHighBit).renderInsecure(), high);
+  EXPECT_EQ(Query::checked("%m", kHighBit).renderInsecure(), high);
+  EXPECT_EQ(Query::checked("x%=d", kHighBit).renderInsecure(), "x = " + high);
+  EXPECT_EQ(Query::checked("x%=u", kHighBit).renderInsecure(), "x = " + high);
+  EXPECT_EQ(
+      Query::checked("%Ld", std::vector<uint64_t>{1, kHighBit})
+          .renderInsecure(),
+      "1, " + high);
+  EXPECT_EQ(
+      Query::checked("%Lm", std::vector<uint64_t>{kHighBit}).renderInsecure(),
+      high);
+  EXPECT_EQ(
+      Query::checked(
+          "%W", std::vector<ArgumentPair>{{"k", QueryArgument(kHighBit)}})
+          .renderInsecure(),
+      "`k` = " + high);
+  EXPECT_EQ(
+      Query::checked(
+          "%U", std::vector<ArgumentPair>{{"k", QueryArgument(kHighBit)}})
+          .renderInsecure(),
+      "`k` = " + high);
+  EXPECT_EQ(
+      Query::checked(
+          "%LO",
+          std::vector<ArgumentPair>{
+              {"a", QueryArgument(kHighBit)}, {"b", QueryArgument(1)}})
+          .renderInsecure(),
+      "(`a` = " + high + " OR `b` = 1)");
+  EXPECT_EQ(
+      Query::checked(
+          "%LA",
+          std::vector<ArgumentPair>{
+              {"a", QueryArgument(kHighBit)}, {"b", QueryArgument(1)}})
+          .renderInsecure(),
+      "(`a` = " + high + " AND `b` = 1)");
+  enum class Mask : uint64_t { High = kHighBit };
+  EXPECT_EQ(Query::checked("%d", Mask::High).renderInsecure(), high);
+  EXPECT_EQ(
+      Query("%d", kHighBit).renderInsecure(),
+      Query::checked("%d", kHighBit).renderInsecure());
+
+  // %s takes strings only; an unsigned value is rejected, as an int is.
+  EXPECT_THROW(Query("%s", kHighBit).renderInsecure(), std::invalid_argument);
+
+  // A signed value keeps its sign everywhere except %u, which reinterprets it.
+  constexpr int64_t kNegative = -640371623026871616;
+  EXPECT_EQ(
+      Query::checked("%d", kNegative).renderInsecure(),
+      std::to_string(kNegative));
+  EXPECT_EQ(
+      Query::checked("%u", kNegative).renderInsecure(),
+      std::to_string(static_cast<uint64_t>(kNegative)));
+}
+
+TEST_F(QueryTest, ValueRowUnsignedColumnRendersUnsigned) {
+  // A %u column renders exactly like a plain %u, including reinterpreting a
+  // negative signed value (e.g. a hash held in a Thrift i64) as unsigned.
+  constexpr uint64_t kHighBit = 17806372450682679996ULL;
+  constexpr auto kNegative = static_cast<int64_t>(kHighBit);
+  std::vector<ValueRow<"%d %u">> rows;
+  rows.push_back({1, kHighBit});
+  rows.push_back({2, ~uint64_t{0}});
+  rows.push_back({3, std::optional<uint64_t>{kHighBit}});
+  rows.push_back({4, std::optional<uint64_t>{}});
+  rows.push_back({5, 42u});
+  rows.push_back({6, kNegative});
+  rows.push_back({7, std::optional<int64_t>{kNegative}});
+  rows.push_back({8, int64_t{7}});
+
+  const auto expected = fmt::format(
+      "INSERT INTO `t` VALUES (1, {0}), (2, 18446744073709551615), (3, {0}), "
+      "(4, NULL), (5, 42), (6, {0}), (7, {0}), (8, 7)",
+      std::to_string(kHighBit));
+  auto checked = Query::checked("INSERT INTO %T VALUES %V", "t", rows);
+  auto legacy = Query("INSERT INTO %T VALUES %V", "t", rows);
+  EXPECT_EQ(checked.renderInsecure(), expected);
+  EXPECT_EQ(legacy.renderInsecure(), expected);
+
+  // A %d column keeps the value's own sign.
+  std::vector<ValueRow<"%d">> signedRows;
+  signedRows.push_back({kNegative});
+  EXPECT_EQ(
+      Query::checked("VALUES %V", signedRows).renderInsecure(),
+      fmt::format("VALUES ({})", kNegative));
+}
+
+TEST_F(QueryTest, DynamicHighBitUnsignedStaysSigned) {
+  // folly::dynamic holds only int64_t, so an unsigned value above INT64_MAX is
+  // already negative by the time squangle sees it.
+  constexpr uint64_t kHighBit = 17806372450682679996ULL;
+  const folly::dynamic dyn = kHighBit;
+  EXPECT_EQ(
+      Query("%d", dyn).renderInsecure(),
+      std::to_string(static_cast<int64_t>(kHighBit)));
+  EXPECT_EQ(Query("%u", dyn).renderInsecure(), std::to_string(kHighBit));
+}
+
 TEST_F(QueryTest, CheckedQueryRendersIntegers) {
   // Absolute (not parity) checks: pin %d/%u rendering. %u must render as an
   // unsigned value — a high-bit-set value must not come out negative.
@@ -1402,9 +1535,6 @@ TEST_F(QueryTest, CheckedQueryOptionalStringLikeRendersAsString) {
 }
 
 TEST_F(QueryTest, CheckedQueryUnsignedHighBitRoundTrip) {
-  // uint64_t is stored as int64_t (the variant has no uint64_t alternative), so
-  // a high-bit value is stored negative. %u casts back to uint64_t on render,
-  // so it round-trips correctly...
   constexpr auto kMax = std::numeric_limits<uint64_t>::max();
   EXPECT_EQ(
       Query::checked("SELECT %u", kMax).renderInsecure(),
@@ -1413,9 +1543,9 @@ TEST_F(QueryTest, CheckedQueryUnsignedHighBitRoundTrip) {
       Query::checked("SELECT %u", std::optional<uint64_t>{kMax})
           .renderInsecure(),
       "SELECT 18446744073709551615");
-  // ...while %d is signed by design: the same bits render negative. Callers
-  // must use %u for unsigned values >= 2^63.
-  EXPECT_EQ(Query::checked("SELECT %d", kMax).renderInsecure(), "SELECT -1");
+  EXPECT_EQ(
+      Query::checked("SELECT %d", kMax).renderInsecure(),
+      "SELECT 18446744073709551615");
 }
 
 TEST_F(QueryTest, DynamicBoolRendersAsInt) {

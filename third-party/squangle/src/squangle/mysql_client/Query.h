@@ -46,6 +46,11 @@
 //      Boolean is supported for %d and %u and
 //      renders as 0/1: MySQL has no boolean type (BOOL is an alias for
 //      tinyint(1)), so QueryArgument has no bool alternative.
+//      Integers render by their own signedness under every integer
+//      specifier, so an unsigned value above INT64_MAX renders unsigned
+//      under %d too. %u additionally reinterprets a negative signed value as
+//      unsigned. folly::dynamic holds only int64_t, so an unsigned value that
+//      passed through a dynamic has already become negative.
 // %m - any single value: string, integer (including bool), float, or sub-query.
 //      nullptr becomes "NULL", throws otherwise.
 // %h - a MySQL binary literal: the argument's bytes are hex-encoded and
@@ -75,8 +80,7 @@
 //       to %W)
 // %U, %W - keys and values suitable for UPDATE and WHERE clauses,
 //       respectively.  %U becomes "`col1` = val1, `col2` = val2" and %W becomes
-//       "`col1` = val1 AND `col2` = val2". Does not currently support unsigned
-//       integers.
+//       "`col1` = val1 AND `col2` = val2".
 // %q - a sub-query, rendered in place, unquoted, with no space added on
 //      either side.  %Lq renders a comma-separated list of them, which is what
 //      clauses like ON DUPLICATE KEY UPDATE need.
@@ -405,9 +409,9 @@ constexpr bool is_string_like_v = std::disjunction_v<
 template <typename T>
 constexpr bool is_value_arg_v = is_string_like_v<T> ||
     std::disjunction_v<std::is_arithmetic<std::decay_t<T>>,
-                       // Enums collapse to int64 in QueryArgument, so they are
-                       // valid %m/%=m values (and integer-specifier values via
-                       // is_any_int_v), matching legacy.
+                       // Enums are stored as their underlying integer, so they
+                       // are valid %m/%=m values (and integer-specifier values
+                       // via is_any_int_v), matching legacy.
                        std::is_enum<std::decay_t<T>>,
                        std::is_same<std::decay_t<T>, Query>,
                        std::is_same<std::decay_t<T>, std::nullptr_t>>;
@@ -449,10 +453,10 @@ constexpr bool is_null_arg_v =
     std::is_same_v<std::decay_t<T>, folly::None>;
 
 // Matches legacy QueryRenderer/QueryArgument: every integral (including bool)
-// and every enum is accepted for both %d and %u. QueryArgument collapses bool
-// and enums to int64 at construction, so by render time they are indistinguish-
-// able from a plain integer; the checked validator mirrors that here so callers
-// need not static_cast an enum to its underlying integer.
+// and every enum is accepted for both %d and %u. QueryArgument stores bool and
+// enums as plain integers at construction, so by render time they are
+// indistinguishable from one; the checked validator mirrors that here so
+// callers need not static_cast an enum to its underlying integer.
 template <typename T>
 constexpr bool is_any_int_v =
     std::is_integral_v<std::decay_t<T>> || std::is_enum_v<std::decay_t<T>>;
@@ -1425,10 +1429,16 @@ class QueryArgument {
   // to avoid this. (There is deliberately no bool alternative: bool args are
   // stored as int64_t so they render 0/1, matching MySQL, which has no boolean
   // type.)
+  //
+  // Unsigned integer types are stored as uint64_t and signed ones as int64_t,
+  // so each renders with its own signedness under every integer specifier.
+  // bool and plain char (whose signedness varies by platform) are stored as
+  // int64_t.
   std::variant<
       // monostate (implying NULL) needs to be the first entry
       std::monostate,
       int64_t,
+      uint64_t,
       double,
       folly::fbstring,
       Query,
@@ -1452,13 +1462,20 @@ class QueryArgument {
   template <
       typename T,
       typename std::enable_if<std::is_integral<T>::value, T>::type = 0>
-  /* implicit */ QueryArgument(T int_val)
-      : value_(static_cast<int64_t>(int_val)) {}
+  /* implicit */ QueryArgument(T int_val) {
+    if constexpr (
+        std::is_unsigned_v<T> && !std::is_same_v<T, bool> &&
+        !std::is_same_v<T, char>) {
+      value_ = static_cast<uint64_t>(int_val);
+    } else {
+      value_ = static_cast<int64_t>(int_val);
+    }
+  }
   template <
       typename T,
       typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
   /* implicit */ QueryArgument(T enum_val)
-      : value_(static_cast<int64_t>(enum_val)) {}
+      : QueryArgument(static_cast<std::underlying_type_t<T>>(enum_val)) {}
   /* implicit */ QueryArgument(double double_val);
 
   /* implicit */ QueryArgument(
@@ -1535,7 +1552,7 @@ class QueryArgument {
   template <typename T>
   /* implicit */ QueryArgument(const std::optional<T>& opt) {
     // Delegate to the scalar ctors so an engaged optional accepts exactly what
-    // a bare value does (integral/enum -> int64_t, floats, and the dedicated
+    // a bare value does (integral/enum -> integer, floats, and the dedicated
     // string_view/StringPiece/char* ctors). A raw `value_ = opt.value()` would
     // reject string_view/StringPiece. nullopt stays NULL (default monostate).
     // bool is integral, so it collapses to int64_t here too -- a dedicated
@@ -1573,6 +1590,8 @@ class QueryArgument {
   // accidentally adding more callsites, secondly it is easily bgs-able.
   // Also makes it explicit this might throw whereas the other constructors
   // might not.
+  // folly::dynamic stores integers as int64_t, so an unsigned value above
+  // INT64_MAX arrives here negative and is stored, and rendered, as int64_t.
   static inline QueryArgument fromDynamic(const folly::dynamic& dyn) {
     QueryArgument arg;
     arg.initFromDynamic(dyn);
@@ -1585,6 +1604,7 @@ class QueryArgument {
 
   double getDouble() const;
   int64_t getInt() const;
+  uint64_t getUInt() const;
   const Query& getQuery() const;
   const folly::fbstring& getString() const;
   const std::vector<std::pair<folly::fbstring, QueryArgument>>& getPairs()
@@ -1601,7 +1621,12 @@ class QueryArgument {
   bool isNull() const;
   bool isList() const;
   bool isDouble() const;
+  // isInt() holds for a value built from a signed type (or bool or char) and
+  // isUInt() for one built from an unsigned type, whatever the value. A
+  // folly::dynamic integer is always signed. Handle both wherever an integer
+  // is accepted.
   bool isInt() const;
+  bool isUInt() const;
   bool isTwoTuple() const;
   bool isThreeTuple() const;
   bool isAggregateColumn() const;
@@ -1669,6 +1694,11 @@ class QueryArgument {
 // rejected because %V's renderer would not hex-encode it (see
 // valid_value_row_schema). Identifier, list, and pair specifiers are likewise
 // not meaningful for a value cell and are rejected.
+//
+// %V renders cells without their column's specifier, so a %u column converts
+// its integer to uint64_t up front. That gives it the same result as a plain
+// %u, which reinterprets a negative signed value (e.g. a hash held in a Thrift
+// i64) as unsigned.
 template <detail::fixed_string Fmt>
 class ValueRow {
  public:
@@ -1700,7 +1730,7 @@ class ValueRow {
             std::make_index_sequence<sizeof...(Args)>{}))
   /* implicit */ ValueRow(Args&&... args) {
     cells_.reserve(sizeof...(Args));
-    (cells_.emplace_back(std::forward<Args>(args)), ...);
+    addCells(std::index_sequence_for<Args...>{}, std::forward<Args>(args)...);
   }
 
   const std::vector<QueryArgument>& cells() const {
@@ -1719,6 +1749,28 @@ class ValueRow {
   }
 
  private:
+  template <size_t... Is, typename... Args>
+  void addCells(std::index_sequence<Is...> /*unused*/, Args&&... args) {
+    (cells_.emplace_back(
+         toCell<kParsed.spec_char[Is]>(std::forward<Args>(args))),
+     ...);
+  }
+
+  template <char Spec, typename T>
+  static QueryArgument toCell(T&& arg) {
+    using V = std::remove_cvref_t<T>;
+    if constexpr (Spec == 'u' && detail::is_any_int_v<V>) {
+      return QueryArgument(static_cast<uint64_t>(arg));
+    } else if constexpr (Spec == 'u' && detail::is_optional_int_v<V>) {
+      if (!arg) {
+        return QueryArgument(nullptr);
+      }
+      return QueryArgument(static_cast<uint64_t>(*arg));
+    } else {
+      return QueryArgument(std::forward<T>(arg));
+    }
+  }
+
   std::vector<QueryArgument> cells_;
 };
 

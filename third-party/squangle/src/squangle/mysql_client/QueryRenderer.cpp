@@ -352,6 +352,11 @@ void QueryRenderer<StringType>::appendValue(
     } else {
       folly::toAppend(d.getInt(), s);
     }
+  } else if (d.isUInt()) {
+    if (type != 'd' && type != 'v' && type != 'm' && type != 'u') {
+      formatStringParseError(queryText, offset, type, "int");
+    }
+    folly::toAppend(d.getUInt(), s);
   } else if (d.isDouble()) {
     if (type != 'f' && type != 'v' && type != 'm') {
       formatStringParseError(queryText, offset, type, "double");
@@ -461,8 +466,8 @@ void QueryRenderer<StringType>::renderAppend(
     } else if (c == 'm') {
       // Argument value-type check: always runs (see appendValue's note) because
       // a type-erased %m argument cannot be verified at compile time.
-      if (!(param.isString() || param.isInt() || param.isDouble() ||
-            param.isNull() || param.isQuery())) {
+      if (!(param.isString() || param.isInt() || param.isUInt() ||
+            param.isDouble() || param.isNull() || param.isQuery())) {
         parseError(
             queryText,
             idx - 1,
