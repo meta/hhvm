@@ -57,7 +57,7 @@ methods for delegation.  The methods in this group are:
 
 
 ```
-<?hh // strict
+<?hh
 class C {
     public static function isOdd(int $i): bool { return $i % 2 == 1;}
 }

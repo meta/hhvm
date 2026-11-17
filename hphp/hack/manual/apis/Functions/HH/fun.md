@@ -55,7 +55,7 @@ methods for delegation.  The methods in this group are:
 
 
 ```
-<?hh // strict
+<?hh
 $v = vec["Hello", " ", "World", "!"];
 
 // Each line below prints "Hello World!"

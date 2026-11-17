@@ -58,7 +58,7 @@ methods for delegation.  The methods in this group are:
 
 
 ```
-<?hh // strict
+<?hh
 $v = Vector { Vector { 1, 2, 3 }, Vector { 1, 2 }, Vector { 1 } };
 
 // Each result returns Vector { 3, 2, 1 };
