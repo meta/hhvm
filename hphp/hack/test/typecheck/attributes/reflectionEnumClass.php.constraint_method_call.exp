@@ -13,7 +13,7 @@ reflectionEnumClass.php:18:3
  9 |   public function __construct(public int $j) {}
 10 | }
    :
-16 |   $rc = new ReflectionClass("E");
+16 |   $rc = new ReflectionClass(E::class);
 17 |   $rc->getAttributeClass(EAttr::class);
 18 |   $rc->getAttributeClass(FAttr::class);
    |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]

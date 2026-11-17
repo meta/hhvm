@@ -33,7 +33,7 @@ class ReflectionClass implements Reflector {
    */
   public string $name;
 
-  public function __construct(mixed $argument)[];
+  public function __construct(class<mixed> $argument)[];
   public static function export(mixed $argument, bool $return = false): ?string;
   public function getConstant(string $name)[]: mixed;
   public function getConstants()[]: darray<string, mixed>;
@@ -132,7 +132,11 @@ class ReflectionClass implements Reflector {
   )>;
 }
 
-class ReflectionObject extends ReflectionClass {}
+class ReflectionObject extends ReflectionClass {
+  // Closest sound narrowing available: Hack has no object typehint, so
+  // strings still typecheck here and are rejected at runtime.
+  public function __construct(nonnull $argument)[];
+}
 
 class ReflectionException extends Exception {
   use ExceptionWithPureGetMessageTrait;

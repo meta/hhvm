@@ -16,8 +16,8 @@ class Foo {
   public int $bar = 1;
 
   public function testAttr(): void {
-    (new ReflectionClass('Foo'))->getProperty('bar')->getAttributes();
-    (new ReflectionClass('Foo'))->getProperty('bar')->getAttribute('FooAttr');
+    (new ReflectionClass(Foo::class))->getProperty('bar')->getAttributes();
+    (new ReflectionClass(Foo::class))->getProperty('bar')->getAttribute('FooAttr');
     return;
   }
 

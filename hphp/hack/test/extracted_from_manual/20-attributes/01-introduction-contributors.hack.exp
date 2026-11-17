@@ -1,0 +1,21 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<mixed>` [2]
+-> But got `string` [1]
+
+01-introduction-contributors.hack:20:29
+18 | 
+19 | async function example_snippet_wrapper1(): Awaitable<void> {
+20 |   $rc = new ReflectionClass('MyClass');
+   |                             ^^^^^^^^^ [1]
+21 |   $my_class_contributors = $rc->getAttributeClass(Contributors::class);
+22 |   $my_class_contributors?->getAuthor(); // "John Doe"
+
+reflection.hhi:36:31
+34 |   public string $name;
+35 | 
+36 |   public function __construct(class<mixed> $argument)[];
+   |                               ^^^^^^^^^^^^ [2]
+37 |   public static function export(mixed $argument, bool $return = false): ?string;
+38 |   public function getConstant(string $name)[]: mixed;
+
+1 error found

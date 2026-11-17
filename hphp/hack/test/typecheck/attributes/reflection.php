@@ -13,7 +13,7 @@ class FAttr implements HH\FunctionAttribute {
 class C {}
 
 function x(): void {
-  $rc = new ReflectionClass("C");
+  $rc = new ReflectionClass(C::class);
   $rc->getAttributeClass(CAttr::class);
   $rc->getAttributeClass(FAttr::class);
 }

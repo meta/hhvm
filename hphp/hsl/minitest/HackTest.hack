@@ -13,7 +13,7 @@ abstract class HackTest {
 
   final public async function runAsync(): Awaitable<void> {
     \printf("--- %s::%s()\n", static::class, __FUNCTION__);
-    $rc = new \ReflectionClass($this);
+    $rc = new \ReflectionObject($this);
     static::beforeFirstTest();
     foreach ($rc->getMethods() as $method) {
       if (!$method->isPublic()) {

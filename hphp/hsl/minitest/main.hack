@@ -66,7 +66,7 @@ async function main(): Awaitable<void> {
   }
 
   foreach ($test_classes as $class) {
-    $rc = new \ReflectionClass($class);
+    $rc = new \ReflectionClass(\HH\classname_to_class($class));
     if (!$rc->isInstantiable()) {
       continue;
     }

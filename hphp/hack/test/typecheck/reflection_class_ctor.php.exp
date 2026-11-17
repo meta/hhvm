@@ -1,0 +1,42 @@
+error: Typing[4110] Invalid argument [1]
+-> Expected `class<mixed>` [2]
+-> But got `string` [3]
+
+reflection_class_ctor.php:21:29
+18 | }
+19 | 
+20 | function takes_string(string $s): void {
+   |                       ^^^^^^ [3]
+21 |   $_e = new ReflectionClass($s);
+   |                             ^^ [1]
+22 | }
+23 | 
+
+reflection.hhi:36:31
+34 |   public string $name;
+35 | 
+36 |   public function __construct(class<mixed> $argument)[];
+   |                               ^^^^^^^^^^^^ [2]
+37 |   public static function export(mixed $argument, bool $return = false): ?string;
+38 |   public function getConstant(string $name)[]: mixed;
+
+error: Typing[4110] Invalid argument [1]
+-> Expected `nonnull` [2]
+-> But got `null` [1]
+
+reflection_class_ctor.php:26:30
+ 24 | function takes_object(C $o): void {
+ 25 |   $_f = new ReflectionObject($o);
+ 26 |   $_g = new ReflectionObject(null);
+    |                              ^^^^ [1]
+ 27 | }
+
+reflection.hhi:138:31
+136 |   // Closest sound narrowing available: Hack has no object typehint, so
+137 |   // strings still typecheck here and are rejected at runtime.
+138 |   public function __construct(nonnull $argument)[];
+    |                               ^^^^^^^ [2]
+139 | }
+140 | 
+
+2 errors found

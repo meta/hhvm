@@ -13,7 +13,7 @@ class FAttr implements HH\FunctionAttribute {
 enum E: int {}
 
 function x(): void {
-  $rc = new ReflectionClass("E");
+  $rc = new ReflectionClass(E::class);
   $rc->getAttributeClass(EAttr::class);
   $rc->getAttributeClass(FAttr::class);
 }

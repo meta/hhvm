@@ -13,7 +13,7 @@ reflection.php:18:26
  9 |   public function __construct(public int $j) {}
 10 | }
    :
-16 |   $rc = new ReflectionClass("C");
+16 |   $rc = new ReflectionClass(C::class);
 17 |   $rc->getAttributeClass(CAttr::class);
 18 |   $rc->getAttributeClass(FAttr::class);
    |                          ^^^^^^^^^^^^ [1]

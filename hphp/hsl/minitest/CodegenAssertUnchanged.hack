@@ -17,7 +17,7 @@ trait CodegenAssertUnchanged {
   const string EXTENSION = '.codegen';
   const string SEPARATOR = '!@#$%codegentest:';
 
-  private static ?string $className = null;
+  private static ?classname<mixed> $className = null;
   private static ?dict<string, string> $expected = null;
 
   final protected static function setupForCodegen(): void {
@@ -50,7 +50,7 @@ trait CodegenAssertUnchanged {
     );
   }
 
-  private static function getClassName(): string {
+  private static function getClassName(): classname<mixed> {
     invariant(
       self::$className !== null,
       'setupForCodegen was not called. If you are defining setUpForRecord '.
@@ -71,8 +71,8 @@ trait CodegenAssertUnchanged {
    * Given a class name, return the uri where the codegen file should
    * be written (the uri where the class is defined -php+codegen).
    */
-  private static function getPath(string $class_name): string {
-    $ref = new \ReflectionClass($class_name);
+  private static function getPath(classname<mixed> $class_name): string {
+    $ref = new \ReflectionClass(\HH\classname_to_class($class_name));
     $source_file = $ref->getFileName();
     // Get classname without namespace
     $filename = $ref->getShortName();
