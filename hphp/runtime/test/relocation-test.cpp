@@ -45,7 +45,6 @@
 #include <cstring>
 #include <functional>
 #include <initializer_list>
-#include <set>
 #include <vector>
 
 namespace HPHP::jit {
@@ -104,7 +103,7 @@ void expectAddressImmediatesAfterRelocation(
   CGMeta& meta,
   std::initializer_list<TCA> expected) {
   adjustMetaDataForRelocation(rel, nullptr, meta);
-  EXPECT_EQ(meta.addressImmediates, std::set<TCA>(expected));
+  EXPECT_EQ(meta.addressImmediates, fast_set<TCA>(expected));
 }
 
 template<class EmitBranch>

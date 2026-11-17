@@ -20,6 +20,7 @@
 #include "hphp/runtime/vm/jit/abi-arm.h"
 #include "hphp/runtime/vm/jit/containers.h"
 #include "hphp/runtime/test/vasm-test-helpers.h"
+#include "hphp/runtime/test/test-context.h"
 #include "hphp/runtime/vm/jit/ir-unit.h"
 #include "hphp/runtime/vm/jit/vasm.h"
 #include "hphp/runtime/vm/jit/vasm-emit.h"

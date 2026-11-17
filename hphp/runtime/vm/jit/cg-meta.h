@@ -139,7 +139,7 @@ struct CGMeta {
    *
    * Also contains the addresses of any mcprep{} instructions that were emitted.
    */
-  std::set<TCA> addressImmediates;
+  jit::fast_set<TCA> addressImmediates;
 
   /*
    * Single-bit TST+B.cond pairs whose flags have no other uses. Relocation may

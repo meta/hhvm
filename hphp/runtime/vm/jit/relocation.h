@@ -75,24 +75,23 @@ struct RelocationInfo {
     return adjustedAddressBefore(const_cast<TCA>(addr));
   }
   void rewind(TCA start, TCA end);
-  void markAddressImmediates(const std::set<TCA>& ai) {
+  void markAddressImmediates(const jit::fast_set<TCA>& ai) {
+    addressImmediates.reserve(addressImmediates.size() + 2 * ai.size());
     addressImmediates.insert(ai.begin(), ai.end());
     // We should add the relocated address immediates as well.  During
     // adjustForRelocation, relocated ranges may need to have their address
     // immediates updated to point to other relocated ranges.  This requires
     // adjustForRelocation to know which immediates are address immediates in
     // the newly relocated range.
-    decltype(addressImmediates) updatedAI;
     for (auto addrImm : ai) {
       if (m_addressImmediatesInvalidToMap.contains(addrImm)) continue;
       if (TCA adjusted = adjustedAddressAfter(addrImm)) {
-        updatedAI.insert(adjusted);
+        addressImmediates.insert(adjusted);
       } else if (TCA odd = adjustedAddressAfter((TCA)~uintptr_t(addrImm))) {
         // just for LdSmashable
-        updatedAI.insert((TCA)~uintptr_t(odd));
+        addressImmediates.insert((TCA)~uintptr_t(odd));
       }
     }
-    addressImmediates.insert(updatedAI.begin(), updatedAI.end());
   }
   bool isAddressImmediate(TCA ip) {
     return addressImmediates.count(ip);
@@ -127,8 +126,8 @@ struct RelocationInfo {
    * the fixup map would want the address of the nop.
    */
   jit::fast_map<TCA,std::pair<TCA,TCA>> m_adjustedAddresses;
-  std::set<TCA> addressImmediates;
-  std::set<TCA> m_addressImmediatesInvalidToMap;
+  jit::fast_set<TCA> addressImmediates;
+  jit::fast_set<TCA> m_addressImmediatesInvalidToMap;
   std::set<TCA> m_smashableRelocations;
 };
 
