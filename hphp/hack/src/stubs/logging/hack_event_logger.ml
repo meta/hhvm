@@ -33,6 +33,8 @@ let set_hhconfig_version _ = ()
 
 let set_mergebase_globalrev _ = ()
 
+let set_mergebase_age_days _ = ()
+
 let set_rollout_group _ = ()
 
 let set_rollout_flags _ = ()

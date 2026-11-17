@@ -1321,6 +1321,9 @@ let post_saved_state_initialization
   } =
     loaded_info
   in
+  Option.iter
+    ~f:Hack_event_logger.set_mergebase_globalrev
+    saved_state_revs_info.Server_env.mergebase_globalrev;
   if genv.local_config.SLC.hg_aware then
     if
       Server_args.is_using_precomputed_saved_state genv.options
@@ -1329,19 +1332,12 @@ let post_saved_state_initialization
       Hack_event_logger
       .tried_to_be_hg_aware_with_precomputed_saved_state_warning
         ();
-      Option.iter
-        ~f:Hack_event_logger.set_mergebase_globalrev
-        saved_state_revs_info.Server_env.mergebase_globalrev;
       Hh_logger.log
         "Warning: disabling restart on rebase (server was started with precomputed saved-state)"
     end else
       Option.iter
         saved_state_revs_info.Server_env.mergebase_globalrev
-        ~f:Server_revision_tracker.initialize
-  else
-    Option.iter
-      ~f:Hack_event_logger.set_mergebase_globalrev
-      saved_state_revs_info.Server_env.mergebase_globalrev;
+        ~f:Server_revision_tracker.initialize;
   let env =
     {
       env with
