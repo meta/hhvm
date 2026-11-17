@@ -58,6 +58,9 @@ struct CGMeta;
 struct RelocationInfo {
   RelocationInfo() {}
 
+  void reserve(size_t numAddresses) {
+    m_adjustedAddresses.reserve(numAddresses);
+  }
   void recordRange(TCA start, TCA end,
                    TCA destStart, TCA destEnd);
   void recordAddress(TCA src, TCA dest, int range);

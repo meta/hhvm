@@ -752,6 +752,10 @@ Optional<TranslationResult> Translator::relocate(bool alignMain) {
   auto& fixups = transMeta->fixups;
 
   RelocationInfo rel;
+  // One entry per data byte, and about one per four bytes of code.
+  rel.reserve(range.data.size() +
+              (range.main.size() + range.cold.size() + range.frozen.size()) /
+                4);
   {
     auto codeLock = lockCode(!Cfg::Jit::EnableConcurrentCodeViews);
     auto viewLock = Cfg::Jit::EnableConcurrentCodeViews
