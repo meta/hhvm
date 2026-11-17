@@ -877,13 +877,20 @@ Optional<TranslationResult> Translator::bindOutgoingEdges() {
 
 TranslationResult Translator::publish() {
   assertx(transMeta.has_value());
-  transMeta->fixups.processNativeCalls();
+  // ROAR registrations are blocking IPCs that need neither the metadata lock
+  // nor the lease. Take the native calls out so that CGMeta::process_only()
+  // doesn't register them under the lock. ROAR never frees code, so published
+  // native calls stay valid until ROAR retargets them.
+  CGMeta roarMeta;
+  roarMeta.nativeCalls.swap(transMeta->fixups.nativeCalls);
   {
     auto metaLock = lockMetadata();
     publishMetaInternal();
     publishCodeInternal();
   }
+  m_lease.reset();
   transMeta->fixups.processPidMapEntries();
+  roarMeta.processNativeCalls();
   return TranslationResult{transMeta->range.loc().entry()};
 }
 
