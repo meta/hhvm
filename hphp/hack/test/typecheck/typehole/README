@@ -41,3 +41,5 @@ If you add a flag that fixes a typehole, add it to `typehole_fix_flags` in
 to write a `.fixed.exp` for each hole it fixes. Check that each new error
 points at the hole. When a fix flag is removed or turned on by default, delete
 the `.fixed.exp` files it produced.
+
+Plans for fixing typeholes are in facebook/plans/.
