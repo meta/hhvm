@@ -617,7 +617,9 @@ class TestFreshInit(common_tests.CommonTests):
             self.assertEqual(usage_error_exit_code, retcode, (flag, stderr))
             self.assertIn("percentage", stderr)
 
-    def test_movability_names_the_files_that_block_a_set(self) -> None:
+    def test_movability_names_the_files_that_block_a_set_and_what_each_blocks(
+        self,
+    ) -> None:
         repo_dir = self.test_driver.repo_dir
         files = {
             "blocked_a.php": "<?hh\nfunction blocked_a(): void {}\n",
@@ -656,6 +658,17 @@ class TestFreshInit(common_tests.CommonTests):
         self.assertEqual(
             ["blocked_user_one.php", "blocked_user_two.php"],
             sorted(result["blockers"]),
+        )
+        blocked_by = {
+            blocker["file"]: sorted(blocker["references"])
+            for blocker in result["blocked_by"]
+        }
+        self.assertEqual(
+            {
+                "blocked_user_one.php": ["blocked_a.php"],
+                "blocked_user_two.php": ["blocked_a.php", "blocked_b.php"],
+            },
+            blocked_by,
         )
 
     def test_isolation_move_to_refuses_a_missing_seed_dir(self) -> None:

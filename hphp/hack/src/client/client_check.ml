@@ -89,6 +89,11 @@ let output_isolation_result
           | Some (Blocked blockers) ->
             `List (List.map blockers ~f:(fun (b : blocker) -> `String b.file))
           | _ -> `Null );
+        ( "blocked_by",
+          match result.movability with
+          | Some (Blocked blockers) ->
+            `List (List.map blockers ~f:Client_isolation_move.blocker_to_json)
+          | _ -> `Null );
         ( "summary",
           `Assoc
             [

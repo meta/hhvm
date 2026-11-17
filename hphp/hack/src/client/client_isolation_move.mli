@@ -26,3 +26,7 @@ val move_into :
   error_filter:Filter_diagnostics.Filter.t ->
   parent:string ->
   Exit_status.t Lwt.t
+
+(** A file that blocks a move, as JSON: the file, and the files of the moved set
+    that it references. *)
+val blocker_to_json : Server_isolation_types.blocker -> Yojson.Safe.t

@@ -233,6 +233,13 @@ module Output = struct
         ("message", `String message);
       ]
 
+  let blocker_to_json { Server_isolation_types.file; references } =
+    `Assoc
+      [
+        ("file", `String file);
+        ("references", `List (List.map references ~f:(fun f -> `String f)));
+      ]
+
   (** The fields only this kind of outcome has. The others are [null]. *)
   let outcome_fields = function
     | Moved { files } -> [("files", `Int files)]
@@ -243,6 +250,7 @@ module Output = struct
           `List
             (List.map blockers ~f:(fun { Server_isolation_types.file; _ } ->
                  `String file)) );
+        ("blocked_by", `List (List.map blockers ~f:blocker_to_json));
       ]
     | Not_moved { errors; baseline_restored } ->
       [
@@ -251,7 +259,14 @@ module Output = struct
       ]
 
   let outcome_field_names =
-    ["files"; "refused"; "blockers"; "new_errors"; "baseline_restored"]
+    [
+      "files";
+      "refused";
+      "blockers";
+      "blocked_by";
+      "new_errors";
+      "baseline_restored";
+    ]
 
   let to_json ~source ~target outcome =
     let fields = outcome_fields outcome in
@@ -327,6 +342,8 @@ module Output = struct
 end
 
 open Output
+
+let blocker_to_json = Output.blocker_to_json
 
 let refusal ~source ~target =
   if not (Disk.is_directory (Relative_path.to_absolute source)) then
