@@ -1,0 +1,5 @@
+--config check_duplicate_runtime_shape_keys=true
+--config include_const_shape_key_values=true
+--config include_enum_member_values=true
+--config everything_sdt=false
+--show-errors

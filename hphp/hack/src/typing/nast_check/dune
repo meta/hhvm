@@ -36,7 +36,6 @@
    private_final_check
    prop_modifier_prohibited_check
    read_from_append_check
-   shape_name_check
    type_structure_leak_check
    unbound_name_check
    well_formed_internal_trait

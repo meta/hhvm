@@ -24,6 +24,7 @@ type t = {
   everything_sdt: bool;
   include_enum_member_values: bool;
   include_const_shape_key_values: bool;
+  check_duplicate_runtime_shape_keys: bool;
   keep_user_attributes: bool;
   stack_size: int;
   deregister_php_stdlib: bool;
@@ -62,6 +63,7 @@ let default =
     everything_sdt = false;
     include_enum_member_values = false;
     include_const_shape_key_values = false;
+    check_duplicate_runtime_shape_keys = false;
     deregister_php_stdlib = false;
     stack_size = 32 * 1024 * 1024;
     keep_user_attributes = false;

@@ -25,6 +25,7 @@ impl Default for ParserOptions {
             everything_sdt: false,
             include_enum_member_values: false,
             include_const_shape_key_values: false,
+            check_duplicate_runtime_shape_keys: false,
             deregister_php_stdlib: false,
             stack_size: 32 * 1024 * 1024, // 32 MiB is the largest stack size we can use without requiring sudo
             keep_user_attributes: false,

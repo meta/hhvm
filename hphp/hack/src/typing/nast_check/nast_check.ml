@@ -32,7 +32,6 @@ let visitor ctx =
       Nast_class_method_check.handler;
       Global_const_check.handler;
       Duplicate_class_member_check.handler;
-      Shape_name_check.handler;
       Duplicate_xhp_attribute_check.handler;
       Attribute_nast_checks.handler;
       List_rvalue_check.handler;

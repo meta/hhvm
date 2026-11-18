@@ -6,4 +6,4 @@
  *
  *)
 
-val handler : Nast_visitor.handler_base
+include Handler.S

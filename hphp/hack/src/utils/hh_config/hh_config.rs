@@ -295,6 +295,10 @@ impl HhConfig {
                 "include_const_shape_key_values",
                 default.include_const_shape_key_values,
             )?,
+            check_duplicate_runtime_shape_keys: hhconfig.get_bool_or(
+                "check_duplicate_runtime_shape_keys",
+                default.check_duplicate_runtime_shape_keys,
+            )?,
             unwrap_concurrent: default.unwrap_concurrent,
             stack_size: default.stack_size,
             use_legacy_experimental_feature_config: false,

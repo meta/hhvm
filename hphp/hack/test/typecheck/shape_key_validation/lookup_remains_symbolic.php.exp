@@ -1,0 +1,13 @@
+error: Typing[4108] This shape doesn't have a field `field` [1]
+-> The shape is defined here [2]
+
+lookup_remains_symbolic.php:13:13
+10 | }
+11 | 
+12 | function literal_lookup(shape(Key::FIELD => int) $s): int {
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+13 |   return $s['field'];
+   |             ^^^^^^^ [1]
+14 | }
+
+1 error found

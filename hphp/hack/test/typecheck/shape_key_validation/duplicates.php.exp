@@ -1,0 +1,83 @@
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+duplicates.php:22:3
+19 | 
+20 | type ClassCollision = shape(
+21 |   Keys::A => int,
+   |   ^^^^^^^ [2]
+22 |   Keys::B => string,
+   |   ^^^^^^^ [1]
+23 |   Keys::B => bool,
+24 |   Keys::A => float,
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+duplicates.php:23:3
+19 | 
+20 | type ClassCollision = shape(
+21 |   Keys::A => int,
+   |   ^^^^^^^ [2]
+22 |   Keys::B => string,
+23 |   Keys::B => bool,
+   |   ^^^^^^^ [1]
+24 |   Keys::A => float,
+25 | );
+
+error: Naming[2015] Field name already bound [1]
+
+duplicates.php:24:9
+22 |   Keys::B => string,
+23 |   Keys::B => bool,
+24 |   Keys::A => float,
+   |         ^ [1]
+25 | );
+26 | type InheritedCollision = shape(InheritedKeys::A => int, InheritedKeys::C => int);
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+duplicates.php:26:58
+24 |   Keys::A => float,
+25 | );
+26 | type InheritedCollision = shape(InheritedKeys::A => int, InheritedKeys::C => int);
+   |                                 ^^^^^^^^^^^^^^^^ [2]
+   |                                                          ^^^^^^^^^^^^^^^^ [1]
+27 | type EnumCollision = shape(E::A => int, E::B => string);
+28 | type LiteralCollision = shape('same' => int, 'same' => string);
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `1` [2]
+
+duplicates.php:27:41
+25 | );
+26 | type InheritedCollision = shape(InheritedKeys::A => int, InheritedKeys::C => int);
+27 | type EnumCollision = shape(E::A => int, E::B => string);
+   |                            ^^^^ [2]
+   |                                         ^^^^ [1]
+28 | type LiteralCollision = shape('same' => int, 'same' => string);
+29 | 
+
+error: Naming[2015] Field name already bound [1]
+
+duplicates.php:28:46
+26 | type InheritedCollision = shape(InheritedKeys::A => int, InheritedKeys::C => int);
+27 | type EnumCollision = shape(E::A => int, E::B => string);
+28 | type LiteralCollision = shape('same' => int, 'same' => string);
+   |                                              ^^^^^^ [1]
+29 | 
+30 | function duplicate_expression(): void {
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+duplicates.php:31:28
+29 | 
+30 | function duplicate_expression(): void {
+31 |   $_ = shape(Keys::A => 1, Keys::B => 2);
+   |              ^^^^^^^ [2]
+   |                            ^^^^^^^ [1]
+32 | }
+
+7 errors found

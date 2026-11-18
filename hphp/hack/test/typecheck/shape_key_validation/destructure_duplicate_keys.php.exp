@@ -1,0 +1,12 @@
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+destructure_duplicate_keys.php:24:61
+22 | 
+23 | function runtime_collision_in_rhs(): void {
+24 |   shape(Keys::A => $a, Keys::B => $b) = shape(Keys::A => 1, Keys::B => 2);
+   |                                               ^^^^^^^ [2]
+   |                                                             ^^^^^^^ [1]
+25 | }
+
+1 error found

@@ -186,6 +186,7 @@ module Const_value = struct
   type concrete_value =
     | SKVInt of string
     | SKVString of string
+  [@@deriving ord]
 
   let concrete_value ~member_name (value : t) =
     match value with

@@ -81,6 +81,7 @@ let visitor ctx =
           Xhp_required_check.create_handler ctx;
           Redundant_generics_check.create_handler ctx;
           Some Shape_field_check.handler;
+          Some Shape_duplicate_key_check.handler;
           Some String_cast_check.handler;
           Some Tautology_check.handler;
           Some Enforceable_hint_check.handler;

@@ -425,6 +425,7 @@ and type_shape
     * Tast.expr
     * Typing_defs.locl_ty
     * Typing_defs.locl_ty list =
+  (* TODO(T299051051): Validate destructuring shape keys and reject duplicates. *)
   let r = Typing_reason.shape_or_tuple_destructure pat_pos in
   let (env, { Shape_fields.typed_fields_rev; shape_map; field_tys }) =
     List.fold

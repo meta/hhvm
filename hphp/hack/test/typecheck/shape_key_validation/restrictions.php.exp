@@ -1,0 +1,105 @@
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `a` [2]
+
+restrictions.php:24:39
+22 | 
+23 | type DifferentClasses = shape(Keys::A => int, MoreKeys::A => string);
+24 | type LiteralFirst = shape('a' => int, Keys::A => string);
+   |                           ^^^ [2]
+   |                                       ^^^^^^^ [1]
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `a` [2]
+
+restrictions.php:25:44
+23 | type DifferentClasses = shape(Keys::A => int, MoreKeys::A => string);
+24 | type LiteralFirst = shape('a' => int, Keys::A => string);
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+   |                            ^^^^^^^ [2]
+   |                                            ^^^ [1]
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+27 | type DifferentEnums = shape(E::A => int, F::A => string);
+
+error: Typing[4085] Shape field name is class constant from `MoreKeys` [1]
+-> But expected constant from `Keys` [2]
+
+restrictions.php:23:47
+21 | }
+22 | 
+23 | type DifferentClasses = shape(Keys::A => int, MoreKeys::A => string);
+   |                               ^^^^^^^ [2]
+   |                                               ^^^^^^^^^^^ [1]
+24 | type LiteralFirst = shape('a' => int, Keys::A => string);
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+
+error: Typing[4049] Shape uses class constant as field name [1]
+-> But expected a literal string. Shape fields cannot be a mix of literals and constants. [2]
+
+restrictions.php:24:39
+22 | 
+23 | type DifferentClasses = shape(Keys::A => int, MoreKeys::A => string);
+24 | type LiteralFirst = shape('a' => int, Keys::A => string);
+   |                           ^^^ [2]
+   |                                       ^^^^^^^ [1]
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+
+error: Typing[4050] Shape uses literal string as field name [1]
+-> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
+
+restrictions.php:25:44
+23 | type DifferentClasses = shape(Keys::A => int, MoreKeys::A => string);
+24 | type LiteralFirst = shape('a' => int, Keys::A => string);
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+   |                            ^^^^^^^ [2]
+   |                                            ^^^ [1]
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+27 | type DifferentEnums = shape(E::A => int, F::A => string);
+
+error: Typing[4086] Shape field name is an int class constant [1]
+-> But expected a string [2]
+
+restrictions.php:26:45
+24 | type LiteralFirst = shape('a' => int, Keys::A => string);
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+   |                             ^^^^^^^ [2]
+   |                                             ^^^^^^^ [1]
+27 | type DifferentEnums = shape(E::A => int, F::A => string);
+28 | type DifferentNames = shape(nameof Keys => int, nameof MoreKeys => string);
+
+error: Typing[4086] Shape field name is a value of type F class constant [1]
+-> But expected a value of type E [2]
+
+restrictions.php:27:42
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+27 | type DifferentEnums = shape(E::A => int, F::A => string);
+   |                             ^^^^ [2]
+   |                                          ^^^^ [1]
+28 | type DifferentNames = shape(nameof Keys => int, nameof MoreKeys => string);
+
+error: Typing[4085] Shape field name is class constant from `F` [1]
+-> But expected constant from `E` [2]
+
+restrictions.php:27:42
+25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+27 | type DifferentEnums = shape(E::A => int, F::A => string);
+   |                             ^^^^ [2]
+   |                                          ^^^^ [1]
+28 | type DifferentNames = shape(nameof Keys => int, nameof MoreKeys => string);
+
+error: Typing[4085] Shape field name is class constant from `MoreKeys` [1]
+-> But expected constant from `Keys` [2]
+
+restrictions.php:28:56
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+27 | type DifferentEnums = shape(E::A => int, F::A => string);
+28 | type DifferentNames = shape(nameof Keys => int, nameof MoreKeys => string);
+   |                                    ^^^^ [2]
+   |                                                        ^^^^^^^^ [1]
+
+9 errors found

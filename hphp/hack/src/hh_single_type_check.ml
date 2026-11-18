@@ -859,6 +859,8 @@ let parse_options () =
         everything_sdt = true;
         include_enum_member_values = default.include_enum_member_values;
         include_const_shape_key_values = default.include_const_shape_key_values;
+        check_duplicate_runtime_shape_keys =
+          default.check_duplicate_runtime_shape_keys;
         union_intersection_type_hints = default.union_intersection_type_hints;
         allowed_decl_fixme_codes =
           Option.value !allowed_decl_fixme_codes ~default:I_set.empty;

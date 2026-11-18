@@ -122,6 +122,7 @@ module Const_value : sig
   type concrete_value =
     | SKVInt of string
     | SKVString of string
+  [@@deriving ord]
 
   (** For shape key normalisation only; [nameof] values become class-name strings,
       with legacy XHP names mangled as at runtime. Unrecorded and unresolved values

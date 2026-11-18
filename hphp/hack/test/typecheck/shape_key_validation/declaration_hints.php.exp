@@ -1,0 +1,156 @@
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:11:25
+ 9 | 
+10 | function parameter_and_return(
+11 |   shape(Keys::A => int, Keys::B => int) $value,
+   |         ^^^^^^^ [2]
+   |                         ^^^^^^^ [1]
+12 | ): shape(Keys::A => int, Keys::B => int) {
+13 |   return $value;
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:12:26
+10 | function parameter_and_return(
+11 |   shape(Keys::A => int, Keys::B => int) $value,
+12 | ): shape(Keys::A => int, Keys::B => int) {
+   |          ^^^^^^^ [2]
+   |                          ^^^^^^^ [1]
+13 |   return $value;
+14 | }
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:16:29
+14 | }
+15 | 
+16 | const shape(Keys::A => int, Keys::B => int) GLOBAL_FIELDS =
+   |             ^^^^^^^ [2]
+   |                             ^^^^^^^ [1]
+17 |   shape(Keys::A => 1, Keys::B => 2);
+18 | 
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:17:23
+15 | 
+16 | const shape(Keys::A => int, Keys::B => int) GLOBAL_FIELDS =
+17 |   shape(Keys::A => 1, Keys::B => 2);
+   |         ^^^^^^^ [2]
+   |                       ^^^^^^^ [1]
+18 | 
+19 | class DeclarationFields {
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:20:32
+18 | 
+19 | class DeclarationFields {
+20 |   public shape(Keys::A => int, Keys::B => int) $fields =
+   |                ^^^^^^^ [2]
+   |                                ^^^^^^^ [1]
+21 |     shape(Keys::A => 1, Keys::B => 2);
+22 | 
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:21:25
+19 | class DeclarationFields {
+20 |   public shape(Keys::A => int, Keys::B => int) $fields =
+21 |     shape(Keys::A => 1, Keys::B => 2);
+   |           ^^^^^^^ [2]
+   |                         ^^^^^^^ [1]
+22 | 
+23 |   const shape(Keys::A => int, Keys::B => int) FIELDS =
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:23:31
+21 |     shape(Keys::A => 1, Keys::B => 2);
+22 | 
+23 |   const shape(Keys::A => int, Keys::B => int) FIELDS =
+   |               ^^^^^^^ [2]
+   |                               ^^^^^^^ [1]
+24 |     shape(Keys::A => 1, Keys::B => 2);
+25 | 
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:24:25
+22 | 
+23 |   const shape(Keys::A => int, Keys::B => int) FIELDS =
+24 |     shape(Keys::A => 1, Keys::B => 2);
+   |           ^^^^^^^ [2]
+   |                         ^^^^^^^ [1]
+25 | 
+26 |   const type Fields = shape(Keys::A => int, Keys::B => int);
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:26:45
+24 |     shape(Keys::A => 1, Keys::B => 2);
+25 | 
+26 |   const type Fields = shape(Keys::A => int, Keys::B => int);
+   |                             ^^^^^^^ [2]
+   |                                             ^^^^^^^ [1]
+27 | 
+28 |   public function method(shape(Keys::A => int, Keys::B => int) $value): void {
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:28:48
+26 |   const type Fields = shape(Keys::A => int, Keys::B => int);
+27 | 
+28 |   public function method(shape(Keys::A => int, Keys::B => int) $value): void {
+   |                                ^^^^^^^ [2]
+   |                                                ^^^^^^^ [1]
+29 |     $_ = function(shape(Keys::A => int, Keys::B => int) $value): void {};
+30 |   }
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:29:41
+27 | 
+28 |   public function method(shape(Keys::A => int, Keys::B => int) $value): void {
+29 |     $_ = function(shape(Keys::A => int, Keys::B => int) $value): void {};
+   |                         ^^^^^^^ [2]
+   |                                         ^^^^^^^ [1]
+30 |   }
+31 | }
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:34:40
+32 | 
+33 | function expression_hints(mixed $value): void {
+34 |   $_ = $value is shape(Keys::A => int, Keys::B => int);
+   |                        ^^^^^^^ [2]
+   |                                        ^^^^^^^ [1]
+35 |   $_ = $value as shape(Keys::A => int, Keys::B => int);
+36 | }
+
+error: Naming[2015] Field name already bound [1]
+-> This field has the same runtime key `same` [2]
+
+declaration_hints.php:35:40
+33 | function expression_hints(mixed $value): void {
+34 |   $_ = $value is shape(Keys::A => int, Keys::B => int);
+35 |   $_ = $value as shape(Keys::A => int, Keys::B => int);
+   |                        ^^^^^^^ [2]
+   |                                        ^^^^^^^ [1]
+36 | }
+
+13 errors found
