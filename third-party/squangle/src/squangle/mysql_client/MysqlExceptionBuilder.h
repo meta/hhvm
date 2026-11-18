@@ -20,10 +20,10 @@ class MysqlExceptionBuilder {
       OperationResult result,
       unsigned int mysql_errno,
       const std::string& mysql_error,
-      const std::shared_ptr<const ConnectionKey>& conn_key,
+      std::shared_ptr<const ConnectionKey> conn_key,
       Duration elapsed_time) const {
     return folly::make_exception_wrapper<MysqlException>(
-        result, mysql_errno, mysql_error, conn_key, elapsed_time);
+        result, mysql_errno, mysql_error, std::move(conn_key), elapsed_time);
   }
 
   virtual folly::exception_wrapper buildQueryException(
@@ -31,14 +31,14 @@ class MysqlExceptionBuilder {
       OperationResult result,
       unsigned int mysql_errno,
       const std::string& mysql_error,
-      const std::shared_ptr<const ConnectionKey>& conn_key,
+      std::shared_ptr<const ConnectionKey> conn_key,
       Duration elapsed_time) const {
     return folly::make_exception_wrapper<QueryException>(
         num_executed_queries,
         result,
         mysql_errno,
         mysql_error,
-        conn_key,
+        std::move(conn_key),
         elapsed_time);
   }
 };
