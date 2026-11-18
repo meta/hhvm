@@ -1890,6 +1890,9 @@ void prefetchUnit(StringData* requestedPath,
     [path, fileStat, cache = cache,
      loadingUnitPath = loadingUnit ? loadingUnit->filepath() : nullptr,
      gate = std::move(gate), w = wrapper, map = std::move(holder)] () mutable {
+      // RepoOptions are currently reclaimed through the treadmill, so this
+      // worker needs a session to keep its borrowed options alive.
+      Treadmill::Session session{Treadmill::SessionKind::UnitPrefetch};
       SCOPE_EXIT {
         // Decrement the gate whenever we're done. If the gate hits
         // zero, do a notification to wake up any thread waiting on
@@ -1937,15 +1940,6 @@ void prefetchUnit(StringData* requestedPath,
 
       cache->insert(rpathAcc, rpath);
       auto& cachedUnit = rpathAcc->second.cachedUnit;
-
-      // NB: It might be tempting to check if the file has changed
-      // before acquiring the lock. This opens up a race where the
-      // Unit can be deleted out from under us. Once we acquire the
-      // lock, no other thread can delete the Unit (until we release
-      // it). This isn't an issue for the request threads because
-      // the Unit is freed by the treadmill (so cannot go away
-      // during the request). This thread is *not* a request thread
-      // and therefore the treadmill can't save us.
 
       // Try to acquire the update lock for this unit. Don't
       // block. If we fail to acquire the lock, its because another
@@ -2071,6 +2065,9 @@ void unitCacheSyncRepo(AutoloadMap* map,
     // thread, so you need to be careful about the lifetime of what
     // you capture here.
     [updated = std::move(updated), map = map->getNativeHolder()] () mutable {
+      // RepoOptions are currently reclaimed through the treadmill, so this
+      // worker needs a session to keep its borrowed options alive.
+      Treadmill::Session session{Treadmill::SessionKind::UnitPrefetch};
       // We cannot delete Units at all points in the loading path (due
       // to potential lock rank violations). If necessary, we defer
       // the deletion until when we exit this function.
@@ -2100,15 +2097,6 @@ void unitCacheSyncRepo(AutoloadMap* map,
 
         s_nonRepoUnitCache.insert(rpathAcc, rpath);
         auto& cachedUnit = rpathAcc->second.cachedUnit;
-
-        // NB: It might be tempting to check if the file has changed
-        // before acquiring the lock. This opens up a race where the
-        // Unit can be deleted out from under us. Once we acquire the
-        // lock, no other thread can delete the Unit (until we release
-        // it). This isn't an issue for the request threads because
-        // the Unit is freed by the treadmill (so cannot go away
-        // during the request). This thread is *not* a request thread
-        // and therefore the treadmill can't save us.
 
         // Try to acquire the update lock for this unit. Don't
         // block. If we fail to acquire the lock, its because another

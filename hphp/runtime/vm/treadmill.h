@@ -48,7 +48,8 @@ enum class SessionKind {
   CompilerEmit,
   CompilerAnalysis,
   CLISession,
-  UnitReaper
+  UnitReaper,
+  UnitPrefetch
 };
 
 /*

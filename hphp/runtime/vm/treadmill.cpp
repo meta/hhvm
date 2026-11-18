@@ -115,6 +115,7 @@ char const* getSessionKindName(SessionKind value) {
     case SessionKind::CompilerAnalysis: return "CompilerAnalysis";
     case SessionKind::CLISession: return "CLISession";
     case SessionKind::UnitReaper: return "UnitReaper";
+    case SessionKind::UnitPrefetch: return "UnitPrefetch";
   }
   return "";
 }
