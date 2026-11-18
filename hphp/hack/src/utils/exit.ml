@@ -17,6 +17,7 @@ let exit
     ?(msg : string option)
     ?(telemetry : Telemetry.t option)
     ?(stack : string option)
+    ?(exit_code_override : int option)
     (exit_status : Exit_status.t) : 'a =
   (* is there additional information in exit_status to pick up? *)
   let (emsg, estack) =
@@ -53,7 +54,9 @@ let exit
       try hook server_finale_data with
       | _ -> ())
     !hook_upon_clean_exit;
-  let exit_code = Exit_status.exit_code exit_status in
+  let exit_code =
+    Option.value exit_code_override ~default:(Exit_status.exit_code exit_status)
+  in
   (* What's the difference between [Stdlib.exit] and [exit]? The former first calls
      all installed exit handlers and if any of them throw then it itself throws
      rather than exiting; the latter skips exit handlers and for-sure throws.

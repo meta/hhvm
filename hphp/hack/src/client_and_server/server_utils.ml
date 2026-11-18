@@ -115,8 +115,12 @@ let exit_on_exception (e : Exception.t) =
       in
       (match exit_code with
       | Some i ->
-        (* Exit with same code. *)
-        exit i
+        (* Exit with same code, but through [Exit.exit] so that its hooks run:
+           a still-alive Edenfs_watcher instance makes Folly's exit handlers hang. *)
+        Exit.exit
+          ~msg:failure_msg
+          ~exit_code_override:i
+          (Exit_status.Uncaught_exception e)
       | None -> failwith failure_msg)
   (* In single-threaded mode, Worker_controller exceptions are raised directly
    * instead of being grouped into MultiThreaadedCall.Coalesced_failures *)
@@ -129,8 +133,9 @@ let exit_on_exception (e : Exception.t) =
   | Worker_controller.(Worker_failed (_, Worker_quit (Unix.WEXITED i))) ->
     Hh_logger.exception_ e;
 
-    (* Exit with the same exit code that that worker used. *)
-    exit i
+    (* Exit with the same exit code that that worker used, through [Exit.exit]
+       so that its hooks run (see above). *)
+    Exit.exit ~exit_code_override:i (Exit_status.Uncaught_exception e)
   | Worker_controller.Worker_failed_to_send_job _ ->
     Hh_logger.exception_ e;
     Exit.exit Exit_status.Worker_failed_to_send_job
