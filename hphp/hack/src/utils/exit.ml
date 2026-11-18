@@ -18,7 +18,7 @@ let exit
     ?(telemetry : Telemetry.t option)
     ?(stack : string option)
     (exit_status : Exit_status.t) : 'a =
-  (* is there additional inforamtion in exit_status to pick up? *)
+  (* is there additional information in exit_status to pick up? *)
   let (emsg, estack) =
     match exit_status with
     | Exit_status.Uncaught_exception e ->
