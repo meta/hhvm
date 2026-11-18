@@ -5,38 +5,52 @@
 import abc
 import os
 import pathlib
-import subprocess
-import sys
 import typing
 import unittest
 
+import hphp.tools.lldb.utils as utils
+import lldb
 from __manifest__ import fbmake as build_info
 from libfb.py.testutil import BaseFacebookTestCase
 
-# For lldb, until there's a buck-visible library we can use.
-# Its path on TW containers starts at /host-mounts.
-lldb_path: str | None = None
-for path in [
-    os.getenv("HHVM_TEST_LLDB_BIN", ""),
-    "/opt/llvm/bin/lldb",
-    "/host-mounts/opt/llvm/bin/lldb",
-]:
-    if os.path.exists(path):
-        lldb_path = (
-            subprocess.run([path, "-P"], stdout=subprocess.PIPE)
-            .stdout.decode("utf-8")
-            .strip()
-        )
-        break
 
-assert lldb_path, "Couldn't find lldb on host"
+def get_lldb_object_description(lldb_object: lldb.SBError) -> typing.Optional[str]:
+    stream = lldb.SBStream()
+    if not lldb_object.GetDescription(stream):
+        return None
+    return stream.GetData()
 
-sys.path.append(lldb_path)
-import hphp.tools.lldb.utils as utils
-import lldb
 
-# pyre-fixme[21]: Could not find module `fblldb.utils`.
-from fblldb.utils import get_lldb_object_description, run_lldb_command
+def _get_exe_ctx(debugger: lldb.SBDebugger) -> lldb.SBExecutionContext:
+    target = debugger.GetSelectedTarget()
+    if not target.IsValid():
+        return lldb.SBExecutionContext()
+    process = target.GetProcess()
+    if not process.IsValid():
+        return lldb.SBExecutionContext(target)
+    thread = process.GetSelectedThread()
+    if not thread.IsValid():
+        return lldb.SBExecutionContext(process)
+    frame = thread.GetSelectedFrame()
+    if frame.IsValid():
+        return lldb.SBExecutionContext(frame)
+    return lldb.SBExecutionContext(thread)
+
+
+def run_lldb_command(debugger: lldb.SBDebugger, command: str) -> typing.Tuple[int, str]:
+    """Run an LLDB command, returning its status and its output/error text."""
+    return_obj = lldb.SBCommandReturnObject()
+    debugger.GetCommandInterpreter().HandleCommand(
+        command, _get_exe_ctx(debugger), return_obj, False
+    )
+    # GetStatus() can be non-zero even when the command succeeded.
+    status = 0 if return_obj.Succeeded() else return_obj.GetStatus()
+    output = return_obj.GetOutput()
+    error = return_obj.GetError()
+    if output and error:
+        return (status, output + "\n" + error)
+    return (status, output or error)
+
 
 hhvm_path: pathlib.Path = pathlib.Path(__file__).parent.parent / "hhvm"
 hhvm_types_path: pathlib.Path = (
