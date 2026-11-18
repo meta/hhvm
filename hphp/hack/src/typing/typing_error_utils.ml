@@ -3353,7 +3353,7 @@ end = struct
   let private_member_variance
       pos class_name member_name is_write tparam_name variance use_pos decl_pos
       =
-    let (kind, effect) =
+    let (kind, variance_change) =
       match variance with
       | Ast_defs.Contravariant -> ("contravariant", "narrowed")
       | Ast_defs.Covariant
@@ -3387,7 +3387,7 @@ end = struct
           ^ " "
           ^ use_variance
           ^ ", and through another receiver the type arguments may have been "
-          ^ effect
+          ^ variance_change
           ^ "." )
     and reasons =
       lazy

@@ -591,9 +591,7 @@ module Decl = struct
       | Ptyp_object (flds, _) -> List.exists aux_obj_fld flds
       | Ptyp_variant (row_flds, _, _) -> List.exists aux_row_fld row_flds
       | Ptyp_poly (_, ty) -> aux ty
-      | Ptyp_package _
-      | Ptyp_extension _ ->
-        Err.raise_unsupported_ty ty.ptyp_loc
+      | _ -> Err.raise_unsupported_ty ty.ptyp_loc
     and aux_obj_fld fld =
       match fld.pof_desc with
       | Otag (_, ty)
@@ -736,9 +734,7 @@ end = struct
         in
         List.fold_left aux acc tys
       | Ptyp_poly (_, ty) -> aux acc ty
-      | Ptyp_package _
-      | Ptyp_extension _ ->
-        Err.raise_unsupported_ty ty.ptyp_loc
+      | _ -> Err.raise_unsupported_ty ty.ptyp_loc
     and aux_obj_fld acc fld =
       match fld.pof_desc with
       | Oinherit ty
@@ -1647,11 +1643,7 @@ module Gen_traverse = struct
         | Ptyp_any
         | Ptyp_var _ ->
           default
-        | Ptyp_object _
-        | Ptyp_class _
-        | Ptyp_extension _
-        | Ptyp_package _ ->
-          unsupported
+        | _ -> unsupported
     and aux_variant row_flds closed_flag lbl_opts ~binding ~loc ~ty =
       let pat = ppat_var ~loc (Located.mk ~loc binding) in
       let has_lbl =
