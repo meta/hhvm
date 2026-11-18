@@ -125,7 +125,6 @@ final class Set<T as arraykey> implements \MutableSet<T> {
   }
 
   <<__Native>>
-  // TODO(T125046752) Should be `T`
   private function addNative(mixed $val)[write_props]: void;
   /** Adds the specified value to this Set.
    * @param mixed $val
