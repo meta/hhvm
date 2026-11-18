@@ -1555,7 +1555,9 @@ Array resolveTSImpl(TSEnv& env, const TSCtx& ctx, const Array& arr) {
         // if there are more accesses, keep resolving
         auto const typeCnsKind = TypeStructure::kind(typeCnsVal);
         if (typeCnsKind != TypeStructure::Kind::T_class
-            && typeCnsKind != TypeStructure::Kind::T_interface) {
+            && typeCnsKind != TypeStructure::Kind::T_interface
+            && typeCnsKind != TypeStructure::Kind::T_xhp
+            && typeCnsKind != TypeStructure::Kind::T_trait) {
           throw Exception(
             "%s, %s::%s does not resolve to a class or "
             "an interface and cannot contain type constant %s",

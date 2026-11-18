@@ -1,1 +1,1 @@
-Fatal error: when resolving type constant C::U, C::T does not resolve to a class or an interface and cannot contain type constant T1 in %s on line 11
+Fatal error: when resolving type constant C::U, class MyTrait does not have non-abstract type constant T1 in %s/type_annotation/type_annotation_typeaccess8.php on line 11

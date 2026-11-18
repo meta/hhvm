@@ -1,1 +1,7 @@
-Fatal error: when resolving anonymous type structure, HostTraverser::THost does not resolve to a class or an interface and cannot contain type constant TData in %s/checked_unsafe_cast/xhp_type_access.php on line 23
+dict(1) {
+  ["a"]=>
+  int(1)
+}
+
+Warning: Runtime type-check: Expected shape('a' => int), got string in %s/checked_unsafe_cast/xhp_type_access.php on line 23
+string(1) "a"

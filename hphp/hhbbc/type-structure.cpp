@@ -819,6 +819,8 @@ Resolution resolve_type_access_list(ResolveCtx& ctx,
       switch ((TS::Kind)val(*kind).num) {
         case TS::Kind::T_class:
         case TS::Kind::T_interface:
+        case TS::Kind::T_xhp:
+        case TS::Kind::T_trait:
           break;
         default:
           return Resolution{ TBottom, true };
