@@ -65,6 +65,7 @@
 
 #include <atomic>
 
+#include <folly/synchronization/AtomicRef.h>
 #include <folly/system/ThreadName.h>
 
 TRACE_SET_MOD(mcg)
@@ -199,8 +200,8 @@ struct TranslateWorker : JobQueueWorker<tc::FuncMetaInfo*, void*, true, true> {
     SCOPE_EXIT {
       {
         std::unique_lock<std::mutex> lock{s_condVarMutex};
-        std::atomic_ref<bool>{info->jobDone}.store(true,
-                                                   std::memory_order_release);
+        folly::atomic_ref<bool>{info->jobDone}.store(true,
+                                                     std::memory_order_release);
       }
       s_condVar.notify_one();
     };
@@ -622,7 +623,7 @@ void retranslateAll(bool skipSerialize) {
 }
 
 void waitForTranslate(tc::FuncMetaInfo& info) {
-  std::atomic_ref<bool> jobDone{info.jobDone};
+  folly::atomic_ref<bool> jobDone{info.jobDone};
   if (jobDone.load(std::memory_order_acquire)) return;
 
   std::unique_lock<std::mutex> lock{s_condVarMutex};
