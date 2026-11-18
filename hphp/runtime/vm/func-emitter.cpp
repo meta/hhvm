@@ -247,6 +247,10 @@ Func* FuncEmitter::create(Unit& unit, PreClass* preClass /* = NULL */) const {
   auto attrs = this->attrs;
   assertx(IMPLIES(unit.isSystemLib(), attrs & AttrBuiltin));
 
+  if (!Cfg::Eval::AllowMockClass && (attrs & AttrFinal)) {
+    attrs |= AttrNoOverride;
+  }
+
   auto persistent = Cfg::Repo::Authoritative ||
     ((Cfg::Eval::ForceAllPersistent || unit.isSystemLib()) &&
      (!RO::funcIsRenamable(name) || preClass));

@@ -502,7 +502,6 @@ uint32_t Func::numClosureUseLocals() const {
 // Persistence.
 
 bool Func::isImmutableFrom(const Class* cls) const {
-  if (!Cfg::Repo::Authoritative) return false;
   assertx(cls && cls->lookupMethod(name()) == this);
   if (attrs() & AttrNoOverride) {
     return true;

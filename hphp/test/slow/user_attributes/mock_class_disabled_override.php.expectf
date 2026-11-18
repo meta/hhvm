@@ -1,0 +1,2 @@
+
+Fatal error: Class MockOverride uses <<__MockClass>>, but Eval.AllowMockClass is disabled in %s on line %d

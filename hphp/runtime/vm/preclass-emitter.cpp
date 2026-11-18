@@ -244,6 +244,9 @@ PreClass* PreClassEmitter::create(Unit& unit) const {
       !Cfg::Repo::Authoritative && !unit.isSystemLib()) {
     attrs = Attr(attrs & ~AttrPersistent);
   }
+  if (!Cfg::Eval::AllowMockClass && (attrs & AttrFinal)) {
+    attrs |= AttrNoOverride | AttrNoOverrideRegular;
+  }
 
   auto const dynConstructSampleRate = [&] () -> int64_t {
     if (!(attrs & AttrDynamicallyConstructible)) return -1;

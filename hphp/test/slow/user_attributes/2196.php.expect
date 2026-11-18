@@ -1,3 +1,7 @@
 C::foo
 C::bar
 MockAbsFinalClass::f
+B::foo
+C::foo
+FinalMethodBase::foo
+MockFinalMethod::foo

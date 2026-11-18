@@ -1329,6 +1329,13 @@ The format can be found in hphp/tools/configs/generate_configs.rs
   Eval.ReuseUnitsByHash because persistent functions can execute without first
   initializing the unit's request-local filepath.
 
+- bool Eval.AllowMockClass, UNKNOWN
+
+  Allow classes with the __MockClass attribute, which can bypass final and
+  sealed restrictions. Defaults to false when Repo.Authoritative or
+  Eval.ForceAllPersistent is enabled, and true otherwise. When false, loading
+  a mock class raises a fatal error and final classes cannot be extended.
+
 - bool Eval.TypeAliasPersistence = true, paulbiss
 
   When ForceAllPersistent is enabled also mark type aliases as persistent.

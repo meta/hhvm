@@ -2446,9 +2446,6 @@ void Class::propagateReturnTypes() const {
 }
 
 void Class::methodOverrideCheck(const Func* parentMethod, const Func* method) {
-  // Skip special methods
-  if (method->isGenerated()) return;
-
   if ((parentMethod->attrs() & AttrFinal)) {
     if (m_preClass->userAttributes().find(s___MockClass.get()) ==
         m_preClass->userAttributes().end()) {
@@ -2456,6 +2453,9 @@ void Class::methodOverrideCheck(const Func* parentMethod, const Func* method) {
                   m_parent->name()->data(), parentMethod->name()->data());
     }
   }
+
+  // Skip special methods
+  if (method->isGenerated()) return;
 
   if (parentMethod->isAsync() && !method->isAsync()) {
     raise_notice(
@@ -2662,6 +2662,11 @@ void Class::setRTAttributes() {
  *   that have the <<__MethodLevelTrait>> attribute themselves
  */
 void Class::checkUserAttributes() {
+  if (!Cfg::Eval::AllowMockClass &&
+      m_preClass->userAttributes().contains(s___MockClass.get())) {
+    raise_error("Class %s uses <<__MockClass>>, but Eval.AllowMockClass is disabled",
+                name()->data());
+  }
   if (m_preClass->userAttributes().contains(s___ModuleLevelTrait.get())) {
     if (!(attrs() & AttrTrait) || (attrs() & AttrInternal)) {
       raise_error("Attribute <<__ModuleLevelTrait>> can only be specified on public traits");

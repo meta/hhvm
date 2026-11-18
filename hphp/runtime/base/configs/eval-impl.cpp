@@ -146,6 +146,10 @@ void EvalLoader::ReuseUnitsByHashPostProcess(bool& val) {
   if (Cfg::Eval::ForceAllPersistent) val = false;
 }
 
+bool EvalLoader::AllowMockClassDefault() {
+  return !Cfg::Repo::Authoritative && !Cfg::Eval::ForceAllPersistent;
+}
+
 uint32_t EvalLoader::UnixServerWorkersDefault() {
   return Process::GetCPUCount();
 }
