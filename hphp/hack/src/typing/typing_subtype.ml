@@ -500,16 +500,19 @@ end = struct
       f
 
   let should_log_subtype_i env ~level ty_sub ty_super =
-    let level =
-      if
-        (TUtils.is_capability_i ty_sub || TUtils.is_capability_i ty_super)
-        && level < 3
-      then
-        3
-      else
-        level
-    in
-    Typing_log.should_log env ~category:"sub" ~level
+    if not (Typing_log.should_log env ~category:"sub" ~level) then
+      false
+    else
+      let level =
+        if
+          (TUtils.is_capability_i ty_sub || TUtils.is_capability_i ty_super)
+          && level < 3
+        then
+          3
+        else
+          level
+      in
+      Typing_log.should_log env ~category:"sub" ~level
 
   let log_subtype_i
       ~(this_ty : locl_ty option) ~function_name env ty_sub ty_super f =
@@ -959,21 +962,22 @@ end = struct
       missing_shape_splat_assignment subtype_env env missing ~ty_sub ~ty_super
 
   module Log = struct
-    let level subtype_env ~ty_sub ~ty_super =
-      let level = subtype_env.Subtype_env.log_level in
-      if
-        (TUtils.is_capability ty_sub || TUtils.is_capability ty_super)
-        && level < 3
-      then
-        3
-      else
-        level
-
     let should_log env subtype_env ~lhs ~rhs =
-      Typing_log.should_log
-        env
-        ~category:"sub"
-        ~level:(level subtype_env ~ty_sub:lhs.ty_sub ~ty_super:rhs.ty_super)
+      let level = subtype_env.Subtype_env.log_level in
+      if not (Typing_log.should_log env ~category:"sub" ~level) then
+        false
+      else
+        let level =
+          if
+            (TUtils.is_capability lhs.ty_sub
+            || TUtils.is_capability rhs.ty_super)
+            && level < 3
+          then
+            3
+          else
+            level
+        in
+        Typing_log.should_log env ~category:"sub" ~level
 
     let function_name subtype_env ~sub_supportdyn ~super_like ~super_supportdyn
         =
