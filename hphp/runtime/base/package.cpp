@@ -18,6 +18,7 @@
 
 #include "hphp/runtime/base/configs/eval-loader.h"
 #include "hphp/runtime/base/execution-context.h"
+#include "hphp/runtime/base/init-fini-node.h"
 #include "hphp/runtime/base/string-data.h"
 #include "hphp/runtime/server/cli-server.h"
 #include "hphp/runtime/vm/func.h"
@@ -306,6 +307,11 @@ std::string PackageInfo::mangleForCacheKey() const {
 }
 
 static RDS_LOCAL_NO_CHECK(const PackageInfo::Deployment*, s_requestActiveDeployment);
+
+static InitFiniNode s_clearRequestActiveDeployment(
+  [] { s_requestActiveDeployment.destroy(); },
+  InitFiniNode::When::RequestFini
+);
 
 const PackageInfo::Deployment* PackageInfo::getActiveDeployment() const {
   auto const findDeploymentByName = [&](const std::string& name) -> const PackageInfo::Deployment* {

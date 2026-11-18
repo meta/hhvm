@@ -15,23 +15,90 @@
 */
 
 #include "hphp/runtime/base/package.h"
+#include "hphp/runtime/base/program-functions.h"
 #include "hphp/runtime/base/runtime-option.h"
 #include "hphp/runtime/base/static-string-table.h"
 #include "hphp/runtime/base/unit-cache.h"
 #include "hphp/runtime/vm/unit-emitter.h"
 
 #include "hphp/util/blob-encoder.h"
+#include "hphp/util/configs/eval.h"
+#include "hphp/util/configs/repo.h"
+#include "hphp/util/configs/server.h"
 
+#include <folly/ScopeGuard.h>
 #include <folly/testing/TestUtil.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <thread>
 #include <tuple>
+#include <utility>
 
 namespace HPHP {
 namespace {
+
+struct ActiveDeploymentConfig {
+  bool serverMode = std::exchange(Cfg::Server::Mode, false);
+  bool repoAuthoritative = std::exchange(Cfg::Repo::Authoritative, false);
+  std::string name = std::exchange(Cfg::Eval::ActiveDeployment, "production");
+
+  ~ActiveDeploymentConfig() {
+    Cfg::Server::Mode = serverMode;
+    Cfg::Repo::Authoritative = repoAuthoritative;
+    Cfg::Eval::ActiveDeployment = std::move(name);
+  }
+};
+
+PackageInfo deploymentPackageInfo(const char* package) {
+  PackageInfo info;
+  info.m_deployments.emplace(
+    "production", PackageInfo::Deployment{{package}, {}}
+  );
+  return info;
+}
+
+TEST(PackageInfoTest, ClearsActiveDeploymentBetweenRequests) {
+  ActiveDeploymentConfig config;
+  Cfg::Server::Mode = true;
+  std::thread{[] {
+    hphp_thread_init();
+    SCOPE_EXIT { hphp_thread_exit(); };
+    auto const first = deploymentPackageInfo("prod");
+    auto const second = deploymentPackageInfo("intern");
+    {
+      HphpSession request{Treadmill::SessionKind::UnitTests};
+      EXPECT_EQ(&first.deployments().at("production"), first.getActiveDeployment());
+    }
+    {
+      HphpSession request{Treadmill::SessionKind::UnitTests};
+      EXPECT_EQ(&second.deployments().at("production"), second.getActiveDeployment());
+    }
+  }}.join();
+}
+
+TEST(PackageInfoTest, ClearsMissingActiveDeploymentBetweenRequests) {
+  ActiveDeploymentConfig config;
+  Cfg::Server::Mode = true;
+  std::thread{[] {
+    hphp_thread_init();
+    SCOPE_EXIT { hphp_thread_exit(); };
+    PackageInfo info;
+    {
+      HphpSession request{Treadmill::SessionKind::UnitTests};
+      EXPECT_EQ(info.getActiveDeployment(), nullptr);
+    }
+    info.m_deployments.emplace(
+      "production", PackageInfo::Deployment{{"intern"}, {}}
+    );
+    {
+      HphpSession request{Treadmill::SessionKind::UnitTests};
+      EXPECT_EQ(&info.deployments().at("production"), info.getActiveDeployment());
+    }
+  }}.join();
+}
 
 // Checks which names may be asked about at runtime.
 TEST(PackageInfoTest, AllowsDeployedPackagesChecking) {
