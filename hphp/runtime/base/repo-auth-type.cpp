@@ -521,6 +521,7 @@ void RepoAuthType::serde(SerDe& sd) {
 
 template void RepoAuthType::serde<>(BlobDecoder&);
 template void RepoAuthType::serde<>(BlobEncoder&);
+template void RepoAuthType::Array::serialize<>(BlobEncoder&) const;
 
 //////////////////////////////////////////////////////////////////////
 
