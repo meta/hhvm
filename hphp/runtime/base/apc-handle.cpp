@@ -93,7 +93,6 @@ APCHandle::Pair APCHandle::Create(const_variant_ref source,
       auto const value = new APCTypedValue(val(cell).plazyclass);
       return {value->getHandle(), sizeof(APCTypedValue)};
     }
-    case KindOfPersistentString:
     case KindOfString: {
       auto const s = val(cell).pstr;
       if (auto const value = APCTypedValue::HandlePersistent(s)) {
@@ -108,21 +107,18 @@ APCHandle::Pair APCHandle::Create(const_variant_ref source,
       return {value->getHandle(), st->size() + sizeof(APCTypedValue)};
     }
 
-    case KindOfPersistentVec:
     case KindOfVec: {
       auto const ad = val(cell).parr;
       assertx(ad->isVecType());
       return APCArray::MakeCopiedVec(ad, level, unserializeObj, pure);
     }
 
-    case KindOfPersistentDict:
     case KindOfDict: {
       auto const ad = val(cell).parr;
       assertx(ad->isDictType());
       return APCArray::MakeCopiedDict(ad, level, unserializeObj, pure);
     }
 
-    case KindOfPersistentKeyset:
     case KindOfKeyset: {
       auto const ad = val(cell).parr;
       assertx(ad->isKeysetType());
@@ -385,15 +381,15 @@ bool APCHandle::checkInvariants() const {
       return true;
     case APCKind::StaticString:
     case APCKind::SharedString:
-      assertx(m_type == KindOfPersistentString);
+      assertx(m_type == KindOfString);
       return true;
     case APCKind::StaticArray:
     case APCKind::StaticBespoke:
     case APCKind::SharedArray:
     case APCKind::SharedBespoke:
-      assertx(m_type == KindOfPersistentVec ||
-              m_type == KindOfPersistentDict ||
-              m_type == KindOfPersistentKeyset);
+      assertx(m_type == KindOfVec ||
+              m_type == KindOfDict ||
+              m_type == KindOfKeyset);
       return true;
     case APCKind::FuncEntity:
     case APCKind::ClsMeth:

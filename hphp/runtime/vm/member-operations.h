@@ -399,11 +399,11 @@ inline TypedValue ElemString(const StringData* base, key_type<keyType> key) {
     if (mode == MOpMode::Warn) {
       raise_notice("Uninitialized string offset: %" PRId64, offset);
     }
-    return make_tv<KindOfPersistentString>(staticEmptyString());
+    return make_tv<KindOfString>(staticEmptyString());
   } else {
     auto const sd = base->getChar(offset);
     assertx(sd->isStatic());
-    return make_tv<KindOfPersistentString>(sd);
+    return make_tv<KindOfString>(sd);
   }
 }
 
@@ -450,16 +450,12 @@ NEVER_INLINE TypedValue ElemSlow(TypedValue base, key_type<keyType> key) {
       return ElemString<mode, keyType>(
         lazyClassToStringHelper(val(base).plazyclass, op), key
       );
-    case KindOfPersistentString:
     case KindOfString:
       return ElemString<mode, keyType>(val(base).pstr, key);
 
     // These types are handled in Elem.
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       always_assert(false);
 
@@ -525,7 +521,6 @@ inline tv_lval ElemDBespoke(tv_lval base, key_type<keyType> key) {
 
   assertx(!base.val().parr->isVanilla());
   auto const result = ElemDBespokePre(base, key);
-  assertx(result.type() == dt_modulo_persistence(result.type()));
   assertx(tvIsPlausible(*base));
   assertx(result.type() != KindOfUninit);
   return result;
@@ -540,7 +535,6 @@ inline tv_lval ElemDVecPre(tv_lval base, int64_t key) {
 
   assertx(lval.arr->hasExactlyOneRef());
   if (lval.arr != oldArr) {
-    base.type() = dt_with_rc(base.type());
     base.val().parr = lval.arr;
     assertx(tvIsPlausible(base.tv()));
     decRefArr(oldArr);
@@ -588,7 +582,6 @@ inline tv_lval ElemDDictPre(tv_lval base, int64_t key) {
 
   assertx(lval.arr->hasExactlyOneRef());
   if (lval.arr != oldArr) {
-    base.type() = dt_with_rc(base.type());
     base.val().parr = lval.arr;
     assertx(tvIsPlausible(base.tv()));
     decRefArr(oldArr);
@@ -608,7 +601,6 @@ inline tv_lval ElemDDictPre(tv_lval base, StringData* key) {
 
   assertx(lval.arr->hasExactlyOneRef());
   if (lval.arr != oldArr) {
-    base.type() = dt_with_rc(base.type());
     base.val().parr = lval.arr;
     assertx(tvIsPlausible(base.tv()));
     decRefArr(oldArr);
@@ -745,16 +737,12 @@ tv_lval ElemD(tv_lval base, key_type<keyType> key) {
     case KindOfLazyClass:
     case KindOfEnumClassLabel:
       return ElemDScalar();
-    case KindOfPersistentString:
     case KindOfString:
       return ElemDString(base);
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       return ElemDKeyset<keyType>(base, key);
-    case KindOfPersistentDict:
     case KindOfDict:
       return ElemDDict<keyType>(base, key);
-    case KindOfPersistentVec:
     case KindOfVec:
       return ElemDVec<keyType>(base, key);
     case KindOfObject:
@@ -818,7 +806,6 @@ inline tv_lval ElemUVecPre(tv_lval base, int64_t key) {
     if (!oldArr->cowCheck()) return oldArr;
     decRefArr(oldArr);
     auto const newArr = VanillaVec::Copy(oldArr);
-    type(base) = dt_with_rc(type(base));
     val(base).parr = newArr;
     assertx(tvIsPlausible(*base));
     return newArr;
@@ -860,7 +847,6 @@ inline tv_lval ElemUDictPre(tv_lval base, int64_t key) {
     return ElemUEmptyish();
   }
   if (lval.arr != oldArr) {
-    type(base) = dt_with_rc(type(base));
     val(base).parr = lval.arr;
     assertx(tvIsPlausible(*base));
     decRefArr(oldArr);
@@ -876,7 +862,6 @@ inline tv_lval ElemUDictPre(tv_lval base, StringData* key) {
     return ElemUEmptyish();
   }
   if (lval.arr != oldArr) {
-    type(base) = dt_with_rc(type(base));
     val(base).parr = lval.arr;
     assertx(tvIsPlausible(*base));
     decRefArr(oldArr);
@@ -978,7 +963,6 @@ tv_lval ElemU(tv_lval base, key_type<keyType> key) {
     case KindOfFunc:
       raise_error(Strings::OP_NOT_SUPPORTED_FUNC);
       return nullptr;
-    case KindOfPersistentString:
     case KindOfString:
       raise_error(Strings::OP_NOT_SUPPORTED_STRING);
       return nullptr;
@@ -987,13 +971,10 @@ tv_lval ElemU(tv_lval base, key_type<keyType> key) {
     case KindOfRClsMeth:
       raise_error(Strings::RCLS_METH_NOT_SUPPORTED);
       return nullptr;
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       return ElemUKeyset<keyType>(base, key);
-    case KindOfPersistentDict:
     case KindOfDict:
       return ElemUDict<keyType>(base, key);
-    case KindOfPersistentVec:
     case KindOfVec:
       return ElemUVec<keyType>(base, key);
     case KindOfObject:
@@ -1066,14 +1047,10 @@ inline tv_lval NewElem(tv_lval base) {
     case KindOfLazyClass:
     case KindOfEnumClassLabel:
       return NewElemInvalid();
-    case KindOfPersistentString:
     case KindOfString:
       return NewElemString(base);
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       throw_cannot_use_newelem_for_lval_read(val(base).parr);
     case KindOfObject:
@@ -1230,7 +1207,6 @@ ALWAYS_INLINE
 void arraySetUpdateBase(ArrayData* newData, tv_lval base) {
   assertx(newData->hasExactlyOneRef());
   assertx(isArrayLikeType(type(base)));
-  type(base) = dt_with_rc(type(base));
   val(base).parr = newData;
   assertx(type(base) == newData->toDataType());
   assertx(tvIsPlausible(*base));
@@ -1362,17 +1338,13 @@ StringData* SetElemSlow(tv_lval base, key_type<keyType> key,
     case KindOfEnumClassLabel:
       SetElemScalar<setResult>(value);
       return nullptr;
-    case KindOfPersistentString:
     case KindOfString:
       return SetElemString<setResult, keyType>(base, key, value);
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       throwInvalidKeysetOperation();
 
     // Handled in SetElem
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
       always_assert(false);
 
@@ -1548,18 +1520,14 @@ inline void SetNewElem(tv_lval base, TypedValue* value) {
     case KindOfLazyClass:
     case KindOfEnumClassLabel:
       return SetNewElemScalar<setResult>(value);
-    case KindOfPersistentString:
     case KindOfString:
       return SetNewElemString(base);
-    case KindOfPersistentVec:
     case KindOfVec:
       tvIncRefGen(*value);
       return SetNewElemVec(base, value);
-    case KindOfPersistentDict:
     case KindOfDict:
       tvIncRefGen(*value);
       return SetNewElemDict(base, value);
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       tvIncRefGen(*value);
       return SetNewElemKeyset(base, value);
@@ -1655,7 +1623,6 @@ inline TypedValue SetOpElem(SetOpOp op, tv_lval base,
     case KindOfEnumClassLabel:
       return SetOpElemScalar();
 
-    case KindOfPersistentString:
     case KindOfString:
       if (val(base).pstr->size() != 0) {
         raise_error("Cannot use assign-op operators with overloaded "
@@ -1663,18 +1630,15 @@ inline TypedValue SetOpElem(SetOpOp op, tv_lval base,
       }
       return SetOpElemEmptyish(base);
 
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       throwInvalidKeysetOperation();
 
-    case KindOfPersistentDict:
     case KindOfDict: {
       auto const result = ElemDDict<KeyType::Any>(base, key);
       setopBody(tvAssertPlausible(result), op, rhs);
       return *result;
     }
 
-    case KindOfPersistentVec:
     case KindOfVec:
       return handleVec();
 
@@ -1723,18 +1687,14 @@ inline TypedValue SetOpNewElem(SetOpOp op, tv_lval base, TypedValue* rhs) {
     case KindOfEnumClassLabel:
       return SetOpNewElemScalar();
 
-    case KindOfPersistentString:
     case KindOfString:
       if (val(base).pstr->size() != 0) {
         raise_error("[] operator not supported for strings");
       }
       return SetOpNewElemEmptyish(base);
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       throw_cannot_use_newelem_for_lval_read(val(base).parr);
 
@@ -1821,7 +1781,6 @@ inline TypedValue IncDecElem(IncDecOp op, tv_lval base, TypedValue key) {
     case KindOfEnumClassLabel:
       return IncDecElemScalar();
 
-    case KindOfPersistentString:
     case KindOfString:
       if (val(base).pstr->size() != 0) {
         raise_error("Cannot increment/decrement overloaded objects "
@@ -1829,15 +1788,12 @@ inline TypedValue IncDecElem(IncDecOp op, tv_lval base, TypedValue key) {
       }
       return IncDecElemEmptyish(base);
 
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       throwInvalidKeysetOperation();
 
-    case KindOfPersistentDict:
     case KindOfDict:
       return IncDecBody(op, ElemDDict<KeyType::Any>(base, key));
 
-    case KindOfPersistentVec:
     case KindOfVec:
       return IncDecBody(op, ElemDVec<KeyType::Any>(base, key));
 
@@ -1894,18 +1850,14 @@ inline TypedValue IncDecNewElem(IncDecOp op, tv_lval base) {
     case KindOfEnumClassLabel:
       return IncDecNewElemScalar();
 
-    case KindOfPersistentString:
     case KindOfString:
       if (val(base).pstr->size() != 0) {
         raise_error("[] operator not supported for strings");
       }
       return IncDecNewElemEmptyish(base);
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       throw_cannot_use_newelem_for_lval_read(val(base).parr);
 
@@ -1949,7 +1901,6 @@ inline void UnsetElemVec(tv_lval base, key_type<keyType> key) {
   ArrayData* a = val(base).parr;
   ArrayData* a2 = UnsetElemVecPre(a, key);
 
-  type(base) = dt_with_rc(type(base));
   val(base).parr = a2;
 }
 
@@ -1980,7 +1931,6 @@ inline void UnsetElemDict(tv_lval base, key_type<keyType> key) {
   ArrayData* a = val(base).parr;
   ArrayData* a2 = UnsetElemDictPre(a, key);
 
-  type(base) = dt_with_rc(type(base));
   val(base).parr = a2;
 }
 
@@ -2042,7 +1992,6 @@ inline void UnsetElemBespoke(tv_lval base, key_type<keyType> key) {
   auto const result = UnsetElemBespokePre(oldArr, key);
 
   if (result != oldArr) {
-    type(base) = dt_with_rc(type(base));
     val(base).parr = result;
   }
   assertx(tvIsPlausible(*base));
@@ -2080,17 +2029,13 @@ void UnsetElemSlow(tv_lval base, key_type<keyType> key) {
       raise_error("Cannot unset a class");
       return;
 
-    case KindOfPersistentString:
     case KindOfString:
       raise_error(Strings::CANT_UNSET_STRING);
       return;
 
     // Handled in UnsetElem
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       always_assert(false);
 
@@ -2252,16 +2197,12 @@ NEVER_INLINE bool IssetElemSlow(TypedValue base, key_type<keyType> key) {
         lazyClassToStringHelper(val(base).plazyclass, op), key
       );
 
-    case KindOfPersistentString:
     case KindOfString:
       return IssetElemString<keyType>(val(base).pstr, key);
 
     // These types are handled in IssetElem.
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       always_assert(false);
 
@@ -2325,13 +2266,9 @@ inline tv_lval nullSafeProp(TypedValue& tvRef,
     case KindOfInt64:
     case KindOfDouble:
     case KindOfResource:
-    case KindOfPersistentString:
     case KindOfString:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfRFunc:
     case KindOfFunc:
@@ -2399,16 +2336,12 @@ inline tv_lval Prop(TypedValue& tvRef, const MemberLookupContext& ctx,
     case KindOfEnumClassLabel:
       return propPreNull<mode>(tvRef);
 
-    case KindOfPersistentString:
     case KindOfString:
       return base.val().pstr->size() ? propPreNull<mode>(tvRef)
                                      : propPreStdclass<mode>(tvRef);
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfClsMeth:
     case KindOfRClsMeth:
@@ -2467,11 +2400,8 @@ inline void SetProp(MemberLookupContext& ctx, TypedValue base, key_type<keyType>
 
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfResource:
     case KindOfRFunc:
@@ -2483,7 +2413,6 @@ inline void SetProp(MemberLookupContext& ctx, TypedValue base, key_type<keyType>
     case KindOfEnumClassLabel:
       return SetPropNull();
 
-    case KindOfPersistentString:
     case KindOfString:
       return HPHP::val(base).pstr->size() ? SetPropNull()
                                           : detail::raiseEmptyObject();
@@ -2526,11 +2455,8 @@ inline tv_lval SetOpProp(TypedValue& tvRef,
 
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfResource:
     case KindOfRFunc:
@@ -2542,7 +2468,6 @@ inline tv_lval SetOpProp(TypedValue& tvRef,
     case KindOfEnumClassLabel:
       return SetOpPropNull(tvRef);
 
-    case KindOfPersistentString:
     case KindOfString:
       if (val(base).pstr->size()) return SetOpPropNull(tvRef);
       detail::raiseEmptyObject();
@@ -2587,11 +2512,8 @@ inline TypedValue IncDecProp(
 
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfResource:
     case KindOfRFunc:
@@ -2603,7 +2525,6 @@ inline TypedValue IncDecProp(
     case KindOfEnumClassLabel:
       return IncDecPropNull();
 
-    case KindOfPersistentString:
     case KindOfString:
       if (val(base).pstr->size()) return IncDecPropNull();
       detail::raiseEmptyObject();

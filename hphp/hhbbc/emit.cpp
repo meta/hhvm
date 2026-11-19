@@ -424,7 +424,7 @@ EmitBcInfo emit_bytecode(EmitUnitState& euState, UnitEmitter& ue, FuncEmitter& f
       assertx(names->size() > 0);
       VecInit nameVec(names->size());
       for (auto name : *names) {
-        nameVec.append(make_tv<KindOfPersistentString>(name));
+        nameVec.append(make_tv<KindOfString>(name));
       }
       auto nameTV = nameVec.create();
       ArrayData::GetScalarArray(&nameTV);

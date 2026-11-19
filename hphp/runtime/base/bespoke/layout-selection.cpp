@@ -451,7 +451,7 @@ KeyBounds computeTypeBounds(
         if (!tvIsString(key)) return;
         auto const str = key.val().pstr;
         assertx(str->isStatic());
-        result[str] |= static_cast<uint8_t>(dt_modulo_persistence(val.type()));
+        result[str] |= static_cast<uint8_t>(val.type());
       });
     }
     for (auto const& it : profile->data->events) {

@@ -458,7 +458,6 @@ static std::string toStringElm(TypedValue tv) {
     case KindOfDouble:
       os << tv.m_data.dbl;
       continue;
-    case KindOfPersistentString:
     case KindOfString:
       {
         int len = tv.m_data.pstr->size();
@@ -474,7 +473,6 @@ static std::string toStringElm(TypedValue tv) {
            << "\"" << (truncated ? "..." : "");
       }
       continue;
-    case KindOfPersistentVec:
     case KindOfVec:
       assertx(tv.m_data.parr->isVecType());
       assertx(tv.m_data.parr->checkCount());
@@ -482,7 +480,6 @@ static std::string toStringElm(TypedValue tv) {
       print_count();
       os << ":Vec";
       continue;
-    case KindOfPersistentDict:
     case KindOfDict:
       assertx(tv.m_data.parr->isDictType());
       assertx(tv.m_data.parr->checkCount());
@@ -490,7 +487,6 @@ static std::string toStringElm(TypedValue tv) {
       print_count();
       os << ":Dict";
       continue;
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       assertx(tv.m_data.parr->isKeysetType());
       assertx(tv.m_data.parr->checkCount());
@@ -1132,7 +1128,7 @@ OPTBLD_INLINE void iopClassName() {
   if (!isClassType(cls->m_type)) {
     raise_error("Attempting to get name of non-class");
   }
-  vmStack().replaceC<KindOfPersistentString>(
+  vmStack().replaceC<KindOfString>(
     cls->m_data.pclass->name()
   );
 }
@@ -1142,7 +1138,7 @@ OPTBLD_INLINE void iopEnumClassLabelName() {
   if (!tvIsEnumClassLabel(label)) {
     raise_error("Attempting to get name of non enum class label");
   }
-  vmStack().replaceC<KindOfPersistentString>(label->m_data.pstr);
+  vmStack().replaceC<KindOfString>(label->m_data.pstr);
 }
 
 OPTBLD_INLINE void iopInt(int64_t imm) {
@@ -1177,7 +1173,6 @@ void maybeMakeBespokeArrayAfterCast(TypedValue* tv) {
   auto const newArr = maybeMakeBespokeArray(oldArr);
   if (newArr == oldArr) return;
   val(tv).parr = newArr;
-  type(tv) = dt_with_rc(type(tv));
 }
 
 }
@@ -2648,7 +2643,7 @@ static OPTBLD_INLINE void propQDispatch(MOpMode mode, TypedValue key, ReadonlyOp
   auto ctx = MemberLookupContext(arGetContextClass(vmfp()), vmfp()->func());
 
   assertx(mode == MOpMode::None || mode == MOpMode::Warn);
-  assertx(key.m_type == KindOfPersistentString);
+  assertx(key.m_type == KindOfString);
   if (mode == MOpMode::None) {
     mstate.base = nullSafeProp<MOpMode::None>(mstate.tvTempBase, ctx,
                                               *mstate.base, key.m_data.pstr, op);
@@ -2714,7 +2709,7 @@ static inline TypedValue key_tv(MemberKey key) {
     case MEI:
       return make_tv<KindOfInt64>(key.int64);
     case MET: case MPT: case MQT:
-      return make_tv<KindOfPersistentString>(key.litstr);
+      return make_tv<KindOfString>(key.litstr);
   }
   not_reached();
 }
@@ -3307,7 +3302,7 @@ OPTBLD_INLINE void iopIdx() {
     if (IssetElemString<KeyType::Any>(str, key)) {
       auto idx = tvCastToInt64(key);
       assertx(idx >= 0 && idx < str->size());
-      result = make_tv<KindOfPersistentString>(str->getChar(idx));
+      result = make_tv<KindOfString>(str->getChar(idx));
       vmStack().popTV();
     } else {
       result = *def;
@@ -4402,7 +4397,6 @@ OPTBLD_INLINE void iopIterSetValue(const IterArgs& ita, tv_lval base) {
   assertx(!has_flag(ita.flags, IterArgs::Flags::BaseConst));
 
   auto it = frame_iter(vmfp(), ita.iterId);
-  type(base) = dt_with_rc(type(base));
   val(base).parr = val(base).parr->setPosMove(it->getPos(), *vmStack().topC());
   vmStack().discard();
 }

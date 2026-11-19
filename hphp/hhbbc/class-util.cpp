@@ -146,13 +146,13 @@ TypedValue get_default_value_of_reified_list(const UserAttributeMap& ua) {
   // Empty vec is allowed for the "all soft" case, so use that if it
   // applies.
   auto const allSoft = areAllGenericsSoft(tv.m_data.parr);
-  if (allSoft) return make_tv<KindOfPersistentVec>(staticEmptyVec());
+  if (allSoft) return make_tv<KindOfVec>(staticEmptyVec());
 
   // Otherwise make a vec of the appropriate size filled with empty
   // dicts, which satisfies get_type_of_reified_list.
   VecInit init{numGenerics};
   for (size_t i = 0; i < numGenerics; ++i) {
-    init.append(make_tv<KindOfPersistentDict>(staticEmptyDictArray()));
+    init.append(make_tv<KindOfDict>(staticEmptyDictArray()));
   }
   auto var = init.toVariant();
   var.setEvalScalar();

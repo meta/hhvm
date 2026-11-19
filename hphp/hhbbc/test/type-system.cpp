@@ -924,7 +924,7 @@ Type enumclasslabelval(const StaticString& s) {
   return HPHP::HHBBC::enumclasslabelval(s.get());
 }
 
-TypedValue tv(SString s) { return make_tv<KindOfPersistentString>(s); }
+TypedValue tv(SString s) { return make_tv<KindOfString>(s); }
 TypedValue tv(const StaticString& s) { return tv(s.get()); }
 TypedValue tv(int64_t i) { return make_tv<KindOfInt64>(i); }
 

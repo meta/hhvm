@@ -991,9 +991,9 @@ Array getClassesWithAttrInfo(Attr attrs, bool inverse = false) {
   NamedType::foreach_cached_class([&](Class* c) {
     if ((c->attrs() & attrs) ? !inverse : inverse) {
       if (c->isBuiltin()) {
-        builtins.append(make_tv<KindOfPersistentString>(c->name()));
+        builtins.append(make_tv<KindOfString>(c->name()));
       } else {
-        non_builtins.append(make_tv<KindOfPersistentString>(c->name()));
+        non_builtins.append(make_tv<KindOfString>(c->name()));
       }
     }
   });

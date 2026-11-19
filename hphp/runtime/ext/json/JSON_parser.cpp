@@ -620,7 +620,7 @@ struct SimpleParser {
       pushInt64(num);
     } else if (auto const str = lookupStaticString(slice)) {
       auto const tv = top++;
-      tv->m_type = KindOfPersistentString;
+      tv->m_type = KindOfString;
       tv->m_data.pstr = str;
     } else {
       pushStringData(StringData::Make(start, len, CopyString));
@@ -1067,12 +1067,8 @@ static void json_create_zval(Variant &z, UncheckedBuffer &buf, DataType type,
 
     case KindOfUninit:
     case KindOfNull:
-    case KindOfPersistentString:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:

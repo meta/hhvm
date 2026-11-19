@@ -162,10 +162,6 @@ public:
   // The "Elem" methods are variants on the "Lval" methods that allow us to
   // avoid unnecessary escalation. It restricts both the callee and caller:
   //
-  //  * The callee implementing the method may *never* return a DataType*
-  //    pointing to a persistent counterpart of a maybe-countable DataType
-  //    (i.e. KindOfPersistentString, or any of the persistent array-likes).
-  //
   //  * The caller using this method may *never* change the value of the type
   //    the resulting lval points to. However, the caller may store to it with
   //    the same type.

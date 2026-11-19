@@ -98,7 +98,6 @@ struct VariantControllerImpl {
         [[fallthrough]];
       case KindOfClass:
       case KindOfLazyClass:
-      case KindOfPersistentString:
       case KindOfString:     return HPHP::serialize::Type::STRING;
       case KindOfObject:
         if (Cfg::Eval::ForbidMethCallerHelperSerialize &&
@@ -112,12 +111,10 @@ struct VariantControllerImpl {
         }
         return HPHP::serialize::Type::OBJECT;
 
-      case KindOfPersistentDict:
       case KindOfDict: {
         return HPHP::serialize::Type::MAP;
       }
 
-      case KindOfPersistentVec:
       case KindOfVec: {
         switch (HackArraysMode) {
           case VariantControllerHackArraysMode::OFF:
@@ -134,7 +131,6 @@ struct VariantControllerImpl {
         }
       }
 
-      case KindOfPersistentKeyset:
       case KindOfKeyset:
         if constexpr (
             HackArraysMode == VariantControllerHackArraysMode::ON_AND_KEYSET ||

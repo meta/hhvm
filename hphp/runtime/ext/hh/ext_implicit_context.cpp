@@ -246,7 +246,6 @@ const Class* resolveClass(TypedValue cls) {
       return cls.m_data.pclass;
     case KindOfLazyClass:
       return stringToClass(cls.m_data.plazyclass.name());
-    case KindOfPersistentString:
     case KindOfString:
       return stringToClass(cls.m_data.pstr);
     default:

@@ -61,7 +61,7 @@ namespace {
 // store `size` elements.
 Array makeReserveLike(DataType type, size_t size) {
   auto const ad = [&]{
-    switch (dt_with_rc(type)) {
+    switch (type) {
       case KindOfVec:    return VanillaVec::MakeReserveVec(size);
       case KindOfDict:   return VanillaDict::MakeReserveDict(size);
       case KindOfKeyset: return VanillaKeyset::MakeReserveSet(size);
@@ -405,11 +405,8 @@ bool HHVM_FUNCTION(array_key_exists,
     case KindOfRClsMeth:
     case KindOfBoolean:
     case KindOfDouble:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:
@@ -424,7 +421,6 @@ bool HHVM_FUNCTION(array_key_exists,
       return ad->exists(StrNR(lazyClassToStringHelper(cell->m_data.plazyclass,
                                                       op)));
 
-    case KindOfPersistentString:
     case KindOfString: {
       return ad->exists(StrNR(cell->m_data.pstr));
     }
@@ -734,7 +730,6 @@ TypedValue HHVM_FUNCTION(array_product,
       case KindOfDouble:
         goto DOUBLE;
 
-      case KindOfPersistentString:
       case KindOfString: {
         int64_t ti;
         double td;
@@ -746,11 +741,8 @@ TypedValue HHVM_FUNCTION(array_product,
         }
       }
 
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentDict:
       case KindOfDict:
-      case KindOfPersistentKeyset:
       case KindOfKeyset:
       case KindOfObject:
       case KindOfResource:
@@ -918,7 +910,7 @@ TypedValue HHVM_FUNCTION(array_slice,
   }
 
   if (len <= 0) {
-    return make_persistent_array_like_tv(staticEmptyDictArray());
+    return make_array_like_tv(staticEmptyDictArray());
   }
 
   bool input_is_packed = [&] {
@@ -1013,7 +1005,6 @@ TypedValue HHVM_FUNCTION(array_sum,
       case KindOfDouble:
         goto DOUBLE;
 
-      case KindOfPersistentString:
       case KindOfString: {
         int64_t ti;
         double td;
@@ -1025,11 +1016,8 @@ TypedValue HHVM_FUNCTION(array_sum,
         }
       }
 
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentDict:
       case KindOfDict:
-      case KindOfPersistentKeyset:
       case KindOfKeyset:
       case KindOfObject:
       case KindOfResource:
@@ -1221,7 +1209,6 @@ int64_t HHVM_FUNCTION(count,
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
     case KindOfResource:
     case KindOfRFunc:
@@ -1232,11 +1219,8 @@ int64_t HHVM_FUNCTION(count,
     case KindOfEnumClassLabel:
       return 1;
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       if ((CountMode)mode == CountMode::RECURSIVE) {
         const Array& arr_var = var.asCArrRef();
@@ -1536,7 +1520,7 @@ TypedValue HHVM_FUNCTION(array_diff,
   }
   /* If container1 is empty, we can stop here and return the empty array */
   if (!getContainerSize(c1)) {
-    return make_persistent_array_like_tv(staticEmptyDictArray());
+    return make_array_like_tv(staticEmptyDictArray());
   }
   /* If all of the containers (except container1) are empty, we can just
      return container1 (converting it to an array if needed) */
@@ -1721,7 +1705,7 @@ TypedValue HHVM_FUNCTION(array_diff_key,
     return make_tv<KindOfNull>();
   }
   if (getContainerSize(c1) == 0) {
-    return make_persistent_array_like_tv(staticEmptyDictArray());
+    return make_array_like_tv(staticEmptyDictArray());
   }
   if (largestSize == 0) {
     if (isArrayLikeType(c1.m_type)) {
@@ -2074,7 +2058,7 @@ TypedValue HHVM_FUNCTION(array_intersect,
   /* If any of the containers were empty, we can stop here and return the
      empty array */
   if (!getContainerSize(c1) || !smallestSize) {
-    return make_persistent_array_like_tv(staticEmptyDictArray());
+    return make_array_like_tv(staticEmptyDictArray());
   }
 
   Array ret = Array::CreateDict();
@@ -2129,7 +2113,7 @@ TypedValue HHVM_FUNCTION(array_intersect_key,
     return make_tv<KindOfNull>();
   }
   if ((getContainerSize(c1) == 0) || empty_arg) {
-    return make_persistent_array_like_tv(staticEmptyDictArray());
+    return make_array_like_tv(staticEmptyDictArray());
   }
 
   auto intersect_step = [](TypedValue left, TypedValue right) {
@@ -2936,7 +2920,6 @@ Array HHVM_FUNCTION(HH_darray, const Variant& input) {
 TypedValue HHVM_FUNCTION(HH_array_key_cast, const Variant& input) {
   auto const op = "array_key_cast";
   switch (input.getType()) {
-    case KindOfPersistentString:
     case KindOfString: {
       int64_t n;
       auto const& str = input.asCStrRef();
@@ -2967,17 +2950,14 @@ TypedValue HHVM_FUNCTION(HH_array_key_cast, const Variant& input) {
     case KindOfNull:
       return tvReturn(staticEmptyString());
 
-    case KindOfPersistentVec:
     case KindOfVec:
       SystemLib::throwInvalidArgumentExceptionObject(
         "Vecs cannot be cast to an array-key"
       );
-    case KindOfPersistentDict:
     case KindOfDict:
       SystemLib::throwInvalidArgumentExceptionObject(
         "Dicts cannot be cast to an array-key"
       );
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       SystemLib::throwInvalidArgumentExceptionObject(
         "Keysets cannot be cast to an array-key"

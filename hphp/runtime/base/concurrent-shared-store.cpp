@@ -120,9 +120,9 @@ EntryInfo::Type EntryInfo::getAPCType(const APCHandle* handle) {
     case APCKind::SharedArray:
     case APCKind::SharedBespoke:
       switch (handle->type()) {
-        case KindOfPersistentVec:    return EntryInfo::Type::SharedVec;
-        case KindOfPersistentDict:   return EntryInfo::Type::SharedDict;
-        case KindOfPersistentKeyset: return EntryInfo::Type::SharedKeyset;
+        case KindOfVec:    return EntryInfo::Type::SharedVec;
+        case KindOfDict:   return EntryInfo::Type::SharedDict;
+        case KindOfKeyset: return EntryInfo::Type::SharedKeyset;
         default: always_assert(false);
       }
     case APCKind::SerializedVec:

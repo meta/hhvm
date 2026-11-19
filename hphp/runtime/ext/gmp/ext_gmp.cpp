@@ -135,7 +135,6 @@ static bool variantToGMPData(const char* const fnCaller,
   }
 
   case KindOfString:
-  case KindOfPersistentString:
     if (!setMpzFromString(gmpData, data.toString(), base)) {
       raise_warning(cs_GMP_INVALID_STRING, fnCaller);
       return false;
@@ -157,11 +156,8 @@ static bool variantToGMPData(const char* const fnCaller,
 
   case KindOfUninit:
   case KindOfNull:
-  case KindOfPersistentVec:
   case KindOfVec:
-  case KindOfPersistentDict:
   case KindOfDict:
-  case KindOfPersistentKeyset:
   case KindOfKeyset:
   case KindOfResource:
   case KindOfRFunc:

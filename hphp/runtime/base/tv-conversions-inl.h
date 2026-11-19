@@ -45,13 +45,9 @@ inline bool tvToBool(TypedValue cell) {
     case KindOfBoolean:       return cell.m_data.num;
     case KindOfInt64:         return cell.m_data.num != 0;
     case KindOfDouble:        return cell.m_data.dbl != 0;
-    case KindOfPersistentString:
     case KindOfString:        return cell.m_data.pstr->toBoolean();
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:        return !cell.m_data.parr->empty();
     case KindOfObject:        return cell.m_data.pobj->toBoolean();
     case KindOfResource:
@@ -79,14 +75,10 @@ inline int64_t tvToInt(TypedValue cell) {
       return cell.m_data.num;
     case KindOfDouble:
       return double_to_int64(cell.m_data.dbl);
-    case KindOfPersistentString:
     case KindOfString:
       return cell.m_data.pstr->toInt64(10);
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentVec:
     case KindOfVec:
-      case KindOfPersistentKeyset:
     case KindOfKeyset:
       return cell.m_data.parr->empty() ? 0 : 1;
     case KindOfObject:
@@ -135,11 +127,11 @@ inline TypedValue tvClassToString(TypedValue key) {
   auto const op = "string key conversion";
   if (isClassType(type(key))) {
     auto const keyStr = classToStringHelper(val(key).pclass, op);
-    return make_tv<KindOfPersistentString>(keyStr);
+    return make_tv<KindOfString>(keyStr);
   }
   if (isLazyClassType(type(key))) {
     auto const keyStr = lazyClassToStringHelper(val(key).plazyclass, op);
-    return make_tv<KindOfPersistentString>(keyStr);
+    return make_tv<KindOfString>(keyStr);
   }
   return key;
 }

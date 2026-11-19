@@ -3197,7 +3197,7 @@ void parse_metadata(AsmState& as) {
       as.in.expect(';');
       as.ue->m_metaData.emplace(
         makeStaticString(key),
-        make_tv<KindOfPersistentString>(value)
+        make_tv<KindOfString>(value)
       );
       return;
     }

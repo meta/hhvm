@@ -59,9 +59,9 @@ static Array HHVM_STATIC_METHOD(BuiltinEnum, getNames) {
                 v.m_data.pstr->isStrictlyInteger(num)) {
               return make_tv<KindOfInt64>(num);
             } else if (isClassType(v.m_type)) {
-              return make_tv<KindOfPersistentString>(v.m_data.pclass->name());
+              return make_tv<KindOfString>(v.m_data.pclass->name());
             } else if (isLazyClassType(v.m_type)) {
-              return make_tv<KindOfPersistentString>(
+              return make_tv<KindOfString>(
                 v.m_data.plazyclass.name()
               );
             }

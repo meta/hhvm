@@ -87,7 +87,7 @@ TEST(APC, Basic) {
   Variant got;
   EXPECT_EQ(store->get(s_key, got), true);
   EXPECT_TRUE(tvSame(*got.asTypedValue(),
-    make_tv<KindOfPersistentString>(s_value1.get())));
+    make_tv<KindOfString>(s_value1.get())));
   EXPECT_EQ(store->eraseKey(s_key), true);
   EXPECT_EQ(store->get(s_key, got), false);
 }
@@ -99,11 +99,11 @@ TEST(APC, SetOverwrite) {
   Variant got;
   EXPECT_EQ(store->get(s_key, got), true);
   EXPECT_TRUE(tvSame(*got.asTypedValue(),
-              make_tv<KindOfPersistentString>(s_value1.get())));
+              make_tv<KindOfString>(s_value1.get())));
   store->set(s_key, Variant(s_value2), 1500, 0, APCHandleLevel::Outer);
   EXPECT_EQ(store->get(s_key, got), true);
   EXPECT_TRUE(tvSame(*got.asTypedValue(),
-              make_tv<KindOfPersistentString>(s_value2.get())));
+              make_tv<KindOfString>(s_value2.get())));
 }
 
 TEST(APC, IncCas) {
@@ -297,7 +297,7 @@ TEST(APC, ContProfRestoresKeyNamesWithoutReplacingValues) {
   auto value = Variant::attach(HHVM_FN(apc_fetch)(Variant{matchingKey}, success));
   ASSERT_TRUE(success);
   EXPECT_TRUE(tvSame(*value.asTypedValue(),
-    make_tv<KindOfPersistentString>(s_value2.get())));
+    make_tv<KindOfString>(s_value2.get())));
 
   HHVM_FN(apc_delete)(Variant{matchingKey});
   prepareContProfStartupCandidates({}, 0, {}, apcSnapshot);

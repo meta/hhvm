@@ -873,7 +873,7 @@ TypedValue HHVM_FUNCTION(substr, StringArg str, int64_t start, int64_t length) {
   auto const size = str.get()->size();
   if (!string_substr_check(size, start, length)) {
     if (Cfg::PHP7::Substr && size == start) {
-      return make_tv<KindOfPersistentString>(empty_string_ref.get());
+      return make_tv<KindOfString>(empty_string_ref.get());
     } else {
       return make_tv<KindOfBoolean>(false);
     }
@@ -944,15 +944,11 @@ OptString HHVM_FUNCTION(chr, const Variant& ascii) {
     case KindOfInt64:
     case KindOfDouble:
       return OptString::FromChar(ascii.toInt64() & 0xFF);
-    case KindOfPersistentString:
     case KindOfString:
       return OptString::FromChar(
         ascii.toString().isNumeric() ? ascii.toInt64() & 0xFF : 0);
     case KindOfNull:
     case KindOfUninit:
-    case KindOfPersistentVec:
-    case KindOfPersistentDict:
-    case KindOfPersistentKeyset:
     case KindOfVec:
     case KindOfDict:
     case KindOfKeyset:

@@ -173,7 +173,6 @@ ArrayData* VanillaKeyset::MakeShared(
     if (UNLIKELY(elm.isTombstone())) continue;
     assertx(!elm.isEmpty());
     if (elm.hasStrKey()) {
-      elm.tv.m_type = KindOfPersistentString;
       auto& skey = elm.tv.m_data.pstr;
       skey = MakeSharedString(skey, env);
     }

@@ -773,8 +773,7 @@ snapshotDecRefTargetProfile(
   assertx(
     reduced.datatype == kNoDataTypesSeen ||
     reduced.datatype == kMultipleDataTypesSeen ||
-    (isRealType(reduced.datatype) &&
-     reduced.datatype == dt_modulo_persistence(reduced.datatype))
+    isRealType(reduced.datatype)
   );
 
   return ContProfTargetProfile{

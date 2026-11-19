@@ -233,7 +233,7 @@ private:
   }
   void setVal(TypedValue v) {
     m_val_spec = getSpec(v);
-    m_val_type = dt_modulo_persistence(type(v));
+    m_val_type = type(v);
   }
 
   ArrayOp m_op;
@@ -534,7 +534,7 @@ void SinkProfile::update(const ArrayData* ad) {
   auto const val = [&]{
     if (et.valueTypes == ValueTypes::Empty) return kNoValTypes;
     if (et.valueTypes != ValueTypes::Monotype) return kAnyValType;
-    auto const dt = dt_modulo_persistence(et.valueDatatype);
+    auto const dt = et.valueDatatype;
     return size_t(static_cast<data_type_t>(dt) - kMinDataType);
   }();
 

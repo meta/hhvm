@@ -130,7 +130,7 @@ public:
   }
 
   RefCount getRefCount() const noexcept {
-    return isRefcountedType(type(m_val)) || hasPersistentFlavor(type(m_val))
+    return isRefcountedType(type(m_val))
       ? val(m_val).pcnt->count()
       : OneReference;
   }
@@ -329,7 +329,7 @@ struct Variant : private TypedValue {
   }
   /* implicit */ Variant(const StaticString &v) noexcept {
     assertx(v.get() && !v.get()->isRefCounted());
-    m_type = KindOfPersistentString;
+    m_type = KindOfString;
     m_data.pstr = v.get();
   }
 
@@ -365,11 +365,9 @@ struct Variant : private TypedValue {
   explicit Variant(ArrayData* v) noexcept {
     if (v) {
       m_data.parr = v;
+      m_type = v->toDataType();
       if (v->isRefCounted()) {
-        m_type = v->toDataType();
         v->rawIncRefCount();
-      } else {
-        m_type = v->toPersistentDataType();
       }
     } else {
       m_type = KindOfNull;
@@ -432,7 +430,7 @@ struct Variant : private TypedValue {
   enum class PersistentArrInit {};
   Variant(const ArrayData* ad, DataType dt, PersistentArrInit) noexcept {
     // TODO(T58820726): Switch back to trusting caller and strict equality.
-    assertx(equivDataTypes(ad->toPersistentDataType(), dt));
+    assertx(equivDataTypes(ad->toDataType(), dt));
     assertx(!ad->isRefCounted());
     m_data.parr = const_cast<ArrayData*>(ad);
     m_type = dt;
@@ -442,7 +440,7 @@ struct Variant : private TypedValue {
   explicit Variant(const StringData *s, PersistentStrInit) noexcept {
     assertx(!s->isRefCounted());
     m_data.pstr = const_cast<StringData*>(s);
-    m_type = KindOfPersistentString;
+    m_type = KindOfString;
   }
 
   enum class EnumClassLabelInit {};
@@ -511,7 +509,7 @@ struct Variant : private TypedValue {
     StringData *s = v.get();
     if (LIKELY(s != nullptr)) {
       m_data.pstr = s;
-      m_type = s->isRefCounted() ? KindOfString : KindOfPersistentString;
+      m_type = KindOfString;
       v.detach();
     } else {
       m_type = KindOfNull;
@@ -523,7 +521,7 @@ struct Variant : private TypedValue {
     ArrayData *a = v.get();
     if (LIKELY(a != nullptr)) {
       m_data.parr = a;
-      m_type = a->isRefCounted() ? a->toDataType() : a->toPersistentDataType();
+      m_type = a->toDataType();
       v.detach();
     } else {
       m_type = KindOfNull;
@@ -693,8 +691,6 @@ struct Variant : private TypedValue {
 
   ALWAYS_INLINE OptString& asStrRef() {
     assertx(isStringType(m_type) && m_data.pstr);
-    // The caller is likely going to modify the string, so we have to eagerly
-    // promote KindOfPersistentString -> KindOfString.
     m_type = KindOfString;
     return *reinterpret_cast<OptString*>(&m_data.pstr);
   }
@@ -817,13 +813,9 @@ struct Variant : private TypedValue {
       case KindOfResource:
         return true;
       case KindOfDouble:
-      case KindOfPersistentString:
       case KindOfString:
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentDict:
       case KindOfDict:
-      case KindOfPersistentKeyset:
       case KindOfKeyset:
       case KindOfRFunc:
       case KindOfFunc:
@@ -1213,7 +1205,7 @@ struct Variant : private TypedValue {
    */
   Variant(StringData* var, Attach) noexcept {
     if (var) {
-      m_type = var->isRefCounted() ? KindOfString : KindOfPersistentString;
+      m_type = KindOfString;
       m_data.pstr = var;
     } else {
       m_type = KindOfNull;
@@ -1221,8 +1213,7 @@ struct Variant : private TypedValue {
   }
   Variant(ArrayData* var, Attach) noexcept {
     if (var) {
-      m_type =
-        var->isRefCounted() ? var->toDataType() : var->toPersistentDataType();
+      m_type = var->toDataType();
       m_data.parr = var;
     } else {
       m_type = KindOfNull;
@@ -1381,7 +1372,7 @@ struct VarNR : private TypedValue {
 
   explicit VarNR(const StaticString &v) {
     assertx(v.get() && !v.get()->isRefCounted());
-    m_type = KindOfPersistentString;
+    m_type = KindOfString;
     m_data.pstr = v.get();
   }
 
@@ -1392,7 +1383,7 @@ struct VarNR : private TypedValue {
   explicit VarNR(StringData *v);
   explicit VarNR(const StringData *v) {
     assertx(v && !v->isRefCounted());
-    m_type = KindOfPersistentString;
+    m_type = KindOfString;
     m_data.pstr = const_cast<StringData*>(v);
   }
   explicit VarNR(ArrayData *v);

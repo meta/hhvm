@@ -56,7 +56,7 @@ void DecRefProfile::update(TypedValue tv) {
   if (total == max) return;
 
   total++;
-  updateDataType(dt_modulo_persistence(tv.type()));
+  updateDataType(tv.type());
   if (!isRefcountedType(tv.type())) return;
   refcounted++;
   auto const countable = tv.val().pcnt;

@@ -803,25 +803,17 @@ Bytecode gen_constant(const TypedValue& cell) {
       return bc::Double { cell.m_data.dbl };
     case KindOfString:
       assertx(cell.m_data.pstr->isStatic());
-      [[fallthrough]];
-    case KindOfPersistentString:
       return bc::String { cell.m_data.pstr };
     case KindOfVec:
       assertx(cell.m_data.parr->isStatic());
-      [[fallthrough]];
-    case KindOfPersistentVec:
       assertx(cell.m_data.parr->isVecType());
       return bc::Vec { cell.m_data.parr };
     case KindOfDict:
       assertx(cell.m_data.parr->isStatic());
-      [[fallthrough]];
-    case KindOfPersistentDict:
       assertx(cell.m_data.parr->isDictType());
       return bc::Dict { cell.m_data.parr };
     case KindOfKeyset:
       assertx(cell.m_data.parr->isStatic());
-      [[fallthrough]];
-    case KindOfPersistentKeyset:
       assertx(cell.m_data.parr->isKeysetType());
       return bc::Keyset { cell.m_data.parr };
     case KindOfLazyClass:

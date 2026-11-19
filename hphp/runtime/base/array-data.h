@@ -299,11 +299,9 @@ public:
   bool notCyclic(TypedValue v) const;
 
   /*
-   * Get the DataType (persistent or non-persistent version) corresponding to
-   * the array's kind.
+   * Get the DataType corresponding to the array's kind.
    */
   DataType toDataType() const;
-  DataType toPersistentDataType() const;
 
   /////////////////////////////////////////////////////////////////////////////
   // Element manipulation.

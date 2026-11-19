@@ -380,9 +380,8 @@ Array makeVecOfStringString(const std::vector<MethodDecl>& vector) {
   auto ret = VecInit{vector.size()};
   for (auto const& [typeDecl, method] : vector) {
     auto stringStringTuple = VecInit{2};
-    stringStringTuple.append(
-        make_tv<KindOfPersistentString>(typeDecl.m_name.get()));
-    stringStringTuple.append(make_tv<KindOfPersistentString>(method.get()));
+    stringStringTuple.append(make_tv<KindOfString>(typeDecl.m_name.get()));
+    stringStringTuple.append(make_tv<KindOfString>(method.get()));
 
     ret.append(stringStringTuple.toArray());
   }
@@ -392,7 +391,7 @@ Array makeVecOfStringString(const std::vector<MethodDecl>& vector) {
 Array makeVecOfFunctionString(const std::vector<FunctionDecl>& vector) {
   auto ret = VecInit{vector.size()};
   for (auto const& function : vector) {
-    ret.append(make_tv<KindOfPersistentString>(function.m_name.get()));
+    ret.append(make_tv<KindOfString>(function.m_name.get()));
   }
   return ret.toArray();
 }
@@ -408,8 +407,7 @@ TypedValue tvFromDynamic(folly::dynamic&& dy) {
     return make_tv<KindOfDouble>(std::move(dy).getInt());
   }
   if (dy.isString()) {
-    return make_tv<KindOfPersistentString>(
-        makeStaticString(std::move(dy).getString()));
+    return make_tv<KindOfString>(makeStaticString(std::move(dy).getString()));
   }
   if (dy.isArray()) {
     VecInit ret{dy.size()};
@@ -861,7 +859,7 @@ struct FactsStoreImpl final
     auto modules = m_symbolMap.getAllModules();
     VecInit symbols{modules.size()};
     for (auto const& module : modules) {
-      symbols.append(make_tv<KindOfPersistentString>(module.get()));
+      symbols.append(make_tv<KindOfString>(module.get()));
     }
     return symbols.toArray();
   }
@@ -1553,7 +1551,7 @@ struct FactsStoreImpl final
     auto symbols = lambda(m_symbolMap, *relativePath);
     VecInit ret{symbols.size()};
     for (auto s : std::move(symbols)) {
-      ret.append(make_tv<KindOfPersistentString>(s.get()));
+      ret.append(make_tv<KindOfString>(s.get()));
     }
     return ret.toArray();
   }

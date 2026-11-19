@@ -33,7 +33,7 @@ namespace {
 
 DataType mergeEquivTypes(DataType a, DataType b) {
   assertx(equivDataTypes(a, b));
-  return a == b ? a : dt_with_rc(a);
+  return a;
 }
 
 KeyTypes keyTypesForKey(TypedValue k, KeyTypes b) {

@@ -492,7 +492,6 @@ void TypeConstraint::initSingle() {
     single.type = *mptr;
     m_flags |= TypeConstraintFlags::Resolved;
     assertx(single.type != Type::SubObject);
-    assertx(getAnnotDataType(single.type) != KindOfPersistentString);
     return;
   }
   bool resolved = contains(m_flags, TypeConstraintFlags::Resolved);
@@ -930,16 +929,16 @@ HPHP::Optional<TypedValue> TypeIntersectionConstraint::defaultValue() const {
   if (has_flag(dv, AnnotTypeDefault::False)) return make_tv<KindOfBoolean>(false);
   if (has_flag(dv, AnnotTypeDefault::ZeroDouble)) return make_tv<KindOfDouble>(0.0);
   if (has_flag(dv, AnnotTypeDefault::EmptyString)) {
-    return make_tv<KindOfPersistentString>(staticEmptyString());
+    return make_tv<KindOfString>(staticEmptyString());
   }
   if (has_flag(dv, AnnotTypeDefault::EmptyVec)) {
-    return make_tv<KindOfPersistentVec>(staticEmptyVec());
+    return make_tv<KindOfVec>(staticEmptyVec());
   }
   if (has_flag(dv, AnnotTypeDefault::EmptyDict)) {
-    return make_tv<KindOfPersistentDict>(staticEmptyDictArray());
+    return make_tv<KindOfDict>(staticEmptyDictArray());
   }
   if (has_flag(dv, AnnotTypeDefault::EmptyKeyset)) {
-    return make_tv<KindOfPersistentKeyset>(staticEmptyKeysetArray());
+    return make_tv<KindOfKeyset>(staticEmptyKeysetArray());
   }
   assertx(dv == AnnotTypeDefault::None);
   return std::nullopt;
@@ -1752,17 +1751,13 @@ std::string describe_actual_type(tv_rval val) {
     case KindOfBoolean:       return "bool";
     case KindOfInt64:         return "int";
     case KindOfDouble:        return "float";
-    case KindOfPersistentString:
     case KindOfString:        return "string";
-    case KindOfPersistentVec:
     case KindOfVec:           {
       return val.val().parr->isLegacyArray() ? "varray" : annotTypeName(AnnotType::Vec);
     }
-    case KindOfPersistentDict:
     case KindOfDict:          {
       return val.val().parr->isLegacyArray() ? "darray" : annotTypeName(AnnotType::Dict);
     }
-    case KindOfPersistentKeyset:
     case KindOfKeyset:        return annotTypeName(AnnotType::Keyset);
     case KindOfResource: {
       auto pres = val.val().pres;
@@ -1848,7 +1843,7 @@ bool TypeConstraint::tryCommonCoercions(tv_lval val, const Class* ctx,
     val.val().pstr = isClassType(val.type()) ?
       const_cast<StringData*>(val.val().pclass->name()) :
       const_cast<StringData*>(val.val().plazyclass.name());
-    val.type() = KindOfPersistentString;
+    val.type() = KindOfString;
     return true;
   }
 
@@ -2088,7 +2083,6 @@ MemoKeyConstraint TypeConstraint::getMemoKeyConstraint() const {
           return isNullable() ? MK::BoolOrNull : MK::Bool;
         case KindOfInt64:
           return isNullable() ? MK::IntOrNull : MK::Int;
-        case KindOfPersistentString:
         case KindOfString:
         case KindOfLazyClass:
           return isNullable() ? MK::StrOrNull : MK::Str;
@@ -2096,11 +2090,8 @@ MemoKeyConstraint TypeConstraint::getMemoKeyConstraint() const {
           return isNullable() ? MK::ObjectOrNull : MK::Object;
         case KindOfDouble:
           return isNullable() ? MK::DblOrNull : MK::Dbl;
-        case KindOfPersistentVec:
         case KindOfVec:
-        case KindOfPersistentDict:
         case KindOfDict:
-        case KindOfPersistentKeyset:
         case KindOfKeyset:
         case KindOfClsMeth:
         case KindOfResource:

@@ -921,7 +921,7 @@ Resolution resolve_unresolved(ResolveCtx& ctx, SArray ts) {
   auto const setKindAndName = [&] (TS::Kind k, SString n) {
     return Builder::copy(ts, TS::Kind::T_unresolved)
       .set(s_kind, make_tv<KindOfInt64>((int64_t)k))
-      .set(s_classname, make_tv<KindOfPersistentString>(n));
+      .set(s_classname, make_tv<KindOfString>(n));
   };
 
   if (clsName->tsame(s_callable.get())) {
@@ -1088,7 +1088,7 @@ Resolution resolve_unresolved(ResolveCtx& ctx, SArray ts) {
       auto r = resolve(newCtx, typeAlias->typeStructure);
       assertx(!r.contextSensitive);
       auto b = Builder::attach(std::move(r))
-        .set(key, make_tv<KindOfPersistentString>(clsName));
+        .set(key, make_tv<KindOfString>(clsName));
       return adjustTS(std::move(b));
     }();
 
@@ -1270,7 +1270,7 @@ Resolution resolve_type_structure(const IIndex& index,
   ctx.collect = collect;
   const StaticString& key = key_for_alias_kind(typeAlias.kind);
   return Builder::attach(resolve(ctx, typeAlias.typeStructure))
-    .set(key, make_tv<KindOfPersistentString>(typeAlias.name))
+    .set(key, make_tv<KindOfString>(typeAlias.name))
     .finishTS();
 }
 

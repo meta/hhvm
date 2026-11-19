@@ -327,18 +327,14 @@ void tvIncDecOp(Op op, tv_lval cell) {
       return;
     }
 
-    case KindOfPersistentString:
     case KindOfString:
       raiseIncDecInvalidType(cell);
       stringIncDecOp(op, cell, val(cell).pstr);
       return;
 
     case KindOfBoolean:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:
@@ -537,8 +533,6 @@ void tvBitNot(TypedValue& cell) {
       [[fallthrough]];
     case KindOfString:
       if (cell.m_data.pstr->cowCheck()) {
-      [[fallthrough]];
-    case KindOfPersistentString:
         raiseBitwiseOpInvalidType();
         auto const sl = cell.m_data.pstr->slice();
         USDT(hhvm, hhvm_cow_bitnot, sl.size());
@@ -574,11 +568,8 @@ void tvBitNot(TypedValue& cell) {
     case KindOfUninit:
     case KindOfNull:
     case KindOfBoolean:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:

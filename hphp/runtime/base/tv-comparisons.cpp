@@ -107,15 +107,11 @@ typename Op::RetType tvRelOp(Op op, TypedValue c1, TypedValue c2) {
     case KindOfDouble:       return tvIsInt(c1)
                                       ? op(c1.m_data.num, c2.m_data.dbl)
                                       : op(c1.m_data.dbl, c2.m_data.dbl);
-    case KindOfPersistentString:
     case KindOfString:       return op(convStringishToStringData(c1), c2.m_data.pstr);
     case KindOfClass:        return op(c1, c2.m_data.pclass);
     case KindOfLazyClass:    return op(c1, c2.m_data.plazyclass);
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:       return op(c1.m_data.parr, c2.m_data.parr);
     case KindOfObject:       return op(c1.m_data.pobj, c2.m_data.pobj);
     case KindOfResource:     return op(c1.m_data.pres, c2.m_data.pres);
@@ -294,7 +290,6 @@ bool tvSame(TypedValue c1, TypedValue c2) {
       return c1.m_data.num == c2.m_data.num;
     case KindOfDouble:
       return c1.m_data.dbl == c2.m_data.dbl;
-    case KindOfPersistentString:
     case KindOfString:
       return c1.m_data.pstr->same(convStringishToStringData(c2));
     case KindOfRFunc:
@@ -309,10 +304,8 @@ bool tvSame(TypedValue c1, TypedValue c2) {
       return convStringishToStringData(c1, warn_on_conv)
               ->same(convStringishToStringData(c2, warn_on_conv));
     }
-    case KindOfPersistentVec:
     case KindOfVec:
       return vecSameHelper(c1.m_data.parr, c2.m_data.parr);
-    case KindOfPersistentDict:
     case KindOfDict: {
       auto const ad1 = c1.m_data.parr;
       auto const ad2 = c2.m_data.parr;
@@ -320,7 +313,6 @@ bool tvSame(TypedValue c1, TypedValue c2) {
         ? VanillaDict::DictSame(ad1, ad2)
         : ArrayData::Same(ad1, ad2);
     }
-    case KindOfPersistentKeyset:
     case KindOfKeyset: {
       auto const ad1 = c1.m_data.parr;
       auto const ad2 = c2.m_data.parr;

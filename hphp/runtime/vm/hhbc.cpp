@@ -626,7 +626,6 @@ void staticStreamer(const TypedValue* tv, std::string& out) {
     case KindOfDouble:
       out += folly::to<std::string>(tv->m_data.dbl);
       return;
-    case KindOfPersistentString:
     case KindOfString:
       fmt::format_to(std::back_inserter(out), "\"{}\"",
                     escapeStringForCPP(tv->m_data.pstr->data(),
@@ -638,11 +637,8 @@ void staticStreamer(const TypedValue* tv, std::string& out) {
     case KindOfEnumClassLabel:
       fmt::format_to(std::back_inserter(out), "#{}", tv->m_data.pstr->slice());
       return;
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       staticArrayStreamer(tv->m_data.parr, out);
       return;

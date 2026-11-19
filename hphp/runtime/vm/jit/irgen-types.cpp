@@ -135,10 +135,7 @@ constexpr size_t kNumDataTypes = 18;
 constexpr std::array<DataType, kNumDataTypes> computeDataTypes() {
   std::array<DataType, kNumDataTypes> result = {};
   size_t index = 0;
-#define DT(name, value, ...) {                                 \
-    auto constexpr dt = KindOf##name;                          \
-    if (dt == dt_modulo_persistence(dt)) result[index++] = dt; \
-  }
+#define DT(name, value, ...) { result[index++] = KindOf##name; }
   DATATYPES
 #undef DT
 #ifdef __clang__

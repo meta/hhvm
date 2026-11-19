@@ -1279,8 +1279,7 @@ int64_t ival_of(const Type& t);
 Type from_cell(TypedValue tv);
 
 /*
- * Create a Type from a DataType. KindOfString and KindOfPersistentString
- * are both treated as TStr.
+ * Create a Type from a DataType.
  *
  * Pre: dt is one of the DataTypes that actually represent php values
  * (or KindOfUninit).

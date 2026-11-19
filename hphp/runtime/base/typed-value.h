@@ -62,8 +62,8 @@ struct BlobDecoder;
 union Value {
   int64_t       num;    // KindOfInt64, KindOfBool (must be zero-extended)
   double        dbl;    // KindOfDouble
-  StringData*   pstr;   // KindOfString, KindOfPersistentString
-  ArrayData*    parr;   // KindOf{Persistent,}{Vec,Dict,Keyset,{,D,V}Array}
+  StringData*   pstr;   // KindOfString
+  ArrayData*    parr;   // KindOf{Vec,Dict,Keyset}
   ObjectData*   pobj;   // KindOfObject
   ResourceHdr*  pres;   // KindOfResource
   MaybeCountable* pcnt; // for alias-safe generic refcounting operations
@@ -324,16 +324,12 @@ X(KindOfNull,         void);
 X(KindOfBoolean,      bool);
 X(KindOfInt64,        int64_t);
 X(KindOfDouble,       double);
-X(KindOfVec,          ArrayData*);
-X(KindOfPersistentVec, const ArrayData*);
-X(KindOfDict,         ArrayData*);
-X(KindOfPersistentDict, const ArrayData*);
-X(KindOfKeyset,       ArrayData*);
-X(KindOfPersistentKeyset, const ArrayData*);
+X(KindOfVec,          const ArrayData*);
+X(KindOfDict,         const ArrayData*);
+X(KindOfKeyset,       const ArrayData*);
 X(KindOfObject,       ObjectData*);
 X(KindOfResource,     ResourceHdr*);
-X(KindOfString,       StringData*);
-X(KindOfPersistentString, const StringData*);
+X(KindOfString,       const StringData*);
 X(KindOfFunc,         Func*);
 X(KindOfRFunc,        RFuncData*);
 X(KindOfClass,        Class*);

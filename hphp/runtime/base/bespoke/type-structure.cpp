@@ -126,21 +126,15 @@ TypedValue make_tv_safe(bool val) {
 }
 TypedValue make_tv_safe(StringData* val) {
   if (val == nullptr) return make_tv<KindOfUninit>();
-  return val->isStatic()
-    ? make_tv<KindOfPersistentString>(val)
-    : make_tv<KindOfString>(val);
+  return make_tv<KindOfString>(val);
 }
 TypedValue make_tv_safe(ArrayData* val) {
   if (val == nullptr) return make_tv<KindOfUninit>();
   if (val->isDictType()) {
-    return val->isStatic()
-      ? make_tv<KindOfPersistentDict>(val)
-      : make_tv<KindOfDict>(val);
+    return make_tv<KindOfDict>(val);
   }
   assertx(val->isVecType());
-  return val->isStatic()
-    ? make_tv<KindOfPersistentVec>(val)
-    : make_tv<KindOfVec>(val);
+  return make_tv<KindOfVec>(val);
 }
 
 bool checkBespokeArray(const ArrayData* ad) {
@@ -730,7 +724,7 @@ TypedValue TypeStructure::GetPosKey(const TypeStructure* tad, ssize_t pos) {
     switch (fieldPosVal) {
 #define X(Field, FieldString, KindOfType, Value) \
       case Value: \
-        return make_tv<KindOfPersistentString>(s_##FieldString.get());
+        return make_tv<KindOfString>(s_##FieldString.get());
 TYPE_STRUCTURE_FIELDS
 #undef X
     }
@@ -820,7 +814,6 @@ tv_lval TypeStructure::ElemStr(
   auto tadIn = As(lvalIn.val().parr);
   auto const lval = TypeStructure::LvalStr(tadIn, k);
   if (lval.arr != tadIn) {
-    lvalIn.type() = dt_with_rc(lvalIn.type());
     lvalIn.val().parr = lval.arr;
     if (tadIn->decReleaseCheck()) Release(tadIn);
   }
@@ -1004,7 +997,7 @@ void setEvalScalar(ArrayData*& field) {
 #define DEC_REF_FIELD(Field, Type, ...) decRefField<Type>(m_##Field);
 
 #define GET_KEY_FROM_POS(Field, Type, KindOfType, Struct, FieldsByteOffset, Pos) \
-  if (value == Pos) return make_tv<KindOfPersistentString>(s_##Field.get());
+  if (value == Pos) return make_tv<KindOfString>(s_##Field.get());
 
 #define GET_VAL_FROM_POS(Field, Type, KindOfType, Struct, FieldsByteOffset, Pos) \
   if (value == Pos) return make_tv_safe(tad->m_##Field);

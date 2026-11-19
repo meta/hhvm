@@ -131,8 +131,7 @@ struct VanillaDictElm {
     if (hasIntKey()) {
       return make_tv<KindOfInt64>(ikey);
     }
-    return skey->isRefCounted() ? make_tv<KindOfString>(skey)
-                                : make_tv<KindOfPersistentString>(skey);
+    return make_tv<KindOfString>(skey);
   }
 
   ALWAYS_INLINE hash_t hash() const {

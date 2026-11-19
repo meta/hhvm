@@ -309,15 +309,11 @@ inline Optional<Type> Type::tryCns(TypedValue tv) {
       case KindOfEnumClassLabel:
         return Type(tv.m_type);
 
-      case KindOfPersistentString:
       case KindOfString:
         return type_detail::for_const(tv.m_data.pstr);
 
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentDict:
       case KindOfDict:
-      case KindOfPersistentKeyset:
       case KindOfKeyset:
         return type_detail::for_const(tv.m_data.parr);
       case KindOfLazyClass:

@@ -67,20 +67,12 @@ void ConvertTvToShared(tv_lval source, const MakeSharedEnv& env) {
       break;
 
     case KindOfString:
-      type = KindOfPersistentString;
-      [[fallthrough]];
-    case KindOfPersistentString:
       data.pstr = MakeSharedString(data.pstr, env);
       break;
 
     case KindOfVec:
     case KindOfDict:
     case KindOfKeyset:
-      type = dt_with_persistence(type);
-      [[fallthrough]];
-    case KindOfPersistentVec:
-    case KindOfPersistentDict:
-    case KindOfPersistentKeyset:
       data.parr = MakeSharedArray(data.parr, env);
       break;
 

@@ -220,12 +220,9 @@ folly::dynamic makeDynamic(const HPHP::TypedValue& data) {
     case KindOfInt64:
       return folly::dynamic{data.val().num};
     case KindOfString:
-    case KindOfPersistentString:
       return folly::dynamic{data.val().pstr->slice()};
     case KindOfVec:
-    case KindOfPersistentVec:
     case KindOfKeyset:
-    case KindOfPersistentKeyset:
     {
       auto res = folly::dynamic::array();
       IterateV(data.val().parr, [&](auto const& v) {
@@ -234,7 +231,6 @@ folly::dynamic makeDynamic(const HPHP::TypedValue& data) {
       return res;
     }
     case KindOfDict:
-    case KindOfPersistentDict:
     {
       folly::dynamic res = folly::dynamic::object;
       IterateKV(data.val().parr, [&](auto const& k, auto const& v) {

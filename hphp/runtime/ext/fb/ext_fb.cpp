@@ -597,7 +597,6 @@ static int fb_compact_serialize_variant(
         );
       }
       [[fallthrough]];
-    case KindOfPersistentString:
     case KindOfString:
       fb_compact_serialize_string(sb, var.toString());
       return 0;
@@ -612,7 +611,6 @@ static int fb_compact_serialize_variant(
       }
       return 0;
 
-    case KindOfPersistentKeyset:
     case KindOfKeyset: {
       Array arr = var.toArray();
       assertx(arr->isKeysetType());
@@ -620,9 +618,7 @@ static int fb_compact_serialize_variant(
       return 0;
     }
 
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentVec:
     case KindOfVec: {
       Array arr = var.toArray();
       int64_t index_limit;
@@ -924,8 +920,7 @@ int fb_compact_unserialize_from_buffer(
         }
         if (key.getType() == KindOfInt64) {
           arr.set(key.toInt64(), value);
-        } else if (key.getType() == KindOfString ||
-                   key.getType() == KindOfPersistentString) {
+        } else if (key.getType() == KindOfString) {
           mapSetConvertStatic<IntishCast::Cast>(
             arr, key.asStrRef().get(), std::move(value));
         } else {
@@ -957,8 +952,7 @@ int fb_compact_unserialize_from_buffer(
               return err;
             }
             if (value.getType() == KindOfInt64 ||
-                value.getType() == KindOfString ||
-                value.getType() == KindOfPersistentString) {
+                value.getType() == KindOfString) {
               arr.append(value);
             } else {
               return FB_UNSERIALIZE_UNEXPECTED_ARRAY_KEY_TYPE;
@@ -1548,7 +1542,7 @@ Variant HHVM_FUNCTION(fb_call_user_func_array_async, const OptString& initialDoc
   if (msg.empty()) {
     return init_null();
   }
-  
+
   RequestInfo *ti = RequestInfo::s_requestInfo.getNoCheck();
   RequestId root_req_id = ti->getRootRequestId();
   root_req_id = root_req_id.unallocated() ? ti->m_id : root_req_id;
@@ -1582,7 +1576,7 @@ Variant HHVM_FUNCTION(fb_gen_user_func_array, const OptString& initialDoc,
     RequestInfo *ti = RequestInfo::s_requestInfo.getNoCheck();
     RequestId root_req_id = ti->getRootRequestId();
     root_req_id = root_req_id.unallocated() ? ti->m_id : root_req_id;
-    
+
     XboxServer::TaskStart(internal_serialize(msg), initialDoc, event, root_req_id);
   } catch (...) {
     event->abandon();

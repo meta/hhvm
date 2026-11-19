@@ -32,14 +32,6 @@ ALWAYS_INLINE TypedValue make_array_like_tv(ArrayData* a) {
   return ret;
 }
 
-ALWAYS_INLINE TypedValue make_persistent_array_like_tv(ArrayData* a) {
-  TypedValue ret;
-  ret.m_data.parr = a;
-  ret.m_type = a->toPersistentDataType();
-  assertx(tvIsPlausible(ret));
-  return ret;
-}
-
 }
 
 #endif

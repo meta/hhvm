@@ -47,7 +47,6 @@ bool tvIsPlausible(const TypedValue cell) {
       case KindOfDouble:
         return;
       case KindOfEnumClassLabel:
-      case KindOfPersistentString:
         assertPtr(cell.m_data.pstr);
         assertx(cell.m_data.pstr->kindIsValid());
         assertx(!cell.m_data.pstr->isRefCounted());
@@ -57,30 +56,15 @@ bool tvIsPlausible(const TypedValue cell) {
         assertx(cell.m_data.pstr->kindIsValid());
         assertx(cell.m_data.pstr->checkCountZ());
         return;
-      case KindOfPersistentVec:
-        assertPtr(cell.m_data.parr);
-        assertx(!cell.m_data.parr->isRefCounted());
-        assertx(cell.m_data.parr->isVecType());
-        return;
       case KindOfVec:
         assertPtr(cell.m_data.parr);
         assertx(cell.m_data.parr->checkCountZ());
         assertx(cell.m_data.parr->isVecType());
         return;
-      case KindOfPersistentDict:
-        assertPtr(cell.m_data.parr);
-        assertx(!cell.m_data.parr->isRefCounted());
-        assertx(cell.m_data.parr->isDictType());
-        return;
       case KindOfDict:
         assertPtr(cell.m_data.parr);
         assertx(cell.m_data.parr->checkCountZ());
         assertx(cell.m_data.parr->isDictType());
-        return;
-      case KindOfPersistentKeyset:
-        assertPtr(cell.m_data.parr);
-        assertx(!cell.m_data.parr->isRefCounted());
-        assertx(cell.m_data.parr->isKeysetType());
         return;
       case KindOfKeyset:
         assertPtr(cell.m_data.parr);

@@ -1986,17 +1986,13 @@ ConstraintType type_from_constraint_impl(const TypeConstraint& tc,
           case KindOfBoolean:      return exact(TBool);
           case KindOfInt64:        return exact(TInt);
           case KindOfDouble:       return exact(TDbl);
-          case KindOfPersistentVec:
           case KindOfVec:          return exact(TVec);
-          case KindOfPersistentDict:
           case KindOfDict:         return exact(TDict);
-          case KindOfPersistentKeyset:
           case KindOfKeyset:       return exact(TKeyset);
           case KindOfResource:     return exact(TRes);
           case KindOfClsMeth:      return exact(TClsMeth);
           case KindOfEnumClassLabel: return exact(TEnumClassLabel);
           case KindOfObject:       return exact(TObj);
-          case KindOfPersistentString:
           case KindOfString:
             return C{
               TStr,

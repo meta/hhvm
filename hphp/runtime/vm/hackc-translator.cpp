@@ -251,7 +251,7 @@ HPHP::TypedValue toTypedValue(const hackc::hhbc::TypedValue& tv) {
       }
       case kind::String: {
         auto const s = toStaticString(tv.String._0);
-        return make_tv<KindOfPersistentString>(s);
+        return make_tv<KindOfString>(s);
       }
       case kind::EnumClassLabel: {
         auto const l = toStaticString(tv.EnumClassLabel._0);

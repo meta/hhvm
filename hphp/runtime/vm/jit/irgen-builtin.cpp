@@ -911,18 +911,14 @@ SSATmp* opt_foldable(IRGS& env,
       case KindOfDouble:
       case KindOfEnumClassLabel:
         return cns(env, retVal);
-      case KindOfPersistentString:
       case KindOfString:
         return cns(env, makeStaticString(retVal.m_data.pstr));
-      case KindOfPersistentVec:
       case KindOfVec:
-        return cns(env, make_tv<KindOfPersistentVec>(scalar_array()));
-      case KindOfPersistentDict:
+        return cns(env, make_tv<KindOfVec>(scalar_array()));
       case KindOfDict:
-        return cns(env, make_tv<KindOfPersistentDict>(scalar_array()));
-      case KindOfPersistentKeyset:
+        return cns(env, make_tv<KindOfDict>(scalar_array()));
       case KindOfKeyset:
-        return cns(env, make_tv<KindOfPersistentKeyset>(scalar_array()));
+        return cns(env, make_tv<KindOfKeyset>(scalar_array()));
       case KindOfLazyClass:
         return cns(env, retVal.m_data.plazyclass.name());
       case KindOfUninit:

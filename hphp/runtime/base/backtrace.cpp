@@ -461,7 +461,7 @@ Array createBacktrace(const BacktraceArgs& btArgs) {
         : prevFunc->unit()->filepath();
 
       assertx(prevFile != nullptr);
-      frame.set(s_file_idx, s_file, make_tv<KindOfPersistentString>(prevFile));
+      frame.set(s_file_idx, s_file, make_tv<KindOfString>(prevFile));
       frame.set(s_line_idx, s_line, prevFunc->getLineNumber(prev.bcOff()));
     }
 

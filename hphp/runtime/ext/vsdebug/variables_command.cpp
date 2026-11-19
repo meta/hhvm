@@ -667,7 +667,6 @@ const char* VariablesCommand::getTypeName(const Variant& variable) {
     case KindOfUninit:
     case KindOfNull:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
     case KindOfResource:
     case KindOfRFunc:
@@ -676,11 +675,8 @@ const char* VariablesCommand::getTypeName(const Variant& variable) {
     case KindOfClass:
     case KindOfClsMeth:
     case KindOfLazyClass:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfEnumClassLabel:
       return getDataTypeString(variable.getType()).data();
@@ -722,7 +718,6 @@ const VariablesCommand::VariableValue VariablesCommand::getVariableValue(
       return VariableValue{dblString};
     }
 
-    case KindOfPersistentString:
     case KindOfString: {
       std::string value {variable.asCStrRef().toCppString()};
       int maxDisplayLength =
@@ -744,11 +739,8 @@ const VariablesCommand::VariableValue VariablesCommand::getVariableValue(
       return VariableValue{resourceDesc};
     }
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset: {
       auto const type_2 = getDataTypeString(variable.getType());
       auto const size = variable.toArray().size();

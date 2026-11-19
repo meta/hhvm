@@ -77,33 +77,29 @@ void TypedValue::serde(BlobEncoder& encoder) const {
       encoder(static_cast<const StringData*>(m_data.pstr));
       break;
 
-    case KindOfPersistentString:
     case KindOfString: {
-      encoder(KindOfPersistentString);
+      encoder(KindOfString);
       const StringData* s = m_data.pstr->isStatic()
         ? m_data.pstr : makeStaticString(m_data.pstr);
       encoder(s);
       break;
     }
 
-    case KindOfPersistentVec:
     case KindOfVec:
       assertx(m_data.parr);
-      encoder(KindOfPersistentVec);
+      encoder(KindOfVec);
       encoder((const ArrayData*)m_data.parr);
       break;
 
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       assertx(m_data.parr);
-      encoder(KindOfPersistentKeyset);
+      encoder(KindOfKeyset);
       encoder((const ArrayData*)m_data.parr);
       break;
 
-    case KindOfPersistentDict:
     case KindOfDict:
       assertx(m_data.parr);
-      encoder(KindOfPersistentDict);
+      encoder(KindOfDict);
       encoder((const ArrayData*)m_data.parr);
       break;
 
@@ -162,7 +158,7 @@ void TypedValue::serde(BlobDecoder& decoder,
       break;
     }
 
-    case KindOfPersistentString: {
+    case KindOfString: {
       const StringData* s;
       decoder(s, makeStatic);
       assertx(s);
@@ -172,7 +168,7 @@ void TypedValue::serde(BlobDecoder& decoder,
       break;
     }
 
-    case KindOfPersistentVec: {
+    case KindOfVec: {
       const ArrayData* a;
       decoder(a, makeStatic);
       assertx(a && a->isVecType());
@@ -182,7 +178,7 @@ void TypedValue::serde(BlobDecoder& decoder,
       break;
     }
 
-    case KindOfPersistentKeyset: {
+    case KindOfKeyset: {
       const ArrayData* a;
       decoder(a, makeStatic);
       assertx(a && a->isKeysetType());
@@ -192,7 +188,7 @@ void TypedValue::serde(BlobDecoder& decoder,
       break;
     }
 
-    case KindOfPersistentDict: {
+    case KindOfDict: {
       const ArrayData* a;
       decoder(a, makeStatic);
       assertx(a && a->isDictType());
@@ -236,12 +232,6 @@ void TypedValue::serde(BlobDecoder& decoder,
       if (makeStatic) tvAsVariant(this).setEvalScalar();
       break;
     }
-
-    case KindOfString:
-    case KindOfVec:
-    case KindOfKeyset:
-    case KindOfDict:
-      always_assert(false);
   }
 }
 

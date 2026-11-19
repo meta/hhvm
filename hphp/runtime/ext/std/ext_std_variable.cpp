@@ -496,7 +496,6 @@ ALWAYS_INLINE OptString serialize_impl(const Variant& value,
         return sb.detach();
       }
       [[fallthrough]];
-    case KindOfPersistentString:
     case KindOfString: {
       auto const op = "serialize()";
       auto const str =
@@ -524,11 +523,8 @@ ALWAYS_INLINE OptString serialize_impl(const Variant& value,
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfFunc:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfDouble:
     case KindOfObject:

@@ -328,7 +328,7 @@ void emitSet(IRGS& env, SSATmp* arr, SSATmp* key, SSATmp* uncheckedVal,
   auto const bound = layout.elemType(key->type()).first;
   auto const type = [&]{
     if (bound.isKnownDataType()) {
-      return Type(dt_modulo_persistence(bound.toDataType()));
+      return Type(bound.toDataType());
     }
     if (bound == TUncountedInit) return TUncounted;
     return TCell;

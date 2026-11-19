@@ -60,7 +60,7 @@ bool APCTypedValue::UseStringHazardPointers() {
 
 APCTypedValue* APCTypedValue::ForArray(ArrayData* ad) {
   assertx(!ad->isRefCounted());
-  auto const dt = ad->toPersistentDataType();
+  auto const dt = ad->toDataType();
   auto const result = initAPCBespoke(ad);
   ad = result.ad;
 
@@ -132,7 +132,7 @@ bool APCTypedValue::checkInvariants() const {
     case APCKind::StaticBespoke: {
       DEBUG_ONLY auto const ad = m_data.arr.load(std::memory_order_acquire);
       assertx(ad->isStatic());
-      assertx(ad->toPersistentDataType() == m_handle.type());
+      assertx(ad->toDataType() == m_handle.type());
       break;
     }
 
@@ -140,7 +140,7 @@ bool APCTypedValue::checkInvariants() const {
     case APCKind::SharedBespoke: {
       DEBUG_ONLY auto const ad = m_data.arr.load(std::memory_order_acquire);
       assertx(ad->isShared());
-      assertx(ad->toPersistentDataType() == m_handle.type());
+      assertx(ad->toDataType() == m_handle.type());
       break;
     }
 

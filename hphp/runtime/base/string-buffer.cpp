@@ -170,7 +170,6 @@ void StringBuffer::append(const Variant& v) {
     case KindOfInt64:
       append(cell->m_data.num);
       break;
-    case KindOfPersistentString:
     case KindOfString:
       append(cell->m_data.pstr);
       break;
@@ -178,11 +177,8 @@ void StringBuffer::append(const Variant& v) {
     case KindOfNull:
     case KindOfBoolean:
     case KindOfDouble:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:

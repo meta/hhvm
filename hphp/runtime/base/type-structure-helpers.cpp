@@ -127,17 +127,13 @@ bool tvInstanceOfImpl(const TypedValue* tv, F lookupClass) {
       return cls && interface_supports_double(cls->name());
     }
 
-    case KindOfPersistentString:
     case KindOfString: {
       auto const cls = lookupClass();
       return cls && interface_supports_string(cls->name());
     }
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset: {
       auto const cls = lookupClass();
       return cls && interface_supports_arrlike(cls->name());

@@ -2499,13 +2499,9 @@ safe:
               case KindOfBoolean:
                 param->parameter = param->parameter.toInt64();
                 [[fallthrough]];
-              case KindOfPersistentString:
               case KindOfString:
-              case KindOfPersistentVec:
               case KindOfVec:
-              case KindOfPersistentDict:
               case KindOfDict:
-              case KindOfPersistentKeyset:
               case KindOfKeyset:
               case KindOfObject:
               case KindOfResource:

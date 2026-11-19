@@ -673,13 +673,9 @@ bool StringData::isNumeric() const {
       return true;
     case KindOfUninit:
     case KindOfBoolean:
-    case KindOfPersistentString:
     case KindOfString:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:

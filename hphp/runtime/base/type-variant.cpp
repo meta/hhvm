@@ -54,10 +54,8 @@ static RDS_LOCAL(BlackHoleStorage, bhStorage);
 Variant::Variant(StringData *v) noexcept {
   if (v) {
     m_data.pstr = v;
-    if (!v->isRefCounted()) {
-      m_type = KindOfPersistentString;
-    } else {
-      m_type = KindOfString;
+    m_type = KindOfString;
+    if (v->isRefCounted()) {
       v->rawIncRefCount();
     }
   } else {
@@ -238,7 +236,7 @@ IMPLEMENT_SET(double, m_type = KindOfDouble; m_data.dbl = v)
 IMPLEMENT_SET(const StaticString&,
               StringData* s = v.get();
               assertx(s);
-              m_type = KindOfPersistentString;
+              m_type = KindOfString;
               m_data.pstr = s)
 
 #undef IMPLEMENT_SET
@@ -267,11 +265,8 @@ IMPLEMENT_SET(const StaticString&,
     }                                                                   \
   }
 
-IMPLEMENT_PTR_SET(StringData, pstr,
-                  v->isRefCounted() ? KindOfString : KindOfPersistentString)
-IMPLEMENT_PTR_SET(ArrayData, parr,
-                  v->isRefCounted() ?
-                  v->toDataType() : v->toPersistentDataType())
+IMPLEMENT_PTR_SET(StringData, pstr, KindOfString)
+IMPLEMENT_PTR_SET(ArrayData, parr, v->toDataType())
 IMPLEMENT_PTR_SET(ObjectData, pobj, KindOfObject)
 IMPLEMENT_PTR_SET(ResourceHdr, pres, KindOfResource)
 
@@ -299,11 +294,8 @@ IMPLEMENT_PTR_SET(ResourceHdr, pres, KindOfResource)
     }                                                                   \
   }
 
-IMPLEMENT_STEAL(StringData, pstr,
-                v->isRefCounted() ? KindOfString : KindOfPersistentString)
-IMPLEMENT_STEAL(ArrayData, parr,
-                v->isRefCounted() ?
-                v->toDataType() : v->toPersistentDataType())
+IMPLEMENT_STEAL(StringData, pstr, KindOfString)
+IMPLEMENT_STEAL(ArrayData, parr, v->toDataType())
 IMPLEMENT_STEAL(ObjectData, pobj, KindOfObject)
 IMPLEMENT_STEAL(ResourceHdr, pres, KindOfResource)
 
@@ -325,11 +317,8 @@ DataType Variant::toNumeric(int64_t &ival, double &dval,
     case KindOfUninit:
     case KindOfNull:
     case KindOfBoolean:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:
@@ -350,7 +339,6 @@ DataType Variant::toNumeric(int64_t &ival, double &dval,
       dval = m_data.dbl;
       return KindOfDouble;
 
-    case KindOfPersistentString:
     case KindOfString:
       return checkString ? m_data.pstr->toNumeric(ival, dval) : m_type;
   }
@@ -361,11 +349,8 @@ bool Variant::isScalar() const noexcept {
   switch (getType()) {
     case KindOfUninit:
     case KindOfNull:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:
@@ -377,7 +362,6 @@ bool Variant::isScalar() const noexcept {
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
     case KindOfFunc:
     case KindOfClass:
@@ -394,11 +378,7 @@ static Variant::AllowedAsConstantValue isAllowedAsConstantValueImpl(TypedValue t
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
-    case KindOfPersistentVec:
-    case KindOfPersistentDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfFunc:
     case KindOfClsMeth:
@@ -408,6 +388,8 @@ static Variant::AllowedAsConstantValue isAllowedAsConstantValueImpl(TypedValue t
     case KindOfVec:
     case KindOfDict: {
       auto allowed = Variant::AllowedAsConstantValue::Allowed;
+      if (!tv.m_data.parr->isRefCounted()) return allowed;
+
       IterateV(tv.m_data.parr, [&] (TypedValue v) {
         switch (isAllowedAsConstantValueImpl(v)) {
           case Variant::AllowedAsConstantValue::NotAllowed: {
@@ -456,13 +438,9 @@ bool Variant::toBooleanHelper() const {
     case KindOfBoolean:
     case KindOfInt64:         assertx(false); return m_data.num;
     case KindOfDouble:        return m_data.dbl != 0;
-    case KindOfPersistentString:
     case KindOfString:        return m_data.pstr->toBoolean();
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:        return !m_data.parr->empty();
     case KindOfObject:        return m_data.pobj->toBoolean();
     case KindOfResource:
@@ -485,13 +463,9 @@ int64_t Variant::toInt64Helper(int base /* = 10 */) const {
     case KindOfBoolean:
     case KindOfInt64:         assertx(false); return m_data.num;
     case KindOfDouble:        return double_to_int64(m_data.dbl);
-    case KindOfPersistentString:
     case KindOfString:        return m_data.pstr->toInt64(base);
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:        return m_data.parr->empty() ? 0 : 1;
     case KindOfObject:        return m_data.pobj->toInt64();
     case KindOfResource:      return m_data.pres->data()->o_toInt64();
@@ -524,15 +498,11 @@ Array Variant::toPHPArrayHelper() const {
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
       return make_dict_array(0, *this);
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:        return ArrNR{m_data.parr}.asArray().toDict();
     case KindOfObject:        return m_data.pobj->toArray().toDict();
     case KindOfResource:      return m_data.pres->data()->o_toArray();
@@ -570,13 +540,9 @@ OptResource Variant::toResourceHelper() const {
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfRFunc:
@@ -634,10 +600,7 @@ void Variant::setEvalScalar() {
     case KindOfEnumClassLabel:
       return;
 
-    case KindOfString:
-      m_type = KindOfPersistentString;
-      [[fallthrough]];
-    case KindOfPersistentString: {
+    case KindOfString: {
       auto pstr = m_data.pstr;
       if (!pstr->isStatic()) {
         StringData *sd = makeStaticString(pstr);
@@ -649,23 +612,8 @@ void Variant::setEvalScalar() {
     }
 
     case KindOfVec:
-      m_type = KindOfPersistentVec;
-      [[fallthrough]];
-    case KindOfPersistentVec:
-      do_array();
-      return;
-
     case KindOfDict:
-      m_type = KindOfPersistentDict;
-      [[fallthrough]];
-    case KindOfPersistentDict:
-      do_array();
-      return;
-
     case KindOfKeyset:
-      m_type = KindOfPersistentKeyset;
-      [[fallthrough]];
-    case KindOfPersistentKeyset:
       do_array();
       return;
 

@@ -106,10 +106,10 @@ enum class APCKind: uint8_t {
  *  Double            APCTypedValue   KindOfDouble
  *  StaticArray       APCTypedValue   (a persistent array type)
  *  StaticBespoke     APCTypedValue   (a persistent array type)
- *  StaticString      APCTypedValue   KindOfPersistentString
+ *  StaticString      APCTypedValue   KindOfString
  *  SharedArray       APCTypedValue   (a persistent array type)
  *  SharedBespoke     APCTypedValue   (a persistent array type)
- *  SharedString      APCTypedValue   KindOfPersistentString
+ *  SharedString      APCTypedValue   KindOfString
  *  CopiedVec         APCArray        kInvalidDataType
  *  CopiedLegacyVec   APCArray        kInvalidDataType
  *  CopiedDict        APCArray        kInvalidDataType

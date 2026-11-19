@@ -137,9 +137,6 @@ Layout::LayoutSet getMonotypeParentLayouts(KeyTypes kt, DataType dt) {
   if (kt == KeyTypes::StaticStrings) {
     result.insert(MonotypeDictLayout::Index(KeyTypes::Strings, dt));
   }
-  if (hasPersistentFlavor(dt) && !isRefcountedType(dt)) {
-    result.insert(MonotypeDictLayout::Index(kt, dt_with_rc(dt)));
-  }
   result.insert(TopMonotypeDictLayout::Index(kt));
   return result;
 }
@@ -708,7 +705,7 @@ arr_lval MonotypeDict<Key>::elemImpl(Key key, K k, bool throwOnMissing) {
   auto const mad = cowCheck() ? copy() : this;
   auto const elm = old - elms() + mad->elms();
   assertx(keysEqual(elm->key, key));
-  auto const dt = dt_modulo_persistence(mad->type());
+  auto const dt = mad->type();
   mad->setLayoutIndex(getLayoutIndex<Key>(dt, layoutIndex()));
 
   static_assert(folly::kIsLittleEndian);
@@ -743,7 +740,7 @@ ArrayData* MonotypeDict<Key>::setImpl(Key key, K k, TypedValue v) {
   if (dt == kExtraInvalidDataType) {
     result->setLayoutIndex(getLayoutIndex<Key>(v.type()));
   } else if (dt != v.type()) {
-    result->setLayoutIndex(getLayoutIndex<Key>(dt_with_rc(dt)));
+    result->setLayoutIndex(getLayoutIndex<Key>(dt));
   } else if constexpr (std::is_same<Self, StringDict>::value) {
     result->setLayoutIndex(getLayoutIndex<Key>(dt));
   }
@@ -774,19 +771,17 @@ void MonotypeDict<Key>::forEachElm(
   auto const dt = type();
   auto const limit = used();
   if (m_size == limit) {
-    if (isRefcountedType(dt)) {
-      if (hasPersistentFlavor(dt)) {
-        for (auto i = 0; i < limit; i++) {
-          auto const elm = elmAtIndex(i);
-          k(i, elm->key);
-          m(make_tv_of_type(elm->val, dt));
-        }
-      } else {
-        for (auto i = 0; i < limit; i++) {
-          auto const elm = elmAtIndex(i);
-          k(i, elm->key);
-          c(make_tv_of_type(elm->val, dt));
-        }
+    if (isMaybeCountableType(dt)) {
+      for (auto i = 0; i < limit; i++) {
+        auto const elm = elmAtIndex(i);
+        k(i, elm->key);
+        m(make_tv_of_type(elm->val, dt));
+      }
+    } else if (isRefcountedType(dt)) {
+      for (auto i = 0; i < limit; i++) {
+        auto const elm = elmAtIndex(i);
+        k(i, elm->key);
+        c(make_tv_of_type(elm->val, dt));
       }
     } else {
       for (auto i = 0; i < limit; i++) {
@@ -796,21 +791,19 @@ void MonotypeDict<Key>::forEachElm(
       }
     }
   } else {
-    if (isRefcountedType(dt)) {
-      if (hasPersistentFlavor(dt)) {
-        for (auto i = 0; i < limit; i++) {
-          auto const elm = elmAtIndex(i);
-          if (elm->key == getTombstone<Key>()) continue;
-          k(i, elm->key);
-          m(make_tv_of_type(elm->val, dt));
-        }
-      } else {
-        for (auto i = 0; i < limit; i++) {
-          auto const elm = elmAtIndex(i);
-          if (elm->key == getTombstone<Key>()) continue;
-          k(i, elm->key);
-          c(make_tv_of_type(elm->val, dt));
-        }
+    if (isMaybeCountableType(dt)) {
+      for (auto i = 0; i < limit; i++) {
+        auto const elm = elmAtIndex(i);
+        if (elm->key == getTombstone<Key>()) continue;
+        k(i, elm->key);
+        m(make_tv_of_type(elm->val, dt));
+      }
+    } else if (isRefcountedType(dt)) {
+      for (auto i = 0; i < limit; i++) {
+        auto const elm = elmAtIndex(i);
+        if (elm->key == getTombstone<Key>()) continue;
+        k(i, elm->key);
+        c(make_tv_of_type(elm->val, dt));
       }
     } else {
       for (auto i = 0; i < limit; i++) {
@@ -1140,8 +1133,7 @@ void MonotypeDict<Key>::ConvertToShared(
     assertx(equivDataTypes(dt_mut, dt));
   });
 
-  auto const newType = hasPersistentFlavor(dt) ? dt_with_persistence(dt) : dt;
-  mad->setLayoutIndex(getLayoutIndex<Key>(newType, mad->layoutIndex()));
+  mad->setLayoutIndex(getLayoutIndex<Key>(dt, mad->layoutIndex()));
 }
 
 template <typename Key>
@@ -1221,7 +1213,7 @@ TypedValue MonotypeDict<Key>::GetPosKey(const Self* mad, ssize_t pos) {
   } else {
     static_assert(std::is_same<Key, StaticStrPtr>::value);
     auto const key = const_cast<StringData*>(elm->key.value);
-    return make_tv<KindOfPersistentString>(key);
+    return make_tv<KindOfString>(key);
   }
 }
 
@@ -1290,7 +1282,6 @@ tv_lval MonotypeDict<Key>::ElemInt(
   auto const madIn = As(lvalIn.val().parr);
   auto const lval = madIn->elemImpl(coerceKey<Key>(k), k, throwOnMissing);
   if (lval.arr != madIn) {
-    lvalIn.type() = dt_with_rc(lvalIn.type());
     lvalIn.val().parr = lval.arr;
     if (madIn->decReleaseCheck()) Release(madIn);
   }
@@ -1309,7 +1300,6 @@ tv_lval MonotypeDict<Key>::ElemStr(
   auto const madIn = As(lvalIn.val().parr);
   auto const lval = madIn->elemImpl(coerceKey<Key>(k), k, throwOnMissing);
   if (lval.arr != madIn) {
-    lvalIn.type() = dt_with_rc(lvalIn.type());
     lvalIn.val().parr = lval.arr;
     if (madIn->decReleaseCheck()) Release(madIn);
   }
@@ -1567,8 +1557,7 @@ ArrayLayout MonotypeDictLayout::setType(Type key, Type val) const {
   auto const base = val.toDataType();
   if (!equivDataTypes(base, m_valType)) return ArrayLayout::Top();
 
-  auto const valType = base == m_valType ? base : dt_with_rc(base);
-  return ArrayLayout(Index(keyType, valType));
+  return ArrayLayout(Index(keyType, base));
 }
 
 std::pair<Type, bool> MonotypeDictLayout::elemType(Type key) const {
@@ -1594,18 +1583,7 @@ void EmptyMonotypeDict::InitializeLayouts() {
 
 #define DT(name, value, ...) {                                         \
     auto const type = KindOf##name;                                    \
-    if (type == dt_modulo_persistence(type) && type != KindOfUninit) { \
-      new MonotypeDictLayout(KeyTypes::Ints, type);                    \
-      new MonotypeDictLayout(KeyTypes::Strings, type);                 \
-      new MonotypeDictLayout(KeyTypes::StaticStrings, type);           \
-    }                                                                  \
-  }
-DATATYPES
-#undef DT
-
-#define DT(name, value, ...) {                                         \
-    auto const type = KindOf##name;                                    \
-    if (type != dt_modulo_persistence(type) && type != KindOfUninit) { \
+    if (type != KindOfUninit) {                                        \
       new MonotypeDictLayout(KeyTypes::Ints, type);                    \
       new MonotypeDictLayout(KeyTypes::Strings, type);                 \
       new MonotypeDictLayout(KeyTypes::StaticStrings, type);           \

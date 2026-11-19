@@ -364,7 +364,6 @@ void SetVariableCommand::setVariableValue(
       }
       break;
 
-    case KindOfPersistentString:
     case KindOfString: {
       const auto newSd = StringData::Make(
         value.c_str(),
@@ -387,11 +386,8 @@ void SetVariableCommand::setVariableValue(
       // the value from the client, because the object has no known type.
       // Fallthrough.
     case KindOfResource:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
       // For complex types, we need to run PHP code to create a new object

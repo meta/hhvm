@@ -628,7 +628,7 @@ inline String::String(const StaticString& s)
 extern const StaticString empty_string_ref;
 
 ALWAYS_INLINE TypedValue empty_string_tv() {
-  return make_tv<KindOfPersistentString>(staticEmptyString());
+  return make_tv<KindOfString>(staticEmptyString());
 }
 
 inline String String::Empty() noexcept {

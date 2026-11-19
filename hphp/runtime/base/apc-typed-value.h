@@ -70,7 +70,7 @@ struct APCTypedValue {
 
   enum class StaticStr {};
   APCTypedValue(StaticStr, StringData* data)
-    : m_handle(APCKind::StaticString, KindOfPersistentString) {
+    : m_handle(APCKind::StaticString, KindOfString) {
     assertx(data->isStatic());
     m_data.str = data;
     assertx(checkInvariants());
@@ -78,7 +78,7 @@ struct APCTypedValue {
 
   enum class SharedStr {};
   APCTypedValue(SharedStr, StringData* data)
-    : m_handle(APCKind::SharedString, KindOfPersistentString) {
+    : m_handle(APCKind::SharedString, KindOfString) {
     assertx(data->isShared());
     m_data.str = data;
     assertx(checkInvariants());

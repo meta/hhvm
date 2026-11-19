@@ -470,7 +470,7 @@ bool extendArrChain(ISS& env, Type key, Type arr,
 // Returns nullptr if it's an unknown key or not a string.
 SString mStringKey(const Type& key) {
   auto const v = tv(key);
-  return v && v->m_type == KindOfPersistentString ? v->m_data.pstr : nullptr;
+  return v && v->m_type == KindOfString ? v->m_data.pstr : nullptr;
 }
 
 template<typename Op>

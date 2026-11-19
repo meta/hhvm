@@ -343,7 +343,7 @@ void populate_block(ParseUnitState& puState,
     auto size = nameArr->size();
     for (auto i = 0; i < size; ++i) {
       auto name = nameArr->at(i);
-      assertx(name.type() == KindOfString || name.type() == KindOfPersistentString);
+      assertx(name.type() == KindOfString);
       nameVec.push_back(name.val().pstr);
     }
 
@@ -1013,7 +1013,7 @@ std::unique_ptr<php::Class> parse_class(ParseUnitState& puState,
     if (!Cfg::Eval::EmitBespokeTypeStructures) return val;
     if (!bespoke::TypeStructure::isValidTypeStructure(ad)) return val;
     auto const ts = bespoke::TypeStructure::MakeFromVanillaStatic(ad, true);
-    return make_optional(make_tv<KindOfPersistentDict>(ts));
+    return make_optional(make_tv<KindOfDict>(ts));
   };
 
   auto& constMap = pce.constMap();

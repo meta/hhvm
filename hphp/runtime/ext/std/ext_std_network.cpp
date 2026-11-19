@@ -52,7 +52,7 @@ TypedValue HHVM_FUNCTION(gethostname) {
     Lock lock(NetworkMutex);
     if (!hostname) hostname = makeStaticString(h_name);
   }
-  return make_tv<KindOfPersistentString>(hostname);
+  return make_tv<KindOfString>(hostname);
 }
 
 Variant HHVM_FUNCTION(gethostbyaddr, const OptString& ip_address) {

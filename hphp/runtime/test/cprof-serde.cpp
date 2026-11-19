@@ -220,7 +220,7 @@ TEST(ContProfSerde, PreservesDecRefPayloadAndName) {
       4, -1, 0, 0, 0, 0, 0, kExtraInvalidDataType
     ),
     exampleDecRefTargetProfile(
-      4, 10'000, 17, 12, 3, 5, 1, KindOfPersistentString
+      4, 10'000, 17, 12, 3, 5, 1, KindOfString
     ),
   };
   expected.translations[0].targetProfiles[1].name = "DecRefProfile-010000";

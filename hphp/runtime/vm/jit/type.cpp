@@ -541,12 +541,7 @@ Type::bits_t Type::bitsFromDataType(DataType outer) {
     case KindOfBoolean          : return kBool;
     case KindOfInt64            : return kInt;
     case KindOfDouble           : return kDbl;
-    case KindOfPersistentString : return kPersistentStr;
     case KindOfString           : return kStr;
-
-    case KindOfPersistentVec    : return kPersistentVec;
-    case KindOfPersistentDict   : return kPersistentDict;
-    case KindOfPersistentKeyset : return kPersistentKeyset;
 
     case KindOfVec              : return kVec;
     case KindOfDict             : return kDict;
@@ -577,13 +572,9 @@ DataType Type::toDataType() const {
   if (*this <= TBool)        return KindOfBoolean;
   if (*this <= TInt)         return KindOfInt64;
   if (*this <= TDbl)         return KindOfDouble;
-  if (*this <= TPersistentStr) return KindOfPersistentString;
   if (*this <= TStr)         return KindOfString;
-  if (*this <= TPersistentVec) return KindOfPersistentVec;
   if (*this <= TVec)         return KindOfVec;
-  if (*this <= TPersistentDict) return KindOfPersistentDict;
   if (*this <= TDict)        return KindOfDict;
-  if (*this <= TPersistentKeyset) return KindOfPersistentKeyset;
   if (*this <= TKeyset)      return KindOfKeyset;
   if (*this <= TObj)         return KindOfObject;
   if (*this <= TRes)         return KindOfResource;
@@ -865,7 +856,7 @@ Type typeFromTV(tv_rval tv, const Class* ctx) {
     return Type::ExactObj(cls);
   }
 
-  auto const result = Type(dt_modulo_persistence(type(tv)));
+  auto const result = Type(type(tv));
 
   if (isArrayLikeType(type(tv))) {
     return allowBespokeArrayLikes() ? result : result.narrowToVanilla();

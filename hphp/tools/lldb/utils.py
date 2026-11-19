@@ -1116,16 +1116,13 @@ def pretty_tv(typ: lldb.SBValue, data: lldb.SBValue) -> str:
         val = get(data, "num").signed
     elif typ.unsigned == DT("Double"):
         val = float(get(data, "dbl").value)
-    elif typ.unsigned in (DT("String"), DT("PersistentString")):
+    elif typ.unsigned == DT("String"):
         pstr = get(data, "pstr")
         val = '"%s"' % string_data_val(pstr)
     elif typ.unsigned in (
         DT("Dict"),
-        DT("PersistentDict"),
         DT("Vec"),
-        DT("PersistentVec"),
         DT("Keyset"),
-        DT("PersistentKeyset"),
     ):
         val = deref(get(data, "parr"))
     elif typ.unsigned == DT("Object"):

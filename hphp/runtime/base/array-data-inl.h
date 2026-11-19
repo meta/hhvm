@@ -172,26 +172,6 @@ DataType ArrayData::toDataType() const {
   not_reached();
 }
 
-ALWAYS_INLINE
-DataType ArrayData::toPersistentDataType() const {
-  switch (kind()) {
-    case kVecKind:
-    case kBespokeVecKind:
-      return KindOfPersistentVec;
-
-    case kDictKind:
-    case kBespokeDictKind:
-      return KindOfPersistentDict;
-
-    case kKeysetKind:
-    case kBespokeKeysetKind:
-      return KindOfPersistentKeyset;
-
-    case kNumKinds:   not_reached();
-  }
-  not_reached();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 inline bool ArrayData::IsValidKey(const StringData* k) {

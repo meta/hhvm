@@ -645,7 +645,8 @@ std::string show(const Type& t) {
   auto const showMapElem = [&] (TypedValue k, const MapElem& m) {
     auto const key = [&] {
       if (isIntType(k.m_type)) return ival(k.m_data.num);
-      assertx(k.m_type == KindOfPersistentString);
+      assertx(k.m_type == KindOfString);
+      assertx(!k.m_data.pstr->isRefCounted());
       switch (m.keyStaticness) {
         case TriBool::Yes:   return sval(k.m_data.pstr);
         case TriBool::Maybe: return sval_nonstatic(k.m_data.pstr);

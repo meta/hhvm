@@ -43,11 +43,6 @@ struct TypedValue;
  * any string marked static must be in the table and therefore can
  * be compared by pointer.
  *
- * Note that when a static or uncounted string is in a TypedValue,
- * it may or may not have KindOfPersistentString. (But no non-persistent
- * strings will ever have KindOfPersistentString.) so-called "uncounted"
- * strings are persistent (not ref counted) but not static.
- *
  * Because all constants defined in hhvm programs create a
  * process-lifetime string for the constant name, this module also
  * manages a mapping from constant names to rds::Handles.

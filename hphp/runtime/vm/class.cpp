@@ -1625,12 +1625,12 @@ TypedValue Class::clsCnsGet(const StringData* clsCnsName,
         // We can't check isDict here because we're using that low bit as a
         // marker; instead, check isArrayLike and do the stricter check below.
         assertx(isArrayLikeType(type(cnsVal)));
-        assertx(!isRefcountedType(type(cnsVal)));
         typeCns = val(cnsVal).parr;
         auto const resolved = resolvedTypeCnsGet(typeCns);
         if (resolved != nullptr) {
+          assertx(!resolved->isRefCounted());
           assertx(resolved->isDictType());
-          auto tv = make_persistent_array_like_tv(resolved);
+          auto tv = make_array_like_tv(resolved);
           if (resolved->isVanilla()) {
             bespoke::profileArrLikeClsCns(this, &tv, clsCnsInd);
           }
@@ -1756,12 +1756,12 @@ TypedValue Class::clsCnsGet(const StringData* clsCnsName,
         }
       }
 
-      auto tv = make_persistent_array_like_tv(ad);
+      auto tv = make_array_like_tv(ad);
       bespoke::profileArrLikeClsCns(this, &tv, clsCnsInd);
       return tv;
     }
 
-    auto tv = make_persistent_array_like_tv(ad);
+    auto tv = make_array_like_tv(ad);
     clsCnsData.set(StrNR(clsCnsName), tvAsCVarRef(&tv), true /* isKey */);
     return tv;
   }
@@ -1769,7 +1769,7 @@ TypedValue Class::clsCnsGet(const StringData* clsCnsName,
   // The class constant has not been initialized yet; do so.
   auto const meth86cinit = cns.cls->lookupMethod(s_86cinit.get());
   TypedValue args[1] = {
-    make_tv<KindOfPersistentString>(const_cast<StringData*>(cns.name.get()))
+    make_tv<KindOfString>(const_cast<StringData*>(cns.name.get()))
   };
 
   // Wrap the call to 'invokeFuncFew' and call 'raise_error' if an
@@ -3663,16 +3663,12 @@ bool Class::compatibleTraitPropInit(const TypedValue& tv1,
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
       return same(tvAsCVarRef(&tv1), tvAsCVarRef(&tv2));
 
     case KindOfUninit:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:

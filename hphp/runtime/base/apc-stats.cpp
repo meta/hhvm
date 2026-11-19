@@ -532,9 +532,9 @@ APCDetailedStats::counterFor(const APCHandle* handle) {
     case APCKind::SharedArray:
     case APCKind::SharedBespoke: {
       switch (handle->type()) {
-        case KindOfPersistentVec:    return m_sharedVec;
-        case KindOfPersistentDict:   return m_sharedDict;
-        case KindOfPersistentKeyset: return m_sharedKeyset;
+        case KindOfVec:    return m_sharedVec;
+        case KindOfDict:   return m_sharedDict;
+        case KindOfKeyset: return m_sharedKeyset;
         default: always_assert(false);
       }
     }

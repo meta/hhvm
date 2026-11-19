@@ -867,7 +867,7 @@ void in(ISS& env, const bc::NewStructDict& op) {
   auto map = MapElems{};
   for (auto it = op.keys.end(); it != op.keys.begin(); ) {
     map.emplace_front(
-      make_tv<KindOfPersistentString>(*--it),
+      make_tv<KindOfString>(*--it),
       MapElem::SStrKey(popC(env))
     );
   }
@@ -1297,7 +1297,7 @@ void concatHelper(ISS& env, uint32_t n) {
     };
 
     auto fold = [&] (uint32_t slot, uint32_t num, SString result) {
-      auto const cell = make_tv<KindOfPersistentString>(result);
+      auto const cell = make_tv<KindOfString>(result);
       auto const ty = from_cell(cell);
       BytecodeVec bcs{num, bc::PopC {}};
       if (num > 1) bcs.push_back(gen_constant(cell));
@@ -3064,7 +3064,7 @@ void in(ISS& env, const bc::InstanceOfD& op) {
 void in(ISS& env, const bc::InstanceOf& /*op*/) {
   auto const t1 = topC(env);
   auto const v1 = tv(t1);
-  if (v1 && v1->m_type == KindOfPersistentString) {
+  if (v1 && v1->m_type == KindOfString) {
     return reduce(env, bc::PopC {},
                        bc::InstanceOfD { v1->m_data.pstr });
   }

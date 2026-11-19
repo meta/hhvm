@@ -136,7 +136,7 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
     return;
   }
 
-  // Check DataType if needed. Accept both persistence flavors.
+  // Check DataType if needed.
   auto const base = typeParam.unspecialize();
   auto const tagType = [&] {
     auto t = base;
@@ -149,17 +149,11 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
     assertx(srcType != InvalidReg);
     auto const sf = v.makeReg();
     auto const cc = [&] {
-      auto const test = [&] (DataType kind) {
-        assertx(kind == dt_modulo_persistence(kind));
-        auto const mask = ~static_cast<data_type_t>(kind);
-        emitTestTVType(v, sf, mask, srcType);
-        return CC_E;
-      };
       auto const cmp = [&] (DataType kind, ConditionCode cc) {
         emitCmpTVType(v, sf, kind, srcType);
         return cc;
       };
-      if (tagType.isKnownDataType()) return test(tagType.toDataType());
+      if (tagType.isKnownDataType()) return cmp(tagType.toDataType(), CC_E);
       if (tagType == TArrLike)       return cmp(KindOfKeyset, CC_BE);
       if (tagType == (TVec|TDict))   return cmp(KindOfVec, CC_BE);
       if (tagType == TNull)          return cmp(KindOfUninit, CC_AE);

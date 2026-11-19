@@ -25,7 +25,7 @@ namespace HPHP {
 
 /*
  * APCString holds the data to create a PHP string from APC.
- * This object only covers KindOfString. KindOfPersistentString are handled
+ * This object only covers KindOfString. KindOfString are handled
  * via APCTypedValue.
  */
 struct APCString {

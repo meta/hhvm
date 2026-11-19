@@ -267,13 +267,9 @@ inline int dataTypeToSoap(DataType dt) {
     case KindOfFunc:
     case KindOfClass:
     case KindOfLazyClass:
-    case KindOfPersistentString:
     case KindOfString:  return XSD_STRING;
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfClsMeth: return SOAP_ENC_ARRAY_DT;
     case KindOfObject:  return SOAP_ENC_OBJECT;

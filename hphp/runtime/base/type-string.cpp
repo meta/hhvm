@@ -426,13 +426,9 @@ StaticString getDataTypeString(DataType t, bool isLegacy) {
     case KindOfBoolean:    return s_boolean;
     case KindOfInt64:      return s_integer;
     case KindOfDouble:     return s_double;
-    case KindOfPersistentString:
     case KindOfString:     return s_string;
-    case KindOfPersistentVec:
     case KindOfVec:        return isLegacy ? s_varray : s_vec;
-    case KindOfPersistentDict:
     case KindOfDict:       return isLegacy ? s_darray : s_dict;
-    case KindOfPersistentKeyset:
     case KindOfKeyset:     return s_keyset;
     case KindOfObject:     return s_object;
     case KindOfResource:   return s_resource;

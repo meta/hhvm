@@ -299,7 +299,6 @@ namespace {
 ALWAYS_INLINE void serialize_memoize_arraykey(StringBuffer& sb,
                                               const TypedValue& c) {
   switch (c.m_type) {
-    case KindOfPersistentString:
     case KindOfString:
       serialize_memoize_code(sb, SER_MC_STRING);
       serialize_memoize_string_data(sb, c.m_data.pstr);
@@ -427,20 +426,16 @@ void serialize_memoize_tv(StringBuffer& sb, int depth, TypedValue tv) {
         sb, lazyClassToMemoKeyHelper(tv.m_data.plazyclass));
       break;
 
-    case KindOfPersistentString:
     case KindOfString:
       serialize_memoize_code(sb, SER_MC_STRING);
       serialize_memoize_string_data(sb, tv.m_data.pstr);
       break;
 
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       serialize_memoize_set(sb, tv.m_data.parr);
       break;
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
       serialize_memoize_array(sb, depth, tv.m_data.parr);
       break;
@@ -482,7 +477,7 @@ namespace {
 
 ALWAYS_INLINE TypedValue serialize_memoize_string_top(StringData* str) {
   if (str->empty()) {
-    return make_tv<KindOfPersistentString>(staticEmptyString());
+    return make_tv<KindOfString>(staticEmptyString());
   } else if ((unsigned char)str->data()[0] < kCodePrefix) {
     // serialize_memoize_string_data always returns a string with the first
     // character >= kCodePrefix, so anything less than that can't collide.
@@ -562,7 +557,7 @@ TypedValue HHVM_FUNCTION(serialize_memoize_param, TypedValue param) {
     return serialize_memoize_string_top(param.m_data.pstr);
   } else if (type == KindOfUninit || type == KindOfNull) {
     assertx((uint8_t)s_nullMemoKey.data()[0] == (kCodePrefix | SER_MC_NULL));
-    return make_tv<KindOfPersistentString>(s_nullMemoKey.get());
+    return make_tv<KindOfString>(s_nullMemoKey.get());
   } else if (isLazyClassType(type)) {
     return serialize_memoize_string_top(
       const_cast<StringData*>(
@@ -574,7 +569,7 @@ TypedValue HHVM_FUNCTION(serialize_memoize_param, TypedValue param) {
   } else if (type == KindOfBoolean) {
     assertx((uint8_t)s_trueMemoKey.data()[0] == (kCodePrefix | SER_MC_TRUE));
     assertx((uint8_t)s_falseMemoKey.data()[0] == (kCodePrefix | SER_MC_FALSE));
-    return make_tv<KindOfPersistentString>(
+    return make_tv<KindOfString>(
       param.m_data.num ? s_trueMemoKey.get() : s_falseMemoKey.get()
     );
   }
@@ -913,7 +908,6 @@ TypedValue dynamicClassMeth(TypedValue clsVal, const StringData* meth) {
   auto const c = [&] () {
     switch (clsVal.m_type) {
       case KindOfString:
-      case KindOfPersistentString:
       {
         auto const n = val(clsVal).pstr;
         auto const cls = Class::load(n);
@@ -1392,7 +1386,6 @@ namespace {
 
 Class* getClass(TypedValue cls) {
   switch (cls.m_type) {
-    case KindOfPersistentString:
     case KindOfString:
       if (auto const c = Class::load(cls.m_data.pstr)) return c;
       throwGetClassError(cls.m_data.pstr->slice());
@@ -1411,11 +1404,8 @@ Class* getClass(TypedValue cls) {
     case KindOfInt64:
     case KindOfDouble:
     case KindOfVec:
-    case KindOfPersistentVec:
     case KindOfDict:
-    case KindOfPersistentDict:
     case KindOfKeyset:
-    case KindOfPersistentKeyset:
     case KindOfResource:
     case KindOfFunc:
     case KindOfRFunc:
@@ -1434,8 +1424,6 @@ Class* getClass(TypedValue cls) {
 
 TypedValue HHVM_FUNCTION(class_to_classname, TypedValue cls) {
   switch (cls.m_type) {
-    case KindOfPersistentString:
-      return cls;
     case KindOfString:
       // The cls parameter is owned by the NativeImpl wrapper
       // <<__Native>> function class_to_classname($cls)
@@ -1444,9 +1432,9 @@ TypedValue HHVM_FUNCTION(class_to_classname, TypedValue cls) {
       tvIncRefCountable(cls);
       return cls;
     case KindOfClass:
-      return make_tv<KindOfPersistentString>(cls.m_data.pclass->name());
+      return make_tv<KindOfString>(cls.m_data.pclass->name());
     case KindOfLazyClass:
-      return make_tv<KindOfPersistentString>(cls.m_data.plazyclass.name());
+      return make_tv<KindOfString>(cls.m_data.plazyclass.name());
     default:
       SystemLib::throwInvalidArgumentExceptionObject(
         fmt::format(
@@ -1468,7 +1456,6 @@ TypedValue HHVM_FUNCTION(get_parent_class_from_class, TypedValue cls_or_str) {
         return cls_or_str.m_data.pclass;
       case KindOfLazyClass:
         return Class::load(cls_or_str.m_data.plazyclass.name());
-      case KindOfPersistentString:
       case KindOfString:
         return Class::load(cls_or_str.m_data.pstr);
       default:

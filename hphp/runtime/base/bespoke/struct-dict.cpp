@@ -156,7 +156,6 @@ uint8_t StructLayout::BoundToMask(const Type& type) {
   assertx(type.isKnownDataType());
   auto const dt = type.toDataType();
   assertx(type == Type(dt));
-  assertx(dt == dt_modulo_persistence(dt));
   return ~static_cast<uint8_t>(dt);
 }
 
@@ -166,7 +165,6 @@ jit::Type StructLayout::MaskToBound(uint8_t mask) {
 
   auto const dt = static_cast<DataType>(~mask);
   assertx(isRealType(dt));
-  assertx(dt == dt_modulo_persistence(dt));
   return jit::Type(dt);
 }
 
@@ -646,7 +644,7 @@ TypedValue StructDict::GetPosKey(const StructDict* sad, ssize_t pos) {
   auto const slot = sad->isBigStruct() ?
     sad->getSlotInPos<uint16_t>(pos) : sad->getSlotInPos<uint8_t>(pos);
   auto const k = layout->field(slot).key;
-  return make_tv<KindOfPersistentString>(k);
+  return make_tv<KindOfString>(k);
 }
 
 TypedValue StructDict::GetPosVal(const StructDict* sad, ssize_t pos) {
@@ -710,7 +708,6 @@ arr_lval StructDict::elemImpl(StringData* k, bool throwOnMissing) {
   }
   auto const sad = cowCheck() ? this->copy() : this;
   auto const lval = sad->lvalUnchecked(slot);
-  lval.type() = dt_modulo_persistence(lval.type());
   return arr_lval{sad, lval};
 }
 
@@ -718,7 +715,6 @@ tv_lval StructDict::ElemStr(tv_lval lvalIn, StringData* k, bool throwOnMissing) 
   auto sadIn = As(lvalIn.val().parr);
   auto const lval = sadIn->elemImpl(k, throwOnMissing);
   if (lval.arr != sadIn) {
-    lvalIn.type() = dt_with_rc(lvalIn.type());
     lvalIn.val().parr = lval.arr;
     if (sadIn->decReleaseCheck()) Release(sadIn);
   }

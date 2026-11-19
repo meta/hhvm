@@ -362,7 +362,7 @@ public:
     assertx(s->isStatic()); // No need to call s->incRefCount().
     assertx(m_top != m_elms);
     m_top--;
-    *m_top = make_tv<KindOfPersistentString>(s);
+    *m_top = make_tv<KindOfString>(s);
   }
 
   ALWAYS_INLINE
@@ -444,7 +444,7 @@ public:
     assertx(a->isStatic()); // No need to call a->incRefCount().
     assertx(m_top != m_elms);
     m_top--;
-    *m_top = make_persistent_array_like_tv(const_cast<ArrayData*>(a));
+    *m_top = make_array_like_tv(const_cast<ArrayData*>(a));
   }
 
   ALWAYS_INLINE
@@ -453,7 +453,7 @@ public:
     assertx(a->isVecType());
     assertx(m_top != m_elms);
     m_top--;
-    *m_top = make_tv<KindOfPersistentVec>(a);
+    *m_top = make_tv<KindOfVec>(a);
   }
 
   ALWAYS_INLINE
@@ -462,7 +462,7 @@ public:
     assertx(a->isDictType());
     assertx(m_top != m_elms);
     m_top--;
-    *m_top = make_tv<KindOfPersistentDict>(a);
+    *m_top = make_tv<KindOfDict>(a);
   }
 
   ALWAYS_INLINE
@@ -471,7 +471,7 @@ public:
     assertx(a->isKeysetType());
     assertx(m_top != m_elms);
     m_top--;
-    *m_top = make_tv<KindOfPersistentKeyset>(a);
+    *m_top = make_tv<KindOfKeyset>(a);
   }
 
   // This should only be called directly when the caller has

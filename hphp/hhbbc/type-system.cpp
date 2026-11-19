@@ -384,7 +384,8 @@ Type map_key(TypedValue k, const MapElem& mapElem) {
     assertx(mapElem.keyStaticness == TriBool::Yes);
     return ival(k.m_data.num);
   }
-  assertx(k.m_type == KindOfPersistentString);
+  assertx(k.m_type == KindOfString);
+  assertx(!k.m_data.pstr->isRefCounted());
   switch (mapElem.keyStaticness) {
     case TriBool::Yes:   return sval(k.m_data.pstr);
     case TriBool::Maybe: return sval_nonstatic(k.m_data.pstr);
@@ -399,7 +400,8 @@ Type map_key(TypedValue k, const MapElem& mapElem) {
 Type map_key_nonstatic(TypedValue k) {
   assertx(tvIsPlausible(k));
   if (isIntType(k.m_type)) return ival(k.m_data.num);
-  assertx(k.m_type == KindOfPersistentString);
+  assertx(k.m_type == KindOfString);
+  assertx(!k.m_data.pstr->isRefCounted());
   return sval_nonstatic(k.m_data.pstr);
 }
 
@@ -1135,7 +1137,7 @@ struct DualDispatchIntersectionImpl {
             isect = remove_int(std::move(isect));
           }
         } else if (is_specialized_string(isect)) {
-          auto const tv = make_tv<KindOfPersistentString>(sval_of(isect));
+          auto const tv = make_tv<KindOfString>(sval_of(isect));
           if (elems.find(tv) != elems.end()) {
             isect = remove_string(std::move(isect));
           }
@@ -3211,7 +3213,7 @@ bool Type::checkInvariants() const {
         assertx(m_data.map->map.find(tv) == m_data.map->map.end());
       } else if (is_specialized_string(m_data.map->optKey)) {
         DEBUG_ONLY auto const tv =
-          make_tv<KindOfPersistentString>(sval_of(m_data.map->optKey));
+          make_tv<KindOfString>(sval_of(m_data.map->optKey));
         assertx(m_data.map->map.find(tv) == m_data.map->map.end());
       }
     }
@@ -4138,7 +4140,7 @@ struct tvHelper {
   }
   template<typename... Args>
   static R makePersistentArray(Args&&... args) {
-    return make_persistent_array_like_tv(std::forward<Args>(args)...);
+    return make_array_like_tv(std::forward<Args>(args)...);
   }
   template<typename Init, typename... Args>
   static R fromMap(Args&&... args) {
@@ -4197,7 +4199,7 @@ R tvImpl(const Type& t) {
     return emptyArray(staticEmptyDictArray, staticEmptyMarkedDictArray);
   case BKeysetE:
   case BSKeysetE:
-    return H::template make<KindOfPersistentKeyset>(staticEmptyKeysetArray());
+    return H::template make<KindOfKeyset>(staticEmptyKeysetArray());
 
   default:
     break;
@@ -4210,7 +4212,7 @@ R tvImpl(const Type& t) {
       case BCDictE:
         return emptyArray(staticEmptyDictArray, staticEmptyMarkedDictArray);
       case BCKeysetE:
-        return H::template make<KindOfPersistentKeyset>(staticEmptyKeysetArray());
+        return H::template make<KindOfKeyset>(staticEmptyKeysetArray());
       default:
         break;
     }
@@ -4225,7 +4227,7 @@ R tvImpl(const Type& t) {
       return H::template make<KindOfDouble>(t.m_data.dval);
     case DataTag::Str:
       if (!t.subtypeOf(BStr) || (!allow_counted && t.subtypeOf(BCStr))) break;
-      return H::template make<KindOfPersistentString>(t.m_data.sval);
+      return H::template make<KindOfString>(t.m_data.sval);
     case DataTag::LazyCls:
       if (!t.subtypeOf(BLazyCls)) break;
       return H::template make<KindOfLazyClass>(
@@ -4464,7 +4466,7 @@ Optional<Type> type_of_type_structure(const IIndex& index,
           if (!t) return std::nullopt;
 
           map.emplace_back(
-            make_tv<KindOfPersistentString>(key),
+            make_tv<KindOfString>(key),
             MapElem::SStrKey(remove_uninit(std::move(t.value())))
           );
         }
@@ -4569,24 +4571,20 @@ Type from_cell(TypedValue cell) {
   case KindOfInt64:    return ival(cell.m_data.num);
   case KindOfDouble:   return dval(cell.m_data.dbl);
 
-  case KindOfPersistentString:
   case KindOfString:
     always_assert(cell.m_data.pstr->isStatic());
     return sval(cell.m_data.pstr);
 
-  case KindOfPersistentVec:
   case KindOfVec:
     always_assert(cell.m_data.parr->isStatic());
     always_assert(cell.m_data.parr->isVecType());
     return vec_val(cell.m_data.parr);
 
-  case KindOfPersistentDict:
   case KindOfDict:
     always_assert(cell.m_data.parr->isStatic());
     always_assert(cell.m_data.parr->isDictType());
     return dict_val(cell.m_data.parr);
 
-  case KindOfPersistentKeyset:
   case KindOfKeyset:
     always_assert(cell.m_data.parr->isStatic());
     always_assert(cell.m_data.parr->isKeysetType());
@@ -4618,13 +4616,9 @@ Type from_DataType(DataType dt) {
   case KindOfBoolean:  return TBool;
   case KindOfInt64:    return TInt;
   case KindOfDouble:   return TDbl;
-  case KindOfPersistentString:
   case KindOfString:   return TStr;
-  case KindOfPersistentVec:
   case KindOfVec:      return TVec;
-  case KindOfPersistentDict:
   case KindOfDict:     return TDict;
-  case KindOfPersistentKeyset:
   case KindOfKeyset:   return TKeyset;
   case KindOfObject:   return TObj;
   case KindOfResource: return TRes;
@@ -5542,7 +5536,7 @@ std::pair<Emptiness, bool> emptiness(const Type& t) {
   }
   if (t.couldBe(BStr)) {
     if (is_specialized_string(t)) {
-      check(make_tv<KindOfPersistentString>(t.m_data.sval));
+      check(make_tv<KindOfString>(t.m_data.sval));
     } else {
       empty = true;
       nonempty = true;
@@ -6267,7 +6261,7 @@ Type assert_emptiness(Type t) {
 
   if (t.couldBe(BStr)) {
     if (is_specialized_string(t)) {
-      stripVal(make_tv<KindOfPersistentString>(t.m_data.sval), BStr);
+      stripVal(make_tv<KindOfString>(t.m_data.sval), BStr);
     }
     // We can't do what we do for int or double and say that the value is a
     // specific value. Because both "" and "0" are false.
@@ -6313,7 +6307,7 @@ Type assert_nonemptiness(Type t) {
       stripVal(make_tv<KindOfDouble>(t.m_data.dval), BDbl);
       break;
     case DataTag::Str:
-      stripVal(make_tv<KindOfPersistentString>(t.m_data.sval), BStr);
+      stripVal(make_tv<KindOfString>(t.m_data.sval), BStr);
       break;
   }
   auto const old = t.bits();

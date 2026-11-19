@@ -33,15 +33,6 @@ Object TestObject;
 template <DataType DT>
 TypedValue createTestTypedValue() {
   switch (DT) {
-    case DataType::PersistentDict: {
-      Array d = make_dict_array(
-        "key1", 42,
-        "key2", 3.14,
-        "key3", "Salutations, earth!"
-      );
-      auto const sd = ArrayData::GetScalarArray(d);
-      return make_tv<DataType::PersistentDict>(sd);
-    }
     case DataType::Dict: {
       Array d = make_dict_array(
         "key1", 1,
@@ -50,23 +41,14 @@ TypedValue createTestTypedValue() {
       );
       return make_tv<DataType::Dict>(d.get()->copy());
     }
-    case DataType::PersistentVec: {
-      Array v = make_vec_array(42, 3.14, "This is not a pipe");
-      auto const sv = ArrayData::GetScalarArray(v);
-      return make_tv<DataType::PersistentVec>(sv);
-    }
     case DataType::Vec: {
       Array v = make_vec_array(1, 2, 3);
       return make_tv<DataType::Vec>(v.get()->copy());
     }
-    case DataType::PersistentKeyset:
-      return make_tv<DataType::PersistentKeyset>(staticEmptyKeysetArray());
     case DataType::Keyset: {
       Array k = make_keyset_array(1, 2, 3);
       return make_tv<DataType::Keyset>(k.get()->copy());
     }
-    case DataType::PersistentString:
-      return make_tv<DataType::PersistentString>(StringData::MakeStatic("Hello, world!"));
     case DataType::String:
       return make_tv<DataType::String>(StringData::Make("Hello, world!"));
     case DataType::Object:

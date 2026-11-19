@@ -245,7 +245,6 @@ std::pair<int, double> sizeOfArray(
       std::string k_str;
       std::pair<int, double> key_size_pair;
       switch (k.m_type) {
-        case KindOfPersistentString:
         case KindOfString: {
           auto const str = k.m_data.pstr;
           k_str = str->toCppString();
@@ -270,11 +269,8 @@ std::pair<int, double> sizeOfArray(
         }
         case KindOfUninit:
         case KindOfNull:
-        case KindOfPersistentVec:
         case KindOfBoolean:
-        case KindOfPersistentDict:
         case KindOfDouble:
-        case KindOfPersistentKeyset:
         case KindOfObject:
         case KindOfResource:
         case KindOfVec:

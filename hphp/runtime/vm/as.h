@@ -138,7 +138,7 @@ void fixup_default_values(T& state, FuncEmitter* fe) {
     TypedValue dv = make_tv<KindOfUninit>();
     auto const decode_array = [&] {
       if (auto const arr = state.ue->lookupArrayId(decode_raw<uint32_t>(capture))) {
-        dv.m_type = arr->toPersistentDataType();
+        dv.m_type = arr->toDataType();
         dv.m_data.parr = const_cast<ArrayData*>(arr);
       }
     };
@@ -158,7 +158,7 @@ void fixup_default_values(T& state, FuncEmitter* fe) {
       break;
     case OpString:
       if (auto str = state.litstrMap[decode_raw<uint32_t>(capture)]) {
-        dv = make_tv<KindOfPersistentString>(str);
+        dv = make_tv<KindOfString>(str);
       }
       break;
     default:

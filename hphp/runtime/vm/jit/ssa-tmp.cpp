@@ -92,11 +92,11 @@ Variant SSATmp::variantVal() const {
       return intVal();
     case KindOfDouble:
       return dblVal();
-    case KindOfPersistentString:
+    case KindOfString:
       return Variant{strVal(), Variant::PersistentStrInit{}};
-    case KindOfPersistentVec:
-    case KindOfPersistentDict:
-    case KindOfPersistentKeyset:
+    case KindOfVec:
+    case KindOfDict:
+    case KindOfKeyset:
       return Variant{arrLikeVal(), dt, Variant::PersistentArrInit{}};
     case KindOfClass:
       return Variant{const_cast<Class*>(clsVal())};
@@ -109,10 +109,6 @@ Variant SSATmp::variantVal() const {
     case KindOfEnumClassLabel:
       return Variant{eclVal(), Variant::EnumClassLabelInit{}};
     case KindOfRClsMeth:
-    case KindOfString:
-    case KindOfVec:
-    case KindOfDict:
-    case KindOfKeyset:
     case KindOfObject:
     case KindOfResource:
     case KindOfRFunc:

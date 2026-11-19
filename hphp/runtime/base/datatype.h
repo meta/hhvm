@@ -83,13 +83,9 @@ constexpr int8_t udt(size_t index, bool counted) {
  * assembly code of jitted type checks.
  */
 #define DATATYPES \
-  DT(PersistentDict,   udt(0,  false), 0b00001110) \
   DT(Dict,             udt(0,  true),  0b00001111) \
-  DT(PersistentVec,    udt(1,  false), 0b00010110) \
   DT(Vec,              udt(1,  true),  0b00010111) \
-  DT(PersistentKeyset, udt(2,  false), 0b00011010) \
   DT(Keyset,           udt(2,  true),  0b00011011) \
-  DT(PersistentString, udt(3,  false), 0b00011100) \
   DT(String,           udt(3,  true),  0b00011101) \
   DT(Object,           udt(4,  true),  0b00100111) \
   DT(Resource,         udt(5,  true),  0b00101011) \
@@ -147,7 +143,7 @@ constexpr DataType kExtraInvalidDataType = static_cast<DataType>(0);
 /*
  * DataType limits.
  */
-auto constexpr kMinDataType = ut_t(KindOfPersistentDict);
+auto constexpr kMinDataType = ut_t(KindOfDict);
 auto constexpr kMaxDataType = ut_t(KindOfNull);
 auto constexpr kMinRefCountedDataType = ut_t(KindOfDict);
 auto constexpr kMaxRefCountedDataType = ut_t(KindOfRClsMeth);
@@ -165,30 +161,10 @@ constexpr bool isRefcountedType(DataType t) {
 }
 
 /*
- * Whether a type is or has a persistent version.
+ * Whether a type is MaybeCountable.
  */
-constexpr bool hasPersistentFlavor(DataType t) {
+constexpr bool isMaybeCountableType(DataType t) {
   return ut_t(t) <= ut_t(KindOfString);
-}
-
-/*
- * Return `dt` with or without the refcount bit set.
- */
-constexpr DataType dt_with_rc(DataType dt) {
-  assertx(hasPersistentFlavor(dt) || isRefcountedType(dt));
-  return static_cast<DataType>(dt_t(dt) | kRefCountedBit);
-}
-constexpr DataType dt_with_persistence(DataType dt) {
-  assertx(hasPersistentFlavor(dt) || !isRefcountedType(dt));
-  return static_cast<DataType>(dt_t(dt) & ~kRefCountedBit);
-}
-
-/*
- * Return the ref-counted flavor of `dt` if it has both a KindOf$x and a
- * KindOfPersistent$x flavor
- */
-constexpr DataType dt_modulo_persistence(DataType dt) {
-  return hasPersistentFlavor(dt) ? dt_with_rc(dt) : dt;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -338,11 +314,11 @@ constexpr bool isEnumClassLabelType(DataType t) { return t == KindOfEnumClassLab
 
 /*
  * Return whether two DataTypes for primitive types are "equivalent" as far as
- * user-visible PHP types are concerned (i.e. the same modulo countedness).
+ * user-visible Hack types are concerned.
  * Note that KindOfUninit and KindOfNull are not considered equivalent.
  */
 constexpr bool equivDataTypes(DataType t1, DataType t2) {
-  return !((ut_t(t1) ^ ut_t(t2)) & ~kRefCountedBit);
+  return t1 == t2;
 }
 
 /*
@@ -370,10 +346,6 @@ bool operator>=(DataType, DataType) = delete;
   case KindOfBoolean:       \
   case KindOfInt64:         \
   case KindOfDouble:        \
-  case KindOfPersistentString:  \
-  case KindOfPersistentVec: \
-  case KindOfPersistentDict: \
-  case KindOfPersistentKeyset: \
   case KindOfClsMeth:       \
   case KindOfFunc:          \
   case KindOfClass:         \

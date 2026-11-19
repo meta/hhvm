@@ -1961,17 +1961,13 @@ void VariableSerializerImpl<Buffer>::serializeVariant(tv_rval tv,
       write(val(tv).dbl);
       return;
 
-    case KindOfPersistentString:
     case KindOfString:
       write(val(tv).pstr->data(),
             val(tv).pstr->size(), isArrayKey, noQuotes);
       return;
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       assertx(!isArrayKey);
       serializeArray(val(tv).parr, skipNestCheck);

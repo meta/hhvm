@@ -221,7 +221,6 @@ void profileArrLikeLval(tv_lval lval, LoggingProfile* profile) {
   assertx(tvIsArrayLike(lval));
   if (!profile) return;
   auto const ad = maybeMakeLoggingArray(lval.val().parr, profile);
-  if (ad->isRefCounted()) lval.type() = dt_with_rc(lval.type());
   lval.val().parr = ad;
   assertx(tvIsPlausible(*lval));
 }
@@ -521,10 +520,6 @@ ssize_t LoggingArray::IterRewind(const LoggingArray* lad, ssize_t prev) {
 // Mutations
 
 namespace {
-TypedValue countedValue(TypedValue val) {
-  type(val) = dt_modulo_persistence(type(val));
-  return val;
-}
 
 LoggingArray* escalate(LoggingArray* lad, ArrayData* result) {
   lad->updateSize();
@@ -587,10 +582,8 @@ decltype(auto) mutate(LoggingArray* lad, EntryTypes ms,
 }
 
 tv_lval elem(tv_lval lvalIn, arr_lval result) {
-  result.type() = dt_modulo_persistence(result.type());
   auto const ladIn = LoggingArray::As(lvalIn.val().parr);
   if (result.arr != ladIn) {
-    lvalIn.type() = dt_with_rc(lvalIn.type());
     lvalIn.val().parr = result.arr;
     if (ladIn->decReleaseCheck()) LoggingArray::Release(ladIn);
   }
@@ -641,7 +634,7 @@ tv_lval LoggingArray::ElemInt(tv_lval lval, int64_t k, bool throwOnMissing) {
   auto const lad = As(lval.val().parr);
   auto const val = lad->wrapped->get(k);
   auto const key = make_tv<KindOfInt64>(k);
-  auto const ms = val.is_init() ? lad->entryTypes.with(key, countedValue(val))
+  auto const ms = val.is_init() ? lad->entryTypes.with(key, val)
                                 : lad->entryTypes;
   logEvent(lad, ms, ArrayOp::ElemInt, k, val);
   if (!val.is_init() && !throwOnMissing) {
@@ -655,7 +648,7 @@ tv_lval LoggingArray::ElemStr(
   auto const lad = As(lval.val().parr);
   auto const val = lad->wrapped->get(k);
   auto const key = make_tv<KindOfString>(k);
-  auto const ms = val.is_init() ? lad->entryTypes.with(key, countedValue(val))
+  auto const ms = val.is_init() ? lad->entryTypes.with(key, val)
                                 : lad->entryTypes;
   logEvent(lad, ms, ArrayOp::ElemStr, k, val);
   if (!val.is_init() && !throwOnMissing) {

@@ -80,19 +80,9 @@ enable_if_lval_t<T, void> tvCastToBooleanInPlace(T tv) {
         b = (val(tv).dbl != 0);
         continue;
 
-      case KindOfPersistentString:
-        b = val(tv).pstr->toBoolean();
-        continue;
-
       case KindOfString:
         b = val(tv).pstr->toBoolean();
         tvDecRefStr(tv);
-        continue;
-
-      case KindOfPersistentVec:
-      case KindOfPersistentDict:
-      case KindOfPersistentKeyset:
-        b = !val(tv).parr->empty();
         continue;
 
       case KindOfVec:
@@ -168,19 +158,9 @@ enable_if_lval_t<T, void> tvCastToDoubleInPlace(T tv) {
       case KindOfDouble:
         return;
 
-      case KindOfPersistentString:
-        d = val(tv).pstr->toDouble();
-        continue;
-
       case KindOfString:
         d = val(tv).pstr->toDouble();
         tvDecRefStr(tv);
-        continue;
-
-      case KindOfPersistentVec:
-      case KindOfPersistentDict:
-      case KindOfPersistentKeyset:
-        d = val(tv).parr->empty() ? 0 : 1;
         continue;
 
       case KindOfVec:
@@ -254,19 +234,9 @@ enable_if_lval_t<T, void> tvCastToInt64InPlace(T tv) {
         i = double_to_int64(val(tv).dbl);
         continue;
 
-      case KindOfPersistentString:
-        i = val(tv).pstr->toInt64();
-        continue;
-
       case KindOfString:
         i = val(tv).pstr->toInt64();
         tvDecRefStr(tv);
-        continue;
-
-      case KindOfPersistentVec:
-      case KindOfPersistentDict:
-      case KindOfPersistentKeyset:
-        i = val(tv).parr->empty() ? 0 : 1;
         continue;
 
       case KindOfVec:
@@ -339,15 +309,11 @@ double tvCastToDouble(TypedValue tv) {
     case KindOfDouble:
       return tv.m_data.dbl;
 
-    case KindOfPersistentString:
     case KindOfString:
       return tv.m_data.pstr->toDouble();
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       return tv.m_data.parr->empty() ? 0.0 : 1.0;
 
@@ -396,7 +362,7 @@ template<typename T> enable_if_lval_t<T, void> tvCastToStringInPlace(
   };
   auto persistentString = [&](StringData* s) {
     assertx(!s->isRefCounted());
-    type(tv) = KindOfPersistentString;
+    type(tv) = KindOfString;
     val(tv).pstr = s;
   };
 
@@ -418,24 +384,20 @@ template<typename T> enable_if_lval_t<T, void> tvCastToStringInPlace(
       handleConvThrowMode(mode, "double", "string");
       return string(buildStringData(val(tv).dbl));
 
-    case KindOfPersistentString:
     case KindOfString:
       return;
 
     case KindOfVec:
-    case KindOfPersistentVec:
       SystemLib::throwInvalidOperationExceptionObject(
         "Vec to string conversion"
       );
 
     case KindOfDict:
-    case KindOfPersistentDict:
       SystemLib::throwInvalidOperationExceptionObject(
         "Dict to string conversion"
       );
 
     case KindOfKeyset:
-    case KindOfPersistentKeyset:
       SystemLib::throwInvalidOperationExceptionObject(
         "Keyset to string conversion"
       );
@@ -497,7 +459,6 @@ void tvSetLegacyArrayInPlace(tv_lval tv, bool isLegacy) {
 
   decRefArr(adIn);
   val(tv).parr = ad;
-  type(tv) = dt_with_rc(type(tv));
   assertx(tvIsPlausible(*tv));
 }
 
@@ -524,28 +485,22 @@ StringData* tvCastToStringData(
       handleConvThrowMode(mode, "double", "string");
       return buildStringData(tv.m_data.dbl);
 
-    case KindOfPersistentString:
-      return tv.m_data.pstr;
-
     case KindOfString: {
       auto s = tv.m_data.pstr;
       s->incRefCount();
       return s;
     }
 
-    case KindOfPersistentVec:
     case KindOfVec:
       SystemLib::throwInvalidOperationExceptionObject(
         "Vec to string conversion"
       );
 
-    case KindOfPersistentDict:
     case KindOfDict:
       SystemLib::throwInvalidOperationExceptionObject(
         "Dict to string conversion"
       );
 
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       SystemLib::throwInvalidOperationExceptionObject(
         "Keyset to string conversion"
@@ -608,7 +563,6 @@ ArrayData* tvCastToArrayLikeData(TypedValue tv) {
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
     case KindOfResource:
     case KindOfFunc:
@@ -616,11 +570,8 @@ ArrayData* tvCastToArrayLikeData(TypedValue tv) {
     case KindOfLazyClass:
       return makeSingletonDict(tv);
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset: {
       auto const ad = tv.m_data.parr;
       ad->incRefCount();
@@ -677,7 +628,6 @@ enable_if_lval_t<T, void> tvCastToArrayInPlace(T tv) {
       case KindOfBoolean:
       case KindOfInt64:
       case KindOfDouble:
-      case KindOfPersistentString:
         a = makeSingletonDict(*tv);
         continue;
 
@@ -686,11 +636,8 @@ enable_if_lval_t<T, void> tvCastToArrayInPlace(T tv) {
         tvDecRefStr(tv);
         continue;
 
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentDict:
       case KindOfDict:
-      case KindOfPersistentKeyset:
       case KindOfKeyset: {
         auto* adIn = val(tv).parr;
         a = [&]{
@@ -768,7 +715,6 @@ enable_if_lval_t<T, void> tvCastToVecInPlace(T tv) {
           "Double to vec conversion"
         );
 
-      case KindOfPersistentString:
       case KindOfString:
         SystemLib::throwInvalidOperationExceptionObject(
           "String to vec conversion"
@@ -779,9 +725,7 @@ enable_if_lval_t<T, void> tvCastToVecInPlace(T tv) {
           "Resource to vec conversion"
         );
 
-      case KindOfPersistentDict:
       case KindOfDict:
-      case KindOfPersistentKeyset:
       case KindOfKeyset: {
         auto* adIn = val(tv).parr;
         a = adIn->toVec(adIn->cowCheck());
@@ -789,7 +733,6 @@ enable_if_lval_t<T, void> tvCastToVecInPlace(T tv) {
         continue;
       }
 
-      case KindOfPersistentVec:
       case KindOfVec:
         assertx(val(tv).parr->isVecType());
         return;
@@ -865,7 +808,6 @@ enable_if_lval_t<T, void> tvCastToDictInPlace(T tv) {
           "Double to dict conversion"
         );
 
-      case KindOfPersistentString:
       case KindOfString:
         SystemLib::throwInvalidOperationExceptionObject(
           "String to dict conversion"
@@ -876,9 +818,7 @@ enable_if_lval_t<T, void> tvCastToDictInPlace(T tv) {
           "Resource to dict conversion"
         );
 
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentKeyset:
       case KindOfKeyset: {
         auto* adIn = val(tv).parr;
         a = adIn->toDict(adIn->cowCheck());
@@ -886,7 +826,6 @@ enable_if_lval_t<T, void> tvCastToDictInPlace(T tv) {
         continue;
       }
 
-      case KindOfPersistentDict:
       case KindOfDict:
         assertx(val(tv).parr->isDictType());
         return;
@@ -963,7 +902,6 @@ enable_if_lval_t<T, void> tvCastToKeysetInPlace(T tv) {
           "Double to keyset conversion"
         );
 
-      case KindOfPersistentString:
       case KindOfString:
         SystemLib::throwInvalidOperationExceptionObject(
           "String to keyset conversion"
@@ -974,9 +912,7 @@ enable_if_lval_t<T, void> tvCastToKeysetInPlace(T tv) {
           "Resource to keyset conversion"
         );
 
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentDict:
       case KindOfDict: {
         auto* adIn = val(tv).parr;
         a = adIn->toKeyset(adIn->cowCheck());
@@ -984,7 +920,6 @@ enable_if_lval_t<T, void> tvCastToKeysetInPlace(T tv) {
         continue;
       }
 
-      case KindOfPersistentKeyset:
       case KindOfKeyset:
         assertx(val(tv).parr->isKeysetType());
         return;
@@ -1043,7 +978,6 @@ ObjectData* tvCastToObjectData(TypedValue tv) {
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
     case KindOfFunc:
     case KindOfClass:
@@ -1054,11 +988,8 @@ ObjectData* tvCastToObjectData(TypedValue tv) {
       return ObjectData::FromArray(props.create()).detach();
     }
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
       return ObjectData::FromArray(tv.m_data.parr).detach();
 

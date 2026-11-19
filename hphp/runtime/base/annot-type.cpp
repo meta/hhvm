@@ -180,13 +180,13 @@ TypedValue annotDefaultValue(AnnotType at) {
     case AnnotType::ArrayLike:
     case AnnotType::VecOrDict:
     case AnnotType::Vec:
-      return make_tv<KindOfPersistentVec>(staticEmptyVec());
+      return make_tv<KindOfVec>(staticEmptyVec());
     case AnnotType::String:
-      return make_tv<KindOfPersistentString>(staticEmptyString());
+      return make_tv<KindOfString>(staticEmptyString());
     case AnnotType::Dict:
-      return make_tv<KindOfPersistentDict>(staticEmptyDictArray());
+      return make_tv<KindOfDict>(staticEmptyDictArray());
     case AnnotType::Keyset:
-      return make_tv<KindOfPersistentKeyset>(staticEmptyKeysetArray());
+      return make_tv<KindOfKeyset>(staticEmptyKeysetArray());
   }
   always_assert(false);
 }
@@ -304,15 +304,11 @@ annotCompat(DataType dt, AnnotType at, const StringData* annotClsName) {
       case KindOfDouble:
         return interface_supports_double(annotClsName)
           ? AnnotAction::Pass : AnnotAction::Fail;
-      case KindOfPersistentString:
       case KindOfString:
         return interface_supports_string(annotClsName)
           ? AnnotAction::Pass : AnnotAction::Fail;
-      case KindOfPersistentVec:
       case KindOfVec:
-      case KindOfPersistentDict:
       case KindOfDict:
-      case KindOfPersistentKeyset:
       case KindOfKeyset:
         return interface_supports_arrlike(annotClsName)
           ? AnnotAction::Pass : AnnotAction::Fail;

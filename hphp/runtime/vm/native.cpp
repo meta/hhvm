@@ -236,13 +236,9 @@ void callFuncImpl(const Func* const func,
         callFuncDoubleImpl(f, GP_args, GP_count, SIMD_args, SIMD_count);
       return;
 
-    case KindOfPersistentString:
     case KindOfString:
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfClsMeth:
     case KindOfObject:
@@ -374,13 +370,9 @@ static Optional<TypedValue> builtinInValue(
     case KindOfBoolean: return make_tv<KindOfBoolean>(false);
     case KindOfInt64:   return make_tv<KindOfInt64>(0);
     case KindOfDouble:  return make_tv<KindOfDouble>(0.0);
-    case KindOfPersistentString:
     case KindOfString:  return make_tv<KindOfString>(staticEmptyString());
-    case KindOfPersistentVec:
     case KindOfVec:     return make_tv<KindOfVec>(staticEmptyVec());
-    case KindOfPersistentDict:
     case KindOfDict:    return make_tv<KindOfDict>(staticEmptyDictArray());
-    case KindOfPersistentKeyset:
     case KindOfKeyset:  return make_tv<KindOfKeyset>(staticEmptyKeysetArray());
     case KindOfUninit:
     case KindOfObject:
@@ -446,15 +438,11 @@ static bool tcCheckNative(const TypeConstraint& tc, const NativeSig::Type ty,
     case KindOfDouble:       return ty == T::Double;
     case KindOfBoolean:      return ty == T::Bool;
     case KindOfObject:       return ty == T::Object   || ty == T::ObjectNN;
-    case KindOfPersistentString:
     case KindOfString:
       return isReturn ? ty == T::String
                       : ty == T::String || ty == T::OptString;
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:       return ty == T::Array    || ty == T::ArrayNN;
     case KindOfResource:     return ty == T::Resource || ty == T::ResourceArg;
     case KindOfUninit:
@@ -481,13 +469,9 @@ static bool tcCheckNativeIO(
       case KindOfDouble:       return ty == T::DoubleIO;
       case KindOfBoolean:      return ty == T::BoolIO;
       case KindOfObject:       return ty == T::ObjectIO;
-      case KindOfPersistentString:
       case KindOfString:       return ty == T::StringIO;
-      case KindOfPersistentVec:
       case KindOfVec:          return ty == T::ArrayIO;
-      case KindOfPersistentDict:
       case KindOfDict:         return ty == T::ArrayIO;
-      case KindOfPersistentKeyset:
       case KindOfKeyset:       return ty == T::ArrayIO;
       case KindOfResource:     return ty == T::ResourceIO;
       case KindOfUninit:

@@ -605,7 +605,7 @@ void emitSpecializedNext(IRGS& env, const Accessor& accessor,
 }
 
 ArrayLayout getBaseLayout(SSATmp* base) {
-  auto const baseDT = dt_modulo_persistence(base->type().toDataType());
+  auto const baseDT = base->type().toDataType();
   if (!allowBespokeArrayLikes()) return ArrayLayout::Vanilla();
   if (!arrayTypeCouldBeBespoke(baseDT)) return ArrayLayout::Vanilla();
   return base->type().arrSpec().layout();
@@ -649,7 +649,7 @@ bool specializeIterInit(IRGS& env, Offset doneOffset,
   // IterInits of the same base DataType pointing to the same body block,
   // the first one likely has the highest weight, so we pick that one as
   // a hint for IterNext.
-  auto const baseDT = dt_modulo_persistence(base->type().toDataType());
+  auto const baseDT = base->type().toDataType();
   if (bodyKey != nullptr) {
     auto const iterProfileKey = std::make_pair(bodyKey, baseDT);
     env.iterProfiles.emplace(iterProfileKey, IterProfileInfo{layout});
@@ -673,7 +673,7 @@ bool specializeIterNext(IRGS& env, Offset bodyOffset,
   auto const bodyKey = env.irb->hasBlock(bodySk)
     ? getBlock(env, bodySk)
     : nullptr;
-  auto const baseDT = dt_modulo_persistence(base->type().toDataType());
+  auto const baseDT = base->type().toDataType();
   auto const iterProfileKey = std::make_pair(bodyKey, baseDT);
   auto const it = env.iterProfiles.find(iterProfileKey);
   auto const layout = [&] {

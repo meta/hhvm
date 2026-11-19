@@ -843,7 +843,7 @@ void VariableUnserializerImpl<Source>::unserializeVariant(
           raise_class_to_string_conversion_notice("variable unserialization");
         }
         tvMove(
-          make_tv<KindOfPersistentString>(makeStaticString(c.get())), self
+          make_tv<KindOfString>(makeStaticString(c.get())), self
         );
       }
     }
@@ -868,7 +868,7 @@ void VariableUnserializerImpl<Source>::unserializeVariant(
       assertx(str.size() == 8);
       auto const sd = *reinterpret_cast<StringData*const*>(&str[0]);
       assertx(sd->isStatic());
-      tvMove(make_tv<KindOfPersistentString>(sd), self);
+      tvMove(make_tv<KindOfString>(sd), self);
     } else {
       throwUnknownType(type);
     }

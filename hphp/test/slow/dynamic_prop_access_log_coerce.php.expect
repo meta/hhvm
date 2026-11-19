@@ -2,5 +2,5 @@ notice: Dynamic property access stdClass->42
 notice: Dynamic property access stdClass->1.5
 notice: Dynamic property access stdClass->1
 notice: Dynamic property access stdClass->sk
-notice: Dynamic property access stdClass->PersistentVec
+notice: Dynamic property access stdClass->Vec
 array write threw: InvalidOperationException

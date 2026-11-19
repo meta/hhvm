@@ -379,26 +379,26 @@ Array createPhpNode(HeapGraphContextPtr hgptr, int index) {
     if (ty > type_scan::kIndexUnknownNoPtrs) {
       auto type = type_scan::getName(ty);
       node_arr.set(s_type,
-                   make_tv<KindOfPersistentString>(makeStaticString(type)));
+                   make_tv<KindOfString>(makeStaticString(type)));
     }
   }
   if (!node.is_root()) {
     if (auto cls = cnode.heap_object.cls) {
-      node_arr.set(s_class, make_tv<KindOfPersistentString>(cls->name()));
+      node_arr.set(s_class, make_tv<KindOfString>(cls->name()));
     }
   } else if (node.rootKind == HeapGraph::RootKind::MemoCache) {
     // Add memo function info
     if (!node.funcId.isInvalid()) {
       auto func = Func::fromFuncId(node.funcId);
-      node_arr.set(s_func, make_tv<KindOfPersistentString>(func->name()));
+      node_arr.set(s_func, make_tv<KindOfString>(func->name()));
       if (func->cls()) {
-        node_arr.set(s_class, make_tv<KindOfPersistentString>(func->cls()->name()));
+        node_arr.set(s_class, make_tv<KindOfString>(func->cls()->name()));
       }
     }
   } else if (node.rootKind == HeapGraph::RootKind::SPropCache) {
     // Add static property info (stored as "ClassName::PropertyName")
     if (node.sPropName) {
-      node_arr.set(s_prop, make_tv<KindOfPersistentString>(node.sPropName));
+      node_arr.set(s_prop, make_tv<KindOfString>(node.sPropName));
     }
   }
 
@@ -427,15 +427,15 @@ Array createPhpEdge(HeapGraphContextPtr hgptr, int index) {
       auto cls = cfrom.heap_object.cls;
       auto slot = cls->propIndexToSlot(cptr.index);
       auto& prop = cls->declProperties()[slot];
-      ptr_arr.set(s_prop, make_tv<KindOfPersistentString>(prop.name));
+      ptr_arr.set(s_prop, make_tv<KindOfString>(prop.name));
       break;
     }
     case CapturedPtr::Memo: {
       if (cptr.funcId != FuncId::Invalid) {
         auto func = Func::fromFuncId(cptr.funcId);
-        ptr_arr.set(s_func, make_tv<KindOfPersistentString>(func->name()));
+        ptr_arr.set(s_func, make_tv<KindOfString>(func->name()));
         if (func->cls()) {
-          ptr_arr.set(s_class, make_tv<KindOfPersistentString>(func->cls()->name()));
+          ptr_arr.set(s_class, make_tv<KindOfString>(func->cls()->name()));
         }
       }
       break;

@@ -66,7 +66,7 @@ size_t hashArrayPortion(const ArrayData* arr) {
       assertx(IMPLIES(tvIsString(k), val(k).pstr->isStatic()));
       hash = folly::hash::hash_combine(
         hash,
-        dt_with_persistence(k.m_type),
+        k.m_type,
         k.m_data.num,
         v.m_type
       );
@@ -76,10 +76,10 @@ size_t hashArrayPortion(const ArrayData* arr) {
         case KindOfBoolean:
         case KindOfInt64:
         case KindOfDouble:
-        case KindOfPersistentString:
-        case KindOfPersistentVec:
-        case KindOfPersistentDict:
-        case KindOfPersistentKeyset:
+        case KindOfString:
+        case KindOfVec:
+        case KindOfDict:
+        case KindOfKeyset:
         case KindOfEnumClassLabel:
           hash = folly::hash::hash_combine(hash, v.m_data.num);
           break;
@@ -109,10 +109,6 @@ size_t hashArrayPortion(const ArrayData* arr) {
           break;
 
         case KindOfUninit:
-        case KindOfString:
-        case KindOfVec:
-        case KindOfDict:
-        case KindOfKeyset:
         case KindOfObject:
         case KindOfResource:
         case KindOfRFunc:
@@ -804,7 +800,6 @@ namespace {
 
 std::string describeKeyValue(TypedValue tv) {
   switch (tv.m_type) {
-  case KindOfPersistentString:
   case KindOfString:
     return fmt::format("\"{}\"", tv.m_data.pstr->data());
   case KindOfInt64:
@@ -813,11 +808,8 @@ std::string describeKeyValue(TypedValue tv) {
   case KindOfNull:
   case KindOfBoolean:
   case KindOfDouble:
-  case KindOfPersistentVec:
   case KindOfVec:
-  case KindOfPersistentDict:
   case KindOfDict:
-  case KindOfPersistentKeyset:
   case KindOfKeyset:
   case KindOfResource:
   case KindOfObject:

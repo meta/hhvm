@@ -91,10 +91,6 @@ void cgLdCns(IRLS& env, const IRInstruction* inst) {
         v << copy{v.cns(!!pcns->m_data.num), dst.reg(0)};
         break;
       case KindOfInt64:
-      case KindOfPersistentString:
-      case KindOfPersistentVec:
-      case KindOfPersistentDict:
-      case KindOfPersistentKeyset:
       case KindOfString:
       case KindOfVec:
       case KindOfDict:

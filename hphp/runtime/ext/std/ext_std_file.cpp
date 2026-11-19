@@ -669,11 +669,8 @@ Variant HHVM_FUNCTION(file_put_contents,
       break;
     }
 
-    case KindOfPersistentVec:
     case KindOfVec:
-    case KindOfPersistentDict:
     case KindOfDict:
-    case KindOfPersistentKeyset:
     case KindOfKeyset:
     case KindOfClsMeth: {
       Array arr = data.toArray();
@@ -702,7 +699,6 @@ Variant HHVM_FUNCTION(file_put_contents,
     case KindOfBoolean:
     case KindOfInt64:
     case KindOfDouble:
-    case KindOfPersistentString:
     case KindOfString:
     case KindOfFunc:
     case KindOfClass:

@@ -108,9 +108,6 @@ Layout::LayoutSet getEmptyParentLayouts() {
 
 Layout::LayoutSet getMonotypeParentLayouts(DataType dt) {
   Layout::LayoutSet result;
-  if (hasPersistentFlavor(dt) && !isRefcountedType(dt)) {
-    result.insert(MonotypeVecLayout::Index(dt_with_rc(dt)));
-  }
   result.insert(TopMonotypeVecLayout::Index());
   return result;
 }
@@ -307,7 +304,7 @@ template <typename CountableFn, typename MaybeCountableFn>
 void MonotypeVec::forEachCountableValue(CountableFn c, MaybeCountableFn mc) {
   auto const dt = type();
   if (isRefcountedType(dt)) {
-    if (hasPersistentFlavor(dt)) {
+    if (isMaybeCountableType(dt)) {
       for (auto i = 0; i < m_size; i++) {
         mc(dt, valueRefUnchecked(i).pcnt);
       }
@@ -514,10 +511,7 @@ void MonotypeVec::ConvertToShared(
     ConvertTvToShared(lval, env);
     assertx(equivDataTypes(dt, madIn->type()));
   }
-  auto const newType = hasPersistentFlavor(oldType)
-    ? dt_with_persistence(oldType)
-    : oldType;
-  madIn->setLayoutIndex(getLayoutIndex(newType));
+  madIn->setLayoutIndex(getLayoutIndex(oldType));
 }
 
 void MonotypeVec::ReleaseShared(MonotypeVec* mad) {
@@ -585,7 +579,7 @@ arr_lval MonotypeVec::elemImpl(int64_t k, bool throwOnMissing) {
 
   auto const cow = cowCheck();
   auto const mad = cow ? copy() : this;
-  auto const dt = dt_modulo_persistence(mad->type());
+  auto const dt = mad->type();
   mad->setLayoutIndex(getLayoutIndex(dt));
 
   static_assert(folly::kIsLittleEndian);
@@ -598,7 +592,6 @@ tv_lval MonotypeVec::ElemInt(tv_lval lvalIn, int64_t k, bool throwOnMissing) {
   auto const madIn = As(lvalIn.val().parr);
   auto const lval = madIn->elemImpl(k, throwOnMissing);
   if (lval.arr != madIn) {
-    lvalIn.type() = dt_with_rc(lvalIn.type());
     lvalIn.val().parr = lval.arr;
     if (madIn->decReleaseCheck()) Release(madIn);
   }
@@ -626,7 +619,7 @@ ArrayData* MonotypeVec::setIntImpl(int64_t k, TypedValue v) {
   auto const cow = cowCheck();
   auto const mad = cow ? copy() : this;
   if (dt != v.type()) {
-    mad->setLayoutIndex(getLayoutIndex(dt_with_rc(dt)));
+    mad->setLayoutIndex(getLayoutIndex(dt));
   }
   mad->valueRefUnchecked(k) = val(v);
   if (cow && decReleaseCheck()) Release(this);
@@ -711,7 +704,7 @@ ArrayData* MonotypeVec::appendImpl(TypedValue v) {
   if (dt == kExtraInvalidDataType) {
     mad->setLayoutIndex(getLayoutIndex(v.type()));
   } else if (dt != v.type()) {
-    mad->setLayoutIndex(getLayoutIndex(dt_with_rc(dt)));
+    mad->setLayoutIndex(getLayoutIndex(dt));
   }
   mad->valueRefUnchecked(mad->m_size++) = val(v);
 
@@ -813,8 +806,7 @@ ArrayLayout MonotypeVecLayout::setType(Type key, Type val) const {
   auto const base = val.toDataType();
   if (!equivDataTypes(base, m_fixedType)) return ArrayLayout::Top();
 
-  auto const valType = base == m_fixedType ? base : dt_with_rc(base);
-  return ArrayLayout(Index(valType));
+  return ArrayLayout(Index(base));
 }
 
 std::pair<Type, bool> MonotypeVecLayout::elemType(Type /*key*/) const {
@@ -840,16 +832,7 @@ void MonotypeVec::InitializeLayouts() {
   // Create all the potentially internal concrete layouts first
 #define DT(name, value, ...) {                                         \
     auto const type = KindOf##name;                                    \
-    if (type == dt_modulo_persistence(type) && type != KindOfUninit) { \
-      new MonotypeVecLayout(type);                                     \
-    }                                                                  \
-  }
-  DATATYPES
-#undef DT
-
-#define DT(name, value, ...) {                                         \
-    auto const type = KindOf##name;                                    \
-    if (type != dt_modulo_persistence(type) && type != KindOfUninit) { \
+    if (type != KindOfUninit) {                                        \
       new MonotypeVecLayout(type);                                     \
     }                                                                  \
   }

@@ -296,7 +296,7 @@ Object APCObject::createObject(bool pure) const {
 
   if (UNLIKELY(numProps < m_propCount)) {
     auto dynProps = apcProp[numProps];
-    assertx(dynProps->type() == KindOfPersistentDict ||
+    assertx(dynProps->type() == KindOfDict ||
             dynProps->kind() == APCKind::CopiedDict);
     obj->setDynProps(dynProps->toLocal(pure).asCArrRef());
   }
@@ -338,7 +338,7 @@ Object APCObject::createObjectLazy(bool pure) const {
 
   if (UNLIKELY(numProps < m_propCount)) {
     auto dynProps = apcProp[numProps];
-    assertx(dynProps->type() == KindOfPersistentDict ||
+    assertx(dynProps->type() == KindOfDict ||
             dynProps->kind() == APCKind::CopiedDict);
     obj->setDynProps(dynProps->toLocal(pure).asCArrRef());
   }

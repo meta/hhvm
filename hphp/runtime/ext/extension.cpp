@@ -175,7 +175,7 @@ void Extension::deserialize(BlobDecoder& sd) {
         Trace::ftraceRelease("Extension::deserialize [{}]: key '{}'\n", m_name, sv);
       }
       auto sd = StringData::MakeShared(sv);
-      v.append(make_tv<KindOfPersistentString>(sd));
+      v.append(make_tv<KindOfString>(sd));
     });
   auto d = init.toArray();
   if (Trace::moduleEnabledRelease(Trace::apc_warmup, 1)) {

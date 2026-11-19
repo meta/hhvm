@@ -148,7 +148,7 @@ ArrayData* hhvm_get_frame_named_args(const ActRec* ar) {
     // If there's a default argument that's uninit, caller must not have
     // passed it.
     if (type(val) == KindOfUninit) continue;
-    auto name = make_tv<KindOfPersistentString>(namedParamNames[i].get());
+    auto name = make_tv<KindOfString>(namedParamNames[i].get());
     namedArgsInit.setValidKey(name, *val);
   }
   ArrayData* namedArgs = namedArgsInit.create();

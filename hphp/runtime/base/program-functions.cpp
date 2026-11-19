@@ -438,7 +438,7 @@ void register_variable(Array& variables, char *name, const Variant& value,
 
       if (!index) {
         auto const size = symtable->size();
-        symtable->append(make_persistent_array_like_tv(staticEmptyDictArray()));
+        symtable->append(make_array_like_tv(staticEmptyDictArray()));
         if (symtable->size() == size) {
           ServerNote::Add(s_HPHP_INPUT_PARSE_ERROR, s_failed_append);
           return;
@@ -451,7 +451,7 @@ void register_variable(Array& variables, char *name, const Variant& value,
           symtable->convertKey<IntishCast::Cast>(key_str.asTypedValue());
         auto const v = symtable->lookup(key);
         if (isNullType(v.type()) || !isArrayLikeType(v.type())) {
-          symtable->set(key, make_persistent_array_like_tv(staticEmptyDictArray()));
+          symtable->set(key, make_array_like_tv(staticEmptyDictArray()));
         }
         symtable = &asArrRef(symtable->lval(key));
       }
