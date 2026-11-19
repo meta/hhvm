@@ -162,10 +162,16 @@ void emitEntryAssertions(irgen::IRGS& irgs, const Func* func, SrcKey sk) {
 
   uint32_t loc = 0;
 
-  // Set types of passed arguments. They were already type checked.
+  // Passed arguments were already type checked. Optional named parameters can
+  // still be Uninit while positional defaults are being initialized.
   auto const numArgs = sk.numEntryArgs() + func->numNamedParams();
   for (; loc < numArgs; ++loc) {
-    auto const t = typeFromFuncParam(func, loc);
+    auto t = typeFromFuncParam(func, loc);
+    if (loc < func->numNamedParams() &&
+        func->params()[loc].hasDefaultValue() &&
+        sk.numEntryArgs() < func->numPositionalParams()) {
+      t |= TUninit;
+    }
     irgen::assertTypeLocation(irgs, Location::Local { loc }, t);
   }
 
