@@ -50,8 +50,7 @@ TRACE_SET_MOD(irlower)
 ///////////////////////////////////////////////////////////////////////////////
 
 void cgCheckType(IRLS& env, const IRInstruction* inst) {
-  // Note: If you add new supported type checks, you should update
-  // negativeCheckType() to indicate whether it is precise or not.
+  // Checks must be precise so failure types can be refined by subtraction.
   auto const src = inst->src(0);
   auto const dst = inst->dst();
   auto const srcData = srcLoc(env, inst, 0).reg(0);
@@ -100,32 +99,38 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
 
   // TUncounted + TUncountedInit are special, handle them separately.
   if (typeParam == TUncounted || typeParam == TUncountedInit) {
-    if (known.maybe(TCounted)) {
-      if (srcType == InvalidReg) {
-        // Known DataType, but the outcome was not statically determined,
-        // must be a countable. Do the exact persistence check.
-        assertx(known <= (TCounted | TPersistent));
-        assertx(known.maybe(TCounted));
-        assertx(known.maybe(TPersistent));
-        auto const sf = v.makeReg();
-        v << shrqi{int(kSharedMaxShift), srcData, v.makeReg(), sf};
-        doJcc(CC_Z, sf);
-      } else {
-        // A persistent tag proves countness. A counted tag can still hold a
-        // persistent value, so this check may have false negatives.
-        auto const sf = v.makeReg();
-        emitTestTVType(v, sf, kRefCountedBit, srcType);
-        doJcc(CC_Z, sf);
-      }
-      known -= TCounted;
-    }
-    if (typeParam == TUncountedInit && known.maybe(TUninit)) {
+    auto const checkInit = [&] (Vout& v) {
+      if (typeParam != TUncountedInit || !known.maybe(TUninit)) return;
       assertx(!(known <= TUninit));
       assertx(srcType != InvalidReg);
       auto const sf = v.makeReg();
       emitCmpTVType(v, sf, KindOfUninit, srcType);
-      doJcc(CC_NE, sf);
-      known -= TUninit;
+      fwdJcc(v, env, CC_E, sf, inst->taken());
+    };
+    auto const checkPersistent = [&] (Vout& v) {
+      auto const sf = v.makeReg();
+      v << shrqi{int(kSharedMaxShift), srcData, v.makeReg(), sf};
+      fwdJcc(v, env, CC_NZ, sf, inst->taken());
+    };
+
+    if (!known.maybe(TCounted)) {
+      checkInit(v);
+    } else if (known <= (TCounted | TPersistent)) {
+      // If the known type is countable, branch if the address is outside of
+      // the persistent range.
+      assertx(known.maybe(TPersistent));
+      checkPersistent(v);
+    } else {
+      // Otherwise check first whether its DataType supports countable types.
+      assertx(srcType != InvalidReg);
+      auto const sf = v.makeReg();
+      emitTestTVType(v, sf, kRefCountedBit, srcType);
+      if (known.maybe(TPersistent)) {
+        ifThenElse(v, CC_NZ, sf, checkPersistent, checkInit);
+      } else {
+        doJcc(CC_Z, sf);
+        checkInit(v);
+      }
     }
     doMov();
     return;
