@@ -1,0 +1,1 @@
+{"args": ["--single", "missing.php", "dir.name/www"], "cwd": "single_root", "find_hh_expected_package": "2.0.0"}

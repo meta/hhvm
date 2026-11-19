@@ -1,0 +1,10 @@
+=== hh_client result ===
+argv: hh_client --single www.backup
+cwd: <test_tmp>/single_root
+exit_code: 86
+stdout:
+WRONG_FIND_HH_PACKAGE 2.0.0
+stderr:
+<empty>
+=== telemetry ===
+[]

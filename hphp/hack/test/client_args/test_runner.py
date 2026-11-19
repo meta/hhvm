@@ -7,7 +7,11 @@ Shows telemetry and output for hh_client for use in .exp tests.
 ## API
 
 A test case is a .json file providing `args` and optional `cwd` and `stdin` fields. Paths
-in `args` are relative to .sample_repos
+in `args` are relative to .sample_repos. An optional FIND_HH executable runs the
+same case through a private production-mode launcher installation. Wrapper
+snapshots fall back to the direct-client .exp unless an override exists.
+`find_hh_expected_package` opts into package-selection checks: the named fixture
+version runs the client; other versions emit WRONG_FIND_HH_PACKAGE and exit 86.
 
 ## Implementation notes
 
@@ -177,11 +181,14 @@ def _open_fifo_once_read(process: subprocess.Popen[str], fifo: Path) -> int:
         time.sleep(0.05)
 
 
-def _sigint_after_opening_fifo(fifo: Path) -> AfterStart:
+def _sigint_after_opening_fifo(
+    fifo: Path, client_pid: Path | None = None
+) -> AfterStart:
     def after_start(process: subprocess.Popen[str]) -> ProcessCleanup:
         fifo_writer = _open_fifo_once_read(process, fifo)
         try:
-            process.send_signal(signal.SIGINT)
+            pid = int(client_pid.read_text()) if client_pid is not None else process.pid
+            os.kill(pid, signal.SIGINT)
         except OSError:
             os.close(fifo_writer)
             raise
@@ -214,6 +221,7 @@ def _run_hh_client(
         start_new_session=True,
     ) as process:
         after_start_cleanup: ProcessCleanup | None = None
+        completed_normally = False
         try:
             if after_start is not None:
                 after_start_cleanup = after_start(process)
@@ -225,10 +233,11 @@ def _run_hh_client(
                     f"hh_client did not exit within {communicate_timeout:g}s"
                 ) from error
             returncode = process.wait()
+            completed_normally = True
         finally:
             if after_start_cleanup is not None:
                 after_start_cleanup()
-            if terminate_process_group_after_exit or process.poll() is None:
+            if terminate_process_group_after_exit or not completed_normally:
                 _terminate_process_group(process)
     if not terminate_process_group_after_exit:
         _wait_for_process_group(process.pid)
@@ -268,6 +277,7 @@ class Case:
     lsp_initialize_root: str | None
     sigint_after_opening_fifo: str | None
     wedge_scribe: bool
+    find_hh_expected_package: str | None
 
 
 def _load_case(case_path: Path) -> Case:
@@ -280,6 +290,7 @@ def _load_case(case_path: Path) -> Case:
         "sigint_after_opening_fifo",
         "stdin",
         "wedge_scribe",
+        "find_hh_expected_package",
     }
     if unknown_fields:
         raise ValueError(f"{case_path}: unknown fields: {sorted(unknown_fields)}")
@@ -305,6 +316,11 @@ def _load_case(case_path: Path) -> Case:
     wedge_scribe = case.get("wedge_scribe", False)
     if not isinstance(wedge_scribe, bool):
         raise ValueError(f"{case_path}: wedge_scribe must be a boolean")
+    expected_package = case.get("find_hh_expected_package")
+    if expected_package not in (None, "1.0.0", "2.0.0"):
+        raise ValueError(
+            f"{case_path}: find_hh_expected_package must be 1.0.0 or 2.0.0"
+        )
     return Case(
         args=cast(list[str], args),
         cwd=cwd,
@@ -312,6 +328,7 @@ def _load_case(case_path: Path) -> Case:
         lsp_initialize_root=lsp_initialize_root,
         sigint_after_opening_fifo=sigint_after_opening_fifo,
         wedge_scribe=wedge_scribe,
+        find_hh_expected_package=expected_package,
     )
 
 
@@ -328,9 +345,50 @@ def _lsp_initialize_stdin(root: Path) -> str:
     return f"Content-Length: {len(message.encode())}\r\n\r\n{message}"
 
 
+def _find_hh_command(
+    wrapper: str,
+    hh_client: str,
+    temp_dir: Path,
+    env: dict[str, str],
+    expected_package: str | None,
+) -> str:
+    home = temp_dir / "home"
+    home.mkdir()
+    (home / ".hack_rc_mode").write_text("prod\n")
+    packages = temp_dir / "packages"
+    for version in ("latest", "1.0.0", "2.0.0"):
+        executable = packages / version / "hh_client"
+        executable.parent.mkdir(parents=True)
+        if expected_package is None or version == expected_package:
+            executable.write_text(
+                "#!/bin/sh\n"
+                f"echo $$ > {shlex.quote(str(temp_dir / 'hh_client.pid'))}\n"
+                f'exec {shlex.quote(hh_client)} "$@"\n'
+            )
+        else:
+            executable.write_text(
+                f"#!/bin/sh\necho WRONG_FIND_HH_PACKAGE {version}\nexit 86\n"
+            )
+        executable.chmod(0o755)
+    command = temp_dir / "wrapper" / "hh_client"
+    command.parent.mkdir()
+    shutil.copy2(wrapper, command)
+    command.chmod(0o755)
+    env.update(
+        HOME=str(home),
+        HH_HOME="",
+        HH_RUST_FIND_HH="0",
+        FIND_HH_BIN=str(packages),
+        FIND_HH_TMP=str(temp_dir / "package-cache"),
+    )
+    return str(command)
+
+
 def main() -> None:
-    if len(sys.argv) != 4:
-        raise SystemExit(f"usage: {sys.argv[0]} CASE HH_CLIENT FAKE_SCRIBE_CAT")
+    if len(sys.argv) not in (4, 5):
+        raise SystemExit(
+            f"usage: {sys.argv[0]} CASE HH_CLIENT FAKE_SCRIBE_CAT [FIND_HH]"
+        )
     case_path = Path(sys.argv[1])
     sample_repos = case_path.parent / "sample_repos"
     hh_client = sys.argv[2]
@@ -348,7 +406,11 @@ def main() -> None:
         if sigint_fifo is not None:
             os.mkfifo(sigint_fifo)
         after_start = (
-            _sigint_after_opening_fifo(sigint_fifo) if sigint_fifo is not None else None
+            _sigint_after_opening_fifo(
+                sigint_fifo, temp_dir / "hh_client.pid" if len(sys.argv) == 5 else None
+            )
+            if sigint_fifo is not None
+            else None
         )
         capture_dir = temp_dir / "capture"
         capture_dir.mkdir()
@@ -369,8 +431,15 @@ def main() -> None:
             if case.lsp_initialize_root is not None
             else case.stdin
         )
+        command = (
+            _find_hh_command(
+                sys.argv[4], hh_client, temp_dir, env, case.find_hh_expected_package
+            )
+            if len(sys.argv) == 5
+            else hh_client
+        )
         result = _run_hh_client(
-            [hh_client, *case.args],
+            [command, *case.args],
             cwd=cwd,
             env=env,
             stdin=stdin,

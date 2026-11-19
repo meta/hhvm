@@ -1,0 +1,4 @@
+# we use fake package versions
+# so tests can discern
+# which root was chosen
+version = 1.0.0

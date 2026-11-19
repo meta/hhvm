@@ -1,0 +1,27 @@
+=== hh_client result ===
+argv: hh_client --from --single --ide-get-definition 34243 www.backup
+cwd: <test_tmp>/single_root
+exit_code: 10
+stdout:
+<empty>
+stderr:
+Invalid position
+=== telemetry ===
+[
+  {
+    "argv": "hh_client --from --single --ide-get-definition 34243 www.backup",
+    "event": "CLIENT_CHECK_BAD_EXIT",
+    "exception": "Exit_status.Exit_with(Exit_status.Input_error)",
+    "exit_status": "Exit_status.Input_error",
+    "process": "client",
+    "stack": "<stack trace omitted>"
+  },
+  {
+    "argv": "hh_client --from --single --ide-get-definition 34243 www.backup",
+    "event": "CLIENT_CHECK_START",
+    "process": "client"
+  },
+  {
+    "event": "INIT_INFO"
+  }
+]

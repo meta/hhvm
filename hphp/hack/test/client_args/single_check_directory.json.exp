@@ -1,0 +1,19 @@
+=== hh_client result ===
+argv: hh_client check --single missing.php
+cwd: <test_tmp>/single_root
+exit_code: 2
+stdout:
+File not found: <test_tmp>/single_root/missing.php
+stderr:
+<empty>
+=== telemetry ===
+[
+  {
+    "argv": "hh_client check --single missing.php",
+    "event": "CLIENT_CHECK_START",
+    "process": "client"
+  },
+  {
+    "event": "INIT_INFO"
+  }
+]
