@@ -26,8 +26,10 @@
 #include <vector>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <fmt/compile.h>
 #include <fmt/format.h>
 
+#include <folly/FmtUtility.h>
 #include <folly/MapUtil.h>
 #include <folly/String.h>
 
@@ -1078,7 +1080,7 @@ std::string mangleReifiedGenericsName(const ArrayData* tsList) {
       l.emplace_back(str);
     }
   );
-  return fmt::format("<{}>", folly::join(",", l));
+  return folly::fmt_sized_format(FMT_COMPILE("<{}>"), folly::join(",", l));
 }
 
 }
