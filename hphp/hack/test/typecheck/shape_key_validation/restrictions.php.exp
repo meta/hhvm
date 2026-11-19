@@ -1,4 +1,4 @@
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `a` [2]
 
 restrictions.php:24:39
@@ -10,7 +10,7 @@ restrictions.php:24:39
 25 | type ConstantFirst = shape(Keys::A => int, 'a' => string);
 26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `a` [2]
 
 restrictions.php:25:44

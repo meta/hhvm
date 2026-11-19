@@ -1,4 +1,4 @@
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `ShapeKeyTest\Nested\Named` [2]
 
 nameof_namespace.php:18:3
@@ -11,7 +11,7 @@ nameof_namespace.php:18:3
 19 | );
 20 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `ShapeKeyTest\Nested\Named` [2]
 
 nameof_namespace.php:30:5

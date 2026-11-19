@@ -352,7 +352,7 @@ let unexpected_typedef pos expected_kind decl_pos =
 let field_name_already_bound pos =
   User_diagnostic.make_err
     Error_code.(to_enum FdNameAlreadyBound)
-    (pos, "Field name already bound")
+    (pos, "This shape field has the same key as another field")
     []
 
 let typed_open_shape_disallowed pos =

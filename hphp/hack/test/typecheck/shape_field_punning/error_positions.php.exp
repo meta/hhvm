@@ -1,29 +1,35 @@
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 error_positions.php:7:20
 5 |   $dup = 1;
 6 |   // The error should point to the second occurrence
 7 |   $s = shape($dup, $dup);
+  |              ^^^^ [2]
   |                    ^^^^ [1]
 8 | }
 9 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 error_positions.php:13:22
 11 |   $field = 1;
 12 |   // Error should point to 'field' => 2, not $field
 13 |   $s = shape($field, 'field' => 2);
+   |              ^^^^^^ [2]
    |                      ^^^^^^^ [1]
 14 | }
 15 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 error_positions.php:26:33
 24 |   $name = 'value';
 25 |   // Error should point to $name (second occurrence)
 26 |   $s = shape('name' => 'other', $name);
+   |              ^^^^^^ [2]
    |                                 ^^^^^ [1]
 27 | }
 

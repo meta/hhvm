@@ -18,22 +18,26 @@ duplicate_names.php:21:60
 22 | 
 23 | function symbolic_duplicates(): void {
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 duplicate_names.php:25:38
 23 | function symbolic_duplicates(): void {
 24 |   $_ = shape(First::KEY => 1, First::OTHER => 2);
 25 |   $_ = shape(First::KEY => 1, Alias::KEY => 2);
+   |                     ^^^ [2]
    |                                      ^^^ [1]
 26 |   $_ = shape(nameof First => 1, nameof Alias => 2);
 27 | }
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 duplicate_names.php:26:40
 24 |   $_ = shape(First::KEY => 1, First::OTHER => 2);
 25 |   $_ = shape(First::KEY => 1, Alias::KEY => 2);
 26 |   $_ = shape(nameof First => 1, nameof Alias => 2);
+   |                     ^^^^^ [2]
    |                                        ^^^^^ [1]
 27 | }
 

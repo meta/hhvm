@@ -68,18 +68,30 @@ let resolve_runtime_value env = function
            | CCConcrete ->
              Const_value.concrete_value ~member_name const.cc_value)
 
-let report_duplicate_symbolic_name custom_err_config symbolic_name =
+let report_duplicate_symbolic_name
+    custom_err_config ~symbolic_name ~first_symbolic_name =
   let diagnostic =
     Naming_error_utils.to_user_diagnostic
       (Naming_error.Field_name_already_bound (symbolic_name_pos symbolic_name))
       custom_err_config
   in
-  Diagnostics.add_diagnostic diagnostic
+  Diagnostics.add_diagnostic
+    {
+      diagnostic with
+      User_diagnostic.reasons =
+        [
+          ( Pos_or_decl.of_raw_pos (symbolic_name_pos first_symbolic_name),
+            "The conflicting shape field is here" );
+        ];
+    }
 
 let report_duplicate_runtime_value
     custom_err_config ~symbolic_name ~first_symbolic_name runtime_value =
   if Ast_defs.ShapeField.equal symbolic_name first_symbolic_name then
-    report_duplicate_symbolic_name custom_err_config symbolic_name
+    report_duplicate_symbolic_name
+      custom_err_config
+      ~symbolic_name
+      ~first_symbolic_name
   else
     let runtime_value_text =
       match runtime_value with
@@ -120,8 +132,13 @@ let check_duplicates env symbolic_names =
     let seen_runtime_values =
       match runtime_value with
       | None ->
-        if Ast_defs.ShapeSet.mem symbolic_name seen_symbolic_names then
-          report_duplicate_symbolic_name custom_err_config symbolic_name;
+        (match Ast_defs.ShapeSet.find_opt symbolic_name seen_symbolic_names with
+        | None -> ()
+        | Some first_symbolic_name ->
+          report_duplicate_symbolic_name
+            custom_err_config
+            ~symbolic_name
+            ~first_symbolic_name);
         seen_runtime_values
       | Some runtime_value -> begin
         match Runtime_value_map.find_opt runtime_value seen_runtime_values with
@@ -136,8 +153,13 @@ let check_duplicates env symbolic_names =
           seen_runtime_values
       end
     in
-    ( Ast_defs.ShapeSet.add symbolic_name seen_symbolic_names,
-      seen_runtime_values )
+    let seen_symbolic_names =
+      if Ast_defs.ShapeSet.mem symbolic_name seen_symbolic_names then
+        seen_symbolic_names
+      else
+        Ast_defs.ShapeSet.add symbolic_name seen_symbolic_names
+    in
+    (seen_symbolic_names, seen_runtime_values)
   in
   let (_ : Ast_defs.ShapeSet.t * Ast_defs.shape_field_name Runtime_value_map.t)
       =
@@ -180,7 +202,9 @@ let handler =
 
     method! at_hint env (_, hint) =
       match hint with
-      | Hshape { nsi_field_map; _ } ->
+      | Hshape { nsi_field_map; _ }
+        when Typechecker_options.check_duplicate_runtime_shape_keys
+               (Tast_env.get_tcopt env) ->
         let symbolic_names =
           List.filter_map nsi_field_map ~f:(function
               | SE_field { sfi_name; _ } -> Some sfi_name

@@ -1,9 +1,11 @@
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 expr_splat_duplicate_field.php:8:31
 6 | function test_duplicate(): void {
 7 |   $a = shape('x' => 1);
 8 |   $s = shape(...$a, 'y' => 1, 'y' => 2);
+  |                     ^^^ [2]
   |                               ^^^ [1]
 9 | }
 

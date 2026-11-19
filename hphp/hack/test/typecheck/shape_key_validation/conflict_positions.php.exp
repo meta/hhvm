@@ -1,0 +1,117 @@
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:13:3
+ 9 | 
+10 | type RepeatedLiteral = shape(
+11 |   'key' => int,
+   |   ^^^^^ [2]
+12 |   'other' => int,
+13 |   'key' => string,
+   |   ^^^^^ [1]
+14 |   'key' => bool,
+15 | );
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:14:3
+ 9 | 
+10 | type RepeatedLiteral = shape(
+11 |   'key' => int,
+   |   ^^^^^ [2]
+12 |   'other' => int,
+13 |   'key' => string,
+14 |   'key' => bool,
+   |   ^^^^^ [1]
+15 | );
+16 | 
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:20:17
+16 | 
+17 | type RepeatedConstant = shape(
+18 |   ConflictKeys::KEY => int,
+   |                 ^^^ [2]
+19 |   ConflictKeys::OTHER => int,
+20 |   ConflictKeys::KEY => string,
+   |                 ^^^ [1]
+21 |   ConflictKeys::KEY => bool,
+22 | );
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:21:17
+16 | 
+17 | type RepeatedConstant = shape(
+18 |   ConflictKeys::KEY => int,
+   |                 ^^^ [2]
+19 |   ConflictKeys::OTHER => int,
+20 |   ConflictKeys::KEY => string,
+21 |   ConflictKeys::KEY => bool,
+   |                 ^^^ [1]
+22 | );
+23 | 
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:28:5
+24 | function repeated_expressions(): void {
+25 |   $_ = shape(
+26 |     'key' => 1,
+   |     ^^^^^ [2]
+27 |     'other' => 2,
+28 |     'key' => 'duplicate',
+   |     ^^^^^ [1]
+29 |     'key' => true,
+30 |   );
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:29:5
+24 | function repeated_expressions(): void {
+25 |   $_ = shape(
+26 |     'key' => 1,
+   |     ^^^^^ [2]
+27 |     'other' => 2,
+28 |     'key' => 'duplicate',
+29 |     'key' => true,
+   |     ^^^^^ [1]
+30 |   );
+31 |   $_ = shape(
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:34:19
+30 |   );
+31 |   $_ = shape(
+32 |     ConflictKeys::KEY => 1,
+   |                   ^^^ [2]
+33 |     ConflictKeys::OTHER => 2,
+34 |     ConflictKeys::KEY => 'duplicate',
+   |                   ^^^ [1]
+35 |     ConflictKeys::KEY => true,
+36 |   );
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+conflict_positions.php:35:19
+30 |   );
+31 |   $_ = shape(
+32 |     ConflictKeys::KEY => 1,
+   |                   ^^^ [2]
+33 |     ConflictKeys::OTHER => 2,
+34 |     ConflictKeys::KEY => 'duplicate',
+35 |     ConflictKeys::KEY => true,
+   |                   ^^^ [1]
+36 |   );
+37 | }
+
+8 errors found

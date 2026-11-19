@@ -1,48 +1,58 @@
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 duplicate_fields.php:7:26
 5 |   $foo = 1;
 6 |   // Error: field 'foo' already bound
 7 |   $s = shape('foo' => 2, $foo);
+  |              ^^^^^ [2]
   |                          ^^^^ [1]
 8 | }
 9 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 duplicate_fields.php:13:20
 11 |   $bar = 1;
 12 |   // Error: field 'bar' already bound
 13 |   $s = shape($bar, $bar);
+   |              ^^^^ [2]
    |                    ^^^^ [1]
 14 | }
 15 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 duplicate_fields.php:19:20
 17 |   $baz = 1;
 18 |   // Error: field 'baz' already bound
 19 |   $s = shape($baz, 'baz' => 2);
+   |              ^^^^ [2]
    |                    ^^^^^ [1]
 20 | }
 21 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 duplicate_fields.php:25:18
 23 |   $x = 1;
 24 |   // Multiple duplicates
 25 |   $s = shape($x, 'x' => 2, $x);
+   |              ^^ [2]
    |                  ^^^ [1]
 26 | }
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 duplicate_fields.php:25:28
 23 |   $x = 1;
 24 |   // Multiple duplicates
 25 |   $s = shape($x, 'x' => 2, $x);
+   |              ^^ [2]
    |                            ^^ [1]
 26 | }
 

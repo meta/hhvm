@@ -7,11 +7,11 @@ Type Fields
 Type Key
 --
 Errors in checked files:
-duplicates.php--alias.php [3:40-50] Field name already bound
+duplicates.php--alias.php [3:40-50] This shape field has the same key as another field
 duplicates.php--alias.php [3:21-31] This field has the same runtime key `second`
-duplicates.php--literal.php [4:31-41] Field name already bound
+duplicates.php--literal.php [4:31-41] This shape field has the same key as another field
 duplicates.php--literal.php [4:14-24] This field has the same runtime key `second`
-duplicates.php--method.php [5:33-43] Field name already bound
+duplicates.php--method.php [5:33-43] This shape field has the same key as another field
 duplicates.php--method.php [5:16-26] This field has the same runtime key `second`
 GConst FIELDS
 Fun literal
