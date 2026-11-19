@@ -48,90 +48,6 @@ TRACE_SET_MOD(irlower)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-namespace {
-
-template <class JmpFn>
-void emitBespokeLayoutTest(Vout& v, ArrayLayout layout, Vreg r, JmpFn doJcc) {
-  auto const test = layout.bespokeLayoutTest();
-  auto const imm = static_cast<int16_t>(test.imm);
-  auto const sf = v.makeReg();
-
-  switch (test.mode) {
-    case LayoutTest::And1Byte:
-      v << testbim{imm, r[ArrayData::offsetOfBespokeIndex() + 1], sf};
-      break;
-    case LayoutTest::And2Byte:
-      v << testwim{imm, r[ArrayData::offsetOfBespokeIndex()], sf};
-      break;
-    case LayoutTest::Cmp1Byte:
-      v << cmpbim{imm, r[ArrayData::offsetOfBespokeIndex() + 1], sf};
-      break;
-    case LayoutTest::Cmp2Byte:
-      v << cmpwim{imm, r[ArrayData::offsetOfBespokeIndex()], sf};
-      break;
-  }
-
-  doJcc(CC_Z, sf);
-  auto const doneBlock = v.makeBlock();
-  v << jmp{doneBlock};
-  v = doneBlock;
-}
-
-/*
- * Test whether the value given by `dataSrc' has the same type specialization
- * as `type' does.
- *
- * Assumes that the DataType corresponding to `dataSrc' already matches `type'.
- */
-template <class JmpFn>
-void emitSpecializedTypeTest(Vout& v, Type type, Vreg dataSrc, JmpFn doJcc) {
-  if (type < TRes) {
-    // No cls field in Resource.
-    always_assert(false && "unexpected guard on specialized Resource");
-  }
-
-  if (type == TStaticStr) {
-    auto const sf = emitCmpRefCount(v, StaticValue, dataSrc);
-    doJcc(CC_E, sf);
-    return;
-  }
-
-  if (type < TObj || type < TCls) {
-    // Emit the specific class test.
-    assertx(type.clsSpec());
-    assertx(type.clsSpec().exact() ||
-            type.clsSpec().cls()->attrs() & AttrNoOverride);
-
-    auto const sf = v.makeReg();
-    if (type < TObj) {
-      emitCmpPackedPtr(v, sf, type.clsSpec().cls(),
-                       dataSrc[ObjectData::getVMClassOffset()]);
-    } else {
-      v << cmpq{v.cns(type.clsSpec().cls()), dataSrc, sf};
-    }
-    doJcc(CC_E, sf);
-    return;
-  }
-
-  auto const spec = type.arrSpec();
-  assertx(allowBespokeArrayLikes());
-  assertx(!spec.type());
-
-  auto const layout = spec.layout();
-  if (layout == ArrayLayout::Vanilla() || layout == ArrayLayout::Bespoke()) {
-    auto const sf = v.makeReg();
-    auto const cc = layout == ArrayLayout::Vanilla() ? CC_Z : CC_NZ;
-    v << testbim{ArrayData::kBespokeKindMask, dataSrc[HeaderKindOffset], sf};
-    doJcc(cc, sf);
-  } else {
-    emitBespokeLayoutTest(v, layout, dataSrc, doJcc);
-  }
-}
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void cgCheckType(IRLS& env, const IRInstruction* inst) {
   // Note: If you add new supported type checks, you should update
   // negativeCheckType() to indicate whether it is precise or not.
@@ -139,6 +55,7 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
   auto const dst = inst->dst();
   auto const srcData = srcLoc(env, inst, 0).reg(0);
   auto const srcType = srcLoc(env, inst, 0).reg(1);
+  auto known = src->type();
 
   auto& v = vmain(env);
 
@@ -165,49 +82,65 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
 
   auto const typeParam = inst->typeParam();
 
-  if (src->isA(typeParam)) {
+  if (known <= typeParam) {
     // src is the target type or better. Just define our dst.
     doMov();
     return;
-  } else if (!src->type().maybe(typeParam)) {
+  } else if (!known.maybe(typeParam)) {
     // src is definitely not the target type. Always jump.
     v << jmp{label(env, inst->taken())};
     return;
   }
 
-  /*
-   * See if we're just checking the array specialization or the object class
-   * of a value with a mostly-known type.
-   *
-   * NOTE: we must support cases like CheckType<ArrLike=Vanilla> t1:Vec in
-   * this check, which is why we check here that src->type() matches the
-   * unspecialized type before skipping the DataType component of the test.
-   */
-  if (typeParam.isSpecialized() &&
-      typeParam.unspecialize() >= src->type()) {
-    emitSpecializedTypeTest(v, typeParam, srcData, doJcc);
+  always_assert(typeParam <= TCls || !typeParam.hasConstVal());
+  if (Cfg::Jit::ProfileGuardTypes) {
+    emitProfileGuardType(v, typeParam);
+  }
+
+  // TUncounted + TUncountedInit are special, handle them separately.
+  if (typeParam == TUncounted || typeParam == TUncountedInit) {
+    if (srcType != InvalidReg || known.maybe(TCounted)) {
+      if (srcType == InvalidReg) {
+        // Known DataType, but the outcome was not statically determined,
+        // must be a countable. Do the exact persistence check.
+        assertx(known <= (TCounted | TPersistent));
+        assertx(known.maybe(TCounted));
+        assertx(known.maybe(TPersistent));
+        auto const sf = emitCmpRefCount(v, 0, srcData);
+        doJcc(CC_L, sf);
+      } else {
+        // A persistent tag proves countness. A counted tag can still hold a
+        // persistent value, so this check may have false negatives.
+        auto const sf = v.makeReg();
+        emitTestTVType(v, sf, kRefCountedBit, srcType);
+        doJcc(CC_Z, sf);
+      }
+      known -= TCounted;
+    }
+    if (typeParam == TUncountedInit && known.maybe(TUninit)) {
+      assertx(!(known <= TUninit));
+      assertx(srcType != InvalidReg);
+      auto const sf = v.makeReg();
+      emitCmpTVType(v, sf, KindOfUninit, srcType);
+      doJcc(CC_NE, sf);
+      known -= TUninit;
+    }
     doMov();
     return;
   }
 
-  if (srcType != InvalidReg) {
-    // CheckType<UncountedInit> requires two tests: Uncounted, and not Uninit.
-    // If we already know the value is an InitCell, skip the second.
-    auto const relax = typeParam == TUncountedInit && src->isA(TInitCell);
-    auto const type = relax ? TUncounted : typeParam;
-    auto const sf = v.makeReg();
-    always_assert(type <= TCls || !type.hasConstVal());
-    always_assert_flog(
-      !type.subtypeOfAny(TCountedStr, TPersistentArrLike),
-      "Unsupported type in cgCheckType(): {}", type
-    );
-
-    // Profile the type being guarded. TUncounted is handled by
-    // emitIsTVTypeRefCounted below.
-    if (Cfg::Jit::ProfileGuardTypes && type != TUncounted) {
-      emitProfileGuardType(v, type);
+  // Check DataType if needed. Accept both persistence flavors.
+  auto const base = typeParam.unspecialize();
+  auto const tagType = [&] {
+    auto t = base;
+    for (auto const dt : {TStr, TVec, TDict, TKeyset}) {
+      if (t.maybe(dt)) t |= dt;
     }
-
+    return t;
+  }();
+  if (!(known <= tagType)) {
+    assertx(srcType != InvalidReg);
+    auto const sf = v.makeReg();
     auto const cc = [&] {
       auto const test = [&] (DataType kind) {
         assertx(kind == dt_modulo_persistence(kind));
@@ -215,86 +148,92 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
         emitTestTVType(v, sf, mask, srcType);
         return CC_E;
       };
-
       auto const cmp = [&] (DataType kind, ConditionCode cc) {
         emitCmpTVType(v, sf, kind, srcType);
         return cc;
       };
-
-      auto const base = type.unspecialize();
-      if (type == TStaticStr)     return test(KindOfString);
-      if (type.isKnownDataType()) return test(type.toDataType());
-      if (base == TArrLike)       return cmp(KindOfKeyset, CC_BE);
-      if (type == (TVec|TDict))   return cmp(KindOfVec, CC_BE);
-      if (type == TNull)          return cmp(KindOfUninit, CC_AE);
-      if (type == TNonNull)       return cmp(KindOfUninit, CC_B);
-
-      if (type == TUncountedInit) {
-        auto const sf2 = v.makeReg();
-        emitTestTVType(v, sf2, kRefCountedBit, srcType);
-        doJcc(CC_Z, sf2);
-        return cmp(KindOfUninit, CC_NZ);
-      }
-
-      if (type == TUncounted) {
-        return ccNegate(emitIsTVTypeRefCounted(v, sf, srcType));
-      }
-
-      if (type == TInitCell) return cmp(KindOfUninit, CC_NZ);
-
-      // All other valid types must not be unions.
-      always_assert_flog(false, "Uncheckable type: {}", type);
+      if (tagType.isKnownDataType()) return test(tagType.toDataType());
+      if (tagType == TArrLike)       return cmp(KindOfKeyset, CC_BE);
+      if (tagType == (TVec|TDict))   return cmp(KindOfVec, CC_BE);
+      if (tagType == TNull)          return cmp(KindOfUninit, CC_AE);
+      if (tagType == TNonNull)       return cmp(KindOfUninit, CC_B);
+      if (tagType == TInitCell)      return cmp(KindOfUninit, CC_NE);
+      always_assert_flog(false, "Uncheckable type: {}", typeParam);
     }();
-
     doJcc(cc, sf);
+    known &= tagType;
+  }
 
-    if (type.isSpecialized() || type == TStaticStr) {
-      emitSpecializedTypeTest(v, type, srcData, doJcc);
+  // Check countness if needed.
+  if (!(known <= base)) {
+    assertx(known <= (TCounted | TPersistent));
+    if (base <= TStatic) {
+      auto const sf = emitCmpRefCount(v, StaticValue, srcData);
+      doJcc(CC_E, sf);
+      known &= TStatic;
+    } else if (base <= TPersistent) {
+      auto const sf = emitCmpRefCount(v, 0, srcData);
+      doJcc(CC_L, sf);
+      known &= TPersistent;
+    } else if (base <= TCounted) {
+      auto const sf = emitCmpRefCount(v, 0, srcData);
+      doJcc(CC_GE, sf);
+      known &= TCounted;
     }
-    doMov();
-    return;
+
+    // Triggers if none of the conditions above hit, or we tried to check for
+    // something strange and unsupported, like:
+    //   CheckType<SharedVec>
+    //   CheckType<StaticVec | PersistentDict>
+    always_assert_flog(known <= base, "Uncheckable type: {}", typeParam);
   }
 
-  // We know that it is a string and we are checking for static str
-  if (!typeParam.isSpecialized() && typeParam <= TStaticStr) {
-    if (!src->isA(TStr)) {
-      // This could be a false negative but that's okay based on CheckType's
-      // contract
-      v << jmp{label(env, inst->taken())};
-      return;
+  // Check specialization if needed.
+  if (!(known <= typeParam)) {
+    assertx(typeParam.isSpecialized());
+    if (typeParam < TObj || typeParam < TCls) {
+      auto const spec = typeParam.clsSpec();
+      assertx(spec);
+      assertx(spec.exact() || spec.cls()->attrs() & AttrNoOverride);
+
+      auto const sf = v.makeReg();
+      if (typeParam < TObj) {
+        emitCmpPackedPtr(v, sf, spec.cls(),
+                         srcData[ObjectData::getVMClassOffset()]);
+      } else {
+        v << cmpq{v.cns(spec.cls()), srcData, sf};
+      }
+      doJcc(CC_E, sf);
+    } else {
+      auto const spec = typeParam.arrSpec();
+      assertx(typeParam <= TArrLike);
+      assertx(allowBespokeArrayLikes());
+      assertx(!spec.type());
+
+      auto const layout = spec.layout();
+      if (layout == ArrayLayout::Vanilla() ||
+          layout == ArrayLayout::Bespoke()) {
+        auto const index = srcData[HeaderKindOffset];
+        auto const sf = v.makeReg();
+        v << testbim{ArrayData::kBespokeKindMask, index, sf};
+        doJcc(layout == ArrayLayout::Vanilla() ? CC_Z : CC_NZ, sf);
+      } else {
+        auto const test = layout.bespokeLayoutTest();
+        auto const imm = static_cast<int16_t>(test.imm);
+        auto const index = srcData[ArrayData::offsetOfBespokeIndex()];
+        auto const sf = v.makeReg();
+        switch (test.mode) {
+          case LayoutTest::And1Byte: v << testbim{imm, index + 1, sf}; break;
+          case LayoutTest::And2Byte: v << testwim{imm, index, sf}; break;
+          case LayoutTest::Cmp1Byte: v << cmpbim{imm, index + 1, sf}; break;
+          case LayoutTest::Cmp2Byte: v << cmpwim{imm, index, sf}; break;
+        }
+        doJcc(CC_Z, sf);
+      }
     }
-    emitSpecializedTypeTest(v, typeParam, srcData, doJcc);
-    doMov();
-    return;
   }
 
-  /*
-   * Since not all of our unions carry a type register, there are some
-   * situations with strings and arrays that are neither constantly-foldable
-   * nor in the type-register code path above.
-   *
-   * We currently actually check their persistent bit here, which will let
-   * both static and uncounted strings through.  Also note that
-   * CheckType<Uncounted> t1:{Null|Str} doesn't get this treatment currently---
-   * the path above will only check the type register.
-   */
-  if (!typeParam.isSpecialized() &&
-      typeParam <= TUncounted &&
-      src->type().subtypeOfAny(TStr, TArrLike) &&
-      src->type().maybe(typeParam)) {
-    assertx(src->type().maybe(TPersistent));
-
-    auto const sf = emitCmpRefCount(v, 0, srcData);
-    doJcc(CC_L, sf);
-    doMov();
-    return;
-  }
-
-  always_assert_flog(
-    false,
-    "Bad src: {} and dst: {} types in '{}'",
-    src->type(), typeParam, *inst
-  );
+  doMov();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
