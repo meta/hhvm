@@ -357,6 +357,8 @@ module Find_my_tests = struct
     non_parent_max_fanout_files: int option; [@default None]
         (** If a symbol is NOT obtained from parent walking and its fanout is larger than this number
         of files, we skip searching those files for references entirely. *)
+    filter_member_origins: bool; [@default true]
+        (** Restrict descendant member references to matching declaration origins. *)
     enclosing_class_all_methods: bool; [@default true]
         (** Should we go from any method to the enclosing class, or just for root methods? *)
     class_nameof: bool; [@default false]
@@ -382,6 +384,7 @@ module Find_my_tests = struct
       max_class_parent_steps = None;
       parent_max_fanout_files = None;
       non_parent_max_fanout_files = None;
+      filter_member_origins = true;
       enclosing_class_all_methods = true;
       class_nameof = false;
       class_const_traversal = false;
