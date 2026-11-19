@@ -99,7 +99,7 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
 
   // TUncounted + TUncountedInit are special, handle them separately.
   if (typeParam == TUncounted || typeParam == TUncountedInit) {
-    if (srcType != InvalidReg || known.maybe(TCounted)) {
+    if (known.maybe(TCounted)) {
       if (srcType == InvalidReg) {
         // Known DataType, but the outcome was not statically determined,
         // must be a countable. Do the exact persistence check.
