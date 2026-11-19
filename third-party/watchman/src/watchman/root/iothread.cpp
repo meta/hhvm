@@ -47,6 +47,10 @@ void InMemoryView::fullCrawl(
   fullCrawlStatCount_ = std::make_shared<std::atomic<size_t>>(0);
   root->recrawlInfo.wlock()->statCount = fullCrawlStatCount_;
 
+  // A stored root inode of 0 lets the crawl accept a new directory at the
+  // root path.
+  view->setRootInode(0);
+
   auto start = std::chrono::system_clock::now();
   pendingFromWatcher.lock()->add(root->root_path, start, W_PENDING_RECURSIVE);
   while (true) {

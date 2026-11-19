@@ -72,9 +72,7 @@ class TestRootReplace(WatchmanTestCase.WatchmanTestCase):
         self.touchRelative(root, "foo")
         self.resumeWatchman()
 
-        # FIXME: Watchman must watch the new root. Then this query returns
-        # `foo`: assertFileListsEqual(querySynced(root), [".hg", "foo"]).
-        self.assertFileListsEqual(self.querySynced(root), [".hg"])
+        self.assertFileListsEqual(self.querySynced(root), [".hg", "foo"])
 
     def test_query_after_root_is_replaced(self) -> None:
         root = self.mkdtemp()
@@ -89,6 +87,4 @@ class TestRootReplace(WatchmanTestCase.WatchmanTestCase):
         # The timeout makes Watchman recrawl the root.
         self.assertSyncTimesOut(root)
 
-        # FIXME: The recrawl must watch the new root. Then this query
-        # returns `foo`: assertFileListsEqual(querySynced(root), ["foo"]).
-        self.assertSyncTimesOut(root)
+        self.assertFileListsEqual(self.querySynced(root), ["foo"])
