@@ -135,13 +135,7 @@ static String HHVM_METHOD(FunctionCredential, getFilename) {
 
 static String HHVM_METHOD(FunctionCredential, getMethodOrFunctionName) {
   auto data = FunctionCredential::fromObject(this_);
-  auto func = data->func();
-  auto cls = func->cls();
-  if (cls) {
-    return String{
-        fmt::format("{}::{}", cls->name()->data(), func->name()->data())};
-  }
-  return String::assertNonNull(makeStaticString(func->name()));
+  return String::assertNonNull(data->func()->fullName());
 }
 
 static String HHVM_METHOD(FunctionCredential, pack) {
