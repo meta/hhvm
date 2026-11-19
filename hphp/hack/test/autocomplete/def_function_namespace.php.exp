@@ -1,6 +1,3 @@
-fb_fbid_in_oid_range
-  INSERT fb_fbid_in_oid_range
-  function
 fb_fbid_in_rid_range
   INSERT fb_fbid_in_rid_range
   function
@@ -57,6 +54,9 @@ fb_get_last_flush_size
   function
 fb_get_lsst
   INSERT fb_get_lsst
+  function
+fb_get_random_dbid_for_shard_range
+  INSERT fb_get_random_dbid_for_shard_range
   function
 fb_get_sandbox_cat
   INSERT fb_get_sandbox_cat
