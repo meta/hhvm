@@ -571,14 +571,14 @@ void cgDecRef(IRLS& env, const IRInstruction *inst) {
       v << shrqi{(int)kSharedMaxShift, addr, v.makeReg(), sf};
       unlikelyIfThen(v, vcold(env), CC_NZ, sf,
                      [&] (Vout& v) {
-                       impl(v, negativeCheckType(ty, TUncounted));
+                       impl(v, ty & TCounted);
                      });
       return;
     }
   }
 
   ifRefCountedType(v, v, ty, srcLoc(env, inst, 0), [&] (Vout& v) {
-    impl(v, negativeCheckType(ty, TUncounted));
+    impl(v, ty & (TCounted | TPersistent));
   });
 }
 
