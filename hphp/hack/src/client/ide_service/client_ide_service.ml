@@ -405,7 +405,13 @@ let destroy (t : t) ~(tracking_id : string) : unit Lwt.t =
           Hack_event_logger.serverless_ide_destroy_error start_time message data;
           log "ClientIdeService.destroy %s" message
       in
-      Daemon.force_quit t.daemon_handle;
+      (* A concurrent 'stop' may already have force-quit and reaped the daemon. *)
+      (match t.state with
+      | Stopped _ -> ()
+      | Uninitialized
+      | Failed_to_initialize _
+      | Initialized _ ->
+        Daemon.force_quit t.daemon_handle);
       Lwt.return_unit
   in
   Lwt_message_queue.close t.messages_to_send;
