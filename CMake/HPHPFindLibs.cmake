@@ -436,6 +436,10 @@ if (ENABLE_MCROUTER)
   find_package(mcrouter CONFIG REQUIRED)
 endif()
 
+if (HPHP_ENABLE_TYPE_SCANNERS)
+  find_package(LLVM REQUIRED CONFIG)
+endif()
+
 include_directories(${HPHP_HOME}/hphp)
 
 macro(hphp_link target)

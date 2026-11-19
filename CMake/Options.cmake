@@ -30,6 +30,8 @@ option(ENABLE_PROXYGEN_SERVER "Build the Proxygen HTTP server" ON)
 
 option(ENABLE_SPLIT_DWARF "Reduce linker memory usage by putting debugging information into .dwo files" OFF)
 
+option(HPHP_ENABLE_TYPE_SCANNERS "Generate and embed type scanners for precise heap scanning in the GC (requires LLVM)" OFF)
+
 IF (NOT DEFAULT_CONFIG_DIR)
   set(DEFAULT_CONFIG_DIR "/etc/hhvm/" CACHE STRING
     "Default directory to find php.ini")

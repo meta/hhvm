@@ -71,4 +71,8 @@ object_library_hphp_link(hphp_runtime_static)
 object_library_ld_link_libraries(hphp_runtime_static hphp_util proxygen::proxygen mvfst::mvfst_transport mvfst::mvfst_client mvfst::mvfst_server mvfst::mvfst_codec_types vixl hphp_zend hphp_system jit_sort hphp_system)
 HHVM_CONFIGURE_TARGET_FOR_EXTENSION_DEPENDENCIES(hphp_runtime_static)
 
+if (HPHP_ENABLE_TYPE_SCANNERS AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  target_compile_options(hphp_runtime_static PRIVATE "-fstandalone-debug")
+endif()
+
 HHVM_PUBLIC_HEADERS(runtime ${HEADER_SOURCES})
