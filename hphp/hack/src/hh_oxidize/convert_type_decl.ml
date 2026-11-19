@@ -40,7 +40,10 @@ let rec collect_type_names_from_core_type (ct : core_type) : string list =
     name :: List.concat_map args ~f:collect_type_names_from_core_type
   | Ptyp_constr (_, args) ->
     List.concat_map args ~f:collect_type_names_from_core_type
-  | Ptyp_tuple tys -> List.concat_map tys ~f:collect_type_names_from_core_type
+  | Ptyp_tuple tys ->
+    List.concat_map
+      (Ast_compat.tuple_types tys)
+      ~f:collect_type_names_from_core_type
   | _ -> []
 
 (** Check if a GADT constructor's return type instantiates a type parameter
@@ -418,9 +421,10 @@ let doc_comment_of_attribute { attr_name; attr_payload; _ } =
   | ({ txt = "ocaml.doc"; _ }, PStr structure_items) ->
     List.find_map structure_items ~f:(fun structure_item ->
         match structure_item.pstr_desc with
-        | Pstr_eval
-            ({ pexp_desc = Pexp_constant (Pconst_string (doc, _, _)); _ }, _) ->
-          Some doc
+        | Pstr_eval ({ pexp_desc = Pexp_constant constant; _ }, _) ->
+          (match Ast_compat.constant_desc constant with
+          | Pconst_string (doc, _, _) -> Some doc
+          | _ -> None)
         | _ -> None)
   | _ -> None
 
@@ -673,17 +677,13 @@ let variant_constructor_value cd =
             [
               {
                 pstr_desc =
-                  Pstr_eval
-                    ( {
-                        pexp_desc =
-                          Pexp_constant (Pconst_integer (discriminant, None));
-                        _;
-                      },
-                      _ );
+                  Pstr_eval ({ pexp_desc = Pexp_constant constant; _ }, _);
                 _;
               };
             ] ) ->
-        Some discriminant
+        (match Ast_compat.constant_desc constant with
+        | Pconst_integer (discriminant, None) -> Some discriminant
+        | _ -> None)
       | _ -> None)
 
 let variant_constructor_declaration
@@ -994,7 +994,7 @@ let type_declaration ~mutual_rec ~safe_ints ~original_type_name name td =
                   (rust_de_field_attr [t] td.ptype_attributes)
                   (rust_type_to_string t))
               ~sep:","
-              tys
+              (Ast_compat.tuple_types tys)
             |> sprintf "(%s)"
           | _ ->
             Convert_type.core_type ~safe_ints ty
@@ -1080,8 +1080,7 @@ let type_declaration ~mutual_rec ~safe_ints ~original_type_name name td =
      mean much outside of an .mli, I don't think. *)
   | (Ptype_abstract, None) ->
     raise (Skip_type_decl "Abstract types without manifest not supported")
-  (* type foo += A, e.g. the exn type. *)
-  | (Ptype_open, None) -> raise (Skip_type_decl "Open types not supported")
+  | (_, None) -> raise (Skip_type_decl "Unsupported type declaration")
 
 let type_declaration ?(mutual_rec = false) td =
   (* We keep the original so we can look up comments in the .mli *)

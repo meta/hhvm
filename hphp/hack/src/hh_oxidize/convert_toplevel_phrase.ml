@@ -103,8 +103,8 @@ let is_enum_module mod_name =
     ~equal:(Tuple.T2.equal ~eq1:String.equal ~eq2:String.equal)
 
 let is_enum_module_import id =
-  match id with
-  | Longident.(Ldot (Lident mod_name, enum_type_name)) ->
+  match Ast_compat.longident id with
+  | Ast_compat.(Dot (Ident mod_name, enum_type_name)) ->
     List.mem
       enum_modules
       (convert_module_name mod_name, convert_type_name enum_type_name)

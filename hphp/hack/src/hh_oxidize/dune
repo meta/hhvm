@@ -5,6 +5,7 @@
    (:include ../dune_config/ld-opts.sexp)))
  (modes exe byte_complete)
  (modules
+  ast_compat
   configuration
   convert_longident
   convert_toplevel_phrase
@@ -18,7 +19,7 @@
   stringify
   utils)
  (preprocess
-  (pps ppx_deriving.std))
+  (pps ppx_deriving.std ppx_optcomp))
  (libraries
   core_kernel
   core_kernel.caml_unix

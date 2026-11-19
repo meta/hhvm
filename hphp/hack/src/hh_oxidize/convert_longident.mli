@@ -6,4 +6,6 @@
  *
  *)
 
+val to_rust : ?for_open:bool -> Ast_compat.longident -> string
+
 val longident_to_string : ?for_open:bool -> Longident.t -> string

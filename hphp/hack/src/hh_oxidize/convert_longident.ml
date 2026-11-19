@@ -7,7 +7,7 @@
  *)
 
 open Core
-open Longident
+open Ast_compat
 
 let strip_decl_prefix =
   S_set.of_list
@@ -27,15 +27,15 @@ type flattened_longident =
   | FLapply of flattened_longident list
 
 let rec flatten_longident = function
-  | Lident str -> FLident [str]
-  | Lapply (id1, id2) ->
+  | Ident str -> FLident [str]
+  | Apply (id1, id2) ->
     let ids =
       match flatten_longident id1 with
       | FLapply ids -> ids
       | id -> [id]
     in
     FLapply (ids @ [flatten_longident id2])
-  | Ldot (id, str) ->
+  | Dot (id, str) ->
     (match flatten_longident id with
     | FLident strs -> FLident (str :: strs)
     | FLdot (id, strs) -> FLdot (id, str :: strs)
@@ -78,5 +78,7 @@ let to_string for_open id =
   in
   to_string id
 
-let longident_to_string ?(for_open = false) id =
-  flatten_longident id |> to_string for_open
+let to_rust ?(for_open = false) id = flatten_longident id |> to_string for_open
+
+let longident_to_string ?for_open id =
+  to_rust ?for_open (Ast_compat.longident id)

@@ -77,51 +77,60 @@ let rec core_type ?(seen_indirection = false) ~safe_ints (ct : core_type) :
   | Ptyp_var name -> convert_type_name name |> rust_type_var
   | Ptyp_alias (_, { txt = name; _ }) ->
     rust_type (convert_type_name name) [] []
-  | Ptyp_tuple tys -> tuple ~safe_ints tys
+  | Ptyp_tuple tys -> tuple ~safe_ints (Ast_compat.tuple_types tys)
   | Ptyp_arrow _ -> raise (Skip_type_decl "it contains an arrow type")
-  | Ptyp_constr ({ txt = Lident "byte_string"; _ }, []) ->
+  | Ptyp_constr (id, args) ->
+    constructor_type
+      ~seen_indirection
+      ~safe_ints
+      (Ast_compat.longident id.txt)
+      args
+  | Ptyp_any -> raise (Skip_type_decl "cannot convert type Ptyp_any")
+  | Ptyp_object _ -> raise (Skip_type_decl "cannot convert type Ptyp_object")
+  | Ptyp_class _ -> raise (Skip_type_decl "cannot convert type Ptyp_class")
+  | Ptyp_variant _ -> raise (Skip_type_decl "cannot convert type Ptyp_variant")
+  | Ptyp_poly _ -> raise (Skip_type_decl "cannot convert type Ptyp_poly")
+  | Ptyp_package _ -> raise (Skip_type_decl "cannot convert type Ptyp_package")
+  | Ptyp_extension _ ->
+    raise (Skip_type_decl "cannot convert type Ptyp_extension")
+  | _ -> raise (Skip_type_decl "cannot convert this type")
+
+and constructor_type ~seen_indirection ~safe_ints name args =
+  let open Ast_compat in
+  match (name, args) with
+  | (Ident ("byte_string" | "t_byte_string"), []) ->
     rust_type "bstr::BString" [] []
-  | Ptyp_constr ({ txt = Lident "t_byte_string"; _ }, []) ->
-    rust_type "bstr::BString" [] []
-  | Ptyp_constr ({ txt = Ldot (Lident "Path", "t"); _ }, []) ->
-    (* Path.t *)
-    rust_simple_type "std::path::PathBuf"
-  | Ptyp_constr ({ txt = Ldot (Lident "Hash", "hash_value"); _ }, []) ->
-    (* Hash.hash_value *)
-    rust_type "isize" [] []
-  | Ptyp_constr
-      ({ txt = Ldot (Ldot (Lident "Ident_provider", "Ident"), "t"); _ }, [])
-  | Ptyp_constr ({ txt = Ldot (Lident "Expression_id", "t"); _ }, [])
-  | Ptyp_constr ({ txt = Ldot (Lident "Tvid", "t"); _ }, []) ->
+  | (Dot (Ident "Path", "t"), []) -> rust_simple_type "std::path::PathBuf"
+  | (Dot (Ident "Hash", "hash_value"), [])
+  | (Dot (Dot (Ident "Ident_provider", "Ident"), "t"), [])
+  | (Dot (Ident "Expression_id", "t"), [])
+  | (Dot (Ident "Tvid", "t"), []) ->
     rust_type "isize" [] []
   (* [Const_value.t] is a nested module (in typing_defs) whose sole purpose
      is to scope the variant constructors; [enum_modules] in
      convert_toplevel_phrase flattens it to a Rust enum [ConstValue] defined
      directly in the typing_defs crate, so references must not include the
      [const_value] submodule segment. *)
-  | Ptyp_constr ({ txt = Ldot (Lident "Const_value", "t"); _ }, []) ->
-    rust_type "ConstValue" [] []
-  | Ptyp_constr
-      ({ txt = Ldot (Ldot (Lident "Typing_defs", "Const_value"), "t"); _ }, [])
-    ->
+  | (Dot (Ident "Const_value", "t"), []) -> rust_type "ConstValue" [] []
+  | (Dot (Dot (Ident "Typing_defs", "Const_value"), "t"), []) ->
     rust_type "typing_defs::ConstValue" [] []
-  | Ptyp_constr (id, args) ->
+  | _ ->
     let id =
-      match id.txt with
-      | Lident "unit" -> "()"
-      | Lident "int" ->
+      match name with
+      | Ident "unit" -> "()"
+      | Ident "int" ->
         if safe_ints then
           "ocamlrep::OCamlInt"
         else
           "isize"
-      | Lident "bool" -> "bool"
-      | Lident "float" -> "f64"
-      | Lident "list" -> "Vec"
-      | Lident "ref" -> "std::cell::RefCell"
-      | Ldot (Lident "Int64", "t") ->
+      | Ident "bool" -> "bool"
+      | Ident "float" -> "f64"
+      | Ident "list" -> "Vec"
+      | Ident "ref" -> "std::cell::RefCell"
+      | Dot (Ident "Int64", "t") ->
         Output.add_extern_use "ocamlrep_caml_builtins::Int64";
         "Int64"
-      | id -> Convert_longident.longident_to_string id
+      | id -> Convert_longident.to_rust id
     in
     let id =
       if String.equal id "T" then
@@ -154,15 +163,6 @@ let rec core_type ?(seen_indirection = false) ~safe_ints (ct : core_type) :
       rust_type "Box" [] [rust_type id [] args]
     else
       rust_type id lifetime args
-  | Ptyp_any -> raise (Skip_type_decl "cannot convert type Ptyp_any")
-  | Ptyp_object _ -> raise (Skip_type_decl "cannot convert type Ptyp_object")
-  | Ptyp_class _ -> raise (Skip_type_decl "cannot convert type Ptyp_class")
-  | Ptyp_variant _ -> raise (Skip_type_decl "cannot convert type Ptyp_variant")
-  | Ptyp_poly _ -> raise (Skip_type_decl "cannot convert type Ptyp_poly")
-  | Ptyp_package _ -> raise (Skip_type_decl "cannot convert type Ptyp_package")
-  | Ptyp_extension _ ->
-    raise (Skip_type_decl "cannot convert type Ptyp_extension")
-  | Ptyp_open _ -> raise (Skip_type_decl "cannot convert type Ptyp_open")
 
 and tuple ?(seen_indirection = false) ~safe_ints types =
   List.map ~f:(core_type ~seen_indirection ~safe_ints) types
