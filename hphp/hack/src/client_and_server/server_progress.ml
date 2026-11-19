@@ -159,19 +159,25 @@ let make_percentage_progress_message
     else
       unit ^ " "
   in
-  let percent =
-    Float.round_down
-      (1000.0 *. float_of_int done_count /. float_of_int total_count)
-    /. 10.0 (* so that 999999/1000000 will show as 99.9%, not 100.0% *)
-  in
   let main_message =
-    Printf.sprintf
-      "%s %d/%d %s(%.1f%%)"
-      operation
-      done_count
-      total_count
-      unit
-      percent
+    if total_count <= 0 then
+      (* No denominator yet (e.g. a distc check before its typing
+         total arrives): a percentage would be nan. *)
+      Printf.sprintf "%s %d/%d %s" operation done_count total_count unit
+    else begin
+      let percent =
+        Float.round_down
+          (1000.0 *. float_of_int done_count /. float_of_int total_count)
+        /. 10.0 (* so that 999999/1000000 will show as 99.9%, not 100.0% *)
+      in
+      Printf.sprintf
+        "%s %d/%d %s(%.1f%%)"
+        operation
+        done_count
+        total_count
+        unit
+        percent
+    end
   in
   match extra with
   | Some extra -> main_message ^ " " ^ extra

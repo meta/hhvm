@@ -91,6 +91,17 @@ val write_percentage :
   extra:string option ->
   unit
 
+(** The message [write_percentage] writes. Pure. With no denominator
+    yet ([total_count <= 0]) the percentage is omitted rather than
+    rendered as nan. *)
+val make_percentage_progress_message :
+  operation:string ->
+  done_count:int ->
+  total_count:int ->
+  unit:string ->
+  extra:string option ->
+  string
+
 (** Call this upon monitor shutdown to delete the progress file *)
 val try_delete : unit -> unit
 

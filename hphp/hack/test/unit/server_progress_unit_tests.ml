@@ -1323,11 +1323,42 @@ let test_client_connect_server_exit_should_abort () =
   assert_should_abort ~exit_status:Exit_status.No_error ~expected:false;
   true
 
+let test_percentage_message_no_denominator () =
+  (* Before a distc check's typing total arrives the event loop writes
+     0/0; the message must not render a nan percentage. *)
+  let msg =
+    Server_progress.make_percentage_progress_message
+      ~operation:"hh_distc checking"
+      ~done_count:0
+      ~total_count:0
+      ~unit:"files"
+      ~extra:None
+  in
+  String_asserter.assert_equals
+    "hh_distc checking 0/0 files "
+    msg
+    "no denominator, no percentage";
+  let msg =
+    Server_progress.make_percentage_progress_message
+      ~operation:"hh_distc checking"
+      ~done_count:25
+      ~total_count:100
+      ~unit:"files"
+      ~extra:None
+  in
+  String_asserter.assert_equals
+    "hh_distc checking 25/100 files (25.0%)"
+    msg
+    "with a denominator the percentage stays";
+  true
+
 let () =
   Printexc.record_backtrace true;
   Event_logger.init_fake ();
   Unit_test.run_all
     [
+      ( "test_percentage_message_no_denominator",
+        test_percentage_message_no_denominator );
       ("test_completed", (fun () -> Lwt_main.run (test_completed ())));
       ("test_read_empty", (fun () -> Lwt_main.run (test_read_empty ())));
       ("test_read_unlinked", (fun () -> Lwt_main.run (test_read_unlinked ())));
