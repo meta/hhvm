@@ -145,7 +145,11 @@ void MysqlConnectOperationImpl::specializedRunImpl() {
 }
 
 void MysqlConnectOperationImpl::specializedRun() {
-  if (!conn().runInThread([&]() { specializedRunImpl(); })) {
+  if (!conn().runInThread([&]() {
+        runQueuedTask("specializedRun", OperationResult::Failed, [&] {
+          specializedRunImpl();
+        });
+      })) {
     completeOperationInner(OperationResult::Failed);
   }
 }

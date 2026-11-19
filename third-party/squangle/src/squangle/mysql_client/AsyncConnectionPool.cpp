@@ -115,7 +115,7 @@ folly::SemiFuture<ConnectResult> AsyncConnectionPool::connectSemiFuture(
   auto op =
       beginConnection(host, port, database_name, user, password, special_tag);
   op->setConnectionOptions(conn_opts);
-  return toSemiFuture(std::move(op));
+  return toSemiFuture(op);
 }
 
 std::unique_ptr<Connection> AsyncConnectionPool::connect(
@@ -147,7 +147,9 @@ void AsyncConnectPoolOperationImpl::specializedRun() {
         }
 
         // `this` is valid if `self` is still alive
-        specializedRunImpl();
+        runQueuedTask("specializedRun", OperationResult::Failed, [&] {
+          specializedRunImpl();
+        });
       })) {
     completeOperationInner(OperationResult::Failed);
   }

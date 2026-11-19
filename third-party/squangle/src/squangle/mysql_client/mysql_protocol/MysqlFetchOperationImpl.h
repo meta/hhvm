@@ -55,6 +55,7 @@ class MysqlFetchOperationImpl : public MysqlOperationImpl,
 
  private:
   void resumeImpl();
+  void resumeQueued();
   // Checks if the current thread has access to stream, or result data.
   bool isStreamAccessAllowed() const override;
 

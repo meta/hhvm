@@ -82,6 +82,15 @@ class MysqlOperationImpl : virtual public OperationBase,
       OperationResult failureResult,
       folly::FunctionRef<void()> fn) noexcept;
 
+  // Runs `fn`, a task this operation queued with runInThread.  An async client
+  // runs queued tasks from a noexcept EventBase runner, so there `fn` goes
+  // through runCallbackGuarded.  A sync client runs the task inline on the
+  // caller's thread, and its exceptions still reach the caller.
+  void runQueuedTask(
+      std::string_view what,
+      OperationResult failureResult,
+      folly::FunctionRef<void()> fn);
+
   // Takes the operation off the event base.  Virtual because a subclass may own
   // timers beyond the one AsyncTimeout this base knows about.
   virtual void detachFromEventBase();
@@ -131,6 +140,8 @@ class MysqlOperationImpl : virtual public OperationBase,
  private:
   // Restore folly::RequestContext and also invoke actionable()
   void invokeActionable();
+
+  void completeQueuedOperation(OperationResult result);
 
   friend class Operation;
   friend class Connection;

@@ -16,7 +16,24 @@
 namespace facebook::common::mysql_client::mysql_protocol {
 
 void MysqlOperationImpl::protocolCompleteOperation(OperationResult result) {
-  conn().runInThread(this, &MysqlOperationImpl::completeOperation, result);
+  conn().runInThread(
+      this, &MysqlOperationImpl::completeQueuedOperation, result);
+}
+
+void MysqlOperationImpl::completeQueuedOperation(OperationResult result) {
+  runQueuedTask(
+      "completeOperation", result, [&] { completeOperation(result); });
+}
+
+void MysqlOperationImpl::runQueuedTask(
+    std::string_view what,
+    OperationResult failureResult,
+    folly::FunctionRef<void()> fn) {
+  if (!isEventBaseSet()) {
+    fn();
+    return;
+  }
+  runCallbackGuarded(what, failureResult, fn);
 }
 
 MysqlOperationImpl::MysqlOperationImpl()

@@ -32,7 +32,11 @@ bool MysqlFetchOperationImpl::isPaused() const {
 }
 
 void MysqlFetchOperationImpl::specializedRun() {
-  if (!conn().runInThread([&]() { specializedRunImpl(); })) {
+  if (!conn().runInThread([&]() {
+        runQueuedTask("specializedRun", OperationResult::Failed, [&] {
+          specializedRunImpl();
+        });
+      })) {
     completeOperationInner(OperationResult::Failed);
   }
 }
@@ -353,10 +357,14 @@ void MysqlFetchOperationImpl::resumeImpl() {
   }
 }
 
+void MysqlFetchOperationImpl::resumeQueued() {
+  runQueuedTask("resume", OperationResult::Failed, [&] { resumeImpl(); });
+}
+
 void MysqlFetchOperationImpl::resume() {
   // Make sure we only schedule one resume at a time.
   if (!resume_scheduled_.exchange(true)) {
-    conn().runInThread(this, &MysqlFetchOperationImpl::resumeImpl);
+    conn().runInThread(this, &MysqlFetchOperationImpl::resumeQueued);
   }
 }
 
