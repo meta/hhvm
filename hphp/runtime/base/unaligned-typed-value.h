@@ -29,7 +29,9 @@ struct UnalignedTypedValue final {
   }
 
   TYPE_SCAN_CUSTOM() {
-    if (isRefcountedType(m_type)) scanner.scan(m_data.pcnt);
+    if (isRefcountedType(m_type) && m_data.pcnt->isRefCounted()) {
+      scanner.scan(m_data.pcnt);
+    }
   }
 };
 

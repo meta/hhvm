@@ -931,7 +931,7 @@ ArrayData* StructDict::SetLegacyArray(StructDict* sadIn,
 void StructDict::Scan(const StructDict* sad, type_scan::Scanner& scanner) {
   for (Slot i = 0; i < sad->numFields(); i++) {
     auto const rval = sad->rvalUnchecked(i);
-    if (isRefcountedType(rval.type())) {
+    if (isRefcountedType(rval.type()) && rval.val().pcnt->isRefCounted()) {
       scanner.scan(rval.val().pcnt);
     }
   }

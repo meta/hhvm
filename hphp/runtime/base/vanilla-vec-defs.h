@@ -123,7 +123,9 @@ inline void VanillaVec::scan(const ArrayData* a, type_scan::Scanner& scanner) {
   assertx(checkInvariants(a));
   for (uint32_t i = 0; i < a->size(); ++i) {
     const auto lval = LvalUncheckedInt(const_cast<ArrayData*>(a), i);
-    if (isRefcountedType(type(lval))) scanner.scan(val(lval).pcnt);
+    if (isRefcountedType(type(lval)) && val(lval).pcnt->isRefCounted()) {
+      scanner.scan(val(lval).pcnt);
+    }
   }
 }
 

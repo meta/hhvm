@@ -135,7 +135,9 @@ public:
   INLINE_FLATTEN with_tag_t<Tag, tv_val<is_const>> drop_tag() const;
 
   TYPE_SCAN_CUSTOM() {
-    if (isRefcountedType(type())) scanner.scan(val().pcnt);
+    if (isRefcountedType(type()) && val().pcnt->isRefCounted()) {
+      scanner.scan(val().pcnt);
+    }
   }
 
   /* implicit */ tv_val(UnalignedTypedValue* utv)

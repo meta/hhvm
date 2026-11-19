@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "hphp/runtime/base/countable.h"
 #include "hphp/runtime/base/datatype.h"
 #include "hphp/runtime/base/types.h"
 #include "hphp/runtime/vm/class-meth-data-ref.h"
@@ -170,7 +171,9 @@ struct alignas(8) TypedValue {
   void serde(BlobDecoder&, bool makeStatic = true);
 
   TYPE_SCAN_CUSTOM() {
-    if (isRefcountedType(m_type)) scanner.scan(m_data.pcnt);
+    if (isRefcountedType(m_type) && m_data.pcnt->isRefCounted()) {
+      scanner.scan(m_data.pcnt);
+    }
   }
 };
 

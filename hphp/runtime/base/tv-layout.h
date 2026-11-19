@@ -288,7 +288,7 @@ struct UnalignedTVLayout :
 
   void scan(index_t count, type_scan::Scanner& scanner) const {
     foreach(count, [&](const auto &elm) {
-      if (isRefcountedType(elm.type())) {
+      if (isRefcountedType(elm.type()) && elm.val().pcnt->isRefCounted()) {
         scanner.scan(elm.val().pcnt);
       }
     });
