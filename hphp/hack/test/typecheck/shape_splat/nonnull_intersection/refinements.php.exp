@@ -1,0 +1,29 @@
+File "refinements.php", line 11, characters 3-13:
+  (shape(?'a' => int, 'f' => int) | (shape('f' => int, dynamic...) & shape(..._, ...shape('f' => int))))
+File "refinements.php", line 21, characters 3-13:
+  (shape(?'a' => int, 'f' => int, ?'w0' => bool, ?'w1' => bool, ?'w2' => bool) | (shape('f' => int, dynamic...) & shape(..._, ...shape('f' => int))) | (shape('f' => int, 'w0' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool))) | (shape('f' => int, 'w0' => bool, 'w1' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool, 'w1' => bool))) | (shape('f' => int, 'w0' => bool, 'w1' => bool, 'w2' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool, 'w1' => bool, 'w2' => bool))) | (shape('f' => int, 'w0' => bool, 'w2' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool, 'w2' => bool))) | (shape('f' => int, 'w1' => bool, [truncated]...) & [truncated]) | [truncated] | [truncated]) [This type was truncated. If you need more of the type, use `hh stop; hh --config type_printer_fuel=N`. At this time, N is 100.]
+File "refinements.php", line 11, characters 3-13:[2]
+  (shape('f' => int, dynamic...) & shape(..._, ...shape('f' => int)))
+File "refinements.php", line 21, characters 3-13:[2]
+  ((shape('f' => int, dynamic...) & shape(..._, ...shape('f' => int))) | (shape('f' => int, 'w0' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool))) | (shape('f' => int, 'w0' => bool, 'w1' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool, 'w1' => bool))) | (shape('f' => int, 'w0' => bool, 'w1' => bool, 'w2' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool, 'w1' => bool, 'w2' => bool))) | (shape('f' => int, 'w0' => bool, 'w2' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w0' => bool, 'w2' => bool))) | (shape('f' => int, 'w1' => bool, dynamic...) & shape(..._, ...shape('f' => int, 'w1' => bool))) | (shape('f' => [truncated], [shape was truncated], [truncated]...) & [truncated]) | [truncated]) [This type was truncated. If you need more of the type, use `hh stop; hh --config type_printer_fuel=N`. At this time, N is 100.]
+File "refinements.php", line 25, characters 3-33:
+  (shape('f' => int, dynamic...) & shape(..._, ...shape('f' => int)))
+File "refinements.php", line 25, characters 3-33:[2]
+  shape('f' => int, dynamic...)
+File "refinements.php", line 29, characters 3-33:
+  (shape(..._, ...shape('f' => int)) & shape('f' => int, dynamic...))
+File "refinements.php", line 29, characters 3-33:[2]
+  shape('f' => int, dynamic...)
+File "refinements.php", line 33, characters 3-33:
+  (shape('f' => int, dynamic...) & shape(..._, ...shape('f' => int)))
+File "refinements.php", line 33, characters 3-33:[2]
+  shape('f' => int, dynamic...)
+File "refinements.php", line 37, characters 3-33:
+  shape(...T, ...shape('f' => int)) where T as shape(...)
+File "refinements.php", line 37, characters 3-33:[2]
+  shape('f' => int, dynamic...)
+File "refinements.php", line 43, characters 3-33:
+  (shape(...T1, ...shape('f' => int)) & shape(...T2, ...shape('f' => int))) where T1 as shape(...), T2 as shape(...)
+File "refinements.php", line 43, characters 3-33:[2]
+  shape('f' => int, dynamic...)
+No errors

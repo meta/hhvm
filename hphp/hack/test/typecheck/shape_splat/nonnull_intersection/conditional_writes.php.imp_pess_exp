@@ -1,0 +1,11 @@
+error: Typing[4304] Type checker timed out after 20 seconds whilst checking function build [1]
+
+conditional_writes.php:35:26
+33 | 
+34 | abstract final class NonnullSplatConditionalWrites {
+35 |   public static function build(vec<int> $xs): vec<NonnullSplatCard> {
+   |                          ^^^^^ [1]
+36 |     $out = vec[];
+37 |     $n = 0;
+
+1 error found

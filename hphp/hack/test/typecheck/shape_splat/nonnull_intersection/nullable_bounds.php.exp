@@ -1,0 +1,63 @@
+error: Typing[4531] A shape containing only one splat is redundant. Use the splatted type directly. [1]
+
+nullable_bounds.php:17:42
+15 | }
+16 | 
+17 | function nullable_hint<T as ?shape(...)>(shape(...(T & nonnull)) $x): nonnull {
+   |                                          ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+18 |   return $x;
+19 | }
+
+error: Typing[4419] Invalid type hint [1]
+-> Only shapes can be unpacked with `...` inside a shape type [2]
+
+nullable_bounds.php:17:42
+15 | }
+16 | 
+17 | function nullable_hint<T as ?shape(...)>(shape(...(T & nonnull)) $x): nonnull {
+   |                                          ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+   |                                                        ^^^^^^^ [2]
+18 |   return $x;
+19 | }
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `nonnull` [2]
+-> But got `?shape(...)` [3]
+->   by the definition of `T` [4]
+
+nullable_bounds.php:30:10
+27 | }
+28 | 
+29 | function invalid_nullable<T as ?shape(...)>(T $x): nonnull {
+   |                                ^^^^^^^^^^^ [4]
+   |                                             ^ [3]
+   |                                                    ^^^^^^^ [2]
+30 |   return shape(...$x);
+   |          ^^^^^^^^^^^^ [1]
+31 | }
+
+error: Typing[4110] Invalid return type [1]
+-> Expected `nonnull` [2]
+-> But got `T as ?shape(...)` [3]
+
+nullable_bounds.php:30:10
+27 | }
+28 | 
+29 | function invalid_nullable<T as ?shape(...)>(T $x): nonnull {
+   |                                             ^ [3]
+   |                                                    ^^^^^^^ [2]
+30 |   return shape(...$x);
+   |          ^^^^^^^^^^^^ [1]
+31 | }
+
+error: Typing[4419] Invalid type hint [1]
+-> Only shapes can be unpacked with `...` inside a shape type [1]
+
+nullable_bounds.php:30:19
+28 | 
+29 | function invalid_nullable<T as ?shape(...)>(T $x): nonnull {
+30 |   return shape(...$x);
+   |                   ^^ [1]
+31 | }
+
+5 errors found

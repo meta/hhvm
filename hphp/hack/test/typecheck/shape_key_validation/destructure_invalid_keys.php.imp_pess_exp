@@ -1,0 +1,192 @@
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
+
+destructure_invalid_keys.php:19:38
+17 | function invalid_constants(dynamic $row): void {
+18 |   shape(Keys::BadType => $a, ...) = $row;
+19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+   |               ^^^^^^^^ [2]
+   |                                      ^^^^^^^^ [1]
+20 | }
+21 | 
+
+error: Typing[4052] A shape field name must be an `int` or `string` [1]
+-> Not a bool [2]
+
+destructure_invalid_keys.php:18:9
+ 6 |   const string A = 'a';
+ 7 |   const string Unmarked = 'unmarked';
+ 8 |   const bool BadType = true;
+   |         ^^^^ [2]
+ 9 |   abstract const string Abstract;
+10 | }
+   :
+16 | 
+17 | function invalid_constants(dynamic $row): void {
+18 |   shape(Keys::BadType => $a, ...) = $row;
+   |         ^^^^^^^^^^^^^ [1]
+19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+20 | }
+
+error: Typing[4533] Class constant `Keys::BadType` used as a shape key must be annotated with `<<__ShapeKey>>`. Prefer using an enum constant as a shape key. [1]
+-> The class constant is declared here [2]
+
+destructure_invalid_keys.php:18:9
+ 6 |   const string A = 'a';
+ 7 |   const string Unmarked = 'unmarked';
+ 8 |   const bool BadType = true;
+   |              ^^^^^^^ [2]
+ 9 |   abstract const string Abstract;
+10 | }
+   :
+16 | 
+17 | function invalid_constants(dynamic $row): void {
+18 |   shape(Keys::BadType => $a, ...) = $row;
+   |         ^^^^^^^^^^^^^ [1]
+19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+20 | }
+
+error: Typing[4129] Abstract constant `Keys::Abstract` cannot be used as a shape key [1]
+-> Declaration is here [2]
+
+destructure_invalid_keys.php:19:9
+ 7 |   const string Unmarked = 'unmarked';
+ 8 |   const bool BadType = true;
+ 9 |   abstract const string Abstract;
+   |                         ^^^^^^^^ [2]
+10 | }
+11 | 
+   :
+17 | function invalid_constants(dynamic $row): void {
+18 |   shape(Keys::BadType => $a, ...) = $row;
+19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+   |         ^^^^^^^^^^^^^^ [1]
+20 | }
+21 | 
+
+error: Typing[4533] Class constant `Keys::Abstract` used as a shape key must be annotated with `<<__ShapeKey>>`. Prefer using an enum constant as a shape key. [1]
+-> The class constant is declared here [2]
+
+destructure_invalid_keys.php:19:9
+ 7 |   const string Unmarked = 'unmarked';
+ 8 |   const bool BadType = true;
+ 9 |   abstract const string Abstract;
+   |                         ^^^^^^^^ [2]
+10 | }
+11 | 
+   :
+17 | function invalid_constants(dynamic $row): void {
+18 |   shape(Keys::BadType => $a, ...) = $row;
+19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+   |         ^^^^^^^^^^^^^^ [1]
+20 | }
+21 | 
+
+error: Typing[4129] Abstract constant `Keys::Abstract` cannot be used as a shape key [1]
+-> Declaration is here [2]
+
+destructure_invalid_keys.php:19:32
+ 7 |   const string Unmarked = 'unmarked';
+ 8 |   const bool BadType = true;
+ 9 |   abstract const string Abstract;
+   |                         ^^^^^^^^ [2]
+10 | }
+11 | 
+   :
+17 | function invalid_constants(dynamic $row): void {
+18 |   shape(Keys::BadType => $a, ...) = $row;
+19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+   |                                ^^^^^^^^^^^^^^ [1]
+20 | }
+21 | 
+
+error: Typing[4533] Class constant `Keys::Abstract` used as a shape key must be annotated with `<<__ShapeKey>>`. Prefer using an enum constant as a shape key. [1]
+-> The class constant is declared here [2]
+
+destructure_invalid_keys.php:19:32
+ 7 |   const string Unmarked = 'unmarked';
+ 8 |   const bool BadType = true;
+ 9 |   abstract const string Abstract;
+   |                         ^^^^^^^^ [2]
+10 | }
+11 | 
+   :
+17 | function invalid_constants(dynamic $row): void {
+18 |   shape(Keys::BadType => $a, ...) = $row;
+19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+   |                                ^^^^^^^^^^^^^^ [1]
+20 | }
+21 | 
+
+error: Typing[4090] No class constant `Missing` in `Keys` [1]
+-> Declaration of `Keys` is here [2]
+
+destructure_invalid_keys.php:23:39
+ 2 | <<file:__EnableUnstableFeatures('shape_and_tuple_destructuring')>>
+ 3 | 
+ 4 | abstract class Keys {
+   |                ^^^^ [2]
+ 5 |   <<__ShapeKey>>
+ 6 |   const string A = 'a';
+   :
+21 | 
+22 | function nested_invalid_constants(dynamic $row): void {
+23 |   shape('outer' => tuple(shape(?Keys::Missing => $a, ...), ...), ...) = $row;
+   |                                       ^^^^^^^ [1]
+24 | }
+25 | 
+
+error: Typing[4049] Shape uses class constant as field name [1]
+-> But expected a literal string. Shape fields cannot be a mix of literals and constants. [2]
+
+destructure_invalid_keys.php:27:26
+25 | 
+26 | function mixed_keys(dynamic $row): void {
+27 |   shape('literal' => $a, Keys::A => $b, ...) = $row;
+   |         ^^^^^^^^^ [2]
+   |                          ^^^^^^^ [1]
+28 |   shape(Keys::A => $c, ?'literal' => $d, ...) = $row;
+29 |   shape(Keys::A => $e, ?OtherKeys::A => $f, ...) = $row;
+
+error: Typing[4050] Shape uses literal string as field name [1]
+-> But expected a class constant. Shape fields cannot be a mix of literals and constants. [2]
+
+destructure_invalid_keys.php:28:25
+26 | function mixed_keys(dynamic $row): void {
+27 |   shape('literal' => $a, Keys::A => $b, ...) = $row;
+28 |   shape(Keys::A => $c, ?'literal' => $d, ...) = $row;
+   |         ^^^^^^^ [2]
+   |                         ^^^^^^^^^ [1]
+29 |   shape(Keys::A => $e, ?OtherKeys::A => $f, ...) = $row;
+30 | }
+
+error: Typing[4085] Shape field name is class constant from `OtherKeys` [1]
+-> But expected constant from `Keys` [2]
+
+destructure_invalid_keys.php:29:25
+27 |   shape('literal' => $a, Keys::A => $b, ...) = $row;
+28 |   shape(Keys::A => $c, ?'literal' => $d, ...) = $row;
+29 |   shape(Keys::A => $e, ?OtherKeys::A => $f, ...) = $row;
+   |         ^^^^^^^ [2]
+   |                         ^^^^^^^^^^^^ [1]
+30 | }
+31 | 
+
+error: Typing[4533] Class constant `Keys::Unmarked` used as a shape key must be annotated with `<<__ShapeKey>>`. Prefer using an enum constant as a shape key. [1]
+-> The class constant is declared here [2]
+
+destructure_invalid_keys.php:33:34
+ 5 |   <<__ShapeKey>>
+ 6 |   const string A = 'a';
+ 7 |   const string Unmarked = 'unmarked';
+   |                ^^^^^^^^ [2]
+ 8 |   const bool BadType = true;
+ 9 |   abstract const string Abstract;
+   :
+31 | 
+32 | function foreach_invalid_keys(vec<nothing> $rows): void {
+33 |   foreach ($rows as tuple(shape(?Keys::Unmarked => $a, ...), ...)) {}
+   |                                  ^^^^^^^^^^^^^^ [1]
+34 | }
+
+12 errors found
