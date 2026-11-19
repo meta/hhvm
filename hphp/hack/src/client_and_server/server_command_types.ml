@@ -359,6 +359,10 @@ module Find_my_tests = struct
         of files, we skip searching those files for references entirely. *)
     enclosing_class_all_methods: bool; [@default true]
         (** Should we go from any method to the enclosing class, or just for root methods? *)
+    class_nameof: bool; [@default false]
+        (** Follow [nameof C] references in non-test methods. *)
+    class_const_traversal: bool; [@default false]
+        (** Follow class/typedef references through class constant initializers. *)
     cldp_member_selection: bool; [@default false]
   }
   [@@deriving yojson, show]
@@ -379,6 +383,8 @@ module Find_my_tests = struct
       parent_max_fanout_files = None;
       non_parent_max_fanout_files = None;
       enclosing_class_all_methods = true;
+      class_nameof = false;
+      class_const_traversal = false;
       cldp_member_selection = false;
     }
 
