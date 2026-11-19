@@ -10,17 +10,19 @@ destructure_duplicate_keys.php:14:25
 15 | }
 16 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 destructure_duplicate_keys.php:18:30
 16 | 
 17 | function repeated_key_in_pattern(dynamic $row): void {
 18 |   shape(Keys::A => $a, Keys::A => $b, ...) = $row;
+   |               ^ [2]
    |                              ^ [1]
 19 | }
 20 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `same` [2]
 
 destructure_duplicate_keys.php:22:41
@@ -32,17 +34,19 @@ destructure_duplicate_keys.php:22:41
 23 |   tuple(shape('same' => $c, ?'same' => $d, ...), ...) = $row;
 24 |   shape('outer' => tuple(shape(Keys::A => $e, ?Keys::B => $f, ...), ...), ...) = $row;
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 destructure_duplicate_keys.php:23:30
 21 | function nested_pattern_collision(dynamic $row): void {
 22 |   shape('outer' => shape(Keys::A => $a, Keys::B => $b, ...), ...) = $row;
 23 |   tuple(shape('same' => $c, ?'same' => $d, ...), ...) = $row;
+   |               ^^^^^^ [2]
    |                              ^^^^^^ [1]
 24 |   shape('outer' => tuple(shape(Keys::A => $e, ?Keys::B => $f, ...), ...), ...) = $row;
 25 | }
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `same` [2]
 
 destructure_duplicate_keys.php:24:48
@@ -54,7 +58,7 @@ destructure_duplicate_keys.php:24:48
 25 | }
 26 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `same` [2]
 
 destructure_duplicate_keys.php:28:43
@@ -66,17 +70,19 @@ destructure_duplicate_keys.php:28:43
 29 | }
 30 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 destructure_duplicate_keys.php:32:41
 30 | 
 31 | function foreach_key_collision(KeyedIterator<nothing, nothing> $rows): void {
 32 |   foreach ($rows as shape('same' => $a, 'same' => $b, ...) => $value) {}
+   |                           ^^^^^^ [2]
    |                                         ^^^^^^ [1]
 33 | }
 34 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `same` [2]
 
 destructure_duplicate_keys.php:36:24
@@ -88,7 +94,7 @@ destructure_duplicate_keys.php:36:24
 37 | }
 38 | 
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
 -> This field has the same runtime key `same` [2]
 
 destructure_duplicate_keys.php:36:61

@@ -1,9 +1,11 @@
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 destructure_invalid_keys.php:19:38
 17 | function invalid_constants(dynamic $row): void {
 18 |   shape(Keys::BadType => $a, ...) = $row;
 19 |   shape(Keys::Abstract => $b, ?Keys::Abstract => $c, ...) = $row;
+   |               ^^^^^^^^ [2]
    |                                      ^^^^^^^^ [1]
 20 | }
 21 | 
