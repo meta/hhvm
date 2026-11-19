@@ -38,6 +38,7 @@
 #include "hphp/runtime/vm/jit/vasm-instr.h"
 #include "hphp/runtime/vm/jit/vasm-reg.h"
 
+#include "hphp/util/address-range.h"
 #include "hphp/util/asm-x64.h"
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/trace.h"
@@ -106,8 +107,9 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
         assertx(known <= (TCounted | TPersistent));
         assertx(known.maybe(TCounted));
         assertx(known.maybe(TPersistent));
-        auto const sf = emitCmpRefCount(v, 0, srcData);
-        doJcc(CC_L, sf);
+        auto const sf = v.makeReg();
+        v << shrqi{int(kSharedMaxShift), srcData, v.makeReg(), sf};
+        doJcc(CC_Z, sf);
       } else {
         // A persistent tag proves countness. A counted tag can still hold a
         // persistent value, so this check may have false negatives.
@@ -172,12 +174,14 @@ void cgCheckType(IRLS& env, const IRInstruction* inst) {
       doJcc(CC_E, sf);
       known &= TStatic;
     } else if (base <= TPersistent) {
-      auto const sf = emitCmpRefCount(v, 0, srcData);
-      doJcc(CC_L, sf);
+      auto const sf = v.makeReg();
+      v << shrqi{int(kSharedMaxShift), srcData, v.makeReg(), sf};
+      doJcc(CC_Z, sf);
       known &= TPersistent;
     } else if (base <= TCounted) {
-      auto const sf = emitCmpRefCount(v, 0, srcData);
-      doJcc(CC_GE, sf);
+      auto const sf = v.makeReg();
+      v << shrqi{int(kSharedMaxShift), srcData, v.makeReg(), sf};
+      doJcc(CC_NZ, sf);
       known &= TCounted;
     }
 
