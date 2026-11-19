@@ -461,6 +461,13 @@ let stop
   set_state t (Stopped reason);
   Lwt.return_unit
 
+let daemon_exited_with_select_error (t : t) : bool =
+  match Unix.waitpid [Unix.WNOHANG] t.daemon_handle.Daemon.pid with
+  | (0, _) -> false
+  | (_, Unix.WEXITED code) -> code = Exit_status.(exit_code IDE_select_error)
+  | (_, (Unix.WSIGNALED _ | Unix.WSTOPPED _)) -> false
+  | exception Unix.Unix_error _ -> false
+
 let cleanup_upon_shutdown_or_exn (t : t) ~(e : Exception.t option) : unit Lwt.t
     =
   (* We are invoked with e=None when one of the message-queues has said that
@@ -471,17 +478,31 @@ let cleanup_upon_shutdown_or_exn (t : t) ~(e : Exception.t option) : unit Lwt.t
     | None ->
       log "Normal shutdown due to message-queue closure";
       Stop_reason.Closed
-    | Some e ->
-      Client_ide_utils.log_bug "shutdown" ~e ~telemetry:true;
-      Stop_reason.Crashed
+    | Some _ -> Stop_reason.Crashed
   in
   (* We might as well call 'stop' in both cases; there'll be no harm. *)
-  match t.state with
-  | Stopped _ -> Lwt.return_unit
-  | _ ->
-    log "Shutting down...";
-    let%lwt () = stop t ~tracking_id:"cleanup_or_shutdown" ~stop_reason ~e in
-    Lwt.return_unit
+  let%lwt () =
+    match t.state with
+    | Stopped _ -> Lwt.return_unit
+    | _ ->
+      log "Shutting down...";
+      (try%lwt stop t ~tracking_id:"cleanup_or_shutdown" ~stop_reason ~e with
+      | exn ->
+        log "stop failed: %s" (Exception.wrap exn |> Exception.to_string);
+        Lwt.return_unit)
+  in
+  (* Only after 'stop' may we reap the daemon: 'stop' force-quits it by pid. *)
+  (match e with
+  | None -> ()
+  | Some e ->
+    let category =
+      if daemon_exited_with_select_error t then
+        "shutdown after daemon Unix.select EINVAL"
+      else
+        "shutdown"
+    in
+    Client_ide_utils.log_bug category ~e ~telemetry:true);
+  Lwt.return_unit
 
 let rec serve (t : t) : unit Lwt.t =
   (* Behavior of 'serve' is (1) take items from `messages_to_send` and send

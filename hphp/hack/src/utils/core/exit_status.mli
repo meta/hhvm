@@ -70,6 +70,7 @@ type t =
   | Shared_mem_assertion_failure
   | Hash_table_full
   | IDE_new_client_connected
+  | IDE_select_error
   | Lazy_decl_bug
   | Decl_heap_elems_bug
   | Parser_heap_build_error

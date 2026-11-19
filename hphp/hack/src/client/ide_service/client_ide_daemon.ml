@@ -1536,7 +1536,14 @@ let daemon_main
     Hh_logger.log
       "SERVERLESS_IDE_DONE(exn)\n%s"
       (Exception.to_string e |> Exception.clean_stack);
-    Hack_event_logger.serverless_ide_done (Some e)
+    Hack_event_logger.serverless_ide_done (Some e);
+    (match exn with
+    | Unix.Unix_error (Unix.EINVAL, "select", _) ->
+      (* T297266104: the Lwt select engine fails once a watched fd number
+         exceeds FD_SETSIZE. *)
+      Client_ide_utils.log_bug "fatal Unix.select EINVAL" ~e ~telemetry:true;
+      Stdlib.exit Exit_status.(exit_code IDE_select_error)
+    | _ -> ())
 
 let daemon_entry_point :
     (Client_ide_message.daemon_args, unit, unit) Daemon.entry =

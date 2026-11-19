@@ -87,6 +87,7 @@ type t =
   | Shared_mem_assertion_failure
   | Hash_table_full
   | IDE_new_client_connected
+  | IDE_select_error
   | Lazy_decl_bug
   | Decl_heap_elems_bug
   | Parser_heap_build_error
@@ -217,6 +218,7 @@ let exit_code = function
   | Distc_failed -> 229
   | Client_bad_args -> 64 (* EX_USAGE from sysexits.h *)
   | Depgraph_unavailable -> 230
+  | IDE_select_error -> 233
 
 let exit_code_to_string (code : int) : string =
   (* We will return the string "See Exit_status.ml for meaning of this code".
