@@ -1486,12 +1486,11 @@ void save_taken_state(Global& genv, const IRInstruction& inst,
     assertx(ge.backtrace.empty());
     auto const meta = genv.ainfo.find(canonicalize(ge.loads));
     if (auto const tloc = find_tracked(outState, meta)) {
-      tloc->knownType = negativeCheckType(
-        tloc->knownType & maxTakenType, subtractedType);
+      tloc->knownType = (tloc->knownType & maxTakenType) - subtractedType;
     } else if (meta) {
       auto tloc = &outState.tracked[meta->index];
       tloc->knownValue = nullptr;
-      tloc->knownType = negativeCheckType(maxTakenType, subtractedType);
+      tloc->knownType = maxTakenType - subtractedType;
       outState.avail.set(meta->index);
     }
   };

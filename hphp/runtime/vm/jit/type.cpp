@@ -1245,22 +1245,6 @@ Type typeFromSBProfType(const SBProfType& ty) {
 
 //////////////////////////////////////////////////////////////////////
 
-Type negativeCheckType(Type srcType, Type typeParam) {
-  // Checks relating to StaticStr and StaticArr are not, in general, precise.
-  // They may reject some Statics in some situations, where we only guard using
-  // the type tag and not by loading the count field.
-  if (!typeParam.maybe(TCountedStr)) typeParam -= TStr;
-  if (!typeParam.maybe(TCountedVec)) typeParam -= TVec;
-  if (!typeParam.maybe(TCountedDict)) typeParam -= TDict;
-  if (!typeParam.maybe(TCountedKeyset)) typeParam -= TKeyset;
-
-  if (srcType <= typeParam)      return TBottom;
-  if (!srcType.maybe(typeParam)) return srcType;
-  return srcType - typeParam;
-}
-
-//////////////////////////////////////////////////////////////////////
-
 Type relaxType(Type t, DataTypeCategory cat) {
   assertx(t <= TCell);
 

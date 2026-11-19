@@ -981,7 +981,7 @@ void insertNegativeAssertTypes(IRUnit& unit, const BlockList& blocks) {
 
     auto const checkTy = inst.typeParam();
     auto const srcTy   = inst.src(0)->type();
-    auto const takenTy = negativeCheckType(srcTy, checkTy);
+    auto const takenTy = srcTy - checkTy;
     if (takenTy < srcTy) {
       inst.taken()->prepend(
         unit.gen(AssertType, inst.bcctx(), takenTy, inst.src(0))

@@ -842,13 +842,6 @@ Type typeFromSBProfType(const SBProfType&);
 ///////////////////////////////////////////////////////////////////////////////
 
 /*
- * Returns the type that a value may have if it had type `srcType' and failed a
- * CheckType with `typeParam'.  Not all typeParams for CheckTypes are precise,
- * so the return value may even be `srcType' itself in some situations.
- */
-Type negativeCheckType(Type typeParam, Type srcType);
-
-/*
  * Returns the least specific supertype of `t' that maintains the properties
  * required by `cat' or by `gc'. The latter should be used where possible;
  * we have constraints when forming tracelet regions, but we only keep around

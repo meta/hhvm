@@ -373,7 +373,7 @@ SSATmp* profiledType(IRGS& env, SSATmp* tmp, Finish finish) {
          },
          [&] {
            hint(env, Block::Hint::Unlikely);
-           auto const takenType = negativeCheckType(tmp->type(), typeToCheck);
+           auto const takenType = tmp->type() - typeToCheck;
            if (takenType < tmp->type()) {
              gen(env, AssertType, takenType, tmp);
            }
