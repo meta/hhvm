@@ -23,6 +23,8 @@
 #include "hphp/runtime/vm/jit/code-gen-tls.h"
 #include "hphp/runtime/vm/jit/unique-stubs.h"
 
+#include "hphp/util/address-range.h"
+
 namespace HPHP::jit {
 
 TRACE_SET_MOD(ustubs)
@@ -44,9 +46,8 @@ static void alignJmpTarget(CodeBlock& cb) {
  * a value's refcount or releasing it.
  *
  * This helper is reached via call from the various freeLocalHelpers.
- * It expects `dataVal' to be a Value, and `typeVal' to be the the
- * associated DataType (with refcounted type) (though it may be
- * static, and we will do nothing in that case).
+ * It expects `dataVal' to be a counted Value, and `typeVal' to be the
+ * associated DataType.
  *
  * The `live' registers must be preserved across any native calls (and
  * generally left untouched).
@@ -74,19 +75,12 @@ static TCA emitDecRefHelper(CodeBlock& cb, DataBlock& data, CGMeta& fixups,
 
     auto const sf = emitCmpRefCount(v, OneReference, dataVal);
 
-    ifThen(v, CC_NL, sf, [&] (Vout& v) {
-      // The refcount is positive, so the value is refcounted.  We need to
-      // either decref or release.
-      ifThen(v, CC_NE, sf, [&] (Vout& v) {
-        // The refcount is greater than 1; decref it.
-        emitDecRefCount(v, dataVal);
-        v << stubret{live, true};
-      });
-
-      destroy(v);
+    ifThen(v, CC_NE, sf, [&] (Vout& v) {
+      emitDecRefCount(v, dataVal);
+      v << stubret{live, true};
     });
 
-    // Either we did a decref, or the value was static.
+    destroy(v);
     v << stubret{live, true};
   });
 }
@@ -126,7 +120,11 @@ TCA emitFreeLocalsHelpers(CodeBlock& cb, DataBlock& data, UniqueStubs& us) {
 
     ifThen(v, cc, sf, [&] (Vout& v) {
       v << load{d, dataVal};
-      v << call{release, dataVal | typeVal};
+      auto const counted = v.makeReg();
+      v << shrqi{int(kSharedMaxShift), dataVal, v.makeReg(), counted};
+      ifThen(v, CC_NZ, counted, [&] (Vout& v) {
+        v << call{release, dataVal | typeVal};
+      });
     });
   };
 

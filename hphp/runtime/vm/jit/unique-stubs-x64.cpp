@@ -34,6 +34,7 @@
 #include "hphp/runtime/vm/jit/vasm-gen.h"
 #include "hphp/runtime/vm/jit/vasm-instr.h"
 
+#include "hphp/util/address-range.h"
 #include "hphp/util/asm-x64.h"
 #include "hphp/util/configs/hhir.h"
 #include "hphp/util/data-block.h"
@@ -54,9 +55,8 @@ namespace x64 {
  * a value's refcount or releasing it.
  *
  * This helper is reached via call from the various freeLocalHelpers.
- * It expects `dataVal' to be a Value, and `typeVal' to be the the
- * associated DataType (with refcounted type) (though it may be
- * static, and we will do nothing in that case).
+ * It expects `dataVal' to be a counted Value, and `typeVal' to be the
+ * associated DataType.
  *
  * The `live' registers must be preserved across any native calls (and
  * generally left untouched).
@@ -83,25 +83,12 @@ static TCA emitDecRefHelper(CodeBlock& cb, DataBlock& data,
 
     auto const sf = emitCmpRefCount(v, OneReference, dataVal);
 
-    auto skipref = v.makeBlock();
-    auto destroy = v.makeBlock();
-    auto chkref  = v.makeBlock();
-    auto decref  = v.makeBlock();
+    ifThen(v, CC_NE, sf, [&] (Vout& v) {
+      emitDecRefCount(v, dataVal);
+      v << ret{live};
+    });
 
-    // We can't quite get the layout we want from two nested ifThens, because
-    // we want the else case from the first to jmp to the middle of the then
-    // case of the second (we want to share the ret).
-    v << jcc{CC_L, sf, {chkref, skipref}, StringTag{}};
-    v = chkref;
-    v << jcc{CC_NE, sf, {destroy, decref}, StringTag{}};
-    v = decref;
-    emitDecRefCount(v, dataVal);
-    v << jmp{skipref};
-    v = skipref;
-    v << ret{live};
-    v = destroy;
     emit_destroy(v);
-
     v << ret{live};
   }, nullptr, CodeKind::CrossTrace, true);
 
@@ -141,8 +128,12 @@ TCA emitFreeLocalsHelpers(CodeBlock& cb, DataBlock& data, UniqueStubs& us) {
 
     ifThen(v, cc, sf, [&] (Vout& v) {
       v << load{d, dataVal};
-      v << call{releaseFake, dataVal | typeVal, nullptr /* watch */,
-                true /* stackUnaligned */};
+      auto const counted = v.makeReg();
+      v << shrqi{int(kSharedMaxShift), dataVal, v.makeReg(), counted};
+      ifThen(v, CC_NZ, counted, [&] (Vout& v) {
+        v << call{releaseFake, dataVal | typeVal, nullptr /* watch */,
+                  true /* stackUnaligned */};
+      });
     });
   };
 
