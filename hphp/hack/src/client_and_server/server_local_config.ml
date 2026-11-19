@@ -300,6 +300,9 @@ type t = {
       (** Restrict remote old decl fetches to init-time fanout. *)
   remote_old_decl_fetching_include_non_class: bool;
       (** Include non-class declarations in remote old decl fetching. *)
+  populate_old_decl_hashes: bool;
+      (** Request old declaration hash population independently of remote fetching.
+          Non-class remote fetching also requires it, even when this is false. *)
   disable_rust_provider_shallow_decl_invalidation: bool;
       (** Preserve Rust shallow decls when invalidating folded decls. *)
   enable_annotation_agnostic_decl_diffing: bool;

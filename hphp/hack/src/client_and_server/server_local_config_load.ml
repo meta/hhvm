@@ -83,6 +83,7 @@ let default =
     fetch_remote_old_decls = true;
     only_fetch_remote_old_decl_during_init = true;
     remote_old_decl_fetching_include_non_class = false;
+    populate_old_decl_hashes = false;
     disable_rust_provider_shallow_decl_invalidation = false;
     enable_annotation_agnostic_decl_diffing = false;
     skip_hierarchy_checks = false;
@@ -701,6 +702,13 @@ let load_
       ~current_version
       config
   in
+  let populate_old_decl_hashes =
+    bool_if_min_version
+      Config_keys.Hhconf.populate_old_decl_hashes
+      ~default:default.populate_old_decl_hashes
+      ~current_version
+      config
+  in
   let disable_rust_provider_shallow_decl_invalidation =
     bool_if_min_version
       Config_keys.Hhconf.disable_rust_provider_shallow_decl_invalidation
@@ -1294,6 +1302,7 @@ let load_
     fetch_remote_old_decls;
     only_fetch_remote_old_decl_during_init;
     remote_old_decl_fetching_include_non_class;
+    populate_old_decl_hashes;
     disable_rust_provider_shallow_decl_invalidation;
     enable_annotation_agnostic_decl_diffing;
     skip_hierarchy_checks;
@@ -1432,6 +1441,7 @@ let to_rollout_flags (options : t) : Hack_event_logger.rollout_flags =
         options.only_fetch_remote_old_decl_during_init;
       remote_old_decl_fetching_include_non_class =
         options.remote_old_decl_fetching_include_non_class;
+      populate_old_decl_hashes = options.populate_old_decl_hashes;
       disable_rust_provider_shallow_decl_invalidation =
         options.disable_rust_provider_shallow_decl_invalidation;
       enable_annotation_agnostic_decl_diffing =

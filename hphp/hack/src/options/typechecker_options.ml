@@ -68,6 +68,10 @@ let only_fetch_remote_old_decl_during_init t =
 let remote_old_decl_fetching_include_non_class (t : t) : bool =
   t.Global_options.tco_remote_old_decl_fetching_include_non_class
 
+let must_populate_old_decl_hashes (t : t) : bool =
+  t.Global_options.tco_populate_old_decl_hashes
+  || remote_old_decl_fetching_include_non_class t
+
 let disable_rust_provider_shallow_decl_invalidation t =
   t.Global_options.tco_disable_rust_provider_shallow_decl_invalidation
 

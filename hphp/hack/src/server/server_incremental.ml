@@ -259,9 +259,8 @@ let get_old_and_new_defs_in_files
       begin
         fun path acc ->
           let old_names =
-            (* TODO(T298623016): When remote_old_decl_fetching_include_non_class
-               is disabled, old_names_per_file is empty; use the names-only
-               fallback until hash population is unconditional. *)
+            (* When hash population is disabled, old_names_per_file is empty;
+               use the names-only fallback. *)
             match Relative_path.Map.find_opt old_names_per_file path with
             | Some old_names -> Some old_names
             | None ->

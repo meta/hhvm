@@ -1122,9 +1122,8 @@ let update_naming_table
   in
   let ctx = Provider_utils.ctx_from_server_env env in
   let old_names_per_file =
-    (* TODO(T298623016): Populate old hashes independently of remote fetching. *)
     if
-      Typechecker_options.remote_old_decl_fetching_include_non_class
+      Typechecker_options.must_populate_old_decl_hashes
         (Provider_context.get_tcopt ctx)
     then
       let add_parsed_file path files =

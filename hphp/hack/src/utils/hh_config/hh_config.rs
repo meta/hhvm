@@ -393,6 +393,7 @@ impl HhConfig {
                 .tco_only_fetch_remote_old_decl_during_init,
             tco_remote_old_decl_fetching_include_non_class: default
                 .tco_remote_old_decl_fetching_include_non_class,
+            tco_populate_old_decl_hashes: default.tco_populate_old_decl_hashes,
             tco_disable_rust_provider_shallow_decl_invalidation: default
                 .tco_disable_rust_provider_shallow_decl_invalidation,
             tco_enable_annotation_agnostic_decl_diffing: default

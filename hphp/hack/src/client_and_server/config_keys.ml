@@ -550,6 +550,8 @@ module Hhconf = struct
   let remote_old_decl_fetching_include_non_class =
     hhconf_key "remote_old_decl_fetching_include_non_class"
 
+  let populate_old_decl_hashes = hhconf_key "populate_old_decl_hashes"
+
   let disable_rust_provider_shallow_decl_invalidation =
     hhconf_key "disable_rust_provider_shallow_decl_invalidation"
 

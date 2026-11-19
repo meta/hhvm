@@ -150,11 +150,10 @@ val expect_known_fanout_bug :
     a naming database. The fixture folder is outside the repository, and the
     independent full check keeps remote old declarations disabled.
 
-    [remote_old_decls_include_non_class] sets the non-class fetching feature flag
-    and enables old hash population. It defaults to [false]. Without a fixture,
-    remote fetching stays disabled even when this flag is [true]. With a fixture,
-    this flag also enables missing non-class recovery.
-    TODO(T298623016): Populate old hashes independently of this flag.
+    [remote_old_decls_include_non_class] sets the non-class fetching feature flag.
+    Enabling it implies old declaration hash population. It defaults to [false].
+    Without a fixture, remote fetching stays disabled even when this flag is
+    [true]. With a fixture, this flag also enables missing non-class recovery.
 
     [disable_rust_provider_shallow_decl_invalidation] preserves Rust shallow
     declarations when invalidating folded classes. It defaults to [false]. *)

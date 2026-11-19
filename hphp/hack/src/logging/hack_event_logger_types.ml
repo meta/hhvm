@@ -81,6 +81,8 @@ type rollout_flags = {
       (** POC: @mojpc2, whether remote old decl fetches are restricted to init *)
   remote_old_decl_fetching_include_non_class: bool;
       (** Include non-class declarations in remote old decl fetching. *)
+  populate_old_decl_hashes: bool;
+      (** Configured value before applying the non-class remote fetching requirement. *)
   disable_rust_provider_shallow_decl_invalidation: bool;
       (** POC: @mojpc2, preserve Rust shallow decls when invalidating folded decls *)
   enable_annotation_agnostic_decl_diffing: bool;

@@ -117,6 +117,10 @@ type t = {
       (** Restrict remote old decl fetching to init-time fanout. *)
   tco_remote_old_decl_fetching_include_non_class: bool;
       (** Include non-class declarations in remote old decl fetching. *)
+  tco_populate_old_decl_hashes: bool;
+      (** Independently request old declaration hash population. Use
+          [Typechecker_options.must_populate_old_decl_hashes] for the effective
+          behavior, which also includes non-class remote old decl fetching. *)
   tco_disable_rust_provider_shallow_decl_invalidation: bool;
       (** Preserve Rust shallow decls when invalidating folded decls. *)
   tco_enable_annotation_agnostic_decl_diffing: bool;
@@ -327,6 +331,7 @@ val set :
   ?tco_fetch_remote_old_decls:bool ->
   ?tco_only_fetch_remote_old_decl_during_init:bool ->
   ?tco_remote_old_decl_fetching_include_non_class:bool ->
+  ?tco_populate_old_decl_hashes:bool ->
   ?tco_disable_rust_provider_shallow_decl_invalidation:bool ->
   ?tco_enable_annotation_agnostic_decl_diffing:bool ->
   ?tco_populate_member_heaps:bool ->

@@ -114,6 +114,7 @@ type t = {
   tco_fetch_remote_old_decls: bool;
   tco_only_fetch_remote_old_decl_during_init: bool;
   tco_remote_old_decl_fetching_include_non_class: bool;
+  tco_populate_old_decl_hashes: bool;
   tco_disable_rust_provider_shallow_decl_invalidation: bool;
   tco_enable_annotation_agnostic_decl_diffing: bool;
   tco_populate_member_heaps: bool;
@@ -226,6 +227,7 @@ let default =
     tco_fetch_remote_old_decls = true;
     tco_only_fetch_remote_old_decl_during_init = true;
     tco_remote_old_decl_fetching_include_non_class = false;
+    tco_populate_old_decl_hashes = false;
     tco_disable_rust_provider_shallow_decl_invalidation = false;
     tco_enable_annotation_agnostic_decl_diffing = false;
     tco_populate_member_heaps = true;
@@ -337,6 +339,7 @@ let set
     ?tco_fetch_remote_old_decls
     ?tco_only_fetch_remote_old_decl_during_init
     ?tco_remote_old_decl_fetching_include_non_class
+    ?tco_populate_old_decl_hashes
     ?tco_disable_rust_provider_shallow_decl_invalidation
     ?tco_enable_annotation_agnostic_decl_diffing
     ?tco_populate_member_heaps
@@ -489,6 +492,8 @@ let set
       setting
         tco_remote_old_decl_fetching_include_non_class
         options.tco_remote_old_decl_fetching_include_non_class;
+    tco_populate_old_decl_hashes =
+      setting tco_populate_old_decl_hashes options.tco_populate_old_decl_hashes;
     tco_disable_rust_provider_shallow_decl_invalidation =
       setting
         tco_disable_rust_provider_shallow_decl_invalidation

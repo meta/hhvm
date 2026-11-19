@@ -83,9 +83,8 @@ let add_old_decls
     Decl_compare.VersionedNames.t Relative_path.Map.t =
   let add_old_names filename new_names =
     let old_names =
-      (* TODO(T298623016): Populate old hashes independently of remote fetching. *)
       if
-        Typechecker_options.remote_old_decl_fetching_include_non_class
+        Typechecker_options.must_populate_old_decl_hashes
           (Provider_context.get_tcopt ctx)
       then
         match Relative_path.Map.find_opt old_names_per_file filename with
@@ -183,8 +182,7 @@ type naming_result = {
   naming_table: Naming_table.t;
   old_names_per_file: File_info.Old_names.t Relative_path.Map.t;
       (** When hash tracking is enabled, has entries for each file
-          [add_old_decls] may ask for. Empty when tracking is disabled.
-          TODO(T298623016): Populate this independently of remote fetching. *)
+          [add_old_decls] may ask for. Empty when tracking is disabled. *)
   telemetry: Telemetry.t;
 }
 
@@ -196,7 +194,6 @@ type naming_result = {
   the global reverse naming table.
   When hash tracking is enabled, returns old names and winning declaration
   hashes captured before these updates.
-  TODO(T298623016): Populate these hashes independently of remote fetching.
 
   The "winner" in case of duplicate definitions? All filenames involved in any
   duplicate definition were stored by the caller in [env.failed_parsing], and
@@ -219,9 +216,8 @@ let do_naming
   let start_t = Unix.gettimeofday () in
 
   let old_names_per_file =
-    (* TODO(T298623016): Populate old hashes independently of remote fetching. *)
     if
-      Typechecker_options.remote_old_decl_fetching_include_non_class
+      Typechecker_options.must_populate_old_decl_hashes
         (Provider_context.get_tcopt ctx)
     then
       Server_incremental.get_old_names_batch

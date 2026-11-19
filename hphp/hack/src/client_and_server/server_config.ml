@@ -771,6 +771,7 @@ let load_with_dynamic_overrides
         ~tco_remote_old_decl_fetching_include_non_class:
           local_config
             .Server_local_config.remote_old_decl_fetching_include_non_class
+        ~tco_populate_old_decl_hashes:local_config.populate_old_decl_hashes
         ~tco_disable_rust_provider_shallow_decl_invalidation:
           local_config
             .Server_local_config.disable_rust_provider_shallow_decl_invalidation
