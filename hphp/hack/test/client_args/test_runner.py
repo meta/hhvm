@@ -29,7 +29,7 @@ still exists.
 """
 
 # pyre-strict
-# arc pyre check //hphp/hack/test/client_args_telemetry/...
+# arc pyre check //hphp/hack/test/client_args/...
 
 import errno
 import json
