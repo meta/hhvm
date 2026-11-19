@@ -9,5 +9,12 @@ InheritParentConfig: true
 Checks: '
 bugprone-exception-escape,
 bugprone-unchecked-optional-access,
+facebook-hte-CheckMacroUse,
+facebook-hte-LogFatalUsage,
+bugprone-narrowing-conversions,
 '
+CheckOptions:
+  bugprone-narrowing-conversions.WarnOnFloatingPointNarrowingConversion: false
+  bugprone-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: false
+  bugprone-narrowing-conversions.WarnOnEquivalentBitWidth: false
 ...
