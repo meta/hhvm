@@ -141,7 +141,7 @@ let pick_hierarchy random =
   all_hierarchies.(h_idx)
 
 let gen_refinement_inputs ~n : refinement_input array =
-  let random = Splittable_random.State.of_int 12345 in
+  let random = random_of_seed 12345 in
   Array.init n ~f:(fun _ ->
       let h = pick_hierarchy random in
       let class_id =
@@ -156,7 +156,7 @@ let gen_refinement_inputs ~n : refinement_input array =
       { r_h = h; r_class_id = class_id; r_pred_tag = pred_tag })
 
 let gen_variant_filter_inputs ~n : variant_filter_input array =
-  let random = Splittable_random.State.of_int 23456 in
+  let random = random_of_seed 23456 in
   Array.init n ~f:(fun _ ->
       let h = pick_hierarchy random in
       let num_variants =
@@ -184,7 +184,7 @@ let gen_variant_filter_inputs ~n : variant_filter_input array =
       })
 
 let gen_overlap_inputs ~n : overlap_input array =
-  let random = Splittable_random.State.of_int 34567 in
+  let random = random_of_seed 34567 in
   Array.init n ~f:(fun _ ->
       let h = pick_hierarchy random in
       let num_variants =
@@ -200,7 +200,7 @@ let gen_overlap_inputs ~n : overlap_input array =
       { ov_h = h; ov_variant_cids = variant_cids })
 
 let gen_complex_inputs ~n : complex_input array =
-  let random = Splittable_random.State.of_int 45678 in
+  let random = random_of_seed 45678 in
   Array.init n ~f:(fun _ ->
       let h = pick_hierarchy random in
       let n_tags1 =
@@ -240,7 +240,7 @@ let gen_complex_inputs ~n : complex_input array =
       })
 
 let gen_construction_inputs ~n : construction_input array =
-  let random = Splittable_random.State.of_int 56789 in
+  let random = random_of_seed 56789 in
   Array.init n ~f:(fun _ ->
       let h = pick_hierarchy random in
       let n_tags =

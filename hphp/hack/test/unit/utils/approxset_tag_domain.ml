@@ -797,6 +797,13 @@ let make_tag (h : hierarchy) (cid : int) : tag =
 (* Pre-generated hierarchy pool *)
 (* ------------------------------------------------------------------ *)
 
+(** Seeded random state for [Quickcheck.Generator.generate]. The dune build
+    uses Base v0.16, which only provides [Splittable_random.State.of_int]; newer
+    releases deprecate [Splittable_random.State] in favor of
+    [Splittable_random.of_int]. *)
+let random_of_seed (seed : int) =
+  (Splittable_random.State.of_int [@alert "-deprecated"]) seed
+
 (** Pre-generate a pool of hierarchies at module load time.
     This avoids the overhead of Quickcheck.Generator.filter on gen_hierarchy
     during tests, which rejects many hierarchies that lack sealed classes,
@@ -805,13 +812,13 @@ let make_tag (h : hierarchy) (cid : int) : tag =
 let hierarchy_pool : hierarchy array =
   let pool_size = 200 in
   Array.init pool_size ~f:(fun i ->
-      let random = Splittable_random.State.of_int (42 + i) in
+      let random = random_of_seed (42 + i) in
       Quickcheck.Generator.generate gen_hierarchy ~size:30 ~random)
 
 (** Construct a small hierarchy guaranteed to have a sealed class, sealed
     interface, and an interface with require_extends. *)
 let make_featured_hierarchy (seed : int) : hierarchy =
-  let random = Splittable_random.State.of_int seed in
+  let random = random_of_seed seed in
   let n = 8 in
   (* Layout (single class inheritance, multiple interface implementation):
      0: concrete (root)
