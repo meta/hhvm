@@ -148,6 +148,17 @@ let check_duplicates env symbolic_names =
   in
   ()
 
+let destructure_visitor =
+  object
+    inherit Tast_visitor.iter as super
+
+    method! on_destructure_shape env shape_pat =
+      check_duplicates
+        env
+        (List.map shape_pat.ds_fields ~f:(fun field -> field.dsf_name));
+      super#on_destructure_shape env shape_pat
+  end
+
 let handler =
   object
     inherit Tast_visitor.handler_base
@@ -161,6 +172,10 @@ let handler =
               | SF_splat _ -> None)
         in
         check_duplicates env symbolic_names
+      | (_, _, DestructureShape shape_pat) ->
+        destructure_visitor#on_destructure_shape env shape_pat
+      | (_, _, DestructureTuple tuple_pat) ->
+        destructure_visitor#on_destructure_tuple env tuple_pat
       | _ -> ()
 
     method! at_hint env (_, hint) =

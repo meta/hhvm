@@ -1,0 +1,21 @@
+error: Naming[2015] Field name already bound [1]
+
+duplicate_keys.php:12:24
+10 | 
+11 | function symbolic_duplicates(dynamic $row): void {
+12 |   shape('same' => $a, ?'same' => $b, ...) = $row;
+   |                        ^^^^^^ [1]
+13 |   shape(Keys::A => $c, Keys::A => $d, ...) = $row;
+14 | }
+
+error: Naming[2015] Field name already bound [1]
+
+duplicate_keys.php:13:30
+11 | function symbolic_duplicates(dynamic $row): void {
+12 |   shape('same' => $a, ?'same' => $b, ...) = $row;
+13 |   shape(Keys::A => $c, Keys::A => $d, ...) = $row;
+   |                              ^ [1]
+14 | }
+15 | 
+
+2 errors found
