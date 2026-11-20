@@ -30,6 +30,7 @@
 #include "hphp/util/text-util.h"
 #include "hphp/util/timer.h"
 
+#include <fmt/format.h>
 #include <folly/Conv.h>
 #include <folly/String.h>
 
@@ -334,7 +335,7 @@ static std::string format_duration(timeval& duration) {
       ret += (minutes == 1) ? " " : "s ";
     }
     if (seconds || minutes || hours) {
-      ret += folly::stringPrintf("%.3f", seconds);
+      ret += fmt::format("{:.3f}", seconds);
       ret += (seconds == 1) ? "" : "s";
     }
   } else {

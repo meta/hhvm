@@ -43,6 +43,7 @@
 #include "hphp/util/text-color.h"
 
 #include <boost/scoped_ptr.hpp>
+#include <fmt/format.h>
 #include <folly/Conv.h>
 #include <folly/portability/Unistd.h>
 
@@ -2292,11 +2293,11 @@ void DebuggerClient::printFrame(int index, const Array& frame) {
   if (!frame[s_file].isNull()) {
     auto line = (int)frame[s_line].toInt64();
     auto fileLineInfo =
-      folly::stringPrintf(" %s  at %s",
+      fmt::format(" {}  at {}",
                           OptString("           ").substr(0, sindex.size()).data(),
                           frame[s_file].toString().data());
     if (line > 0) {
-      fileLineInfo += folly::stringPrintf(":%d", line);
+      fileLineInfo += fmt::format(":{}", line);
     } else {
       fileLineInfo += ":unknown line";
     }

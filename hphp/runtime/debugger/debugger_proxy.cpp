@@ -20,6 +20,7 @@
 #include <stack>
 #include <vector>
 
+#include <fmt/format.h>
 #include <folly/Conv.h>
 
 #include "hphp/runtime/debugger/cmd/cmd_auth.h"
@@ -53,7 +54,7 @@ DebuggerProxy::DebuggerProxy(req::ptr<Socket> socket, bool local)
   std::string clientDetails;
   if (!local) {
     if (getClientConnectionInfo(address, port)) {
-      clientDetails = folly::stringPrintf("From %s:%d",
+      clientDetails = fmt::format("From {}:{}",
                                           address.toString().data(),
                                           (int)port.toInt64());
     } else {

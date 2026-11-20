@@ -32,6 +32,7 @@
 #include "hphp/runtime/ext/asio/ext_sleep-wait-handle.h"
 #include "hphp/runtime/vm/jit/translator-inline.h"
 #include "hphp/system/systemlib.h"
+#include <fmt/format.h>
 
 namespace HPHP {
 ///////////////////////////////////////////////////////////////////////////////
@@ -119,8 +120,8 @@ c_WaitableWaitHandle::throwCycleException(c_WaitableWaitHandle* child) const {
   exception_msg_items.push_back("Encountered dependency cycle.\n");
   exception_msg_items.push_back("Existing stack:\n");
 
-  exception_msg_items.push_back(folly::stringPrintf(
-    "  %s (%" PRIxPTR ") (dupe)\n",
+  exception_msg_items.push_back(fmt::format(
+    "  {} ({:x}) (dupe)\n",
     child->getName().data(),
     (uintptr_t)child
   ));
@@ -129,16 +130,16 @@ c_WaitableWaitHandle::throwCycleException(c_WaitableWaitHandle* child) const {
     current = current->getChild();
     assertx(current);
 
-    exception_msg_items.push_back(folly::stringPrintf(
-      "  %s (%" PRIxPTR ")\n",
+    exception_msg_items.push_back(fmt::format(
+      "  {} ({:x})\n",
       current->getName().data(),
       (uintptr_t)current
     ));
   }
 
   exception_msg_items.push_back("Trying to introduce dependency on:\n");
-  exception_msg_items.push_back(folly::stringPrintf(
-    "  %s (%" PRIxPTR ") (dupe)\n",
+  exception_msg_items.push_back(fmt::format(
+    "  {} ({:x}) (dupe)\n",
     child->getName().data(),
     (uintptr_t)child
   ));
