@@ -582,11 +582,10 @@ checksum = "f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527"
 
 [[package]]
 name = "cfgrammar"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5ef80386dea3cda50570f22e1c6a474f0cc688ae220fc584fef354acaf41f2b"
+checksum = "ac7daac375d1da174c0ec14cb5c3b244eb2bbf6a50c07b41442376ca6633af38"
 dependencies = [
- "bincode",
  "indexmap",
  "num-traits",
  "proc-macro2",
@@ -594,6 +593,7 @@ dependencies = [
  "regex",
  "serde",
  "vob",
+ "wincode",
 ]
 
 [[package]]
@@ -1028,6 +1028,40 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.9",
+]
+
+[[package]]
+name = "darling"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25ae13da2f202d56bd7f91c25fba009e7717a1e4a1cc98a76d844b65ae912e9d"
+dependencies = [
+ "darling_core",
+ "darling_macro",
+]
+
+[[package]]
+name = "darling_core"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9865a50f7c335f53564bb694ef660825eb8610e0a53d3e11bf1b0d3df31e03b0"
+dependencies = [
+ "ident_case",
+ "proc-macro2",
+ "quote",
+ "strsim",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "darling_macro"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ac3984ec7bd6cfa798e62b4a642426a5be0e68f9401cfc2a01e3fa9ea2fcdb8d"
+dependencies = [
+ "darling_core",
+ "quote",
+ "syn 2.0.119",
 ]
 
 [[package]]
@@ -2344,6 +2378,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ident_case"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
+
+[[package]]
 name = "indexmap"
 version = "2.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2714,11 +2754,10 @@ dependencies = [
 
 [[package]]
 name = "lrlex"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6faf26145c0571bcecf7887802d7dc2947154cb438801d6c90ef3633e68b2365"
+checksum = "1e2f2914f154585f4220898d2f781fe108bbb34250c287a5279f3f2caee9d1ce"
 dependencies = [
- "bincode",
  "cfgrammar",
  "getopts",
  "glob",
@@ -2731,15 +2770,15 @@ dependencies = [
  "regex-syntax",
  "syn 2.0.119",
  "vergen",
+ "wincode",
 ]
 
 [[package]]
 name = "lrpar"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "402f799a7cfbaf548546e16191a15b7abaeb16ac25bbff5ab41fd93d7548d7a9"
+checksum = "8f284d5f489a7968ececa72cbb2e8a5c99b63ffe2a34165756ce2ac63d228ef2"
 dependencies = [
- "bincode",
  "cactus",
  "cfgrammar",
  "filetime",
@@ -2756,20 +2795,21 @@ dependencies = [
  "vergen",
  "vob",
  "web-time",
+ "wincode",
 ]
 
 [[package]]
 name = "lrtable"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcbe6a005a604615ab7aab7d1f74be563e508f5c6e42f85fbf65c38fe1f5f268"
+checksum = "6f0df8958d2146cc89a2726fbac01ed3ad53003fe009e39704a007d1ccfa1c9d"
 dependencies = [
- "bincode",
  "cfgrammar",
  "fnv",
  "num-traits",
  "sparsevec",
  "vob",
+ "wincode",
 ]
 
 [[package]]
@@ -3335,12 +3375,12 @@ dependencies = [
 
 [[package]]
 name = "packedvec"
-version = "1.2.5"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a69e0a534dd2e6aefce319af62a0aa0066a76bdfcec0201dfe02df226bc9ec70"
+checksum = "4bce582b9f73e411e2d596da276b99570cd28cd55efa547550a3bc2c033c0d03"
 dependencies = [
- "bincode",
  "num-traits",
+ "wincode",
 ]
 
 [[package]]
@@ -3483,6 +3523,12 @@ dependencies = [
  "testutils",
  "verify",
 ]
+
+[[package]]
+name = "pastey"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
 
 [[package]]
 name = "pin-project-lite"
@@ -4533,14 +4579,14 @@ dependencies = [
 
 [[package]]
 name = "sparsevec"
-version = "0.2.2"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68b4a8ce3045f0fe173fb5ae3c6b7dcfbec02bfa650bb8618b2301f52af0134d"
+checksum = "25b3614181ea2a341fd981dc1e7e479a66a62a5a4ab0d225544e3753c73a8a33"
 dependencies = [
- "bincode",
  "num-traits",
  "packedvec",
  "vob",
+ "wincode",
 ]
 
 [[package]]
@@ -5294,13 +5340,13 @@ checksum = "051eb1abcf10076295e815102942cc58f9d5e3b4560e46e53c21e8ff6f3af7b1"
 
 [[package]]
 name = "vob"
-version = "3.0.6"
+version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc936b5a7202a703aeaf7ce05e7931db2e0c8126813f97db3e9e06d867b0bb38"
+checksum = "60681a44bd4be4b4da58435befb00f60f63372fb43a86cd977183114ad851198"
 dependencies = [
- "bincode",
  "num-traits",
  "serde",
+ "wincode",
 ]
 
 [[package]]
@@ -5412,6 +5458,31 @@ name = "winapi-x86_64-pc-windows-gnu"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
+
+[[package]]
+name = "wincode"
+version = "0.5.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "66d967db7705dc29120bb6e8ce5b5a2e27734ed5976d1c904e95bd238d1c3c5a"
+dependencies = [
+ "pastey",
+ "proc-macro2",
+ "quote",
+ "thiserror",
+ "wincode-derive",
+]
+
+[[package]]
+name = "wincode-derive"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15ab90b719560d0fda79c74550ad1c948d17b118765942838055ebaf34d67071"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
 
 [[package]]
 name = "windows-core"
