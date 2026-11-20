@@ -286,16 +286,18 @@ end = struct
       Exception.reraise e
 end
 
-let parse_without_command options usage command =
-  let args = ref [] in
-  (try
-     Arg.parse_argv
-       ~current:(ref 0)
-       Sys.argv
-       (Arg.align options)
-       (fun x -> args := x :: !args)
-       usage
-   with
+let parse_options
+    (options : (string * Arg.spec * string) list)
+    (usage : string)
+    ~(on_anon_arg : string -> unit) : unit =
+  try
+    Arg.parse_argv
+      ~current:(ref 0)
+      Sys.argv
+      (Arg.align options)
+      on_anon_arg
+      usage
+  with
   (* [Arg] newline-terminates its messages and the rest of hh_client's are
      unterminated; drop it here so everything downstream has one convention. *)
   | Arg.Bad message ->
@@ -307,7 +309,15 @@ let parse_without_command options usage command =
     in
     raise (Parse_error { message; usage })
   | Arg.Help _ as help -> raise help
-  | e -> Die.internal_exception (Exception.wrap e));
+  | e -> Die.internal_exception (Exception.wrap e)
+
+(** Parse [Sys.argv] and return positional arguments, excluding an initial [command]. *)
+let parse_without_command
+    (options : (string * Arg.spec * string) list)
+    (usage : string)
+    (command : string) : string list =
+  let args = ref [] in
+  parse_options options usage ~on_anon_arg:(fun x -> args := x :: !args);
   match List.rev !args with
   | x :: rest when String.(lowercase x = lowercase command) -> rest
   | args -> args
@@ -436,6 +446,7 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
 
   let set_from x () = from := x in
   let files_to_check = ref [] in
+  let saw_single = ref false in
   let only_log_errors = ref false in
   let log_to_file = ref None in
   let set_mode ?(validate = true) x =
@@ -447,7 +458,10 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
       ()
     end
   in
-  let add_single x = files_to_check := x :: !files_to_check in
+  let add_single (x : string) : unit =
+    saw_single := true;
+    files_to_check := x :: !files_to_check
+  in
   let set_log_to_file x = log_to_file := Some x in
   let add_multi f =
     let files =
@@ -1398,11 +1412,51 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
   );
 
   let args =
+    let positional_args_reversed = ref [] in
+    let is_first_positional_arg = ref true in
+    let command = Client_command.command_name cmd in
+
+    let looks_like_file (arg : string) : bool =
+      let final_component =
+        match String.rsplit2 arg ~on:'/' with
+        | None -> arg
+        | Some (_, component) -> component
+      in
+      match String.rsplit2 final_component ~on:'.' with
+      | None
+      | Some (_, "") ->
+        false
+      | Some _ -> true
+    in
+
+    let add_positional_arg (arg : string) : unit =
+      let is_command =
+        !is_first_positional_arg && String.Caseless.equal arg command
+      in
+      is_first_positional_arg := false;
+      if not is_command then
+        (* Undocumented flexibility in order to help agents.
+              hh --single a.php b.php     # treats a.php and b.php both as files
+              hh --single a.php ~/www     # treats ~/www as the WWW_ROOT
+        *)
+        if !saw_single && (String.equal arg "-" || looks_like_file arg) then
+          add_single arg
+        else if String.equal arg "-" then
+          raise (Arg.Bad "unknown option '-'")
+        else
+          positional_args_reversed := arg :: !positional_args_reversed
+    in
     try
-      parse_without_command
-        (to_arg_specs options)
+      let stdin_arg =
+        ( "-",
+          Arg.Unit (fun () -> add_positional_arg "-"),
+          "" (* empty string hides this option from --help *) )
+      in
+      parse_options
+        (stdin_arg :: to_arg_specs options)
         usage
-        (Client_command.command_name cmd)
+        ~on_anon_arg:add_positional_arg;
+      List.rev !positional_args_reversed
     with
     | Parse_error { message; usage = Some _ } ->
       let usage =

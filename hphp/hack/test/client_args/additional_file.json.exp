@@ -1,20 +1,16 @@
 === hh_client result ===
 argv: hh_client --single test.php missing.php
 cwd: <test_tmp>/root
-exit_code: 64
+exit_code: 2
 stdout:
-<empty>
+File not found: <test_tmp>/root/missing.php
 stderr:
-Error: missing.php is not a directory
+<empty>
 === telemetry ===
 [
   {
     "argv": "hh_client --single test.php missing.php",
-    "client_command": "Args",
-    "event": "CLIENT_BAD_ARGS",
-    "exception": "Stdlib.Arg.Bad(\"Error: missing.php is not a directory\")",
-    "exit_code": 64,
-    "exit_status": "Exit_status.Client_bad_args",
+    "event": "CLIENT_CHECK_START",
     "process": "client"
   },
   {
