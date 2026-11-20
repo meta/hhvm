@@ -1981,6 +1981,8 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 
   The value is used before we load the config so we have to use staticdefault
 
+- uint32_t GC.SlabStartOffset = 0, UNKNOWN, postprocess
+
 - uint32_t GC.MemTrackStart = 3500, UNKNOWN
 
 - uint32_t GC.MemTrackEnd = 3700, UNKNOWN

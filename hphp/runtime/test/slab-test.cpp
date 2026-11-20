@@ -60,6 +60,26 @@ TEST(Slab, find) {
   EXPECT_EQ(slab->find((char*)hole + 1), hole);
 }
 
+TEST(Slab, startOffset) {
+  auto slab = static_cast<Slab*>(aligned_alloc(kSlabSize, kSlabSize));
+  SCOPE_EXIT { free(slab); };
+  auto const base = Slab::align(slab + 1);
+  for (uint32_t off : {0u, 16u, 64u, 192u, 256u, 4096u}) {
+    auto const saved = Cfg::GC::SlabStartOffset;
+    Cfg::GC::SlabStartOffset = off;
+    SCOPE_EXIT { Cfg::GC::SlabStartOffset = saved; };
+    EXPECT_EQ(slab->init(), base + off);
+    EXPECT_EQ(slab->start(), base + off);
+    slab->setCachedStart(slab->start());
+    EXPECT_EQ(slab->find(slab->start() - 1), nullptr);
+    auto const savedAlign = Cfg::GC::SlabAllocAlign;
+    SCOPE_EXIT { Cfg::GC::SlabAllocAlign = savedAlign; };
+    Cfg::GC::SlabStartOffset = 0;
+    Cfg::GC::SlabAllocAlign = 4096;
+    EXPECT_EQ(slab->start(), base + off);
+  }
+}
+
 TEST(SlabManagerTest, tag_overflow) {
   SlabManager mgr;
   auto const slab = static_cast<Slab*>(aligned_alloc(kSlabSize, kSlabSize));

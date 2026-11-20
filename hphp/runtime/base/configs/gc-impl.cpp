@@ -20,6 +20,10 @@
 
 #include <folly/lang/Bits.h>
 
+#include <algorithm>
+#include <stdexcept>
+#include <string>
+
 namespace HPHP::Cfg {
 
 #ifdef HHVM_EAGER_GC
@@ -49,8 +53,15 @@ double GCLoader::TriggerPctDefault() {
 }
 
 void GCLoader::SlabAllocAlignPostProcess(uint32_t& val) {
-  val = folly::nextPowTwo(val);
-  val = std::min(val, 4096U);
+  val = std::clamp(folly::nextPowTwo(val), 16U, 4096U);
+}
+
+void GCLoader::SlabStartOffsetPostProcess(uint32_t& val) {
+  if (val % 16 != 0 || val > 4096) {
+    throw std::runtime_error(
+      "Eval.SlabStartOffset must be a multiple of 16, at most 4096, got " +
+      std::to_string(val));
+  }
 }
 
 }

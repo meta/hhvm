@@ -65,7 +65,9 @@ namespace HPHP {
 struct Slab : HeapObject {
 
   char* init() {
-    initHeader_32(HeaderKind::Slab, 0);
+    auto const off = align(this + 1) - (char*)this + Cfg::GC::SlabStartOffset;
+    assertx(off % kSmallSizeAlign == 0 && off + kMaxSmallSize <= kSlabSize);
+    initHeader_32(HeaderKind::Slab, uint32_t(off));
     clearStarts();
     return start();
   }
@@ -111,9 +113,9 @@ struct Slab : HeapObject {
     return reinterpret_cast<char*>(a + (-a & mask));
   }
 
-  char* start() { return align(this + 1); }
+  char* start() { return (char*)this + m_aux32; }
   char* end() { return (char*)this + size(); }
-  const char* start() const { return align(this + 1); }
+  const char* start() const { return (const char*)this + m_aux32; }
   const char* end() const { return (const char*)this + size(); }
 
   struct InitMasks;
@@ -149,6 +151,9 @@ private:
 
 static_assert(kMaxSmallSize < kSlabSize - sizeof(Slab),
               "kMaxSmallSize must fit in Slab");
+static_assert(kMaxSmallSize <= kSlabSize - 4096 -
+              ((sizeof(Slab) + 4095) & ~size_t(4095)),
+              "kMaxSmallSize must fit in Slab with SlabStartOffset");
 
 inline const Resumable* resumable(const HeapObject* h) {
   assertx(h->kind() == HeaderKind::AsyncFuncFrame);
