@@ -25,6 +25,7 @@ winapi = { version = "0.3", features = ["fileapi", "handleapi", "winbase", "winu
 
 [dev-dependencies]
 clap = { version = "4.5.7", features = ["derive"] }
+tempfile = "3"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fbcode_build)"] }

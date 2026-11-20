@@ -224,6 +224,8 @@ impl Connector {
 
             let mut cmd = Command::new(watchman_path);
             cmd.args(["--output-encoding", "bser-v2", "get-sockname"]);
+            // A caller can time out before the server answers socket discovery.
+            cmd.kill_on_drop(true);
 
             #[cfg(windows)]
             cmd.creation_flags(winapi::um::winbase::CREATE_NO_WINDOW);
@@ -1226,6 +1228,65 @@ mod tests {
     fn connection_builder_paths() {
         let builder = Connector::new().unix_domain_socket("/some/path");
         assert_eq!(builder.unix_domain, Some(PathBuf::from("/some/path")));
+    }
+
+    #[cfg(unix)]
+    #[tokio::test]
+    async fn cancelling_socket_discovery_kills_the_helper() {
+        use std::fs;
+        use std::os::unix::fs::PermissionsExt;
+        use std::process::Stdio;
+        use std::time::Duration;
+
+        let temp = tempfile::tempdir().unwrap();
+        let helper = temp.path().join("watchman");
+        // A helper that only exits on its own when the test directory is removed.
+        fs::write(
+            &helper,
+            concat!(
+                "#!/bin/sh\n",
+                "printf '%s\\n' \"$$\" > \"$0.pid\"\n",
+                "while [ -f \"$0\" ]; do sleep 1; done\n",
+            ),
+        )
+        .unwrap();
+        fs::set_permissions(&helper, fs::Permissions::from_mode(0o700)).unwrap();
+
+        let connector = Connector::default().watchman_cli_path(&helper);
+        let mut discovery = Box::pin(connector.connect());
+        let pid_file = helper.with_extension("pid");
+        let started = tokio::time::timeout(Duration::from_secs(5), async {
+            loop {
+                if let Some(pid) = tokio::fs::read_to_string(&pid_file)
+                    .await
+                    .ok()
+                    .and_then(|pid| pid.trim().parse::<u32>().ok())
+                {
+                    return pid.to_string();
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        });
+        let pid = tokio::select! {
+            result = &mut discovery => panic!("socket discovery exited: {:?}", result.err()),
+            result = started => result.expect("socket discovery did not start the helper"),
+        };
+        drop(discovery);
+
+        tokio::time::timeout(Duration::from_secs(5), async {
+            while tokio::process::Command::new("kill")
+                .args(["-0", &pid])
+                .stderr(Stdio::null())
+                .status()
+                .await
+                .unwrap()
+                .success()
+            {
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .expect("the socket-discovery helper outlived cancellation");
     }
 
     #[tokio::test]
