@@ -82,6 +82,10 @@ void ConnectOperationImpl::enableChangeUser() {
   conn_options_.enableChangeUser();
 }
 
+void ConnectOperationImpl::enableLoopStalledConnectTimeoutErrno() {
+  conn_options_.enableLoopStalledConnectTimeoutErrno();
+}
+
 void ConnectOperationImpl::setCertValidationCallback(
     CertValidatorCallback callback) {
   CHECK_THROW(

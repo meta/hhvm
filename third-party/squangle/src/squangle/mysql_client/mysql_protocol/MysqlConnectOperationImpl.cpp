@@ -228,9 +228,11 @@ void MysqlConnectOperationImpl::timeoutHandler(
     location =
         fmt::format("at stage {}", getMysqlConnection()->getConnectStageName());
   }
+  bool loopStalled = false;
   auto errorStr = generateTimeoutError(
       opElapsedMs(),
-      [](bool stalled) {
+      [&loopStalled](bool stalled) {
+        loopStalled = stalled;
         return static_cast<uint16_t>(
             stalled ? SquangleErrno::SQ_ERRNO_CONN_TIMEOUT_LOOP_STALLED
                     : SquangleErrno::SQ_ERRNO_CONN_TIMEOUT);
@@ -239,8 +241,20 @@ void MysqlConnectOperationImpl::timeoutHandler(
       std::move(location),
       fmt::format("(TcpTimeout:{})", (isTcpTimeout ? 1 : 0)));
 
-  setAsyncClientError(CR_SERVER_LOST, errorStr);
+  setAsyncClientError(
+      timeoutErrno(loopStalled, getConnectionOptions()), errorStr);
   attemptFailed(OperationResult::TimedOut);
+}
+
+/*static*/
+unsigned int MysqlConnectOperationImpl::timeoutErrno(
+    bool loopStalled,
+    const ConnectionOptions& options) {
+  if (loopStalled && options.isEnableLoopStalledConnectTimeoutErrno()) {
+    return static_cast<unsigned int>(
+        SquangleErrno::SQ_ERRNO_CONN_TIMEOUT_LOOP_STALLED);
+  }
+  return CR_SERVER_LOST;
 }
 
 void MysqlConnectOperationImpl::logConnectCompleted(OperationResult result) {

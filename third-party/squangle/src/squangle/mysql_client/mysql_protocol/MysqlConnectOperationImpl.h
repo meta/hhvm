@@ -25,6 +25,13 @@ class MysqlConnectOperationImpl : public MysqlOperationImpl,
       std::shared_ptr<const ConnectionKey> conn_key);
   virtual ~MysqlConnectOperationImpl() override;
 
+  // The errno a timed-out connect reports. CR_SERVER_LOST unless the event
+  // loop was stalled and the options ask for SQ_ERRNO_CONN_TIMEOUT_LOOP_STALLED
+  // (see ConnectionOptions::enableLoopStalledConnectTimeoutErrno).
+  static unsigned int timeoutErrno(
+      bool loopStalled,
+      const ConnectionOptions& options);
+
   // copy and move not allowed
   MysqlConnectOperationImpl(const MysqlConnectOperationImpl&) = delete;
   MysqlConnectOperationImpl& operator=(const MysqlConnectOperationImpl&) =

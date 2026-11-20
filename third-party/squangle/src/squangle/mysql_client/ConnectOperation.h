@@ -66,6 +66,7 @@ class ConnectOperationImpl : virtual public OperationBase {
   void enableResetConnBeforeClose();
   void enableDelayedResetConn();
   void enableChangeUser();
+  void enableLoopStalledConnectTimeoutErrno();
 
   void setCertValidationCallback(CertValidatorCallback callback);
 
@@ -277,6 +278,10 @@ class ConnectOperation : public Operation {
   }
   ConnectOperation& enableChangeUser() {
     impl()->enableChangeUser();
+    return *this;
+  }
+  ConnectOperation& enableLoopStalledConnectTimeoutErrno() {
+    impl()->enableLoopStalledConnectTimeoutErrno();
     return *this;
   }
   ConnectOperation& setCertValidationCallback(CertValidatorCallback callback) {

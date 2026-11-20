@@ -193,6 +193,19 @@ class ConnectionOptions {
     return change_user_;
   }
 
+  // Report a connect timeout during which the client's event loop was stalled
+  // as SQ_ERRNO_CONN_TIMEOUT_LOOP_STALLED instead of CR_SERVER_LOST. Off by
+  // default because callers treat CR_SERVER_LOST as an endpoint failure (for
+  // markdown, retries and SLAs) and the new errno is not one.
+  ConnectionOptions& enableLoopStalledConnectTimeoutErrno() noexcept {
+    loop_stalled_connect_timeout_errno_ = true;
+    return *this;
+  }
+
+  bool isEnableLoopStalledConnectTimeoutErrno() const noexcept {
+    return loop_stalled_connect_timeout_errno_;
+  }
+
   ConnectionOptions& setCertValidationCallback(
       CertValidatorCallback callback) noexcept;
 
@@ -240,6 +253,7 @@ class ConnectionOptions {
   bool reset_conn_before_close_ = false;
   bool delayed_reset_conn_ = false;
   bool change_user_ = false;
+  bool loop_stalled_connect_timeout_errno_ = false;
   CertValidatorCallback certValidationCallback_{nullptr};
 };
 
