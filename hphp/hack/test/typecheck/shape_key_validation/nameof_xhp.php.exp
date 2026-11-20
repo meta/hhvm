@@ -24,8 +24,8 @@ nameof_xhp.php:25:5
 26 |   );
 27 | }
 
-error: Typing[4086] Shape field name is a string class constant [1]
--> But expected a class pointer for this [2]
+error: Typing[4086] Shape field name is a string [1]
+-> But expected a classname string for :shape-key:example-name [2]
 
 nameof_xhp.php:14:3
 11 | 

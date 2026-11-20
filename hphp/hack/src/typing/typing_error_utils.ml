@@ -503,9 +503,7 @@ end = struct
       create ~code:Error_code.ShapeFieldClassMismatch ~claim ~reasons ()
 
     let shape_field_type_mismatch pos ty_name witness_pos witness_ty_name =
-      let claim =
-        lazy
-          (pos, "Shape field name is " ^ Lazy.force ty_name ^ " class constant")
+      let claim = lazy (pos, "Shape field name is " ^ Lazy.force ty_name)
       and reasons =
         lazy
           [

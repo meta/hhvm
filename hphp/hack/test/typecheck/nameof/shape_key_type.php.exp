@@ -1,0 +1,73 @@
+error: Typing[4086] Shape field name is an int [1]
+-> But expected a classname string for C [2]
+
+shape_key_type.php:17:46
+15 | type ClassnameFields = shape(nameof C => int, C::NAME => string);
+16 | 
+17 | type ClassnameFirst = shape(nameof C => int, C::NUMBER => string);
+   |                                    ^ [2]
+   |                                              ^^^^^^^^^ [1]
+18 | type ClassnameSecond = shape(C::NUMBER => int, nameof C => string);
+19 | type GenericClassnameFirst = shape(
+
+error: Typing[4086] Shape field name is a classname string for C [1]
+-> But expected an int [2]
+
+shape_key_type.php:18:55
+16 | 
+17 | type ClassnameFirst = shape(nameof C => int, C::NUMBER => string);
+18 | type ClassnameSecond = shape(C::NUMBER => int, nameof C => string);
+   |                              ^^^^^^^^^ [2]
+   |                                                       ^ [1]
+19 | type GenericClassnameFirst = shape(
+20 |   nameof Generic => int,
+
+error: Typing[4086] Shape field name is an int [1]
+-> But expected a classname string for Generic<_> [2]
+
+shape_key_type.php:21:3
+18 | type ClassnameSecond = shape(C::NUMBER => int, nameof C => string);
+19 | type GenericClassnameFirst = shape(
+20 |   nameof Generic => int,
+   |          ^^^^^^^ [2]
+21 |   Generic::NUMBER => string,
+   |   ^^^^^^^^^^^^^^^ [1]
+22 | );
+23 | 
+
+error: Typing[4086] Shape field name is an int [1]
+-> But expected a classname string for C [2]
+
+shape_key_type.php:29:29
+27 | 
+28 | function mismatched_fields(): void {
+29 |   $_ = shape(nameof C => 1, C::NUMBER => 'wrong type');
+   |                     ^ [2]
+   |                             ^^^^^^^^^ [1]
+30 |   $_ = shape(C::NUMBER => 1, nameof C => 'wrong type');
+31 |   $_ = shape(Generic::NUMBER => 1, nameof Generic => 'wrong type');
+
+error: Typing[4086] Shape field name is a classname string for C [1]
+-> But expected an int [2]
+
+shape_key_type.php:30:37
+28 | function mismatched_fields(): void {
+29 |   $_ = shape(nameof C => 1, C::NUMBER => 'wrong type');
+30 |   $_ = shape(C::NUMBER => 1, nameof C => 'wrong type');
+   |              ^^^^^^^^^ [2]
+   |                                     ^ [1]
+31 |   $_ = shape(Generic::NUMBER => 1, nameof Generic => 'wrong type');
+32 | }
+
+error: Typing[4086] Shape field name is a classname string for Generic<_> [1]
+-> But expected an int [2]
+
+shape_key_type.php:31:43
+29 |   $_ = shape(nameof C => 1, C::NUMBER => 'wrong type');
+30 |   $_ = shape(C::NUMBER => 1, nameof C => 'wrong type');
+31 |   $_ = shape(Generic::NUMBER => 1, nameof Generic => 'wrong type');
+   |              ^^^^^^^^^^^^^^^ [2]
+   |                                           ^^^^^^^ [1]
+32 | }
+
+6 errors found

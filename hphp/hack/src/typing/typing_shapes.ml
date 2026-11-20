@@ -899,17 +899,22 @@ let check_shape_keys_validity env keys =
         let (env, ty) = Env.fresh_type_error env p in
         (env, key_pos, Some (cls, ty))
       | Decl_entry.Found cd ->
-        (* Match the sketchy Tany logic of C::class keys *)
-        (match Env.get_const env cd "class" with
-        | None ->
-          let (env, ty) = Env.fresh_type_error env p in
-          (env, key_pos, Some (cls, ty))
-        | Some { cc_type; _ } ->
-          let ((env, ty_err_opt), ty) =
-            Typing_phase.localize_no_subst ~ignore_errors:true env cc_type
-          in
-          Option.iter ~f:(Typing_error_utils.add_typing_error ~env) ty_err_opt;
-          (env, key_pos, Some (cls, ty)))
+        let r = Reason.witness p in
+        let ((env, ty_err_opt), class_ty, (_ : Tast.targ list)) =
+          Typing_phase.localize_targs_and_check_constraints
+            ~exact:nonexact
+            ~check_type_integrity:false
+            ~def_pos:(Cls.pos cd)
+            ~use_pos:p
+            ~check_explicit_targs:false
+            env
+            (p, cls)
+            r
+            (Cls.tparams cd)
+            []
+        in
+        Option.iter ~f:(Typing_error_utils.add_typing_error ~env) ty_err_opt;
+        (env, key_pos, Some (cls, MakeType.classname r [class_ty]))
     end
     | Ast_defs.SFclass_const ((_p, cls), (p, y)) -> begin
       match Env.get_class env cls with

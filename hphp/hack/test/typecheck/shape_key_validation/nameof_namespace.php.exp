@@ -24,8 +24,8 @@ nameof_namespace.php:30:5
 31 |   );
 32 | }
 
-error: Typing[4086] Shape field name is a string class constant [1]
--> But expected a class pointer for this [2]
+error: Typing[4086] Shape field name is a string [1]
+-> But expected a classname string for ShapeKeyTest\Nested\Named [2]
 
 nameof_namespace.php:18:3
 15 | 

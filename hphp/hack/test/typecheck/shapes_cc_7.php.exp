@@ -28,7 +28,7 @@ shapes_cc_7.php:22:3
    |   ^^^^^ [1]
 23 | );
 
-error: Typing[4086] Shape field name is a bool class constant [1]
+error: Typing[4086] Shape field name is a bool [1]
 -> But expected a string [2]
 
 shapes_cc_7.php:22:3

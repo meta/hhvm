@@ -53,6 +53,18 @@ duplicate_names.php:20:55
 21 | type LegacyNameofCheck = shape(nameof First => int, nameof Second => int);
 22 | 
 
+error: Typing[4086] Shape field name is a classname string for ShapeKeys\Second [1]
+-> But expected a classname string for ShapeKeys\First [2]
+
+duplicate_names.php:21:60
+19 | type RuntimeCheckDisabled = shape(First::KEY => int, First::OTHER => int);
+20 | type LegacyMemberNameCheck = shape(First::KEY => int, Second::KEY => int);
+21 | type LegacyNameofCheck = shape(nameof First => int, nameof Second => int);
+   |                                       ^^^^^ [2]
+   |                                                            ^^^^^^ [1]
+22 | 
+23 | function symbolic_duplicates(): void {
+
 error: Typing[4085] Shape field name is class constant from `ShapeKeys\Second` [1]
 -> But expected constant from `ShapeKeys\First` [2]
 
@@ -65,4 +77,4 @@ duplicate_names.php:21:60
 22 | 
 23 | function symbolic_duplicates(): void {
 
-6 errors found
+7 errors found

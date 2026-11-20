@@ -58,7 +58,7 @@ restrictions.php:25:44
 26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
 27 | type DifferentEnums = shape(E::A => int, F::A => string);
 
-error: Typing[4086] Shape field name is an int class constant [1]
+error: Typing[4086] Shape field name is an int [1]
 -> But expected a string [2]
 
 restrictions.php:26:45
@@ -70,7 +70,7 @@ restrictions.php:26:45
 27 | type DifferentEnums = shape(E::A => int, F::A => string);
 28 | type DifferentNames = shape(nameof Keys => int, nameof MoreKeys => string);
 
-error: Typing[4086] Shape field name is a value of type F class constant [1]
+error: Typing[4086] Shape field name is a value of type F [1]
 -> But expected a value of type E [2]
 
 restrictions.php:27:42
@@ -92,6 +92,16 @@ restrictions.php:27:42
    |                                          ^^^^ [1]
 28 | type DifferentNames = shape(nameof Keys => int, nameof MoreKeys => string);
 
+error: Typing[4086] Shape field name is a classname string for MoreKeys [1]
+-> But expected a classname string for Keys [2]
+
+restrictions.php:28:56
+26 | type DifferentTypes = shape(Keys::A => int, Keys::B => string);
+27 | type DifferentEnums = shape(E::A => int, F::A => string);
+28 | type DifferentNames = shape(nameof Keys => int, nameof MoreKeys => string);
+   |                                    ^^^^ [2]
+   |                                                        ^^^^^^^^ [1]
+
 error: Typing[4085] Shape field name is class constant from `MoreKeys` [1]
 -> But expected constant from `Keys` [2]
 
@@ -102,4 +112,4 @@ restrictions.php:28:56
    |                                    ^^^^ [2]
    |                                                        ^^^^^^^^ [1]
 
-9 errors found
+10 errors found
