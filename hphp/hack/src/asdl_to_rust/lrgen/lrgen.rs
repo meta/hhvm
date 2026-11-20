@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         parser_in.file_stem().unwrap().to_str().unwrap()
     );
 
-    lrlex::CTLexerBuilder::<lrlex::DefaultLexeme<u32>, u32>::new()
+    lrlex::CTLexerBuilder::<lrlex::DefaultLexerTypes<u32>>::new()
         .lrpar_config(move |ctp| {
             ctp.yacckind(cfgrammar::yacc::YaccKind::Grmtools)
                 .grammar_path(parser_in.clone())
