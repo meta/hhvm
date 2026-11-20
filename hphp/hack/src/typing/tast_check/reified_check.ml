@@ -120,6 +120,11 @@ let verify_targ_valid (env : Tast_env.env) reification tparam targ =
         env
         (snd targ)
         ~reification
+        emit_error;
+      Typing_reified_check.union_validator#validate_hint
+        env
+        (snd targ)
+        ~reification
         emit_error
     | Nast.Erased -> ());
 

@@ -1,0 +1,122 @@
+error: Typing[4305] Invalid reified hint [1]
+-> This is a union type, it cannot be used as a reified type argument [1]
+-> `T` is reified [2]
+
+reified_targ_union.php:12:22
+ 2 | <<file: __EnableUnstableFeatures('union_intersection_type_hints', 'case_types')>>
+ 3 | 
+ 4 | class C<reify T> {}
+   |               ^ [2]
+ 5 | function f<reify T>(): void {}
+ 6 | 
+   :
+10 | case type TCaseGeneric<T> = vec<T> | int;
+11 | 
+12 | function bad_param(C<(int | string)> $_): void {}
+   |                      ^^^^^^^^^^^^^^ [1]
+13 | function bad_nested(C<vec<(int | string)>> $_): void {}
+14 | function bad_alias(C<TUnionAlias> $_): void {}
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a union type, it cannot be used as a reified type argument [2]
+-> `T` is reified [3]
+
+reified_targ_union.php:13:23
+ 2 | <<file: __EnableUnstableFeatures('union_intersection_type_hints', 'case_types')>>
+ 3 | 
+ 4 | class C<reify T> {}
+   |               ^ [3]
+ 5 | function f<reify T>(): void {}
+ 6 | 
+   :
+11 | 
+12 | function bad_param(C<(int | string)> $_): void {}
+13 | function bad_nested(C<vec<(int | string)>> $_): void {}
+   |                       ^^^^^^^^^^^^^^^^^^^ [1]
+   |                           ^^^^^^^^^^^^^^ [2]
+14 | function bad_alias(C<TUnionAlias> $_): void {}
+15 | 
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a union type, it cannot be used as a reified type argument [2]
+-> `T` is reified [3]
+
+reified_targ_union.php:14:22
+ 2 | <<file: __EnableUnstableFeatures('union_intersection_type_hints', 'case_types')>>
+ 3 | 
+ 4 | class C<reify T> {}
+   |               ^ [3]
+ 5 | function f<reify T>(): void {}
+ 6 | 
+ 7 | type TUnionAlias = shape('c' => (int | string));
+   |                                 ^^^^^^^^^^^^^^ [2]
+ 8 | newtype TUnionAsConstraint as (int | string) = int;
+ 9 | case type TCase = int | string;
+   :
+12 | function bad_param(C<(int | string)> $_): void {}
+13 | function bad_nested(C<vec<(int | string)>> $_): void {}
+14 | function bad_alias(C<TUnionAlias> $_): void {}
+   |                      ^^^^^^^^^^^ [1]
+15 | 
+16 | function bad_targs(): void {
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a union type, it cannot be used as a reified type argument [1]
+-> `T` is reified [2]
+
+reified_targ_union.php:17:5
+ 3 | 
+ 4 | class C<reify T> {}
+ 5 | function f<reify T>(): void {}
+   |                  ^ [2]
+ 6 | 
+ 7 | type TUnionAlias = shape('c' => (int | string));
+   :
+15 | 
+16 | function bad_targs(): void {
+17 |   f<(int | string)>();
+   |     ^^^^^^^^^^^^^^ [1]
+18 |   new C<shape('c' => (int | string))>();
+19 |   f<TCaseGeneric<(int | string)>>();
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a union type, it cannot be used as a reified type argument [2]
+-> `T` is reified [3]
+
+reified_targ_union.php:18:9
+ 2 | <<file: __EnableUnstableFeatures('union_intersection_type_hints', 'case_types')>>
+ 3 | 
+ 4 | class C<reify T> {}
+   |               ^ [3]
+ 5 | function f<reify T>(): void {}
+ 6 | 
+   :
+16 | function bad_targs(): void {
+17 |   f<(int | string)>();
+18 |   new C<shape('c' => (int | string))>();
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+   |                      ^^^^^^^^^^^^^^ [2]
+19 |   f<TCaseGeneric<(int | string)>>();
+20 | }
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a union type, it cannot be used as a reified type argument [2]
+-> `T` is reified [3]
+
+reified_targ_union.php:19:5
+ 3 | 
+ 4 | class C<reify T> {}
+ 5 | function f<reify T>(): void {}
+   |                  ^ [3]
+ 6 | 
+ 7 | type TUnionAlias = shape('c' => (int | string));
+   :
+17 |   f<(int | string)>();
+18 |   new C<shape('c' => (int | string))>();
+19 |   f<TCaseGeneric<(int | string)>>();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+   |                  ^^^^^^^^^^^^^^ [2]
+20 | }
+21 | 
+
+6 errors found

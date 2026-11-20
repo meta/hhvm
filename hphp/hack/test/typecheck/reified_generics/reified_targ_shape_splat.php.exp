@@ -1,0 +1,147 @@
+error: Typing[4305] Invalid reified hint [1]
+-> This is a shape splat whose elements may overlap, it cannot be used as a reified type argument [2]
+-> `T` is reified [3]
+
+reified_targ_shape_splat.php:12:22
+ 2 | <<file: __EnableUnstableFeatures('shape_splat_concrete', 'shape_splat_type_parameters')>>
+ 3 | 
+ 4 | class C<reify T> {}
+   |               ^ [3]
+ 5 | function f<reify T>(): void {}
+ 6 | 
+ 7 | type TNothing = nothing;
+ 8 | type TSplat = shape('c' => int, ...shape(?'c' => int));
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+ 9 | newtype TSplatParam<TShape as shape(...)> = shape(...TShape, 'd' => int);
+10 | type TNested = shape('s' => TSplat);
+11 | 
+12 | function bad_param(C<TSplat> $_): void {}
+   |                      ^^^^^^ [1]
+13 | function bad_nested(C<TNested> $_): void {}
+14 | 
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a shape splat whose elements may overlap, it cannot be used as a reified type argument [2]
+-> `T` is reified [3]
+
+reified_targ_shape_splat.php:13:23
+ 2 | <<file: __EnableUnstableFeatures('shape_splat_concrete', 'shape_splat_type_parameters')>>
+ 3 | 
+ 4 | class C<reify T> {}
+   |               ^ [3]
+ 5 | function f<reify T>(): void {}
+ 6 | 
+ 7 | type TNothing = nothing;
+ 8 | type TSplat = shape('c' => int, ...shape(?'c' => int));
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+ 9 | newtype TSplatParam<TShape as shape(...)> = shape(...TShape, 'd' => int);
+10 | type TNested = shape('s' => TSplat);
+11 | 
+12 | function bad_param(C<TSplat> $_): void {}
+13 | function bad_nested(C<TNested> $_): void {}
+   |                       ^^^^^^^ [1]
+14 | 
+15 | function bad_targs<reify T as shape(...)>(): void {
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a shape splat whose elements may overlap, it cannot be used as a reified type argument [1]
+-> `T` is reified [2]
+
+reified_targ_shape_splat.php:16:5
+ 3 | 
+ 4 | class C<reify T> {}
+ 5 | function f<reify T>(): void {}
+   |                  ^ [2]
+ 6 | 
+ 7 | type TNothing = nothing;
+   :
+14 | 
+15 | function bad_targs<reify T as shape(...)>(): void {
+16 |   f<shape(...shape('a' => int), ...shape(?'a' => string))>();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+17 |   f<shape(...shape(...), 'a' => int)>();
+18 |   f<shape(...T, 'c' => int)>();
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a shape splat whose elements may overlap, it cannot be used as a reified type argument [1]
+-> `T` is reified [2]
+
+reified_targ_shape_splat.php:17:5
+ 3 | 
+ 4 | class C<reify T> {}
+ 5 | function f<reify T>(): void {}
+   |                  ^ [2]
+ 6 | 
+ 7 | type TNothing = nothing;
+   :
+15 | function bad_targs<reify T as shape(...)>(): void {
+16 |   f<shape(...shape('a' => int), ...shape(?'a' => string))>();
+17 |   f<shape(...shape(...), 'a' => int)>();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+18 |   f<shape(...T, 'c' => int)>();
+19 |   new C<TSplatParam<shape('d' => int)>>();
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a shape splat of a type that may be a union, it cannot be used as a reified type argument [1]
+-> `T` is reified [2]
+
+reified_targ_shape_splat.php:18:5
+ 3 | 
+ 4 | class C<reify T> {}
+ 5 | function f<reify T>(): void {}
+   |                  ^ [2]
+ 6 | 
+ 7 | type TNothing = nothing;
+   :
+16 |   f<shape(...shape('a' => int), ...shape(?'a' => string))>();
+17 |   f<shape(...shape(...), 'a' => int)>();
+18 |   f<shape(...T, 'c' => int)>();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+19 |   new C<TSplatParam<shape('d' => int)>>();
+20 |   f<shape('a' => int, ...shape(?'a' => noreturn))>();
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a shape splat whose elements may overlap, it cannot be used as a reified type argument [2]
+-> `T` is reified [3]
+
+reified_targ_shape_splat.php:19:9
+ 2 | <<file: __EnableUnstableFeatures('shape_splat_concrete', 'shape_splat_type_parameters')>>
+ 3 | 
+ 4 | class C<reify T> {}
+   |               ^ [3]
+ 5 | function f<reify T>(): void {}
+ 6 | 
+ 7 | type TNothing = nothing;
+ 8 | type TSplat = shape('c' => int, ...shape(?'c' => int));
+ 9 | newtype TSplatParam<TShape as shape(...)> = shape(...TShape, 'd' => int);
+   |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+10 | type TNested = shape('s' => TSplat);
+11 | 
+   :
+17 |   f<shape(...shape(...), 'a' => int)>();
+18 |   f<shape(...T, 'c' => int)>();
+19 |   new C<TSplatParam<shape('d' => int)>>();
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+20 |   f<shape('a' => int, ...shape(?'a' => noreturn))>();
+21 | }
+
+error: Typing[4305] Invalid reified hint [1]
+-> This is a shape splat whose elements may overlap, it cannot be used as a reified type argument [1]
+-> `T` is reified [2]
+
+reified_targ_shape_splat.php:20:5
+ 3 | 
+ 4 | class C<reify T> {}
+ 5 | function f<reify T>(): void {}
+   |                  ^ [2]
+ 6 | 
+ 7 | type TNothing = nothing;
+   :
+18 |   f<shape(...T, 'c' => int)>();
+19 |   new C<TSplatParam<shape('d' => int)>>();
+20 |   f<shape('a' => int, ...shape(?'a' => noreturn))>();
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+21 | }
+22 | 
+
+7 errors found

@@ -105,3 +105,71 @@ let validator =
 
     method! on_trefinement acc r _ty _ = this#invalid acc r "type refinement"
   end
+
+(* A splat operand HHVM merges field by field. Anything that may resolve to a
+   union at runtime (case types, type parameters, opaque newtypes) is instead
+   distributed into a union of shapes. *)
+let is_mergeable_splat_operand env ty =
+  let (_sd, env, ty) = Typing_utils.strip_supportdyn env ty in
+  let (_env, ty) = Env.expand_type env ty in
+  match get_node ty with
+  | Tshape _
+  | Tdynamic _
+  | Tunion [] ->
+    true
+  | _ -> false
+
+(* HHVM cannot yet compare unions that lack a case type witness when checking
+   reified generics. Shape splats merge into such unions at runtime when an
+   optional field overlaps another operand's field, or when an operand is
+   distributed. Case types are compared by witness, so only their type
+   arguments matter. *)
+let union_validator =
+  object (this)
+    inherit Type_validator.type_validator as super
+
+    method! on_tunion acc r tyl =
+      if List.is_empty tyl then
+        acc
+      else
+        this#invalid acc r "a union type"
+
+    method! on_tshape acc r shape_ty =
+      match shape_ty with
+      | Shape_splat { ss_elems } ->
+        let ety_env =
+          { acc.Type_validator.ety_env with under_type_constructor = true }
+        in
+        let (env, elems) =
+          List.fold_map
+            ss_elems
+            ~init:acc.Type_validator.env
+            ~f:(fun env elem ->
+              let ((env, _ty_err_opt), elem) =
+                Typing_phase.localize ~ety_env env elem
+              in
+              (env, elem))
+        in
+        let acc =
+          if not (List.for_all elems ~f:(is_mergeable_splat_operand env)) then
+            this#invalid acc r "a shape splat of a type that may be a union"
+          else if
+            not (List.is_empty (Typing_shape_disjointness.violations elems env))
+          then
+            this#invalid acc r "a shape splat whose elements may overlap"
+          else
+            acc
+        in
+        super#on_tshape acc r shape_ty
+      | Shape_simple _ -> super#on_tshape acc r shape_ty
+
+    method! on_newtype acc _ _ tyl _ _ ty =
+      List.fold_left (ty :: tyl) ~f:this#on_type ~init:acc
+
+    method! on_tapply acc r (p, h) tyl =
+      match Env.get_class_or_typedef acc.Type_validator.env h with
+      | Decl_entry.Found
+          (Env.TypedefResult { td_type_assignment = CaseType _; _ }) ->
+        List.fold_left tyl ~f:this#on_type ~init:acc
+      | _ -> super#on_tapply acc r (p, h) tyl
+  end
