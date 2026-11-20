@@ -47,6 +47,10 @@ cd "$ROOT" || exit 1
     if [[ ${FILE#"$ROOT/"} == "named_parameters/variadic_fn_types/named_params_variadic_position_bad.php" ]]; then
       continue
     fi
+    # This perf baseline can take longer than the 60s hover timeout.
+    if [[ ${FILE#"$ROOT/"} == "shape_splat/nonnull_intersection/conditional_writes.php" ]]; then
+      continue
+    fi
     echo "$ID. Check didOpen+hover+didClose for ${FILE#"$ROOT/"}" 1>&2
     TEXT=$(jq --slurp --raw-input . "$FILE")
     URI="file://$ROOT/$FILE"
