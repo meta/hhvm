@@ -505,8 +505,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt Config_keys.Hhconfig.enable_no_auto_dynamic config)
     ?tco_skip_check_under_dynamic:
       (bool_opt Config_keys.Hhconfig.skip_check_under_dynamic config)
-    ?tco_typed_open_shapes:
-      (bool_opt Config_keys.Hhconfig.typed_open_shapes config)
     ?tco_named_variadic_type:
       (bool_opt Config_keys.Hhconfig.named_variadic_type config)
     ?tco_variadic_named_parameters:

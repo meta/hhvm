@@ -66,7 +66,6 @@ let mk_env filename tcopt =
     Typechecker_options.interpret_soft_types_as_like_types tcopt
   and consistent_ctor_level =
     Typechecker_options.explicit_consistent_constructors tcopt
-  and typed_open_shapes = Typechecker_options.typed_open_shapes tcopt
   and named_variadic_type = Typechecker_options.named_variadic_type tcopt
   and variadic_named_parameters =
     Typechecker_options.variadic_named_parameters tcopt
@@ -82,7 +81,6 @@ let mk_env filename tcopt =
       supportdynamic_type_hint_enabled;
       soft_as_like;
       allow_ignore_readonly;
-      typed_open_shapes;
       named_variadic_type;
       variadic_named_parameters;
     }
@@ -173,9 +171,6 @@ let passes =
     Naming_validate_module.pass on_error;
     (* Validate use of `optional` in function type hints *)
     Naming_validate_function_hint_optional_parameters.pass on_error;
-    (* Reject `shape(..., T...)` typed open shapes unless tco_typed_open_shapes
-       is enabled *)
-    Naming_validate_typed_open_shape.pass on_error;
     (* Reject named variadic parameters in function type hints unless
        tco_named_variadic_type is enabled *)
     Naming_validate_named_variadic_type.pass on_error;

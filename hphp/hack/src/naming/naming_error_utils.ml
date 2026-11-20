@@ -355,14 +355,6 @@ let field_name_already_bound pos =
     (pos, "This shape field has the same key as another field")
     []
 
-let typed_open_shape_disallowed pos =
-  User_diagnostic.make_err
-    Error_code.(to_enum TypedOpenShapeDisallowed)
-    ( pos,
-      "Typed open shapes (e.g. `shape('x' => int, string...)`) are not enabled. Use plain `...` for unknown fields."
-    )
-    []
-
 let named_variadic_type_disallowed pos =
   User_diagnostic.make_err
     Error_code.(to_enum NamedVariadicTypeDisallowed)
@@ -888,7 +880,6 @@ let to_user_diagnostic t custom_err_config =
     | Unexpected_typedef { pos; expected_kind; decl_pos } ->
       unexpected_typedef pos expected_kind decl_pos
     | Field_name_already_bound pos -> field_name_already_bound pos
-    | Typed_open_shape_disallowed pos -> typed_open_shape_disallowed pos
     | Named_variadic_type_disallowed pos -> named_variadic_type_disallowed pos
     | Variadic_named_parameter_disallowed pos ->
       variadic_named_parameter_disallowed pos

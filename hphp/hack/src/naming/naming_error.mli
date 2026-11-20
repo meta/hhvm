@@ -83,7 +83,6 @@ type t =
       expected_kind: Name_context.t;
     }
   | Field_name_already_bound of Pos.t
-  | Typed_open_shape_disallowed of Pos.t
   | Named_variadic_type_disallowed of Pos.t
   | Variadic_named_parameter_disallowed of Pos.t
   | Trait_self_shape_key of {

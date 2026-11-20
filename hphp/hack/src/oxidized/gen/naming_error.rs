@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<8890579a36717deee759cc488da574e1>>
+// @generated SignedSource<<182fb94a807e38732ccb142115621366>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -176,8 +176,6 @@ pub enum NamingError {
     },
     #[rust_to_ocaml(name = "Field_name_already_bound")]
     FieldNameAlreadyBound(pos::Pos),
-    #[rust_to_ocaml(name = "Typed_open_shape_disallowed")]
-    TypedOpenShapeDisallowed(pos::Pos),
     #[rust_to_ocaml(name = "Named_variadic_type_disallowed")]
     NamedVariadicTypeDisallowed(pos::Pos),
     #[rust_to_ocaml(name = "Variadic_named_parameter_disallowed")]

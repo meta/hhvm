@@ -446,8 +446,6 @@ impl HhConfig {
                 "skip_check_under_dynamic",
                 default.tco_skip_check_under_dynamic,
             )?,
-            tco_typed_open_shapes: hhconfig
-                .get_bool_or("typed_open_shapes", default.tco_typed_open_shapes)?,
             tco_named_variadic_type: hhconfig
                 .get_bool_or("named_variadic_type", default.tco_named_variadic_type)?,
             tco_variadic_named_parameters: hhconfig.get_bool_or(

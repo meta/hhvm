@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<6b8a6b68f135f3058785a9c92728d3c3>>
+// @generated SignedSource<<e80fea446e4ca2f6e029b6fefbd6308b>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -293,8 +293,6 @@ pub struct GlobalOptions {
     pub tco_enable_no_auto_dynamic: bool,
     /// Skip second check of method under dynamic assumptions
     pub tco_skip_check_under_dynamic: bool,
-    /// Allow `shape(..., T...)` syntax that constrains unknown-field types
-    pub tco_typed_open_shapes: bool,
     /// Allow named variadic parameters in function types, e.g.
     /// `(function(named int...): void)`
     pub tco_named_variadic_type: bool,

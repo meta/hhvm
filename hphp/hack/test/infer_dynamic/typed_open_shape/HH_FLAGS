@@ -1,1 +1,1 @@
---infer-dynamic --config typed_open_shapes=true
+--infer-dynamic

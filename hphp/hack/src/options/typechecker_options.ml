@@ -132,8 +132,6 @@ let skip_check_under_dynamic t = t.Global_options.tco_skip_check_under_dynamic
 let set_skip_check_under_dynamic t =
   Global_options.{ t with tco_skip_check_under_dynamic = true }
 
-let typed_open_shapes t = t.Global_options.tco_typed_open_shapes
-
 let named_variadic_type t = t.Global_options.tco_named_variadic_type
 
 let variadic_named_parameters t = t.Global_options.tco_variadic_named_parameters

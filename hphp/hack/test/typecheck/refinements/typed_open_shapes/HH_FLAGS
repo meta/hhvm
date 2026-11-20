@@ -1,3 +1,2 @@
 --config union_intersection_type_hints=true
---config typed_open_shapes=true
 --error-format plain_highlighted

@@ -184,8 +184,6 @@ module Hhconfig : sig
 
   val skip_check_under_dynamic : string
 
-  val typed_open_shapes : string
-
   val named_variadic_type : string
 
   val variadic_named_parameters : string

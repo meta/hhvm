@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<2c1e9d0ab0a2e008e6333f765637e617>>
+// @generated SignedSource<<060eabc98cb365f0d8d79043176e7546>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -143,7 +143,6 @@ pub enum Naming {
     InvalidTypeAccessInWhere = 2129,
     AttributeOutsideAllowedFiles = 2130,
     HhiAttributeRestriction = 2131,
-    TypedOpenShapeDisallowed = 2132,
     NamedVariadicTypeDisallowed = 2133,
     VariadicNamedParameterDisallowed = 2134,
     ImplicitPackageFileDirectlyUnderPath = 2135,

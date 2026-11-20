@@ -170,7 +170,7 @@ module Naming = struct
     | InvalidTypeAccessInWhere [@value 2129]
     | AttributeOutsideAllowedFiles [@value 2130]
     | HhiAttributeRestriction [@value 2131]
-    | TypedOpenShapeDisallowed [@value 2132]
+    (* | TypedOpenShapeDisallowedDEPRECATED [@value 2132] *)
     | NamedVariadicTypeDisallowed [@value 2133]
     | VariadicNamedParameterDisallowed [@value 2134]
     | ImplicitPackageFileDirectlyUnderPath [@value 2135]

@@ -1,3 +1,2 @@
---config typed_open_shapes=true
 --enable-supportdyn-hint
 --error-format plain_highlighted

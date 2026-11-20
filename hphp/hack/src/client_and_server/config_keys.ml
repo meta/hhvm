@@ -205,8 +205,6 @@ module Hhconfig = struct
 
   let skip_check_under_dynamic = key "skip_check_under_dynamic"
 
-  let typed_open_shapes = key "typed_open_shapes"
-
   let named_variadic_type = key "named_variadic_type"
 
   let variadic_named_parameters = key "variadic_named_parameters"
