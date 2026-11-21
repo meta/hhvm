@@ -230,7 +230,7 @@ struct TClientStreamError {
               payload.metadata.payloadMetadata()->getType(),
               apache::thrift::PayloadMetadata::Type::exceptionMetadata);
           auto& exceptionMetadataBase =
-              payload.metadata.payloadMetadata()->get_exceptionMetadata();
+              payload.metadata.payloadMetadata()->exceptionMetadata().as_const().value();
           if (auto exceptionMetadataRef =
                   exceptionMetadataBase.metadata()) {
             if (exceptionMetadataRef->getType() ==
