@@ -1008,15 +1008,16 @@ let simple_merge env1 env2 =
   } =
     env2
   in
+  (* Hot path: this is called for every function and lambda visited by each
+     TAST check. [union] keeps one-sided entries and their subtrees as-is,
+     and the two envs usually share most entries physically, in which case
+     merging them is the identity. *)
   let tvenv =
-    Tvid.Map.merge
-      (fun _v tvinfo1 tvinfo2 ->
-        match (tvinfo1, tvinfo2) with
-        | (None, None) -> None
-        | (Some tvinfo, None)
-        | (None, Some tvinfo) ->
-          Some tvinfo
-        | (Some tvinfo1, Some tvinfo2) ->
+    Tvid.Map.union
+      ~combine:(fun _v tvinfo1 tvinfo2 ->
+        if phys_equal tvinfo1 tvinfo2 then
+          Some tvinfo1
+        else
           let {
             tyvar_pos = tyvar_pos1;
             eager_solve_failed = eager_solve_failed1;
