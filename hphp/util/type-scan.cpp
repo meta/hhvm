@@ -16,9 +16,11 @@
 
 #include "hphp/util/type-scan.h"
 
+#include <cctype>
 #include <cstdio>
 #include <dlfcn.h>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 #include <folly/container/F14Set.h>
@@ -98,6 +100,21 @@ std::string stripTemplateArgs(std::string name) {
   return name;
 }
 
+// libc++ puts everything in an inline ABI namespace (e.g. std::__1::optional),
+// so strip it to match the names in the lists above.
+std::string normalizeName(const std::string& name) {
+  auto stripped = stripTemplateArgs(name);
+  constexpr std::string_view kStd = "std::__";
+  if (stripped.starts_with(kStd)) {
+    auto i = kStd.size();
+    while (i < stripped.size() && std::isdigit(stripped[i])) ++i;
+    if (i > kStd.size() && stripped.compare(i, 2, "::") == 0) {
+      stripped.erase(5, i - 5 + 2);
+    }
+  }
+  return stripped;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 }
@@ -126,15 +143,15 @@ const Metadata* g_metadata_table = stub_metadata_table;
 std::size_t g_metadata_table_size = 2;
 
 bool isIgnoredType(const std::string& name) {
-  return ignored.contains(stripTemplateArgs(name));
+  return ignored.contains(normalizeName(name));
 }
 
 bool isForbiddenTemplate(const std::string& name) {
-  return forbidden_template.contains(stripTemplateArgs(name));
+  return forbidden_template.contains(normalizeName(name));
 }
 
 bool isForcedConservativeTemplate(const std::string& name) {
-  return forced_conservative.contains(stripTemplateArgs(name));
+  return forced_conservative.contains(normalizeName(name));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
