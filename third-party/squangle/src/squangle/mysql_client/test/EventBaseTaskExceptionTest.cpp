@@ -83,6 +83,35 @@ TEST_F(EventBaseTaskExceptionTest, ThrowFromQueuedRunFailsTheOperation) {
   EXPECT_THAT(op->mysql_error(), ::testing::HasSubstr("consumer callback"));
 }
 
+TEST_F(
+    EventBaseTaskExceptionTest,
+    ResumeAfterCompletionDoesNotUseFreedOperation) {
+  auto op = Connection::beginQuery(makeConnection(), Query("SELECT 1"));
+
+  // Cancelling before run() makes run() queue the completion on the
+  // EventBase, so the operation is completed by the time wait() returns.
+  op->cancel();
+  op->run();
+  op->wait();
+  EXPECT_EQ(op->result(), OperationResult::Cancelled);
+
+  // Retire the operation: completeOperation defers removal to a task
+  // queued on the EventBase, and draining the EventBase here runs it,
+  // dropping the client's reference to the operation.
+  client_.getEventBase()->runInEventBaseThreadAndWait([] {});
+
+  // A resume queued after completion must not dereference the operation
+  // once the caller's reference is released: the destructor of
+  // XdbStreamQueryRunner resumes unconditionally and then drops its
+  // reference, and the queued resume used to crash in
+  // MysqlOperationImpl::runQueuedTask dereferencing conn_proxy_.
+  op->resume();
+  op.reset();
+
+  // Drain the EventBase so the queued resume runs inside this test.
+  client_.getEventBase()->runInEventBaseThreadAndWait([] {});
+}
+
 TEST_F(EventBaseTaskExceptionTest, ThrowFromQueuedCompletionIsContained) {
   auto op = Connection::beginQuery(makeConnection(), Query("SELECT 1"));
   op->setCallback(throwingQueryCallback);

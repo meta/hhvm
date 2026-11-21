@@ -364,7 +364,27 @@ void MysqlFetchOperationImpl::resumeQueued() {
 void MysqlFetchOperationImpl::resume() {
   // Make sure we only schedule one resume at a time.
   if (!resume_scheduled_.exchange(true)) {
-    conn().runInThread(this, &MysqlFetchOperationImpl::resumeQueued);
+    if (op_ == nullptr) {
+      conn().runInThread(this, &MysqlFetchOperationImpl::resumeQueued);
+      return;
+    }
+    // Queue the resume behind a weak reference to the operation. The
+    // operation may be completed and freed before the queued task runs:
+    // the caller may release its reference right after calling resume()
+    // (XdbStreamQueryRunner's destructor does), and the client's pending
+    // reference is dropped by the cleanup queued on completion. The raw
+    // `this` captured by runInThread would then dangle, and resumeQueued
+    // dereferences it through conn(). `this` is valid only while the
+    // locked operation is still alive, and a completed operation needs
+    // no resume.
+    std::weak_ptr<Operation> weakSelf = getOp().getSharedPointer();
+    conn().runInThread([this, weakSelf = std::move(weakSelf)] {
+      auto self = weakSelf.lock();
+      if (!self || self->state() == OperationState::Completed) {
+        return;
+      }
+      resumeQueued();
+    });
   }
 }
 
