@@ -55,6 +55,9 @@ if (LIBNUMA_INCLUDE_DIRS)
 endif()
 
 add_library(hphp_util STATIC ${CXX_SOURCES} ${ASM_SOURCES} ${HEADER_SOURCES})
+if (HPHP_ENABLE_TYPE_SCANNERS AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  target_compile_definitions(hphp_util PRIVATE "CLANG_STANDALONE_DEBUG")
+endif()
 
 include(HHVMRenderConfigSpecification)
 

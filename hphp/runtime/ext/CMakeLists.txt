@@ -43,6 +43,11 @@ add_object_library(hphp_runtime_ext
 auto_source_group("hphp_runtime_ext" "${CMAKE_CURRENT_SOURCE_DIR}"
   ${ASM_SOURCES} ${C_SOURCES} ${CXX_SOURCES} ${HEADER_SOURCES})
 target_link_libraries(hphp_runtime_ext hphp_sbcc_writer hphp_runtime_static hphp_system)
+
+if (HPHP_ENABLE_TYPE_SCANNERS AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  target_compile_options(hphp_runtime_ext PRIVATE "-fstandalone-debug")
+endif()
+
 object_library_ld_link_libraries(hphp_runtime_ext hphp_zend ${HRE_LINK_LIBRARIES})
 object_library_hphp_link(hphp_runtime_ext)
 HHVM_CONFIGURE_TARGET_FOR_EXTENSION_DEPENDENCIES(hphp_runtime_ext)
