@@ -23,6 +23,7 @@
 
 #include "hphp/runtime/vm/jit/tc.h"
 
+#include "hphp/util/arch.h"
 #include "hphp/util/configs/jit.h"
 #include "hphp/util/portability.h"
 
@@ -128,7 +129,33 @@ bool getFrameRegs(VMFrame frame, VMRegs* outVMRegs) {
   if (fixup->isIndirect()) {
     auto const ar = frame.m_prevCfa - kNativeFrameSize;
     TRACE(3, "getFrameRegs: fp %p -> %s\n", (void*) ar, fixup->show().c_str());
-    auto const ripAddr = ar + fixup->ripOffset();
+    auto ripAddr = ar + fixup->ripOffset();
+
+    // On aarch64, clang release builds may allocate locals above the frame record,
+    // which causes the CFA-relative %rip offset of indirect fixups to be incorrect,
+    // as they assume that the CFA = fp + kNativeFrameSize.
+    // Since the fixup is tied to the VM frame we already hold,
+    // scan further up the stack looking for the first ActRec-shaped slot with a matching
+    // `m_sfp` whose `m_savedRip` resolves to a valid, non-indirect fixup.
+    // If the frame does happen to be immediately preceded by the prior frame,
+    // this just matches at the very first candidate.
+    if constexpr (arch::any<arch::ARM>()) {
+      auto const stackEnd = s_stackLimit + s_stackSize;
+      while (ripAddr < stackEnd) {
+        auto const sfpSlot = ripAddr - AROFF(m_savedRip) + AROFF(m_sfp);
+        if (*reinterpret_cast<ActRec**>(sfpSlot) == frame.m_actRec) {
+          auto const candidate = *reinterpret_cast<TCA*>(ripAddr);
+          auto const maybeFixup = s_fixups.find(tc::addrToOffset(candidate));
+          if (maybeFixup && !maybeFixup->isIndirect()) {
+            break;
+          }
+        }
+        ripAddr += sizeof(uintptr_t);
+      }
+      always_assert(ripAddr < stackEnd &&
+                    "Could not locate stub frame for indirect fixup");
+    }
+
     tca = *reinterpret_cast<TCA*>(ripAddr);
     extraSpOffset = fixup->spOffset();
     fixup = s_fixups.find(tc::addrToOffset(tca));
