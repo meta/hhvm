@@ -259,8 +259,12 @@ type t = {
       (** Matchers for file paths for which any warning will be ignored.
           Useful to ignore warnings from certain generated files.  *)
   tco_allowed_files_for_ignore_readonly: string list;
-  tco_package_exclude_patterns: string list;
-      (** Patterns for files excluded from the package boundary check. *)
+  tco_package_exclude_patterns:
+    (Str.regexp list[@opaque] [@equal fun a b -> List.equal Poly.equal a b]);
+      (** Patterns for files excluded from the package boundary check.
+          Compiled once, when the options are made: compiling is much more
+          expensive than matching, and they are matched on every cross-file
+          symbol access. *)
   tco_package_allow_classconst_violations: bool;
       (** Option for package support to bypass package boundary violation errors on ::class during
           the ::class to nameof migration to unblock V1 of intern-prod separation *)

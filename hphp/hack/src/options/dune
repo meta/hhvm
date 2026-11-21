@@ -9,6 +9,7 @@
   package_info
   parser_options
   saved_state_rollouts
+  str
   utils_find)
  (preprocess
   (pps ppx_deriving.std)))
