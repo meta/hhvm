@@ -16,6 +16,7 @@
 
 #include "hphp/runtime/server/fastcgi/fastcgi-session.h"
 #include "hphp/runtime/server/fastcgi/fastcgi-server.h"
+#include "hphp/runtime/base/runtime-option.h"
 #include "hphp/util/logger.h"
 
 #include <folly/io/Cursor.h>
@@ -183,6 +184,10 @@ FastCGISession::FastCGISession(
 
 void FastCGISession::timeoutExpired() noexcept {
   // Hard shutdown; socket timed out
+  int timeout = RuntimeOption::ConnectionTimeoutSeconds;
+  // default 2 minutes FastCGIServer::FastCGIServer 
+  if(timeout <= 0) timeout = 120;
+  Logger::Info("Fastcgi connection: connection time took longer than %d s and timeout, it will be shutdown!", timeout);
   dropConnection();
 }
 
