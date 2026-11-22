@@ -3,7 +3,7 @@
 There are over 1000 C++ files in HHVM's codebase, split into a number of
 different directories. This is a rough overview of what lives where (all paths are under `hphp/`):
 
-`compiler/`: The old parser and bytecode emitter. This is deprecated and is currently being removed; the new replacement is in `hack/src/hhbc`.
+`compiler/`: The old parser and bytecode emitter. This is deprecated and is currently being removed; the new replacement is in `hack/src/hackc/`.
 
 `doc/`: Documentation, of varying age and quality.
 
