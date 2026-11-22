@@ -397,6 +397,8 @@ final class RegexTest extends HackTest {
       tuple(re"/hello world/", '/hello world/'),
       tuple(re"/foo[1-9]/", '/foo[1-9]/'),
       tuple(re"/ahh.*/", '/ahh.*/'),
+      tuple(re"/^https?:\\/\\//i", '/^https?:\\/\\//i'),
+      tuple(re"/\\d{3}-\\d{4}/", '/\\d{3}-\\d{4}/'),
     ];
   }
 

@@ -375,6 +375,11 @@ final class StrIntrospectTest extends HackTest {
         'HELLO',
         false,
       ),
+      tuple(
+        '🚀 launch',
+        '🚀',
+        true,
+      ),
     ];
   }
 
@@ -419,6 +424,11 @@ final class StrIntrospectTest extends HackTest {
         'HELLO',
         true,
       ),
+      tuple(
+        '🚀 launch',
+        '🚀',
+        true,
+      ),
     ];
   }
 
@@ -432,3 +442,4 @@ final class StrIntrospectTest extends HackTest {
   }
 
 }
+

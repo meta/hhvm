@@ -32,8 +32,8 @@ detail in [bytecode.specification](../bytecode.specification).
 
 ### HackC
 
-The Hack Compiler, HHVM's new frontend (as of mid-2018). A parser and bytecode
-emitter written completely in OCaml.
+The Hack Compiler, HHVM's frontend. A parser and bytecode
+emitter written in Rust.
 
 ### HHAS
 
