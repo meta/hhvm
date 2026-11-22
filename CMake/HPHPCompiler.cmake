@@ -162,9 +162,6 @@ if (HPHP_COMPILER_CLANG OR HPHP_COMPILER_GCC)
 
     # ARM64
     if(IS_AARCH64)
-      # Force char type to be signed, which is not the case on aarch64.
-      list(APPEND GENERAL_OPTIONS "fsigned-char")
-
       # If a CPU was specified, build a -mcpu option for the compiler.
       set(AARCH64_TARGET_CPU "" CACHE STRING "CPU to tell gcc to optimize for (-mcpu)")
       if(AARCH64_TARGET_CPU)
