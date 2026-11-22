@@ -10664,6 +10664,154 @@ size_t color_inst(State& state,
 // in ascending order.
 using AssignmentVector = jit::vector<std::pair<Vreg, PhysReg>>;
 
+// Reorder assignments for Vregs which share a penalty vector so that a block
+// with multiple processed predecessors reuses the same physregs those
+// predecessors agree on. This reduces edge copies without re-running
+// allocation.
+static void align_group_assignments(
+    State& state,
+    FreeRegs& free,
+    Vlabel b,
+    const jit::vector<AssignmentVector>& assignments,
+    const BlockSet& processed
+) {
+  auto const& preds = state.preds[b];
+  if (preds.size() < 2) return;
+
+  struct Entry {
+    Vreg vreg;
+    PhysReg reg;
+    Optional<PhysReg> consensus;
+  };
+
+  // Group GP/AnyNarrow live-ins by penalty vector to realign within each group.
+  auto const collectGroups = [&] {
+    std::map<size_t, jit::vector<Entry>> groups;
+    for (auto const r : state.liveIn[b]) {
+      if (r.isPhys()) continue;
+      auto const& info = reg_info(state, r);
+      if (!is_colorable_reg(info.regClass)) continue;
+      if (info.regClass != RegClass::GP && info.regClass != RegClass::AnyNarrow)
+        continue;
+
+      groups[info.penaltyIdx].push_back(
+        Entry{r, color_reg(info.color), {}}
+      );
+    }
+    return groups;
+  };
+
+  using PredAssignmentMap = std::unordered_map<Vreg, PhysReg>;
+  // Determine if all processed predecessors picked the same physreg per entry;
+  // record the predecessor consensus and note if it differs from the current
+  // assignment.
+  auto const consensusForGroup =
+    [&] (jit::vector<Entry>& entries,
+         const jit::vector<Optional<PredAssignmentMap>>& predLookup) -> bool {
+      bool needsRealignment = false;
+
+      for (auto& entry : entries) {
+        Optional<PhysReg> regSel;
+        for (size_t i = 0; i < preds.size(); ++i) {
+          auto const& lookup = predLookup[i];
+          if (!lookup) continue;
+
+          auto const it = lookup->find(entry.vreg);
+          if (it == lookup->end()) return false;
+
+          if (!regSel) {
+            regSel = it->second;
+          } else if (*regSel != it->second) {
+            regSel.reset();
+            break;
+          }
+        }
+
+        entry.consensus = regSel;
+        if (regSel && entry.reg != *regSel) needsRealignment = true;
+      }
+      return needsRealignment;
+    };
+
+    // Build a reordered reg list that honors consensus slots, keeping others stable.
+    auto const reorderWithConsensus =
+      [&] (const jit::vector<Entry>& entries)
+        -> Optional<jit::vector<PhysReg>> {
+        const size_t n = entries.size();
+        jit::vector<PhysReg> out(n, InvalidReg);
+
+        // Map each reg to its entry index (assumes regs are unique; if not, last wins).
+        jit::fast_map<PhysReg, size_t> regToIdx;
+        regToIdx.reserve(n);
+        for (size_t i = 0; i < n; ++i) regToIdx[entries[i].reg] = i;
+        jit::vector<uint8_t> used(n, 0);
+
+        // Phase 1: place consensus regs where possible.
+        size_t matches = 0;
+        for (size_t i = 0; i < n; ++i) {
+          auto const& e = entries[i];
+          if (!e.consensus) continue;
+          auto it = regToIdx.find(*e.consensus);
+          if (it == regToIdx.end()) continue;
+          size_t idx = it->second;
+          if (used[idx]) continue; // avoid consuming the same entry twice
+          out[i] = entries[idx].reg;
+          used[idx] = 1;
+          ++matches;
+        }
+
+        if (matches == 0) return {};
+
+        // Phase 2: fill remaining slots in order with unused regs.
+        size_t write = 0;
+        for (size_t idx = 0; idx < n; ++idx) {
+          if (used[idx]) continue;
+          while (write < n && out[write] != InvalidReg) ++write;
+          out[write] = entries[idx].reg;
+        }
+
+        return out;
+      };
+
+  auto groups = collectGroups();
+
+  jit::vector<Optional<PredAssignmentMap>> predLookup(preds.size());
+  for (size_t i = 0; i < preds.size(); ++i) {
+    auto const pred = preds[i];
+    if (!processed[pred]) continue;
+    PredAssignmentMap map;
+    auto const& predAssignment = assignments[pred];
+    map.reserve(predAssignment.size());
+    for (auto const& a : predAssignment) map.emplace(a.first, a.second);
+    predLookup[i] = std::move(map);
+  }
+
+  for (auto& kv : groups) {
+    auto& entries = kv.second;
+    if (entries.size() < 2) continue;
+
+    // Only realign if all processed predecessors picked the same physreg per entry.
+    if (!consensusForGroup(entries, predLookup)) continue;
+
+    auto const newOrder = reorderWithConsensus(entries);
+    if (!newOrder) continue;
+
+    for (auto const& entry : entries) {
+      auto& info = reg_info(state, entry.vreg);
+      free.release(info.color, info.regClass);
+    }
+
+    for (size_t i = 0; i < entries.size(); ++i) {
+      auto const v = entries[i].vreg;
+      auto const phys = (*newOrder)[i];
+      auto& info = reg_info(state, v);
+      auto const cls = info.regClass;
+      free.reserve(v, phys, cls);
+      info.color = phys;
+    }
+  }
+}
+
 // Initialize the initial set of Vreg to physical register assignments
 // for a block, taking into account predecessors. If the block has one
 // predecessor, we just copy over the assignments from that. If it has
@@ -10922,6 +11070,10 @@ size_t color_block_initialize(
       // We don't use reserve() here because defs[i] might be a spill.
       free.reserve(defs[i], info.color, info.regClass);
     }
+  }
+
+  if (arch() == Arch::ARM) {
+    align_group_assignments(state, free, b, assignments, processed);
   }
 
   // Now that we've selected registers for all the Vregs, we need to
