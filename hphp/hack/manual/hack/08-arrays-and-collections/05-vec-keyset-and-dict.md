@@ -81,7 +81,8 @@ $items is vec<_>; // true
 A `keyset` is an ordered data structure without duplicates. It is
 created with the `keyset[]` syntax.
 
-A `keyset` can only contain `string` or `int` values.
+A `keyset` can only contain `string` or `int` values. `keyset`s are
+ordered according to the insertion order.
 
 
 ```hack
