@@ -38,6 +38,9 @@ if (HPHP_COMPILER_CLANG OR HPHP_COMPILER_GCC)
 
   # General options to pass to both C & C++ compilers
   set(GENERAL_OPTIONS)
+  list(APPEND GENERAL_OPTIONS
+    "fno-pie"
+  )
 
   # General options to pass to the C++ compiler
   set(GENERAL_CXX_OPTIONS)
