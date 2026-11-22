@@ -189,7 +189,7 @@ StructSpec compileSpec(const Array& spec, const Class& cls) {
       if (field.isUnion) {
         if (!endPropOk) {
           endPropOk = [&] {
-            if (cls.numDeclProperties() < spec.size()) return false;
+            if (cls.numDeclProperties() <= spec.size()) return false;
             auto const& prop = cls.declProperties()[spec.size()];
             if (!s__type.equal(prop.name)) return false;
             return prop.typeConstraints.alwaysPasses(KindOfInt64);
