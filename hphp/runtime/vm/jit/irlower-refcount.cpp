@@ -234,6 +234,9 @@ CallSpec makeDtorCall(Vout& v, Type ty, Vloc loc, ArgGroup& args) {
       // a builtin, as only builtins can override release method and builtins
       // never subclass non-builtins.
       if (!isInterface(cls) && !cls->isBuiltin()) {
+        if (auto rf = cls->optReleaseFunc()) {
+          return CallSpec::direct(rf->get());
+        }
         args.reg(emitLdObjClass(v, loc.reg(0), v.makeReg()));
         return CallSpec::direct(cls->releaseFunc().get());
       }

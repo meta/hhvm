@@ -267,6 +267,12 @@ struct ObjectData : Countable, type_scan::MarkCollectable<ObjectData> {
    */
   static void release(ObjectData* obj, const Class* cls) noexcept;
 
+  /*
+   * An optimised version of the above function when the class can be loaded
+   * from the object.
+   */
+  static void release2(ObjectData* obj) noexcept;
+
   Class* getVMClass() const;
   StrNR getClassName() const;
 

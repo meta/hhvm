@@ -226,6 +226,10 @@ void ObjectData::release(ObjectData* obj, const Class* cls) noexcept {
   AARCH64_WALKABLE_FRAME();
 }
 
+void ObjectData::release2(ObjectData* obj) noexcept {
+  release(obj, obj->m_cls.get());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // class info
 
