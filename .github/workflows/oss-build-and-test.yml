@@ -1,6 +1,7 @@
 ---
 name: OSS build and tests
 on:
+  # Run OSS CI for every pull request.
   pull_request:
   push:
     branches:
