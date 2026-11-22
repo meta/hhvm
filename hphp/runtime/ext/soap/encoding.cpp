@@ -2590,7 +2590,7 @@ static Variant to_zval_map(encodeType* /*type*/, xmlNodePtr data) {
       }
 
       xmlValue = get_node(item->children, "value");
-      if (!xmlKey) {
+      if (!xmlValue) {
         throw SoapException( "Encoding: Can't decode map, missing value");
       }
 
