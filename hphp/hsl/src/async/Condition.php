@@ -21,34 +21,58 @@ class Condition<T> {
    * Notify the condition variable of success and set the result.
    */
   final public function succeed(T $result): void {
-    if ($this->condition === null) {
-      $this->condition = async {
-        return $result;
-      };
-    } else {
-      invariant(
-        $this->condition is ConditionWaitHandle<_>,
-        'Unable to notify AsyncCondition twice',
-      );
-      /* HH_FIXME[4110]: Type error revealed by type-safe instanceof feature. See https://fburl.com/instanceof */
-      $this->condition->succeed($result);
-    }
+    invariant($this->trySucceed($result), 'Unable to notify Condition twice');
   }
 
   /**
    * Notify the condition variable of failure and set the exception.
    */
   final public function fail(\Exception $exception): void {
+    invariant($this->tryFail($exception), 'Unable to notify Condition twice');
+  }
+
+  /**
+   * Notify the condition variable of success and set the $result.
+   *
+   * @return
+   *   true if the condition is set to $result successfully, false if the
+   *   condition was previously set to another result or exception.
+   */
+  final public function trySucceed(T $result): bool {
+    if ($this->condition === null) {
+      $this->condition = async {
+        return $result;
+      };
+      return true;
+    } else {
+      if (!($this->condition is ConditionWaitHandle<_>)) {
+        return false;
+      }
+      /* HH_FIXME[4110]: Type error revealed by type-safe instanceof feature. See https://fburl.com/instanceof */
+      $this->condition->succeed($result);
+      return true;
+    }
+  }
+
+  /**
+   * Notify the condition variable of failure and set the $exception.
+   *
+   * @return
+   *   true if the condition is set to $exception successfully, false if the
+   *   condition was previously set to another result or exception.
+   */
+  final public function tryFail(\Exception $exception): bool {
     if ($this->condition === null) {
       $this->condition = async {
         throw $exception;
       };
+      return true;
     } else {
-      invariant(
-        $this->condition is ConditionWaitHandle<_>,
-        'Unable to notify AsyncCondition twice',
-      );
+      if (!($this->condition is ConditionWaitHandle<_>)) {
+        return false;
+      }
       $this->condition->fail($exception);
+      return true;
     }
   }
 
