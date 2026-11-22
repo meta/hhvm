@@ -54,7 +54,7 @@ const RegSet kGPCalleeSaved =
 
 const RegSet kGPReserved =
   rVixlScratch0 | rVixlScratch1 | rAsm | rvmtl() |
-  rvmfp() | rlr() | vixl::xzr | rsp();
+  rvmsp() | rvmfp() | rlr() | vixl::xzr | rsp();
   // ARM machines really only have 32 GP regs.  However, vixl has 33 separate
   // register codes, because it treats the zero register and stack pointer
   // (which are really both register 31) separately.  Rather than lose this
