@@ -26,6 +26,8 @@ final class MathCompareTest extends HackTest {
       tuple(1, 2.0, vec[], 2.0),
       tuple(-1, 1, vec[2, 3, 4, 5], 5),
       tuple(-1, 5, vec[4, 3, 2, 1], 5),
+      tuple(Math\INT64_MIN, 0, vec[Math\INT64_MAX], Math\INT64_MAX),
+      tuple(-10.5, -20.5, vec[-5.5, -30.0], -5.5),
     ];
   }
 
@@ -51,6 +53,8 @@ final class MathCompareTest extends HackTest {
       tuple(1, 2.0, vec[], 1),
       tuple(1, -1, vec[-2, -3, -4, -5], -5),
       tuple(1, -5, vec[-4, -3, -2, -1], -5),
+      tuple(Math\INT64_MAX, 0, vec[Math\INT64_MIN], Math\INT64_MIN),
+      tuple(-10.5, -20.5, vec[-5.5, -30.0], -30.0),
     ];
   }
 
@@ -73,6 +77,8 @@ final class MathCompareTest extends HackTest {
       tuple(0.1, false),
       tuple(-0.1, false),
       tuple(Math\NAN, true),
+      tuple(Math\INF, false),
+      tuple(Math\INT64_MAX, false),
     ];
   }
 
@@ -98,6 +104,8 @@ final class MathCompareTest extends HackTest {
       tuple(1, 2, 1, false),
       tuple(1, 2, null, false),
       tuple(2, 1, 2, true),
+      tuple(-10.0, -10.000000001, null, true),
+      tuple(-10.0, -10.1, 0.2, true),
     ];
   }
 

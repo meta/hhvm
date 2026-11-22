@@ -52,7 +52,7 @@ token stream and converts that to an [abstract syntax
 tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree), or AST. This AST is
 then converted to a stream of [bytecode
 instructions](https://en.wikipedia.org/wiki/Bytecode) by the bytecode emitter.
-Everything up to this point is written in OCaml; the rest of HHVM is written in
+Everything up to this point is written in Rust (via HackC); the rest of HHVM is written in
 C++ and assembly.
 
 After the bytecode and associated metadata are created, our bytecode optimizer,

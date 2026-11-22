@@ -26,7 +26,7 @@ hhvm.enable_xhp = true
 
 ## Copying and Symlinking Settings
 
-**NOTE**: This feature only currently work with core system settings. They
+**NOTE**: This feature currently only works with core system settings. They
 don't yet work with extensions, `ini_set()`, etc.
 
 You can also provide wildcards to settings signaling that you want to use the

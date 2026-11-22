@@ -46,6 +46,21 @@ final class DictIntrospectTest extends HackTest {
         dict[1 => 1, 3 => 3, 2 => 2],
         true,
       ),
+      tuple(
+        dict[],
+        dict[],
+        true,
+      ),
+      tuple(
+        dict['foo' => 'bar', 'baz' => 'qux'],
+        dict['baz' => 'qux', 'foo' => 'bar'],
+        true,
+      ),
+      tuple(
+        dict['a' => null],
+        dict['a' => null],
+        true,
+      ),
     ];
   }
 

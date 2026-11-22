@@ -177,12 +177,28 @@ void emitCalleeGenericsChecks(IRGS& env, const Func* callee,
     )
   );
   if (!callee->hasReifiedGenerics()) {
-    // FIXME: leaks memory if generics were given but not expected nor pushed.
     if (pushed) {
       // pushed is only true from a prepareAndCallKnown context, so this pop is
       // safe; we have accurate stack offsets.
       popDecRef(env);
       updateStackOffsetAndExceptionBoundary(env);
+    } else {
+      // If generics were passed but not expected, we must still free them to
+      // avoid a memory leak.
+      ifThen(
+        env,
+        [&] (Block* taken) {
+          auto constexpr flag = 1 << PrologueFlags::Flags::HasGenerics;
+          auto const hasGenerics =
+            gen(env, AndInt, prologueFlags, cns(env, flag));
+          gen(env, JmpNZero, taken, hasGenerics);
+        },
+        [&] {
+          hint(env, Block::Hint::Unlikely);
+          apparate(env, TInitCell);
+          popDecRef(env);
+          updateStackOffsetAndExceptionBoundary(env);
+        });
     }
     return;
   }

@@ -46,6 +46,21 @@ final class KeysetIntrospectTest extends HackTest {
         keyset[1, 3, 2],
         true,
       ),
+      tuple(
+        keyset[],
+        keyset[],
+        true,
+      ),
+      tuple(
+        keyset['a', 'b', 'c'],
+        keyset['c', 'b', 'a'],
+        true,
+      ),
+      tuple(
+        keyset['a', 'b'],
+        keyset['a', 'c'],
+        false,
+      ),
     ];
   }
 

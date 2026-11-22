@@ -594,4 +594,11 @@ final class VecSelectTest extends HackTest {
       ->toEqual($expected);
   }
 
+  public function testSliceEdgeCases(): void {
+    expect(Vec\slice(vec[1, 2, 3, 4, 5], 0, 0))->toEqual(vec[]);
+    expect(Vec\slice(vec[1, 2, 3], 1, 100))->toEqual(vec[2, 3]);
+    expect(Vec\slice(vec[], 0, 5))->toEqual(vec[]);
+  }
+
 }
+
