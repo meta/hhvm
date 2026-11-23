@@ -46,12 +46,6 @@ typedef struct ROARFunctionCallSiteWithLiteral_ {
   uint8_t literalSize;
 } ROARFunctionCallSiteWithLiteral;
 
-typedef struct ROARPidMapEntryAPI_ {
-  void* address;
-  uint64_t size;
-  const char* name;
-} ROARPidMapEntryAPI;
-
 namespace HPHP::jit {
 
 TRACE_SET_MOD(mcg)
@@ -60,9 +54,6 @@ extern "C" __attribute__((weak))
 int __roar_api_flag_safe_function_call_sites(
   const ROARFunctionCallSite*, size_t, bool
 );
-extern "C"
-int __roar_api_write_pid_maps(const ROARPidMapEntryAPI*, size_t);
-
 // Missing from ROAR toolchains that predate it.
 extern "C" __attribute__((weak))
 int __roar_api_write_pid_maps_fd(int);

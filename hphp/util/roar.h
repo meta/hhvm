@@ -16,8 +16,20 @@
 
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+
 #ifdef __roar__
 constexpr bool use_roar = true;
 #else
 constexpr bool use_roar = false;
 #endif
+
+typedef struct ROARPidMapEntryAPI_ {
+  void* address;
+  uint64_t size;
+  const char* name;
+} ROARPidMapEntryAPI;
+
+extern "C"
+int __roar_api_write_pid_maps(const ROARPidMapEntryAPI*, size_t);

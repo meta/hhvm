@@ -170,12 +170,12 @@ void DebugInfo::recordStub(TCRange range, const std::string& name) {
   }
 }
 
-extern "C"
-int __roar_api_write_pid_map(uint64_t address, uint64_t size, const char* name);
-
 void DebugInfo::writeToPidMap(uint64_t start, uint64_t size, const char* name) {
   if constexpr (use_roar) {
-    __roar_api_write_pid_map(start, size, name);
+    ROARPidMapEntryAPI const entry{
+      reinterpret_cast<void*>(start), size, name
+    };
+    __roar_api_write_pid_maps(&entry, 1);
   } else if (m_perfMapEnabled) {
     fprintf(m_perfMap, "%lx %lx %s\n", start, size, name);
     fflush(m_perfMap);
