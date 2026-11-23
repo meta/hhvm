@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<d7dd15f1e25e5f3cac6e6b529e4d1159>>
+// @generated SignedSource<<442390eb05f7f4863d87e244c3a0cd45>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -414,4 +414,6 @@ pub struct GlobalOptions {
     pub tco_ban_lsb_this_in_generic_classes: bool,
     /// Reject `this` in the shape field types of a non-`<<__LSB>>` static property, as elsewhere in its type. Every subclass shares the property, so a value stored as one subclass's `this` could be read back as another's.
     pub tco_ban_this_in_non_lsb_static_shape_fields: bool,
+    /// Reject `this` in the function return types of a non-`<<__LSB>>` static property, as elsewhere in its type. Every subclass shares the property, so a value stored as one subclass's `this` could be read back as another's.
+    pub tco_ban_this_in_non_lsb_static_function_return_types: bool,
 }

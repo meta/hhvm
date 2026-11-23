@@ -1116,6 +1116,9 @@ let check_static_property_types env tc =
   let in_shape_fields =
     TCO.ban_this_in_non_lsb_static_shape_fields (Env.get_tcopt env)
   in
+  let in_returns =
+    TCO.ban_this_in_non_lsb_static_function_return_types (Env.get_tcopt env)
+  in
   let class_pos = Cls.pos tc in
   let add_error pos mk_error =
     (* An inherited property's position may be in a different file *)
@@ -1133,12 +1136,10 @@ let check_static_property_types env tc =
          let declared_here = String.equal prop.ce_origin (Cls.name tc) in
          let lsb = get_ce_lsb prop in
          if (not lsb) && declared_here then
-           (* Function return types were never checked, and existing code
-              relies on that *)
            TUtils.find_this_decl
              ~in_type_access_roots:true
              ~in_shape_fields
-             ~in_returns:false
+             ~in_returns
              ty
            |> Option.iter ~f:(fun this_pos ->
                   add_error this_pos (fun pos ->

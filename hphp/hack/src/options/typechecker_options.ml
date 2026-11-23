@@ -304,3 +304,6 @@ let ban_lsb_this_in_generic_classes t =
 
 let ban_this_in_non_lsb_static_shape_fields t =
   t.Global_options.tco_ban_this_in_non_lsb_static_shape_fields
+
+let ban_this_in_non_lsb_static_function_return_types t =
+  t.Global_options.tco_ban_this_in_non_lsb_static_function_return_types

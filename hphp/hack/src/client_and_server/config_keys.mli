@@ -38,6 +38,8 @@ module Hhconfig : sig
 
   val ban_this_in_non_lsb_static_shape_fields : string
 
+  val ban_this_in_non_lsb_static_function_return_types : string
+
   val const_static_props : string
 
   val deregister_php_stdlib : string

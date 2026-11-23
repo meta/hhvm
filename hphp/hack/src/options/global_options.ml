@@ -200,6 +200,7 @@ type t = {
   tco_ban_memoize_erased_generic_return: bool;
   tco_ban_lsb_this_in_generic_classes: bool;
   tco_ban_this_in_non_lsb_static_shape_fields: bool;
+  tco_ban_this_in_non_lsb_static_function_return_types: bool;
 }
 [@@deriving eq, show]
 
@@ -313,6 +314,7 @@ let default =
     tco_ban_memoize_erased_generic_return = false;
     tco_ban_lsb_this_in_generic_classes = false;
     tco_ban_this_in_non_lsb_static_shape_fields = false;
+    tco_ban_this_in_non_lsb_static_function_return_types = false;
   }
 
 let set
@@ -423,6 +425,7 @@ let set
     ?tco_ban_memoize_erased_generic_return
     ?tco_ban_lsb_this_in_generic_classes
     ?tco_ban_this_in_non_lsb_static_shape_fields
+    ?tco_ban_this_in_non_lsb_static_function_return_types
     options =
   let setting setting option =
     match setting with
@@ -735,6 +738,10 @@ let set
       setting
         tco_ban_this_in_non_lsb_static_shape_fields
         options.tco_ban_this_in_non_lsb_static_shape_fields;
+    tco_ban_this_in_non_lsb_static_function_return_types =
+      setting
+        tco_ban_this_in_non_lsb_static_function_return_types
+        options.tco_ban_this_in_non_lsb_static_function_return_types;
   }
 
 let so_naming_sqlite_path t = t.so_naming_sqlite_path

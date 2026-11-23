@@ -617,6 +617,10 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.ban_this_in_non_lsb_static_shape_fields
          config)
+    ?tco_ban_this_in_non_lsb_static_function_return_types:
+      (bool_opt
+         Config_keys.Hhconfig.ban_this_in_non_lsb_static_function_return_types
+         config)
     options
 
 let warn_on_did_you_mean
