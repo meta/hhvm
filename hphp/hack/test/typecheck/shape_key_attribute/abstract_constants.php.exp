@@ -1,3 +1,16 @@
+error: Typing[4535] Abstract class constant `AbstractShapeKeyConstants::KEY` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constants.php:4:5
+2 | 
+3 | abstract class AbstractShapeKeyConstants {
+4 |   <<__ShapeKey>>
+  |     ^^^^^^^^^^ [1]
+5 |   abstract const arraykey KEY;
+  |                           ^^^ [2]
+6 | 
+7 |   <<__ShapeKey>>
+
 error: Typing[4129] Abstract constant `AbstractShapeKeyConstants::KEY` cannot be used as a shape key [1]
 -> Declaration is here [2]
 
@@ -10,6 +23,19 @@ abstract_constants.php:4:5
   |                           ^^^ [2]
 6 | 
 7 |   <<__ShapeKey>>
+
+error: Typing[4535] Abstract class constant `AbstractShapeKeyConstants::DEFAULT_KEY` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constants.php:7:5
+ 5 |   abstract const arraykey KEY;
+ 6 | 
+ 7 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+ 8 |   abstract const string DEFAULT_KEY = 'default';
+   |                         ^^^^^^^^^^^ [2]
+ 9 | 
+10 |   abstract const type T as arraykey;
 
 error: Typing[4129] Abstract constant `AbstractShapeKeyConstants::DEFAULT_KEY` cannot be used as a shape key [1]
 -> Declaration is here [2]
@@ -24,6 +50,19 @@ abstract_constants.php:7:5
  9 | 
 10 |   abstract const type T as arraykey;
 
+error: Typing[4535] Abstract class constant `AbstractShapeKeyConstants::TYPE_CONSTANT` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constants.php:12:5
+10 |   abstract const type T as arraykey;
+11 | 
+12 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+13 |   abstract const this::T TYPE_CONSTANT;
+   |                          ^^^^^^^^^^^^^ [2]
+14 | }
+15 | 
+
 error: Typing[4129] Abstract constant `AbstractShapeKeyConstants::TYPE_CONSTANT` cannot be used as a shape key [1]
 -> Declaration is here [2]
 
@@ -36,6 +75,19 @@ abstract_constants.php:12:5
    |                          ^^^^^^^^^^^^^ [2]
 14 | }
 15 | 
+
+error: Typing[4535] Abstract class constant `AbstractInterfaceShapeKeyConstants::KEY` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constants.php:17:5
+15 | 
+16 | interface AbstractInterfaceShapeKeyConstants {
+17 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+18 |   abstract const int KEY;
+   |                      ^^^ [2]
+19 | }
+20 | 
 
 error: Typing[4129] Abstract constant `AbstractInterfaceShapeKeyConstants::KEY` cannot be used as a shape key [1]
 -> Declaration is here [2]
@@ -50,6 +102,18 @@ abstract_constants.php:17:5
 19 | }
 20 | 
 
+error: Typing[4535] Abstract class constant `AbstractTraitShapeKeyConstants::DEFAULT_KEY` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constants.php:22:5
+20 | 
+21 | trait AbstractTraitShapeKeyConstants {
+22 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+23 |   abstract const string DEFAULT_KEY = 'default';
+   |                         ^^^^^^^^^^^ [2]
+24 | }
+
 error: Typing[4129] Abstract constant `AbstractTraitShapeKeyConstants::DEFAULT_KEY` cannot be used as a shape key [1]
 -> Declaration is here [2]
 
@@ -62,4 +126,4 @@ abstract_constants.php:22:5
    |                         ^^^^^^^^^^^ [2]
 24 | }
 
-5 errors found
+10 errors found

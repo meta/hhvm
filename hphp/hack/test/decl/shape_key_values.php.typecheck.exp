@@ -18,4 +18,69 @@ shape_key_values.php:36:26
 37 | }
 38 | 
 
-2 errors found
+error: Typing[4534] Class constant `ShapeKeyValues::SELF_CONST` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shape_key_values.php:16:5
+14 |   const string SELF_NAME = nameof self;
+15 | 
+16 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+17 |   const int SELF_CONST = self::LITERAL;
+   |                          ^^^^^^^^^^^^^ [2]
+18 | 
+19 |   <<__ShapeKey>>
+
+error: Typing[4534] Class constant `ShapeKeyValues::FORWARDED_CONST` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shape_key_values.php:19:5
+17 |   const int SELF_CONST = self::LITERAL;
+18 | 
+19 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+20 |   const int FORWARDED_CONST = ShapeKeyValues::LITERAL;
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^ [2]
+21 | 
+22 |   <<__ShapeKey>>
+
+error: Typing[4534] Class constant `ShapeKeyValues::COMPUTED` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shape_key_values.php:22:5
+20 |   const int FORWARDED_CONST = ShapeKeyValues::LITERAL;
+21 | 
+22 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+23 |   const int COMPUTED = self::LITERAL + 1;
+   |                        ^^^^^^^^^^^^^^^^^ [2]
+24 | 
+25 |   const int UNANNOTATED = 2;
+
+error: Typing[4534] Class constant `ShapeKeyTraitValues::SELF_NAME` marked with `<<__ShapeKey>>` cannot be initialized with `nameof self` in a trait [1]
+-> `nameof self` resolves to the using class; use a literal or an explicit class name with `nameof` [2]
+
+shape_key_values.php:32:5
+30 |   const int LITERAL = 1;
+31 | 
+32 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+33 |   const string SELF_NAME = nameof self;
+   |                            ^^^^^^^^^^^ [2]
+34 | 
+35 |   <<__ShapeKey>>
+
+error: Typing[4534] Class constant `ShapeKeyTraitValues::SELF_CONST` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shape_key_values.php:35:5
+33 |   const string SELF_NAME = nameof self;
+34 | 
+35 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+36 |   const int SELF_CONST = self::LITERAL;
+   |                          ^^^^^^^^^^^^^ [2]
+37 | }
+38 | 
+
+7 errors found

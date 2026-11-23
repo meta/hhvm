@@ -1,3 +1,16 @@
+error: Typing[4534] Class constant `UnresolvableShapeKey::KEY` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+computed_constants.php:4:5
+2 | 
+3 | class UnresolvableShapeKey {
+4 |   <<__ShapeKey>>
+  |     ^^^^^^^^^^ [1]
+5 |   const string KEY = 'not'.'statically resolvable';
+  |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [2]
+6 |   const string UNMARKED = 'also not'.'statically resolvable';
+7 | }
+
 error: Typing[4533] Class constant `UnresolvableShapeKey::UNMARKED` used as a shape key must be annotated with `<<__ShapeKey>>`. Prefer using an enum constant as a shape key. [1]
 -> The class constant is declared here [2]
 
@@ -31,4 +44,4 @@ computed_constants.php:14:14
    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
 15 | }
 
-2 errors found
+3 errors found

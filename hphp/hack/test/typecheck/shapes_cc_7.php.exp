@@ -11,6 +11,19 @@ shapes_cc_7.php:15:5
 17 | }
 18 | 
 
+error: Typing[4534] Class constant `X::X2` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shapes_cc_7.php:15:5
+13 |   <<__ShapeKey>>
+14 |   const string X1 = 'field1';
+15 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+16 |   const bool X2 = true;
+   |                   ^^^^ [2]
+17 | }
+18 | 
+
 error: Typing[4052] A shape field name must be an `int` or `string` [1]
 -> Not a bool [2]
 
@@ -40,4 +53,4 @@ shapes_cc_7.php:22:3
    |   ^^^^^ [1]
 23 | );
 
-3 errors found
+4 errors found

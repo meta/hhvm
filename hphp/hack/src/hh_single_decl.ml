@@ -20,8 +20,7 @@ let popt
     ~disable_xhp_element_mangling
     ~keep_user_attributes
     ~interpret_soft_types_as_like_types
-    ~everything_sdt
-    ~include_const_shape_key_values =
+    ~everything_sdt =
   Parser_options.
     {
       default with
@@ -31,7 +30,6 @@ let popt
       enable_xhp_class_modifier;
       interpret_soft_types_as_like_types;
       everything_sdt;
-      include_const_shape_key_values;
     }
 
 let init root tcopt ~rust_provider_backend : Provider_context.t =
@@ -447,7 +445,6 @@ let () =
   let interpret_soft_types_as_like_types = ref false in
   let everything_sdt = ref false in
   let rust_provider_backend = ref Hh_server_provider_backend.is_supported in
-  let include_const_shape_key_values = ref false in
   let ignored_flag flag = (flag, Arg.Unit (fun _ -> ()), "(ignored)") in
   let ignored_arg flag = (flag, Arg.String (fun _ -> ()), "(ignored)") in
   Arg.parse
@@ -488,9 +485,6 @@ let () =
       ( "--no-rust-provider-backend",
         Arg.Clear rust_provider_backend,
         " Use the shared-memory implementation of Provider_backend" );
-      ( "--enable-const-shape-key-values",
-        Arg.Set include_const_shape_key_values,
-        " Record ShapeKey class-constant metadata in decls" );
       (* The following options do not affect the direct decl parser and can be ignored
          (they are used by hh_single_type_check, and we run hh_single_decl over all of
          the typecheck test cases). *)
@@ -566,7 +560,6 @@ let () =
       ~keep_user_attributes
       ~interpret_soft_types_as_like_types
       ~everything_sdt
-      ~include_const_shape_key_values:!include_const_shape_key_values
   in
   let tcopt = Global_options.{ default with po = popt } in
   let ctx =

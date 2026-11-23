@@ -113,8 +113,6 @@ module Hhconfig = struct
   let check_duplicate_runtime_shape_keys =
     key "check_duplicate_runtime_shape_keys"
 
-  let include_const_shape_key_values = key "include_const_shape_key_values"
-
   let disallow_toplevel_requires = key "disallow_toplevel_requires"
 
   let disallow_unresolved_type_variables =

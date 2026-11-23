@@ -10,6 +10,18 @@ shapes_cc_8.php--def.php:5:5
   |         ^^^ [2]
 7 | }
 
+error: Typing[4534] Class constant `C2::FOO` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+shapes_cc_8.php--def.php:5:5
+3 | newtype foo = bar;
+4 | class C2 {
+5 |   <<__ShapeKey>>
+  |     ^^^^^^^^^^ [1]
+6 |   const foo FOO = C1::FOO;
+  |                   ^^^^^^^ [2]
+7 | }
+
 error: Typing[4052] A shape field name must be an `int` or `string` [1]
 -> Not a value of type foo [2]
 
@@ -26,4 +38,4 @@ shapes_cc_8.php--def.php:6:9
   |         ^^^ [2]
 7 | }
 
-2 errors found
+3 errors found

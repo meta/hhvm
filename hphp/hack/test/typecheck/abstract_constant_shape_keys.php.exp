@@ -18,6 +18,19 @@ abstract_constant_shape_keys.php:42:18
 43 |   }
 44 | }
 
+error: Typing[4535] Abstract class constant `MagicFactory::MAGIC` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constant_shape_keys.php:4:5
+2 | 
+3 | interface MagicFactory {
+4 |   <<__ShapeKey>>
+  |     ^^^^^^^^^^ [1]
+5 |   abstract const string MAGIC;
+  |                         ^^^^^ [2]
+6 | 
+7 |   public function getShape(): shape(self::MAGIC => string);
+
 error: Typing[4129] Abstract constant `MagicFactory::MAGIC` cannot be used as a shape key [1]
 -> Declaration is here [2]
 
@@ -80,6 +93,19 @@ abstract_constant_shape_keys.php:14:18
    |                  ^^^^^^^^^^^^^^^^^^^ [1]
 15 |   }
 16 | }
+
+error: Typing[4535] Abstract class constant `AbstractMagicFactory::MAGIC` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constant_shape_keys.php:19:5
+17 | 
+18 | abstract class AbstractMagicFactory {
+19 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+20 |   abstract const string MAGIC;
+   |                         ^^^^^ [2]
+21 | 
+22 |   public function getShapeViaSelf(): shape(self::MAGIC => string) {
 
 error: Typing[4129] Abstract constant `AbstractMagicFactory::MAGIC` cannot be used as a shape key [1]
 -> Declaration is here [2]
@@ -159,6 +185,19 @@ abstract_constant_shape_keys.php:33:18
 34 |   }
 35 | }
 
+error: Typing[4535] Abstract class constant `MagicFactoryTrait::MAGIC` cannot be used as a shape key [1]
+-> The constant must be concrete to use `<<__ShapeKey>>`, even if it has a default value [2]
+
+abstract_constant_shape_keys.php:38:5
+36 | 
+37 | trait MagicFactoryTrait {
+38 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+39 |   abstract const string MAGIC;
+   |                         ^^^^^ [2]
+40 | 
+41 |   public function getShapeViaSelf(): shape(self::MAGIC => string) {
+
 error: Typing[4129] Abstract constant `MagicFactoryTrait::MAGIC` cannot be used as a shape key [1]
 -> Declaration is here [2]
 
@@ -237,4 +276,4 @@ abstract_constant_shape_keys.php:54:18
 55 |   }
 56 | }
 
-16 errors found
+19 errors found

@@ -379,9 +379,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
         everything_sdt =
           bool_opt Config_keys.Hhconfig.everything_sdt config
           >?? po_opt.everything_sdt;
-        include_const_shape_key_values =
-          bool_opt Config_keys.Hhconfig.include_const_shape_key_values config
-          >?? po_opt.include_const_shape_key_values;
         check_duplicate_runtime_shape_keys =
           bool_opt
             Config_keys.Hhconfig.check_duplicate_runtime_shape_keys

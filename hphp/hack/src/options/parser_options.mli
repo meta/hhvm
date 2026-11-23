@@ -30,12 +30,8 @@ type t = {
   auto_namespace_map: (string * string) list;  (** Namespace aliasing map *)
   everything_sdt: bool;
       (** All classes are implcitly marked <<__SupportDynamicType>> *)
-  include_const_shape_key_values: bool;
-      (** If set, the parser records `__ShapeKey` class-constant metadata in
-          decls. *)
   check_duplicate_runtime_shape_keys: bool;
-      (** Reject shape fields with equal statically resolved runtime keys.
-          Requires [include_const_shape_key_values]. *)
+      (** Reject shape fields with equal statically resolved runtime keys. *)
   keep_user_attributes: bool;
       (** Parse all user attributes rather than only the ones needed for typing *)
   stack_size: int;

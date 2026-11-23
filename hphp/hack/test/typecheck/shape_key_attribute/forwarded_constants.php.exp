@@ -1,3 +1,16 @@
+error: Typing[4534] Class constant `ForwardedResolvableShapeKey::KEY` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+forwarded_constants.php:9:5
+ 7 | 
+ 8 | class ForwardedResolvableShapeKey {
+ 9 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+10 |   const string KEY = AnnotatedShapeKey::KEY;
+   |                      ^^^^^^^^^^^^^^^^^^^^^^ [2]
+11 |   const string UNMARKED = AnnotatedShapeKey::KEY;
+12 | }
+
 error: Typing[4533] Class constant `ForwardedResolvableShapeKey::UNMARKED` used as a shape key must be annotated with `<<__ShapeKey>>`. Prefer using an enum constant as a shape key. [1]
 -> The class constant is declared here [2]
 
@@ -32,4 +45,4 @@ forwarded_constants.php:20:14
    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
 21 | }
 
-2 errors found
+3 errors found

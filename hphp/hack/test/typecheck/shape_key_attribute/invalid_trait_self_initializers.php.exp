@@ -17,4 +17,29 @@ invalid_trait_self_initializers.php:11:34
    |                                  ^^^^^^^^^^^ [1]
 12 | }
 
-2 errors found
+error: Typing[4534] Class constant `InvalidTraitSelfShapeKeyInitializers::SELF_CONSTANT` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+invalid_trait_self_initializers.php:7:5
+ 5 |   const string LOCAL_KEY = 'local';
+ 6 | 
+ 7 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+ 8 |   const string SELF_CONSTANT = self::LOCAL_KEY;
+   |                                ^^^^^^^^^^^^^^^ [2]
+ 9 | 
+10 |   <<__ShapeKey>>
+
+error: Typing[4534] Class constant `InvalidTraitSelfShapeKeyInitializers::SELF_CLASS_NAME` marked with `<<__ShapeKey>>` cannot be initialized with `nameof self` in a trait [1]
+-> `nameof self` resolves to the using class; use a literal or an explicit class name with `nameof` [2]
+
+invalid_trait_self_initializers.php:10:5
+ 8 |   const string SELF_CONSTANT = self::LOCAL_KEY;
+ 9 | 
+10 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+11 |   const string SELF_CLASS_NAME = nameof self;
+   |                                  ^^^^^^^^^^^ [2]
+12 | }
+
+4 errors found

@@ -117,7 +117,6 @@ let disallow_discarded_nullable_awaitables t =
 
 let check_duplicate_runtime_shape_keys t =
   t.Global_options.po.Parser_options.check_duplicate_runtime_shape_keys
-  && t.Global_options.po.Parser_options.include_const_shape_key_values
 
 let is_systemlib t = t.Global_options.po.Parser_options.is_systemlib
 

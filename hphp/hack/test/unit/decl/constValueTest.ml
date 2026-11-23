@@ -12,8 +12,7 @@ open Hh_prelude
 open OUnit2
 
 let parser_options =
-  Decl_parser_options.from_parser_options
-    Parser_options.{ default with include_const_shape_key_values = true }
+  Decl_parser_options.from_parser_options Parser_options.default
 
 let parse_value_source ~parser_options source =
   let { Direct_decl_parser.pf_decls; pf_has_first_pass_parse_errors; _ } =

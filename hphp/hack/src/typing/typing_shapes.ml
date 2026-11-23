@@ -53,50 +53,45 @@ let emit_shape_key_const_value_unresolvable
 
 let check_shape_key_value env pos c cls cc =
   let open Aast in
-  let tcopt = Env.get_tcopt env in
-  if tcopt.Global_options.po.Parser_options.include_const_shape_key_values then begin
-    let class_name = Utils.strip_ns (snd c.c_name) in
-    let const_name = snd cc.cc_id in
-    let error =
-      let open Typing_error.Primary.Shape in
-      match cc.cc_kind with
-      | CCAbstract _ ->
-        Some
-          (Shape_key_class_const_is_abstract
-             { pos; decl_pos = fst cc.cc_id; class_name; const_name })
-      | CCConcrete ((_, _, Aast.Nameof (_, _, Aast.CIself)) as value)
-        when Ast_defs.is_c_trait c.c_kind ->
-        Some
-          (Shape_key_class_const_nameof_self_in_trait
-             {
-               pos;
-               value_pos = Aast_utils.get_expr_pos value;
-               class_name;
-               const_name;
-             })
-      | CCConcrete value ->
-        let recorded_value =
-          Env.get_const env cls const_name
-          |> Option.bind ~f:(fun const ->
-                 Const_value.concrete_value
-                   ~member_name:const_name
-                   const.cc_value)
-        in
-        (match recorded_value with
-        | Some _ -> None
-        | None ->
-          emit_shape_key_const_value_unresolvable
-            env
-            ~pos
-            ~reason_pos:(Pos_or_decl.of_raw_pos (Aast_utils.get_expr_pos value))
-            ~class_name
-            ~const_name
-            ~const_kind:`ClassConst;
-          None)
-    in
-    Option.iter error ~f:(fun error ->
-        Typing_error_utils.add_typing_error ~env @@ Typing_error.shape error)
-  end
+  let class_name = Utils.strip_ns (snd c.c_name) in
+  let const_name = snd cc.cc_id in
+  let error =
+    let open Typing_error.Primary.Shape in
+    match cc.cc_kind with
+    | CCAbstract _ ->
+      Some
+        (Shape_key_class_const_is_abstract
+           { pos; decl_pos = fst cc.cc_id; class_name; const_name })
+    | CCConcrete ((_, _, Aast.Nameof (_, _, Aast.CIself)) as value)
+      when Ast_defs.is_c_trait c.c_kind ->
+      Some
+        (Shape_key_class_const_nameof_self_in_trait
+           {
+             pos;
+             value_pos = Aast_utils.get_expr_pos value;
+             class_name;
+             const_name;
+           })
+    | CCConcrete value ->
+      let recorded_value =
+        Env.get_const env cls const_name
+        |> Option.bind ~f:(fun const ->
+               Const_value.concrete_value ~member_name:const_name const.cc_value)
+      in
+      (match recorded_value with
+      | Some _ -> None
+      | None ->
+        emit_shape_key_const_value_unresolvable
+          env
+          ~pos
+          ~reason_pos:(Pos_or_decl.of_raw_pos (Aast_utils.get_expr_pos value))
+          ~class_name
+          ~const_name
+          ~const_kind:`ClassConst;
+        None)
+  in
+  Option.iter error ~f:(fun error ->
+      Typing_error_utils.add_typing_error ~env @@ Typing_error.shape error)
 
 let check_shape_key_use env pos cls const_name class_const =
   if Ast_defs.is_c_enum (Cls.kind cls) then begin

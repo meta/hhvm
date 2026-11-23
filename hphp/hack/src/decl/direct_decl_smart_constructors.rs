@@ -4300,7 +4300,6 @@ impl<'o, 't> FlattenSmartConstructors for DirectDeclSmartConstructors<'o, 't> {
                 let ty = self.node_to_ty(hint);
                 let is_shape_key = attributes
                     .contains_marker_attribute(naming_special_names::user_attributes::SHAPE_KEY);
-                let should_record_value = is_shape_key && self.opts.include_const_shape_key_values;
                 Node::List(
                     consts
                         .into_iter()
@@ -4319,7 +4318,7 @@ impl<'o, 't> FlattenSmartConstructors for DirectDeclSmartConstructors<'o, 't> {
                                         .infer_const(name, initializer.clone())
                                         .unwrap_or_else(tany),
                                 };
-                                let const_value = if should_record_value {
+                                let const_value = if is_shape_key {
                                     match self.const_value(&initializer) {
                                         Some(ConstValue::CVString(s)) if s == id.1 => {
                                             ConstValue::CVLabel

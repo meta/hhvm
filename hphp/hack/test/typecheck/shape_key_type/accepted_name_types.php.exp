@@ -1,1 +1,79 @@
-No errors
+error: Typing[4534] Class constant `AcceptedNameKeys::CLASS_NAME` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+accepted_name_types.php:20:5
+18 | 
+19 | class AcceptedNameKeys {
+20 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+21 |   const classname<AcceptedNameKeys> CLASS_NAME = self::class;
+   |                                                  ^^^^^^^^^^^ [2]
+22 |   <<__ShapeKey>>
+23 |   const HH\typename<AcceptedNameKeys> TYPE_NAME = self::class;
+
+error: Typing[4534] Class constant `AcceptedNameKeys::TYPE_NAME` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+accepted_name_types.php:22:5
+20 |   <<__ShapeKey>>
+21 |   const classname<AcceptedNameKeys> CLASS_NAME = self::class;
+22 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+23 |   const HH\typename<AcceptedNameKeys> TYPE_NAME = self::class;
+   |                                                   ^^^^^^^^^^^ [2]
+24 |   <<__ShapeKey>>
+25 |   const HH\enumname<int> INT_ENUM_NAME = IntKeyEnum::class;
+
+error: Typing[4534] Class constant `AcceptedNameKeys::INT_ENUM_NAME` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+accepted_name_types.php:24:5
+22 |   <<__ShapeKey>>
+23 |   const HH\typename<AcceptedNameKeys> TYPE_NAME = self::class;
+24 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+25 |   const HH\enumname<int> INT_ENUM_NAME = IntKeyEnum::class;
+   |                                          ^^^^^^^^^^^^^^^^^ [2]
+26 |   <<__ShapeKey>>
+27 |   const HH\enumname<string> STRING_ENUM_NAME = StringKeyEnum::class;
+
+error: Typing[4534] Class constant `AcceptedNameKeys::STRING_ENUM_NAME` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+accepted_name_types.php:26:5
+24 |   <<__ShapeKey>>
+25 |   const HH\enumname<int> INT_ENUM_NAME = IntKeyEnum::class;
+26 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+27 |   const HH\enumname<string> STRING_ENUM_NAME = StringKeyEnum::class;
+   |                                                ^^^^^^^^^^^^^^^^^^^^ [2]
+28 |   <<__ShapeKey>>
+29 |   const HH\enumname<OpaqueKeyEnum> OPAQUE_ENUM_NAME = OpaqueKeyEnum::class;
+
+error: Typing[4534] Class constant `AcceptedNameKeys::OPAQUE_ENUM_NAME` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+accepted_name_types.php:28:5
+26 |   <<__ShapeKey>>
+27 |   const HH\enumname<string> STRING_ENUM_NAME = StringKeyEnum::class;
+28 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+29 |   const HH\enumname<OpaqueKeyEnum> OPAQUE_ENUM_NAME = OpaqueKeyEnum::class;
+   |                                                       ^^^^^^^^^^^^^^^^^^^^ [2]
+30 |   <<__ShapeKey>>
+31 |   const classname<KeyEnumClass> ENUM_CLASS_NAME = KeyEnumClass::class;
+
+error: Typing[4534] Class constant `AcceptedNameKeys::ENUM_CLASS_NAME` marked with `<<__ShapeKey>>` must be initialized with a string or integer literal, or a `nameof` expression [1]
+-> Class pointers, constant forwarding, and computed expressions are not allowed [2]
+
+accepted_name_types.php:30:5
+28 |   <<__ShapeKey>>
+29 |   const HH\enumname<OpaqueKeyEnum> OPAQUE_ENUM_NAME = OpaqueKeyEnum::class;
+30 |   <<__ShapeKey>>
+   |     ^^^^^^^^^^ [1]
+31 |   const classname<KeyEnumClass> ENUM_CLASS_NAME = KeyEnumClass::class;
+   |                                                   ^^^^^^^^^^^^^^^^^^^ [2]
+32 |   <<__ShapeKey>>
+33 |   const string STRING = 'key';
+
+6 errors found
