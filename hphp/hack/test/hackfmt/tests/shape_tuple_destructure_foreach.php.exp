@@ -1,0 +1,46 @@
+<?hh
+
+function f(vec<mixed> $v): void {
+  foreach ($v as shape('x' => $x, ?'y' => $y, 'z' => _)) {
+  }
+  foreach ($v as $k => shape($x, ...)) {
+  }
+  foreach ($v as tuple($a, optional$b, ...)) {
+  }
+  foreach ($v as tuple($a, shape($b))) {
+  }
+  foreach (
+    $v as shape(
+      'long_field_name_one' => $long_field_name_one,
+      'long_field_name_two' => $long_field_name_two,
+      'long_field_name_three' => $long_field_name_three,
+    )
+  ) {
+  }
+  foreach (
+    $v as shape(
+      'long_field_name_one' => $long_field_name_one,
+      'long_field_name_two' => $long_field_name_two,
+      ...
+    )
+  ) {
+  }
+  foreach (
+    $v as tuple(
+      $long_variable_name_one,
+      $long_variable_name_two,
+      $long_variable_name_three,
+      $long_variable_name_four,
+    )
+  ) {
+  }
+  foreach (
+    $v as tuple(
+      $long_variable_name_one,
+      $long_variable_name_two,
+      $long_variable_name_three,
+      ...
+    )
+  ) {
+  }
+}
