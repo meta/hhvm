@@ -255,7 +255,7 @@ class TestFreshInit(common_tests.CommonTests):
         )
         output, _ = self.test_driver.check_cmd(
             expected_output=None,
-            options=["--isolation", "--isolation-grow"],
+            options=["--isolation", "--isolation-grow-clusters"],
         )
         lines = output.splitlines()
 
@@ -290,7 +290,7 @@ class TestFreshInit(common_tests.CommonTests):
             expected_output=None,
             options=[
                 "--isolation",
-                "--isolation-grow",
+                "--isolation-grow-clusters",
                 "--json",
             ],
         )
@@ -365,7 +365,7 @@ class TestFreshInit(common_tests.CommonTests):
         )
 
         # Measuring is the default, so the same command without
-        # --isolation-grow reports each seed's own closure instead. Growth
+        # --isolation-grow-clusters reports each seed's own closure instead. Growth
         # merges seeds into shared clusters, so over the same repo it reports
         # fewer of them than measuring does — which is what tells the two modes
         # apart, rather than merely reading the flag back out.
@@ -403,7 +403,7 @@ class TestFreshInit(common_tests.CommonTests):
 
         output, _ = self.test_driver.check_cmd(
             expected_output=None,
-            options=["--isolation", "--isolation-grow"],
+            options=["--isolation", "--isolation-grow-clusters"],
         )
         lines = output.splitlines()
         self.assertEqual(2, len(lines))
@@ -452,8 +452,8 @@ class TestFreshInit(common_tests.CommonTests):
             expected_output=None,
             options=[
                 "--isolation",
-                "--isolation-grow",
-                "--isolation-seed-list",
+                "--isolation-grow-clusters",
+                "--isolation-input-list",
                 seed_list,
                 "--json",
             ],
@@ -503,7 +503,7 @@ class TestFreshInit(common_tests.CommonTests):
             expected_output=None,
             options=[
                 "--isolation",
-                "--isolation-grow",
+                "--isolation-grow-clusters",
                 "--isolation-max-cluster-size",
                 "3",
                 "--json",
@@ -553,8 +553,8 @@ class TestFreshInit(common_tests.CommonTests):
                 expected_output=None,
                 options=[
                     "--isolation",
-                    "--isolation-grow",
-                    "--isolation-seed-list",
+                    "--isolation-grow-clusters",
+                    "--isolation-input-list",
                     seed_list,
                     "--json",
                     *extra_options,
@@ -589,8 +589,8 @@ class TestFreshInit(common_tests.CommonTests):
         )
         options = [
             "--isolation",
-            "--isolation-grow",
-            "--isolation-seed-list",
+            "--isolation-grow-clusters",
+            "--isolation-input-list",
             seed_list,
             "--json",
         ]
@@ -647,7 +647,7 @@ class TestFreshInit(common_tests.CommonTests):
             options=[
                 "--isolation",
                 "--isolation-movable",
-                "--isolation-seed-list",
+                "--isolation-input-list",
                 seed_list,
                 "--json",
             ],
@@ -676,7 +676,7 @@ class TestFreshInit(common_tests.CommonTests):
         stdout, _, retcode = self.test_driver.run_check(
             options=[
                 "--isolation",
-                "--isolation-seed-dir",
+                "--isolation-input-dir",
                 "no_such_dir",
                 "--isolation-move-to",
                 "move_dest",
@@ -698,7 +698,7 @@ class TestFreshInit(common_tests.CommonTests):
 
         measured, _ = self.test_driver.check_cmd(
             expected_output=None,
-            options=["--isolation", "--isolation-seed-list", seed_list],
+            options=["--isolation", "--isolation-input-list", seed_list],
         )
         self.assertIn(
             "Found 1 isolatable cluster without growing, covering 1 file.\n",
@@ -708,8 +708,8 @@ class TestFreshInit(common_tests.CommonTests):
             expected_output=None,
             options=[
                 "--isolation",
-                "--isolation-grow",
-                "--isolation-seed-list",
+                "--isolation-grow-clusters",
+                "--isolation-input-list",
                 seed_list,
             ],
         )
@@ -724,9 +724,9 @@ class TestFreshInit(common_tests.CommonTests):
 
         input_error_exit_code = 10
         for options in (
-            ["--isolation-seed-dir", "no_hack"],
-            ["--isolation-movable", "--isolation-seed-dir", "no_hack"],
-            ["--isolation-seed-framework", "NoSuchFramework"],
+            ["--isolation-input-dir", "no_hack"],
+            ["--isolation-movable", "--isolation-input-dir", "no_hack"],
+            ["--isolation-input-framework", "NoSuchFramework"],
         ):
             stdout, _, retcode = self.test_driver.run_check(
                 options=["--isolation", *options, "--json"],
@@ -750,7 +750,7 @@ class TestFreshInit(common_tests.CommonTests):
         stdout, _, retcode = self.test_driver.run_check(
             options=[
                 "--isolation",
-                "--isolation-seed-dir",
+                "--isolation-input-dir",
                 "to_move",
                 "--isolation-move-to",
                 "move_dest",

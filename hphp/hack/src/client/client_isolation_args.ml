@@ -43,7 +43,10 @@ let check
   let movable = Server_isolation_types.is_check_movability mode in
   (match max_seeds with
   | Some n when n < 1 ->
-    reject (Printf.sprintf "--isolation-max-seeds must be at least 1, got %d" n)
+    reject
+      (Printf.sprintf
+         "--isolation-max-input-files must be at least 1, got %d"
+         n)
   | _ -> ());
   if min_free_memory_percent < 0 || min_free_memory_percent > 100 then
     reject
@@ -74,7 +77,7 @@ let check
   if seed_offset < 0 then
     reject
       (Printf.sprintf
-         "--isolation-seed-offset cannot be negative, got %d"
+         "--isolation-skip-input-files cannot be negative, got %d"
          seed_offset);
   (* Growth needs a closure for the seed before it has a cluster, so a reach
      under 1 admits nothing and the run silently reports none. *)
@@ -87,9 +90,9 @@ let check
      preferring one silently answers the wrong question. *)
   let seed_sources =
     [
-      ("--isolation-seed-framework", seed_framework);
-      ("--isolation-seed-list", seed_list);
-      ("--isolation-seed-dir", seed_dir);
+      ("--isolation-input-framework", seed_framework);
+      ("--isolation-input-list", seed_list);
+      ("--isolation-input-dir", seed_dir);
     ]
   in
   let seed_sources_given =
@@ -118,7 +121,7 @@ let check
     reject "--isolation-move-to needs the directory to move into"
   | Server_isolation_types.Move_to _ when Option.is_none seed_dir ->
     reject
-      "--isolation-move-to moves the directory named by --isolation-seed-dir; a seed list or a framework has no directory to move"
+      "--isolation-move-to moves the directory named by --isolation-input-dir; a seed list or a framework has no directory to move"
   | Server_isolation_types.Move_to _
   | Server_isolation_types.Measure
   | Server_isolation_types.Grow
@@ -138,13 +141,13 @@ let check
       && Option.is_none seed_framework
     then
       reject
-        "--isolation-movable asks about a named set of files; name it with --isolation-seed-dir, --isolation-seed-list or --isolation-seed-framework";
+        "--isolation-movable asks about a named set of files; name it with --isolation-input-dir, --isolation-input-list or --isolation-input-framework";
     (* A window would answer for part of the directory, and a part of a package
        is not a package: the files left out reference in, so the answer would
        be no for a reason the caller created. *)
     if Option.is_some max_seeds || seed_offset > 0 then
       reject
-        "--isolation-max-seeds and --isolation-seed-offset take a window of the starting files, and --isolation-movable asks about all of them"
+        "--isolation-max-input-files and --isolation-skip-input-files take a window of the starting files, and --isolation-movable asks about all of them"
   end;
   (* Growth clamps the reach to the cap, so a larger one is not refused, it is
      silently unused. Only worth saying when the caller picked the reach: the
@@ -163,7 +166,7 @@ let check
   if seed_offset > 0 && Option.is_none max_seeds then
     warn
       (Printf.sprintf
-         "--isolation-seed-offset %d without --isolation-max-seeds runs to the end of the seed list, not a window of it"
+         "--isolation-skip-input-files %d without --isolation-max-input-files runs to the end of the seed list, not a window of it"
          seed_offset)
 
 let validate ~max_dependents_given ~mode_flags_given options =

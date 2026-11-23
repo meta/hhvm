@@ -258,7 +258,7 @@ class EdenfsWatcherInitDiagnosisTests(TestCase[EdenfsWatcherInitDiagnosisTestDri
         stdout, _, exit_code = driver.run_check(
             options=[
                 "--isolation",
-                "--isolation-seed-dir",
+                "--isolation-input-dir",
                 "to_move",
                 "--isolation-move-to",
                 "move_dest",
@@ -1901,7 +1901,7 @@ class IsolationMoveToTests(TestCase[EdenfsWatcherTestDriver]):
         stdout, _, retcode = self.test_driver.run_check(
             options=[
                 "--isolation",
-                "--isolation-seed-dir",
+                "--isolation-input-dir",
                 seed_dir,
                 "--isolation-move-to",
                 parent,
@@ -2043,7 +2043,7 @@ class IsolationMoveToWatchmanTests(TestCase[EdenfsWatcherWatchmanTestDriver]):
         stdout, _, exit_code = self.test_driver.run_check(
             options=[
                 "--isolation",
-                "--isolation-seed-dir",
+                "--isolation-input-dir",
                 "to_move",
                 "--isolation-move-to",
                 "move_dest",

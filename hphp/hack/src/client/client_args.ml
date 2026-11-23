@@ -666,25 +666,25 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
         (Arg_non_user_facing, Help_options) );
       ( "--isolation-move-to",
         Arg.String (fun s -> isolation_move_to := Some s),
-        " <dir> move the directory named by --isolation-seed-dir into <dir>, under its own name, if it can move and the move introduces no errors; otherwise leave it where it was. Moves the files on disk and nothing else. The server should run with --config edenfs_file_watcher_enabled=true, or it may not see the move",
+        " <dir> move the directory named by --isolation-input-dir into <dir>, under its own name, if it can move and the move introduces no errors; otherwise leave it where it was. Moves the files on disk and nothing else. The server should run with --config edenfs_file_watcher_enabled=true, or it may not see the move",
         (Arg_non_user_facing, Help_options) );
-      ( "--isolation-grow",
+      ( "--isolation-grow-clusters",
         Arg.Set isolation_grow,
         " grow a bigger cluster around each starting file, instead of reporting its smallest isolatable set",
         (Arg_non_user_facing, Help_options) );
-      ( "--isolation-output",
+      ( "--isolation-clusters-file",
         Arg.String (fun s -> isolation_output := Some s),
         " <file> write clusters to <file> as JSON lines as they are found, and print only the summary",
         (Arg_non_user_facing, Help_options) );
-      ( "--isolation-seed-framework",
+      ( "--isolation-input-framework",
         Arg.String (fun s -> isolation_seed_framework := Some s),
         " <class> start from every subclass of <class> — an entry-point family — instead of scanning for seeds",
         (Arg_non_user_facing, Help_options) );
-      ( "--isolation-seed-list",
+      ( "--isolation-input-list",
         Arg.String (fun s -> isolation_seed_list := Some s),
         " <file> grow from the repo-relative paths listed in <file> instead of scanning for seeds",
         (Arg_non_user_facing, Help_options) );
-      ( "--isolation-seed-dir",
+      ( "--isolation-input-dir",
         Arg.String (fun s -> isolation_seed_dir := Some s),
         " <dir> grow from every Hack file under <dir>",
         (Arg_non_user_facing, Help_options) );
@@ -716,13 +716,13 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
           " <percent> stop the run when the machine's available memory has fallen by more than <percent> of its total since the run began, whoever is using it (default %d, 0 turns the check off)"
           Client_isolation_args.default_max_memory_percent,
         (Arg_non_user_facing, Help_options) );
-      ( "--isolation-max-seeds",
+      ( "--isolation-max-input-files",
         Arg.Int (fun n -> isolation_max_seeds := Some n),
         " <n> grow from at most <n> seeds",
         (Arg_non_user_facing, Help_options) );
-      ( "--isolation-seed-offset",
+      ( "--isolation-skip-input-files",
         Arg.Set_int isolation_seed_offset,
-        " <n> skip the first <n> seeds; pair with --isolation-max-seeds to walk the seed list in chunks",
+        " <n> skip the first <n> seeds; pair with --isolation-max-input-files to walk the seed list in chunks",
         (Arg_non_user_facing, Help_options) );
       ( "--find-refs",
         Arg.String (fun x -> set_mode (MODE_FIND_REFS x)),
@@ -1488,11 +1488,11 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
     match Option.value !mode ~default:MODE_STATUS with
     | MODE_ISOLATION _ ->
       let options = isolation_options () in
-      (* Nothing grows without [--isolation-grow], so there is no cluster to cap. *)
+      (* Nothing grows without [--isolation-grow-clusters], so there is no cluster to cap. *)
       if Option.is_some !isolation_max_cluster_size && not !isolation_grow then
         Die.bad_args
           ~message:
-            "--isolation-max-cluster-size caps a growing cluster; pass --isolation-grow to grow one"
+            "--isolation-max-cluster-size caps a growing cluster; pass --isolation-grow-clusters to grow one"
           ~usage:None;
       (match
          Client_isolation_args.validate
@@ -1502,7 +1502,7 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
                 [
                   ("--isolation-movable", !isolation_movable);
                   ("--isolation-move-to", Option.is_some !isolation_move_to);
-                  ("--isolation-grow", !isolation_grow);
+                  ("--isolation-grow-clusters", !isolation_grow);
                 ]
                 ~f:(fun (flag, given) ->
                   if given then

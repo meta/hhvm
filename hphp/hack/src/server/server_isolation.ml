@@ -787,7 +787,7 @@ let too_long_to_run ~grow ~total_seeds ~allow_long_run =
     in
     Some
       (Printf.sprintf
-         "%d seeds, which will take %s.\nSample it rather than covering it: --isolation-max-seeds %d %s %d seeds and stops, which is enough to see what fraction is isolatable. --isolation-seed-offset %d picks a different %d.\nOr pass --isolation-allow-long-run to %s all %d."
+         "%d seeds, which will take %s.\nSample it rather than covering it: --isolation-max-input-files %d %s %d seeds and stops, which is enough to see what fraction is isolatable. --isolation-skip-input-files %d picks a different %d.\nOr pass --isolation-allow-long-run to %s all %d."
          total_seeds
          (if Float.(hours >= 24.) then
            "days"
@@ -810,12 +810,12 @@ let unreadable_seed_source ~seed_list ~seed_dir =
   | (Some file, _) when not (is_file file) ->
     Some
       (Printf.sprintf
-         "%s is not a file. --isolation-seed-list takes a file of repo-relative paths, one per line."
+         "%s is not a file. --isolation-input-list takes a file of repo-relative paths, one per line."
          file)
   | (_, Some dir) when not (Disk.is_directory (Seeds.absolute_dir dir)) ->
     Some
       (Printf.sprintf
-         "%s is not a directory. --isolation-seed-dir takes a path relative to the repository root."
+         "%s is not a directory. --isolation-input-dir takes a path relative to the repository root."
          dir)
   | _ -> None
 
@@ -827,7 +827,7 @@ let empty_seed_source ~seed_framework ~seed_list ~seed_dir =
   | (Some base, _, _) ->
     Some
       (Printf.sprintf
-         "%s has no subclasses to start from. --isolation-seed-framework takes a class name, fully qualified."
+         "%s has no subclasses to start from. --isolation-input-framework takes a class name, fully qualified."
          base)
   | (None, Some file, _) ->
     Some

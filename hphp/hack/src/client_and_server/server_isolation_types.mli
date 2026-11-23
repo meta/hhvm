@@ -55,7 +55,7 @@ type result = {
     produce hundreds of thousands, so they go to a file as they are found and
     the result carries only the summary.
 
-    Which file depends on what the caller asked for: [--isolation-output] names
+    Which file depends on what the caller asked for: [--isolation-clusters-file] names
     one, and for [--json] without it the client makes a temporary file, prints
     it and removes it — so reaching stdout costs no more memory than reaching a
     file. *)
