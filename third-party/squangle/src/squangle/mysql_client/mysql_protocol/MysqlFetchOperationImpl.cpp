@@ -140,6 +140,10 @@ void MysqlFetchOperationImpl::actionable() {
       current_mysql_info_ = std::nullopt;
       current_rows_matched_ = std::nullopt;
 
+      // Read before InitFetch: the sync client's mysql_store_result() replaces
+      // mysql_affected_rows() with the number of rows it fetched.
+      statement_affected_rows_ = mysql_conn->getAffectedRows();
+
       query_executed_ = true;
       if (status == ERROR) {
         setActiveFetchAction(FetchAction::CompleteQuery);
@@ -266,7 +270,7 @@ void MysqlFetchOperationImpl::actionable() {
         setActiveFetchAction(FetchAction::CompleteOperation);
       } else {
         current_last_insert_id_ = mysql_conn->getLastInsertId();
-        current_affected_rows_ = mysql_conn->getAffectedRows();
+        current_affected_rows_ = statement_affected_rows_;
         current_mysql_info_ = mysql_conn->getMySQLInfo();
         current_rows_matched_ =
             parseRowsMatchedFromMysqlInfo(current_mysql_info_);

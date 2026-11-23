@@ -64,6 +64,9 @@ class MysqlFetchOperationImpl : public MysqlOperationImpl,
   void killRunningQuery();
 
   bool cancel_ = false;
+  // mysql_affected_rows() of the current statement, read as soon as its
+  // response arrives.
+  uint64_t statement_affected_rows_ = 0;
   std::optional<std::string> malformed_result_error_;
   std::atomic<bool> resume_scheduled_{false};
 };
