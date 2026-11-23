@@ -7,7 +7,10 @@
  *)
 
 let update
-    ~(silent : bool) ~(file : string) ~(source : string option) ~(ttl : float) :
-    (string, string) result =
+    ~(silent : bool)
+    ~(file : string)
+    ~(source : string option)
+    ~(ttl : float)
+    ~use_client_cert:(_ : bool) : (string, string) result =
   ignore (silent, file, source, ttl);
   Ok "Experiments config update: nothing to do"
