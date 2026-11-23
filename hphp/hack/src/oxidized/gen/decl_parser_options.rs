@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<3116303d96e9699dcbaa542e7320cbb8>>
+// @generated SignedSource<<1080ad2139066987c74353e4f8dcd83c>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -41,7 +41,6 @@ pub struct DeclParserOptions {
     pub interpret_soft_types_as_like_types: bool,
     pub enable_xhp_class_modifier: bool,
     pub everything_sdt: bool,
-    pub include_enum_member_values: bool,
     pub include_const_shape_key_values: bool,
     pub php5_compat_mode: bool,
     pub hhvm_compat_mode: bool,

@@ -23,7 +23,6 @@ impl Default for ParserOptions {
             is_systemlib: false,
             auto_namespace_map: vec![],
             everything_sdt: false,
-            include_enum_member_values: false,
             include_const_shape_key_values: false,
             check_duplicate_runtime_shape_keys: false,
             deregister_php_stdlib: false,

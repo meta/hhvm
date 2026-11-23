@@ -22,7 +22,6 @@ type t = {
   is_systemlib: bool;
   auto_namespace_map: (string * string) list;
   everything_sdt: bool;
-  include_enum_member_values: bool;
   include_const_shape_key_values: bool;
   check_duplicate_runtime_shape_keys: bool;
   keep_user_attributes: bool;
@@ -61,7 +60,6 @@ let default =
     is_systemlib = false;
     auto_namespace_map = [];
     everything_sdt = false;
-    include_enum_member_values = false;
     include_const_shape_key_values = false;
     check_duplicate_runtime_shape_keys = false;
     deregister_php_stdlib = false;

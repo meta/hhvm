@@ -12,7 +12,6 @@ type t = {
   interpret_soft_types_as_like_types: bool;
   enable_xhp_class_modifier: bool;
   everything_sdt: bool;
-  include_enum_member_values: bool;
   include_const_shape_key_values: bool;
   php5_compat_mode: bool;
   hhvm_compat_mode: bool;
@@ -36,7 +35,6 @@ let from_parser_options (popt : Parser_options.t) =
     interpret_soft_types_as_like_types = popt.interpret_soft_types_as_like_types;
     enable_xhp_class_modifier = popt.enable_xhp_class_modifier;
     everything_sdt = popt.everything_sdt;
-    include_enum_member_values = popt.include_enum_member_values;
     include_const_shape_key_values = popt.include_const_shape_key_values;
     php5_compat_mode = false;
     hhvm_compat_mode = false;

@@ -1057,7 +1057,6 @@ fn p_hint_<'a>(node: S<'a>, env: &mut Env<'a>) -> Result<ast::Hint_> {
 
             let field_map = could_map(&c.fields, env, p_shape_field)?;
             if !(env.parser_options.check_duplicate_runtime_shape_keys
-                && env.parser_options.include_enum_member_values
                 && env.parser_options.include_const_shape_key_values)
             {
                 let mut set = HashSet::default();

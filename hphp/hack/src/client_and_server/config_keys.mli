@@ -106,8 +106,6 @@ module Hhconfig : sig
 
   val check_duplicate_runtime_shape_keys : string
 
-  val include_enum_member_values : string
-
   val include_const_shape_key_values : string
 
   val disallow_toplevel_requires : string

@@ -206,12 +206,6 @@ let () =
                       expression)))
        @ [
            ( "enum_xhp_nameof" >:: fun _ ->
-             let parser_options =
-               {
-                 parser_options with
-                 Decl_parser_options.include_enum_member_values = true;
-               }
-             in
              assert_equal
                ~printer:show_value
                (Some (Typing_defs.Const_value.SKVString "xhp_foo__bar"))

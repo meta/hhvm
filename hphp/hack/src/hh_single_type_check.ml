@@ -857,7 +857,6 @@ let parse_options () =
         deregister_php_stdlib =
           !deregister_attributes >?? default.deregister_php_stdlib;
         everything_sdt = true;
-        include_enum_member_values = default.include_enum_member_values;
         include_const_shape_key_values = default.include_const_shape_key_values;
         check_duplicate_runtime_shape_keys =
           default.check_duplicate_runtime_shape_keys;

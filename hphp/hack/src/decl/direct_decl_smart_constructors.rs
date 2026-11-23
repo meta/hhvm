@@ -5359,14 +5359,10 @@ impl<'o, 't> FlattenSmartConstructors for DirectDeclSmartConstructors<'o, 't> {
         };
         // Inline the "no value" case as CVAbsent (no option wrapper), and
         // collapse `MEMBER = 'MEMBER'` to the nullary CVLabel (no stored string).
-        let const_value = if self.opts.include_enum_member_values {
-            match self.const_value(&value) {
-                Some(ConstValue::CVString(s)) if s == id.1 => ConstValue::CVLabel,
-                Some(v) => v,
-                None => ConstValue::CVAbsent,
-            }
-        } else {
-            ConstValue::CVAbsent
+        let const_value = match self.const_value(&value) {
+            Some(ConstValue::CVString(s)) if s == id.1 => ConstValue::CVLabel,
+            Some(v) => v,
+            None => ConstValue::CVAbsent,
         };
         let v = if self.opts.include_assignment_values {
             Some(self.node_to_str(value.clone(), &semicolon))

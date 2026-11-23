@@ -100,13 +100,11 @@ let check_shape_key_value env pos c cls cc =
 
 let check_shape_key_use env pos cls const_name class_const =
   if Ast_defs.is_c_enum (Cls.kind cls) then begin
-    let tcopt = Env.get_tcopt env in
     if
-      tcopt.Global_options.po.Parser_options.include_enum_member_values
-      && Option.is_none
-           (Const_value.concrete_value
-              ~member_name:const_name
-              class_const.cc_value)
+      Option.is_none
+        (Const_value.concrete_value
+           ~member_name:const_name
+           class_const.cc_value)
     then
       emit_shape_key_const_value_unresolvable
         env

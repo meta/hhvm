@@ -21,8 +21,6 @@ WHITESPACE_SPLITTER: re.Pattern = re.compile(r"\s+")
 
 DEFAULT_HH_SINGLE_FANOUT_FLAGS: List[str] = [
     "--config",
-    "include_enum_member_values=true",
-    "--config",
     "check_duplicate_enum_values=true",
 ]
 
