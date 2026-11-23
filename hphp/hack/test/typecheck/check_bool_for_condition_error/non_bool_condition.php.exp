@@ -1,5 +1,5 @@
 warning: Warn[12006] `$s` is a sketchy condition: testing the truthiness of a string may not behave as expected.
-The values `""` and `"0"` are both considered falsy. To check for non-emptiness, use `!Str\is_empty($s)`. [1]
+The values `""` and `"0"` are both considered falsy. To check for non-emptiness, compare against `""` explicitly. [1]
 
 non_bool_condition.php:19:9
 17 |   $x || $bool;

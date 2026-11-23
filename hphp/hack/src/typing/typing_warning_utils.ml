@@ -278,23 +278,16 @@ module Truthiness_test = struct
         (match sketchy with
         | String ->
           Printf.sprintf
-            "The values `\"\"` and `\"0\"` are both considered falsy. To check for %semptiness, use `%sStr\\is_empty%s`."
+            "The values `\"\"` and `\"0\"` are both considered falsy. To check for %semptiness, compare against `\"\"` explicitly."
             (if not then
               ""
             else
               "non-")
-            (if not then
-              ""
-            else
-              "!")
-            (match expr with
-            | None -> ""
-            | Some e -> Printf.sprintf "(%s)" e)
         | Arraykey ->
           "The values `0`, `\"\"`, and `\"0\"` are all considered falsy. Test for them explicitly."
         | Stringish ->
           "The values `\"\"` and `\"0\"` are both considered falsy, but objects will be truthy even if their `__toString` returns `\"\"` or `\"0\"`.\n"
-          ^ "To check for emptiness, convert to a string and use `Str\\is_empty`."
+          ^ "To check for emptiness, convert to a string and compare against the empty string."
         | Xhp_child ->
           "The values `\"\"` and `\"0\"` are both considered falsy, but objects (including XHP elements) will be truthy even if their `__toString` returns `\"\"` or `\"0\"`."
         | Traversable ->

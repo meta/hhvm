@@ -50,10 +50,6 @@ Str\ends_with_ci
   INSERT Str\ends_with_ci(
   INSERT , ${1:\$suffix})
   (function(string $string, string $suffix)[]: bool)
-Str\is_empty
-  INSERT Str\is_empty(
-  INSERT )
-  (function(~?string $string)[]: bool)
 Str\length
   INSERT Str\length(
   INSERT )

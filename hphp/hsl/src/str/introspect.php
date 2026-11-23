@@ -138,18 +138,6 @@ function ends_with_ci(
 }
 
 /**
- * Returns `true` if `$string` is null or the empty string.
- * Returns `false` otherwise.
- *
- * @guide /hack/built-in-types/string
- */
-function is_empty(
-  ?string $string,
-)[]: bool {
-  return $string === null || $string === '';
-}
-
-/**
  * Returns the length of the given string represented in number of bytes.
  *
  * This function is `O(1)`: it always returns the number of bytes in the string,

@@ -1,6 +1,6 @@
 warning: Lint[5623] `$x` is a sketchy condition: testing the truthiness of Stringish may not behave as expected.
 The values `""` and `"0"` are both considered falsy, but objects will be truthy even if their `__toString` returns `""` or `"0"`.
-To check for emptiness, convert to a string and use `Str\is_empty`. [1]
+To check for emptiness, convert to a string and compare against the empty string. [1]
 
 truthiness_test_19.php:4:7
 2 | 

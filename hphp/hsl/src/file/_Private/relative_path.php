@@ -21,7 +21,7 @@ function relative_path(string $path, ?string $relative_to = null): string {
   if (
     Str\starts_with($path, '/') ||
     $relative_to === null ||
-    Str\is_empty($relative_to)
+    $relative_to === ''
   ) {
     return $path;
   } else {

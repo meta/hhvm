@@ -340,7 +340,7 @@ partial mode files to strict. We still recommend avoiding this code style.
 **Why it's bad:** Truthiness rules can be surprising. `''` is falsy, but
 so is `'0'`.
 
-**Suggestions:** Use `is null`, `Str\is_empty` or `=== 0` when checking
+**Suggestions:** Use `is null`, `=== ""` or `=== 0` when checking
 for empty values.
 
 ## 4297: Type inference failed

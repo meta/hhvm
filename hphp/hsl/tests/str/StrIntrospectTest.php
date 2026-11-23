@@ -220,24 +220,6 @@ final class StrIntrospectTest extends HackTest {
     expect(Str\ends_with_ci($string, $suffix))->toEqual($expected);
   }
 
-  public static function provideIsEmpty(): varray<mixed> {
-    return vec[
-      tuple(null, true),
-      tuple('', true),
-      tuple('0', false),
-      tuple("\0", false),
-      tuple('anything else', false),
-    ];
-  }
-
-  <<DataProvider('provideIsEmpty')>>
-  public function testIsEmpty(
-    ?string $string,
-    bool $expected,
-  ): void {
-    expect(Str\is_empty($string))->toEqual($expected);
-  }
-
   public static function provideLength(): varray<mixed> {
     return vec[
       tuple('', 0),

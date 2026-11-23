@@ -1836,7 +1836,7 @@ function exec_with_timeout(string $cmd,
   $exit_code = $status['exitcode'];
   proc_close($proc);
 
-  if (!$timedout && C\contains($success_codes, $exit_code) && Str\is_empty($stderr)) {
+  if (!$timedout && C\contains($success_codes, $exit_code) && $stderr === '') {
     return tuple($stdout, true);
   }
 
@@ -1847,7 +1847,7 @@ function exec_with_timeout(string $cmd,
   } else {
     $error .= " (exit-code $exit_code)";
   }
-  if (!Str\is_empty($stderr)) $error .= ' (wrote to stderr)';
+  if ($stderr !== '') $error .= ' (wrote to stderr)';
 
   list($before_dump, $dump) = split_stack_trace_from_output($stdout);
 
@@ -1860,7 +1860,7 @@ function exec_with_timeout(string $cmd,
   if ($stack is nonnull && HH\legacy_is_truthy($stack)) {
     $error .= "\nstdout:\n$before_dump\nstderr:\n$stderr";
     $error .= "\nContents of $stack_file:\n$stack";
-  } else if (!Str\is_empty($dump)) {
+  } else if ($dump !== '') {
     $error .= "\nstdout:\n$dump\nstderr:\n$stderr";
   } else {
     $error .= "\nstdout:\n$before_dump\nstderr:\n$stderr";
@@ -2620,7 +2620,7 @@ final class Status {
       return false;
     }
     $stty = self::getSTTY();
-    if (Str\is_empty($stty)) {
+    if ($stty === '') {
       return false;
     }
     // emacs hack-mode really doesn't like <undef> inside a string...
@@ -3026,7 +3026,7 @@ function should_skip_test_simple(
         read_dir_flag(dirname($test), 'nomultireq')) {
       return 'skip-multi-req';
     }
-    if (!Str\is_empty(find_debug_config($test, 'hphpd.ini'))) {
+    if (find_debug_config($test, 'hphpd.ini') !== '') {
       return 'skip-debugger';
     }
   }
@@ -3058,7 +3058,7 @@ function should_skip_test_simple(
   if ($options->repo) {
     if (read_test_flag($test, 'norepo')) return 'skip-norepo';
     if (read_test_flag($test, 'verify')) return 'skip-verify';
-    if (!Str\is_empty(find_debug_config($test, 'hphpd.ini'))) return 'skip-debugger';
+    if (find_debug_config($test, 'hphpd.ini') !== '') return 'skip-debugger';
   }
 
   if ($options->only_remote_executable &&

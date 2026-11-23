@@ -54,10 +54,6 @@ Str\example_for_testing_named_params_fake_arrow
   INSERT Str\example_for_testing_named_params_fake_arrow(
   INSERT , length=${1:\$length})
   (function(named int $length, string $_): void)
-Str\is_empty
-  INSERT Str\is_empty(
-  INSERT )
-  (function(~?string $string)[]: bool)
 Str\length
   INSERT Str\length(
   INSERT )

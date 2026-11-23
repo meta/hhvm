@@ -21,7 +21,7 @@ null_check_strict3.php:4:7
 
 
 warning: Lint[5623] `$x` is a sketchy condition: testing the truthiness of a string may not behave as expected.
-The values `""` and `"0"` are both considered falsy. To check for non-emptiness, use `!Str\is_empty($x)`. [1]
+The values `""` and `"0"` are both considered falsy. To check for non-emptiness, compare against `""` explicitly. [1]
 
 null_check_strict3.php:6:8
 4 |   if ($y) {

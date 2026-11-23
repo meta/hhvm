@@ -1,5 +1,5 @@
 warning: Lint[5623] `$x` is a sketchy condition: testing the truthiness of a string may not behave as expected.
-The values `""` and `"0"` are both considered falsy. To check for non-emptiness, use `!Str\is_empty($x)`. [1]
+The values `""` and `"0"` are both considered falsy. To check for non-emptiness, compare against `""` explicitly. [1]
 
 truthiness_test_14.php:5:7
 3 | function test(bool $b, string $s): void {
