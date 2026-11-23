@@ -300,6 +300,8 @@ type t = {
       (** Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables. *)
   tco_ban_memoize_erased_generic_return: bool;
       (** Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics. *)
+  tco_ban_lsb_this_in_generic_classes: bool;
+      (** Reject a generic class whose `<<__LSB>>` static properties, including inherited ones, mention `this` outside a type constant access such as `this::T`. Every instantiation of the class shares the property, so a value stored as one instantiation's `this` could be read back as another's. *)
 }
 [@@deriving eq, show]
 
@@ -409,6 +411,7 @@ val set :
   ?tco_tests_bypass_visibility_static_properties:bool ->
   ?tco_missing_targs_as_fresh_generics:bool ->
   ?tco_ban_memoize_erased_generic_return:bool ->
+  ?tco_ban_lsb_this_in_generic_classes:bool ->
   t ->
   t
 

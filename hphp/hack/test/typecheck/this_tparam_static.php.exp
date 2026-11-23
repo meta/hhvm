@@ -1,8 +1,11 @@
-error: Naming[2043] The type `this` cannot be used as a constraint on a class generic, or as the type of a static member variable [1]
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
 
 this_tparam_static.php:13:19
+10 |  */
 11 | 
 12 | class BadClass {
+   |       ^^^^^^^^ [2]
 13 |   private static ?this $instance;
    |                   ^^^^ [1]
 14 | 

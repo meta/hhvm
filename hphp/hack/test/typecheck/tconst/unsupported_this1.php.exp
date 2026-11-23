@@ -1,4 +1,4 @@
-error: Naming[2043] The type `this` cannot be used as a constraint on a class generic, or as the type of a static member variable [1]
+error: Naming[2043] The type `this` cannot be used as a constraint on a class generic [1]
 
 unsupported_this1.php:3:23
 1 | <?hh

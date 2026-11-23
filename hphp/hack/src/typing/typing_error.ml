@@ -1548,6 +1548,15 @@ module Primary = struct
         var_ty_pos: Pos_or_decl.t;
         class_pos: Pos_or_decl.t;
       }
+    | Static_prop_type_this_in_generic_class of {
+        pos: Pos.t;
+        var_ty_pos: Pos_or_decl.t;
+        class_pos: Pos_or_decl.t;
+      }
+    | Static_prop_type_this_not_lsb of {
+        pos: Pos.t;
+        class_pos: Pos_or_decl.t;
+      }
     | Contravariant_this of {
         pos: Pos.t;
         class_name: string;

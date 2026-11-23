@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<8011eef5f184a4f78cecf7e88aeeefad>>
+// @generated SignedSource<<1c26169afa1c50ca048d2c5615c1a53b>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -410,4 +410,6 @@ pub struct GlobalOptions {
     pub tco_missing_targs_as_fresh_generics: bool,
     /// Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics.
     pub tco_ban_memoize_erased_generic_return: bool,
+    /// Reject a generic class whose `<<__LSB>>` static properties, including inherited ones, mention `this` outside a type constant access such as `this::T`. Every instantiation of the class shares the property, so a value stored as one instantiation's `this` could be read back as another's.
+    pub tco_ban_lsb_this_in_generic_classes: bool,
 }

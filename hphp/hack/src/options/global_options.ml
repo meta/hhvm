@@ -198,6 +198,7 @@ type t = {
   tco_tests_bypass_visibility_static_properties: bool;
   tco_missing_targs_as_fresh_generics: bool;
   tco_ban_memoize_erased_generic_return: bool;
+  tco_ban_lsb_this_in_generic_classes: bool;
 }
 [@@deriving eq, show]
 
@@ -309,6 +310,7 @@ let default =
     tco_tests_bypass_visibility_static_properties = false;
     tco_missing_targs_as_fresh_generics = false;
     tco_ban_memoize_erased_generic_return = false;
+    tco_ban_lsb_this_in_generic_classes = false;
   }
 
 let set
@@ -417,6 +419,7 @@ let set
     ?tco_tests_bypass_visibility_static_properties
     ?tco_missing_targs_as_fresh_generics
     ?tco_ban_memoize_erased_generic_return
+    ?tco_ban_lsb_this_in_generic_classes
     options =
   let setting setting option =
     match setting with
@@ -721,6 +724,10 @@ let set
       setting
         tco_ban_memoize_erased_generic_return
         options.tco_ban_memoize_erased_generic_return;
+    tco_ban_lsb_this_in_generic_classes =
+      setting
+        tco_ban_lsb_this_in_generic_classes
+        options.tco_ban_lsb_this_in_generic_classes;
   }
 
 let so_naming_sqlite_path t = t.so_naming_sqlite_path

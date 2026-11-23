@@ -5301,6 +5301,41 @@ end = struct
     in
     create ~code:Error_code.ClassVarTypeGenericParam ~claim ~reasons ()
 
+  let static_property_type_this_in_generic_class this_pos class_pos var_type_pos
+      =
+    let claim =
+      lazy
+        ( this_pos,
+          "`this` cannot be used in the type of a static property of a generic class"
+        )
+    and reasons =
+      lazy
+        [
+          ( var_type_pos,
+            "This is where the type of the static property was declared" );
+          ( class_pos,
+            "Every instantiation of this class shares the property, so `this` could be read back with other type arguments"
+          );
+        ]
+    in
+    create ~code:Error_code.ClassVarTypeGenericParam ~claim ~reasons ()
+
+  let static_property_type_this_not_lsb this_pos class_pos =
+    let claim =
+      lazy
+        ( this_pos,
+          "`this` cannot be used in the type of a static property unless it is `<<__LSB>>`"
+        )
+    and reasons =
+      lazy
+        [
+          ( class_pos,
+            "This class and all its subclasses share the property, so `this` could be read back as another class"
+          );
+        ]
+    in
+    create ~code:Error_code.ClassVarTypeGenericParam ~claim ~reasons ()
+
   let contravariant_this pos class_name tp =
     create
       ~code:Error_code.ContravariantThis
@@ -6170,6 +6205,10 @@ end = struct
       declared_contravariant pos param_pos msgs
     | Static_prop_type_generic_param { pos; var_ty_pos; class_pos } ->
       static_property_type_generic_param pos class_pos var_ty_pos
+    | Static_prop_type_this_in_generic_class { pos; var_ty_pos; class_pos } ->
+      static_property_type_this_in_generic_class pos class_pos var_ty_pos
+    | Static_prop_type_this_not_lsb { pos; class_pos } ->
+      static_property_type_this_not_lsb pos class_pos
     | Contravariant_this { pos; class_name; typaram_name } ->
       contravariant_this pos class_name typaram_name
     | Cyclic_typeconst { pos; tyconst_names } ->

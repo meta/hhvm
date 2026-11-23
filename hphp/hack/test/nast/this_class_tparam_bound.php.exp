@@ -1,6 +1,6 @@
 Errors:
-  [3:14-18] The type `this` cannot be used as a constraint on a class generic, or as the type of a static member variable
-  [7:23-27] The type `this` cannot be used as a constraint on a class generic, or as the type of a static member variable
+  [3:14-18] The type `this` cannot be used as a constraint on a class generic
+  [7:23-27] The type `this` cannot be used as a constraint on a class generic
 [(Class
     { c_span = [3:1-5:2]; c_annotation = (); c_mode = Mstrict; c_final = false; 
       c_is_xhp = false; c_has_xhp_keyword = false; c_kind = (Cclass Concrete); 

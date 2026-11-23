@@ -1103,32 +1103,67 @@ let class_type_param env ct =
   let (env, tparam_list) = List.map_env env ct ~f:Typing.type_param in
   (env, tparam_list)
 
-(** Check whether the type of a static property (class variable) contains
-    any generic type parameters. Outside of traits, this is illegal as static
-     * properties are shared across all generic instantiations. *)
-let check_no_generic_static_property env tc =
-  if Ast_defs.is_c_trait (Cls.kind tc) then
-    ()
-  else
-    Cls.sprops tc
-    |> List.iter ~f:(fun (_prop_name, prop) ->
-           let (lazy ty) = prop.ce_type in
-           let var_ty_pos = get_pos ty in
-           let class_pos = Cls.pos tc in
+(** Check whether the type of a static property (class variable) mentions a
+    type that can differ between the readers that share the property: a class
+    type parameter, which every instantiation shares (allowed in traits), or
+    `this`, which every subclass shares unless the property is `<<__LSB>>`. *)
+let check_static_property_types env tc =
+  let is_trait = Ast_defs.is_c_trait (Cls.kind tc) in
+  let ban_lsb_this =
+    TCO.ban_lsb_this_in_generic_classes (Env.get_tcopt env)
+    && not (List.is_empty (Cls.tparams tc))
+  in
+  let class_pos = Cls.pos tc in
+  let add_error pos mk_error =
+    (* An inherited property's position may be in a different file *)
+    Option.iter
+      (Env.fill_in_pos_filename_if_in_current_decl env pos)
+      ~f:(fun pos ->
+        Typing_error_utils.add_typing_error
+          ~env
+          (Typing_error.primary (mk_error pos)))
+  in
+  Cls.sprops tc
+  |> List.iter ~f:(fun (_prop_name, prop) ->
+         let (lazy ty) = prop.ce_type in
+         let var_ty_pos = get_pos ty in
+         let declared_here = String.equal prop.ce_origin (Cls.name tc) in
+         let lsb = get_ce_lsb prop in
+         if (not lsb) && declared_here then
+           (* Shape fields and function return types were never checked, and
+              existing code relies on that *)
+           TUtils.find_this_decl
+             ~in_type_access_roots:true
+             ~in_shape_fields_and_returns:false
+             ty
+           |> Option.iter ~f:(fun this_pos ->
+                  add_error this_pos (fun pos ->
+                      Typing_error.Primary.Static_prop_type_this_not_lsb
+                        { pos; class_pos }));
+         if not is_trait then
            match TUtils.contains_generic_decl ty with
-           | None -> ()
            | Some generic_pos ->
-             Option.iter
-               (* If the static property is inherited from another trait, the position may be
-                * in a different file. *)
-               (Env.fill_in_pos_filename_if_in_current_decl env generic_pos)
-               ~f:(fun generic_pos ->
-                 Typing_error_utils.add_typing_error
-                   ~env
-                   Typing_error.(
-                     primary
-                     @@ Primary.Static_prop_type_generic_param
-                          { class_pos; var_ty_pos; pos = generic_pos })))
+             add_error generic_pos (fun pos ->
+                 Typing_error.Primary.Static_prop_type_generic_param
+                   { class_pos; var_ty_pos; pos })
+           | None when ban_lsb_this && lsb ->
+             TUtils.find_this_decl
+               ~in_type_access_roots:false
+               ~in_shape_fields_and_returns:true
+               ty
+             |> Option.iter ~f:(fun this_pos ->
+                    (* An inherited property is reported at the class *)
+                    let pos =
+                      if declared_here then
+                        this_pos
+                      else
+                        class_pos
+                    in
+                    add_error pos (fun pos ->
+                        Typing_error.Primary
+                        .Static_prop_type_this_in_generic_class
+                          { class_pos; var_ty_pos; pos }))
+           | None -> ())
 
 let typeconst_def
     cls
@@ -1985,7 +2020,7 @@ let check_tests_bypass_visibility_on_internal_class env c =
   - tests-bypass-visibility wellformedness
   - type parameter checks
   - type hint wellformedness
-  - generic static properties *)
+  - static property types *)
 let class_wellformedness_checks env c tc (parents : class_parents) =
   (* Class and file level attributes are ran outside of the class context and thus should not
      have access to `self` in the environment, so we unset self while running these attribute checks.
@@ -2000,7 +2035,7 @@ let class_wellformedness_checks env c tc (parents : class_parents) =
   check_tests_bypass_visibility_on_internal_class env c;
   let env = check_class_type_parameters_add_constraints env c tc in
   let env = check_hint_wellformedness_in_class env c parents in
-  check_no_generic_static_property env tc;
+  check_static_property_types env tc;
   (env, user_attributes, file_attrs)
 
 (** Reject re-promoting (via a constructor parameter visibility modifier) a

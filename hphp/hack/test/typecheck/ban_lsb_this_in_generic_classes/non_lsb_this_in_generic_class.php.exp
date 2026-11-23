@@ -1,0 +1,13 @@
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+non_lsb_this_in_generic_class.php:4:19
+1 | <?hh
+2 | 
+3 | class NonLsbInGeneric<T> {
+  |       ^^^^^^^^^^^^^^^ [2]
+4 |   private static ?this $slot = null;
+  |                   ^^^^ [1]
+5 | }
+
+1 error found

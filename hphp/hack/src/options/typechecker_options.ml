@@ -298,3 +298,6 @@ let missing_targs_as_fresh_generics t =
 
 let ban_memoize_erased_generic_return t =
   t.Global_options.tco_ban_memoize_erased_generic_return
+
+let ban_lsb_this_in_generic_classes t =
+  t.Global_options.tco_ban_lsb_this_in_generic_classes

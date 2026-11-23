@@ -33,6 +33,8 @@ module Hhconfig = struct
   let ban_memoize_erased_generic_return =
     key "ban_memoize_erased_generic_return"
 
+  let ban_lsb_this_in_generic_classes = key "ban_lsb_this_in_generic_classes"
+
   let const_static_props = key "const_static_props"
 
   let deregister_php_stdlib = key "deregister_php_stdlib"

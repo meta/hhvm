@@ -1,0 +1,20 @@
+error: Typing[4279] `this` cannot be used in the type of a static property of a generic class [1]
+-> This is where the type of the static property was declared [2]
+-> Every instantiation of this class shares the property, so `this` could be read back with other type arguments [1]
+
+lsb_this_from_trait_in_other_file.php--class.php:3:7
+1 | <?hh
+2 | 
+3 | class UsesSlotElsewhere<T> {
+  |       ^^^^^^^^^^^^^^^^^ [1]
+4 |   use TSlotElsewhere;
+5 | }
+
+lsb_this_from_trait_in_other_file.php--trait.php:4:28
+2 | 
+3 | trait TSlotElsewhere {
+4 |   <<__LSB>> private static ?this $slot = null;
+  |                            ^^^^^ [2]
+5 | }
+
+1 error found

@@ -1,0 +1,16 @@
+error: Typing[4279] `this` cannot be used in the type of a static property of a generic class [1]
+-> This is where the type of the static property was declared [2]
+-> Every instantiation of this class shares the property, so `this` could be read back with other type arguments [3]
+
+lsb_this_static_in_generic_class_T297046361.php:4:29
+1 | <?hh
+2 | 
+3 | class LsbBox<T> {
+  |       ^^^^^^ [3]
+4 |   <<__LSB>> private static ?this $slot = null;
+  |                            ^^^^^ [2]
+  |                             ^^^^ [1]
+5 | 
+6 |   public function __construct(private T $v) {}
+
+1 error found

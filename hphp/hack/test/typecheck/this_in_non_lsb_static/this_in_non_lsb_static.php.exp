@@ -1,0 +1,107 @@
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static.php:5:19
+1 | <?hh
+2 | 
+3 | abstract class Statics {
+  |                ^^^^^^^ [2]
+4 |   abstract const type T;
+5 |   private static ?this $option = null;
+  |                   ^^^^ [1]
+6 |   private static vec<this> $nested = vec[];
+7 |   private static ?this::T $access = null;
+
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static.php:6:22
+1 | <?hh
+2 | 
+3 | abstract class Statics {
+  |                ^^^^^^^ [2]
+4 |   abstract const type T;
+5 |   private static ?this $option = null;
+6 |   private static vec<this> $nested = vec[];
+  |                      ^^^^ [1]
+7 |   private static ?this::T $access = null;
+8 |   private static ?(function(this): void) $param = null;
+
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static.php:7:19
+1 | <?hh
+2 | 
+3 | abstract class Statics {
+  |                ^^^^^^^ [2]
+4 |   abstract const type T;
+5 |   private static ?this $option = null;
+6 |   private static vec<this> $nested = vec[];
+7 |   private static ?this::T $access = null;
+  |                   ^^^^^^^ [1]
+8 |   private static ?(function(this): void) $param = null;
+9 |   private static ?shape(this...) $splat = null;
+
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static.php:8:29
+ 1 | <?hh
+ 2 | 
+ 3 | abstract class Statics {
+   |                ^^^^^^^ [2]
+ 4 |   abstract const type T;
+ 5 |   private static ?this $option = null;
+ 6 |   private static vec<this> $nested = vec[];
+ 7 |   private static ?this::T $access = null;
+ 8 |   private static ?(function(this): void) $param = null;
+   |                             ^^^^ [1]
+ 9 |   private static ?shape(this...) $splat = null;
+10 | }
+
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static.php:9:25
+ 1 | <?hh
+ 2 | 
+ 3 | abstract class Statics {
+   |                ^^^^^^^ [2]
+ 4 |   abstract const type T;
+ 5 |   private static ?this $option = null;
+ 6 |   private static vec<this> $nested = vec[];
+ 7 |   private static ?this::T $access = null;
+ 8 |   private static ?(function(this): void) $param = null;
+ 9 |   private static ?shape(this...) $splat = null;
+   |                         ^^^^ [1]
+10 | }
+11 | 
+
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static.php:13:19
+10 | }
+11 | 
+12 | final class FinalStatics {
+   |             ^^^^^^^^^^^^ [2]
+13 |   private static ?this $final = null;
+   |                   ^^^^ [1]
+14 | }
+15 | 
+
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static.php:17:19
+14 | }
+15 | 
+16 | trait StaticsTrait {
+   |       ^^^^^^^^^^^^ [2]
+17 |   private static ?this $in_trait = null;
+   |                   ^^^^ [1]
+18 | }
+19 | 
+
+7 errors found

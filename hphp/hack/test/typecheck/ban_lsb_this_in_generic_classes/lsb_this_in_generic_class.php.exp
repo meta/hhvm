@@ -1,0 +1,62 @@
+error: Typing[4279] `this` cannot be used in the type of a static property of a generic class [1]
+-> This is where the type of the static property was declared [2]
+-> Every instantiation of this class shares the property, so `this` could be read back with other type arguments [3]
+
+lsb_this_in_generic_class.php:4:29
+1 | <?hh
+2 | 
+3 | class Box<T> {
+  |       ^^^ [3]
+4 |   <<__LSB>> private static ?this $slot = null;
+  |                            ^^^^^ [2]
+  |                             ^^^^ [1]
+5 |   <<__LSB>> private static vec<this> $all = vec[];
+6 | }
+
+error: Typing[4279] `this` cannot be used in the type of a static property of a generic class [1]
+-> This is where the type of the static property was declared [2]
+-> Every instantiation of this class shares the property, so `this` could be read back with other type arguments [3]
+
+lsb_this_in_generic_class.php:5:32
+1 | <?hh
+2 | 
+3 | class Box<T> {
+  |       ^^^ [3]
+4 |   <<__LSB>> private static ?this $slot = null;
+5 |   <<__LSB>> private static vec<this> $all = vec[];
+  |                            ^^^^^^^^^ [2]
+  |                                ^^^^ [1]
+6 | }
+7 | 
+
+error: Typing[4279] `this` cannot be used in the type of a static property of a generic class [1]
+-> This is where the type of the static property was declared [2]
+-> Every instantiation of this class shares the property, so `this` could be read back with other type arguments [1]
+
+lsb_this_in_generic_class.php:12:7
+ 7 | 
+ 8 | trait TSlot {
+ 9 |   <<__LSB>> private static ?this $slot = null;
+   |                            ^^^^^ [2]
+10 | }
+11 | 
+12 | class UsesSlot<T> {
+   |       ^^^^^^^^ [1]
+13 |   use TSlot;
+14 | }
+
+error: Typing[4279] `this` cannot be used in the type of a static property of a generic class [1]
+-> This is where the type of the static property was declared [2]
+-> Every instantiation of this class shares the property, so `this` could be read back with other type arguments [1]
+
+lsb_this_in_generic_class.php:20:7
+15 | 
+16 | class NonGenericBase {
+17 |   <<__LSB>> protected static ?this $slot = null;
+   |                              ^^^^^ [2]
+18 | }
+19 | 
+20 | class GenericChild<T> extends NonGenericBase {}
+   |       ^^^^^^^^^^^^ [1]
+
+4 errors found

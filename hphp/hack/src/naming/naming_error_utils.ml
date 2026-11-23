@@ -541,7 +541,7 @@ let this_type_forbidden pos in_extends in_req_extends =
     else if in_req_extends then
       "This type `this` cannot be used in a `require extends` clause"
     else
-      "The type `this` cannot be used as a constraint on a class generic, or as the type of a static member variable"
+      "The type `this` cannot be used as a constraint on a class generic"
   in
   User_diagnostic.make_err Error_code.(to_enum ThisMustBeReturn) (pos, msg) []
 

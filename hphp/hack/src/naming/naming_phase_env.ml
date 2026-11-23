@@ -41,7 +41,6 @@ module Elab_this_hint = struct
   type t = {
     (* `this` is forbidden as a hint in this context *)
     forbid_this: bool;
-    lsb: bool option;
     in_interface: bool;
     in_req_extends: bool;
     in_extends: bool;
@@ -52,7 +51,6 @@ module Elab_this_hint = struct
   let empty =
     {
       forbid_this = false;
-      lsb = None;
       in_interface = false;
       in_req_extends = false;
       in_extends = false;

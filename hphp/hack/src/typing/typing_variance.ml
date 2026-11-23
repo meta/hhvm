@@ -908,7 +908,7 @@ let class_property : Env.t -> Nast.class_var -> unit =
   Option.iter (snd prop.Aast.cv_type) ~f:(fun h ->
       if prop.Aast.cv_is_static then
         (* Static properties should not be generic at all. This is checked in
-         * Typing_toplevel.check_no_generic_static_property on the class decl,
+         * Typing_class.check_static_property_types on the class decl,
          * Since we need properties imported from traits as well. *)
         ()
       else

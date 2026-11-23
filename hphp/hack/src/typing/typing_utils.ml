@@ -399,6 +399,42 @@ let contains_generic_decl : Typing_defs.decl_ty -> Pos_or_decl.t option =
   with
   | FoundGeneric p -> Some p
 
+let find_this_decl ~in_type_access_roots ~in_shape_fields_and_returns :
+    Typing_defs.decl_ty -> Pos_or_decl.t option =
+ fun ty ->
+  let visitor =
+    object (this)
+      inherit [_] Type_visitor.decl_type_visitor as super
+
+      method! on_type env ty =
+        match get_node ty with
+        | Tthis -> raise (FoundGeneric (get_pos ty))
+        | Taccess _ when not in_type_access_roots -> env
+        | _ -> super#on_type env ty
+
+      method! on_tshape env r shape_ty =
+        match shape_ty with
+        | Shape_simple { s_unknown_value; _ }
+          when not in_shape_fields_and_returns ->
+          this#on_type env s_unknown_value
+        | _ -> super#on_tshape env r shape_ty
+
+      method! on_tfun env r ft =
+        if in_shape_fields_and_returns then
+          super#on_tfun env r ft
+        else
+          super#on_tfun
+            env
+            r
+            { ft with ft_ret = mk (get_reason ft.ft_ret, Tmixed) }
+    end
+  in
+  try
+    visitor#on_type () ty;
+    None
+  with
+  | FoundGeneric p -> Some p
+
 let wrap_union_inter_ty_in_var env r ty =
   if is_union_or_inter_type ty then
     let (env, contains_unresolved_tyvars) = contains_unresolved_tyvars env ty in

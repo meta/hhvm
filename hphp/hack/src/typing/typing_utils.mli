@@ -362,6 +362,16 @@ val contains_tvar_decl : Typing_defs.decl_ty -> bool
 
 val contains_generic_decl : Typing_defs.decl_ty -> Pos_or_decl.t option
 
+(** The position of a `this` in the type. [in_type_access_roots] also looks at
+    the root of a type constant access such as `this::T`, and
+    [in_shape_fields_and_returns] also looks in shape field types and function
+    return types. *)
+val find_this_decl :
+  in_type_access_roots:bool ->
+  in_shape_fields_and_returns:bool ->
+  Typing_defs.decl_ty ->
+  Pos_or_decl.t option
+
 (** [wrap_union_inter_ty_in_var env r ty] wraps [ty] in a type variable
   if [ty] is a union, intersection or option containing an unsolved type variable.
   Wrapping in a type variable means a new type variable is created and mapped to [ty].

@@ -604,6 +604,10 @@ impl HhConfig {
                 "ban_memoize_erased_generic_return",
                 default.tco_ban_memoize_erased_generic_return,
             )?,
+            tco_ban_lsb_this_in_generic_classes: hhconfig.get_bool_or(
+                "ban_lsb_this_in_generic_classes",
+                default.tco_ban_lsb_this_in_generic_classes,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();
