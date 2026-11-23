@@ -79,7 +79,6 @@ impl Default for GlobalOptions {
             tco_custom_error_config: CustomErrorConfig::default(),
             tco_const_attribute: false,
             tco_disallow_discarded_nullable_awaitables: false,
-            tco_check_duplicate_enum_values: false,
             glean_reponame: String::from("www.hack.light"),
             symbol_write_index_inherited_members: true,
             symbol_write_ownership: false,

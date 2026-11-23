@@ -1,20 +1,20 @@
 error: Typing[4019] This `switch` statement is nonexhaustive. At least the following cases are missing: `E::WYXGFEBA1`, `E::WYXGFEBA10`, `E::WYXGFEBA100`, `E::WYXGFEBA101`, `E::WYXGFEBA102`, `E::WYXGFEBA103`, `E::WYXGFEBA104`, `E::WYXGFEBA105`, `E::WYXGFEBA106`, `E::WYXGFEBA107` [1]
 -> The scrutinee has type `E`. [2]
 
-switch_exhaustiveness_stress_test.php:18439:3
-18437 | 
-18438 | function main(E $e): void {
-18439 |   switch ($e) {
+switch_exhaustiveness_stress_test.php:18440:3
+18438 | 
+18439 | function main(E $e): void {
+18440 |   switch ($e) {
       |   ^^^^^^^^^^^^^ [1]
       |           ^^ [2]
-18440 |     case E::YXGFEBA229:
+18441 |     case E::YXGFEBA229:
       |     ^^^^^^^^^^^^^^^^^^^ [1]
-18441 |       echo 'hello';
+18442 |       echo 'hello';
       |       ^^^^^^^^^^^^^ [1]
-18442 |       break;
+18443 |       break;
       |       ^^^^^^ [1]
-18443 |   }
+18444 |   }
       |   ^ [1]
-18444 | }
+18445 | }
 
 1 error found

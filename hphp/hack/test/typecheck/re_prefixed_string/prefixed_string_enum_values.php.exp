@@ -1,1 +1,13 @@
-No errors
+error: Typing[4520] `PatternEnum` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `SIMPLE` cannot be checked [2]
+
+prefixed_string_enum_values.php:3:6
+1 | <?hh
+2 | 
+3 | enum PatternEnum: HH\Lib\Regex\Pattern<shape(...)> as string {
+  |      ^^^^^^^^^^^ [1]
+4 |   SIMPLE = re'/simple/';
+  |   ^^^^^^ [2]
+5 | }
+
+1 error found

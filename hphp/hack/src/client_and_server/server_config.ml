@@ -492,8 +492,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
       (bool_opt
          Config_keys.Hhconfig.disallow_discarded_nullable_awaitables
          config)
-    ?tco_check_duplicate_enum_values:
-      (bool_opt Config_keys.Hhconfig.check_duplicate_enum_values config)
     ?tco_typecheck_sample_rate:
       (float_opt Config_keys.Hhconfig.typecheck_sample_rate config)
     ?tco_pessimise_builtins:

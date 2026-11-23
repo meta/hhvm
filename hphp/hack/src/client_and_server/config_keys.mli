@@ -102,8 +102,6 @@ module Hhconfig : sig
 
   val disallow_discarded_nullable_awaitables : string
 
-  val check_duplicate_enum_values : string
-
   val check_duplicate_runtime_shape_keys : string
 
   val include_const_shape_key_values : string

@@ -1,10 +1,5 @@
 <?hh
 
-// With check_duplicate_enum_values on (see HH_FLAGS), an enum member whose value
-// cannot be statically evaluated (constant reference, arithmetic, ...) is flagged
-// as uncheckable: the enum can't be verified free of duplicate values, so it
-// needs a literal value or the opt-out attribute.
-
 class Bar {
   const int C = 1;
 }

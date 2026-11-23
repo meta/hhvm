@@ -8,11 +8,12 @@ In Hack, enums are limited to `int` or `string` (as an [`Arraykey`](/hack/built-
 To access an enum's value, use its full name, as in `Colors::Blue` or `Permission::Read`.
 
 ```hack
+<<__AllowUncheckedEnumValues>>
 enum Colors: int {
   Red = 3;
   Green = 5;
   Blue = 10;
-  Default = 3; // duplicate value is okay
+  Default = 3; // duplicate value is allowed by the attribute
 }
 ```
 
@@ -25,9 +26,10 @@ enum Permission: string {
 }
 ```
 
-Additionally, by using the [`as`](/hack/expressions-and-operators/type-assertions#enforcing-types-with-as-and-as) operator to enforce type, you can initialize your enum with static expressions that reference other enum values.
+Additionally, by using the [`as`](/hack/expressions-and-operators/type-assertions#enforcing-types-with-as-and-as) operator to enforce type, you can initialize your enum with static expressions that reference other enum values. Computed expressions like those below cannot be statically checked for duplicate values, so the enum must use `<<__AllowUncheckedEnumValues>>`.
 
 ```hack
+<<__AllowUncheckedEnumValues>>
 enum BitFlags: int as int {
   F1 = 1; // value 1
   F2 = BitFlags::F1 << 1; // value 2

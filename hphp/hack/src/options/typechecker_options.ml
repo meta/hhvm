@@ -115,9 +115,6 @@ let const_attribute t = t.Global_options.tco_const_attribute
 let disallow_discarded_nullable_awaitables t =
   t.Global_options.tco_disallow_discarded_nullable_awaitables
 
-let check_duplicate_enum_values t =
-  t.Global_options.tco_check_duplicate_enum_values
-
 let check_duplicate_runtime_shape_keys t =
   t.Global_options.po.Parser_options.check_duplicate_runtime_shape_keys
   && t.Global_options.po.Parser_options.include_const_shape_key_values

@@ -1,1 +1,13 @@
-No errors
+error: Typing[4520] `E` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `FromConst` cannot be checked [2]
+
+const_missing_hint.php:23:6
+21 | const FromConst = CInt;
+22 | 
+23 | enum E : int {
+   |      ^ [1]
+24 |   FromConst = CInt;
+   |   ^^^^^^^^^ [2]
+25 | }
+
+1 error found

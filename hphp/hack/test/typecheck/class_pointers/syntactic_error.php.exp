@@ -178,6 +178,19 @@ syntactic_error.php:76:14
 77 | }
 78 | 
 
+error: Typing[4520] `E` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `A` cannot be checked [2]
+
+syntactic_error.php:79:6
+77 | }
+78 | 
+79 | enum E: string {
+   |      ^ [1]
+80 |   A = E::class;
+   |   ^ [2]
+81 | }
+82 | 
+
 error: Typing[4482] Using `E::class` in this position will trigger an implicit runtime conversion to string, please use `nameof E` [1]
 
 syntactic_error.php:80:7
@@ -247,4 +260,4 @@ syntactic_error.php:89:12
    |            ^^^^^^^^ [1]
 90 | }
 
-25 errors found
+26 errors found

@@ -12,6 +12,8 @@ computed_and_deleted_use.php--derived.php [3:17-27] Enum constant `Base::A` used
 computed_and_deleted_use.php--enum.php [4:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
 computed_and_deleted_use.php--derived.php [6:11-21] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
 computed_and_deleted_use.php--enum.php [4:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+computed_and_deleted_use.php--enum.php [3:6-10] `Base` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum.
+computed_and_deleted_use.php--enum.php [4:3-4] `A` cannot be checked
 computed_and_deleted_use.php--use.php [3:16-23] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
 computed_and_deleted_use.php--enum.php [4:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
 computed_and_deleted_use.php--use.php [6:11-18] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression

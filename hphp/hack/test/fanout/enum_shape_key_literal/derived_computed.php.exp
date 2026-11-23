@@ -9,10 +9,13 @@ derived_computed.php--derived.php [3:36-46] Enum constant `Derived::D` used as a
 derived_computed.php--enum.php [9:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
 derived_computed.php--derived.php [6:11-21] Enum constant `Derived::D` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
 derived_computed.php--enum.php [9:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+derived_computed.php--enum.php [7:6-13] `Derived` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum.
+derived_computed.php--enum.php [9:3-4] `D` cannot be checked
 Fun get_derived
 Type DS
 Type Derived
 derived.php
+enum.php
 --
 Errors in checked files:
 No errors

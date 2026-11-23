@@ -1,44 +1,44 @@
 error: Typing[4520] `EnumConstRef` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `A` cannot be checked [2]
 
-enum_uncheckable_values.php:13:6
-11 | 
-12 | // 1. Constant reference: value can't be statically checked.
-13 | enum EnumConstRef: int as int {
+enum_uncheckable_values.php:8:6
+ 6 | 
+ 7 | // 1. Constant reference: value can't be statically checked.
+ 8 | enum EnumConstRef: int as int {
    |      ^^^^^^^^^^^^ [1]
-14 |   A = Bar::C; // uncheckable
+ 9 |   A = Bar::C; // uncheckable
    |   ^ [2]
-15 |   B = 2;
-16 | }
+10 |   B = 2;
+11 | }
 
 error: Typing[4520] `EnumArith` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `X` cannot be checked [2]
 
-enum_uncheckable_values.php:19:6
-17 | 
-18 | // 2. Arithmetic: computed value can't be statically checked.
-19 | enum EnumArith: int as int {
+enum_uncheckable_values.php:14:6
+12 | 
+13 | // 2. Arithmetic: computed value can't be statically checked.
+14 | enum EnumArith: int as int {
    |      ^^^^^^^^^ [1]
-20 |   X = 1 + 1; // uncheckable
+15 |   X = 1 + 1; // uncheckable
    |   ^ [2]
-21 |   Y = 3;
-22 | }
+16 |   Y = 3;
+17 | }
 
 error: Typing[4520] `EnumManyComputed` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `P` cannot be checked [2]
 -> `Q` cannot be checked [3]
 
-enum_uncheckable_values.php:25:6
-23 | 
-24 | // 3. Several uncheckable members are reported together, on the enum.
-25 | enum EnumManyComputed: int as int {
+enum_uncheckable_values.php:20:6
+18 | 
+19 | // 3. Several uncheckable members are reported together, on the enum.
+20 | enum EnumManyComputed: int as int {
    |      ^^^^^^^^^^^^^^^^ [1]
-26 |   P = Bar::C; // uncheckable
+21 |   P = Bar::C; // uncheckable
    |   ^ [2]
-27 |   Q = 1 + 1; // uncheckable
+22 |   Q = 1 + 1; // uncheckable
    |   ^ [3]
-28 | }
-29 | 
+23 | }
+24 | 
 
 error: Typing[4520] `EnumManyUncheckable` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `R1` cannot be checked [2]
@@ -48,48 +48,48 @@ error: Typing[4520] `EnumManyUncheckable` cannot be statically checked for dupli
 -> `R5` cannot be checked [6]
 -> (and 2 more) [1]
 
-enum_uncheckable_values.php:45:6
-43 | // 7. More than `max_reasons` (5) uncheckable members: the error lists the first
-44 | //    few reasons and notes how many were omitted ("(and N more)").
-45 | enum EnumManyUncheckable: int as int {
+enum_uncheckable_values.php:40:6
+38 | // 7. More than `max_reasons` (5) uncheckable members: the error lists the first
+39 | //    few reasons and notes how many were omitted ("(and N more)").
+40 | enum EnumManyUncheckable: int as int {
    |      ^^^^^^^^^^^^^^^^^^^ [1]
-46 |   R1 = 1 + 1; // uncheckable
+41 |   R1 = 1 + 1; // uncheckable
    |   ^^ [2]
-47 |   R2 = 2 + 2; // uncheckable
+42 |   R2 = 2 + 2; // uncheckable
    |   ^^ [3]
-48 |   R3 = 3 + 3; // uncheckable
+43 |   R3 = 3 + 3; // uncheckable
    |   ^^ [4]
-49 |   R4 = 4 + 4; // uncheckable
+44 |   R4 = 4 + 4; // uncheckable
    |   ^^ [5]
-50 |   R5 = 5 + 5; // uncheckable
+45 |   R5 = 5 + 5; // uncheckable
    |   ^^ [6]
-51 |   R6 = 6 + 6; // uncheckable
-52 |   R7 = 7 + 7; // uncheckable
+46 |   R6 = 6 + 6; // uncheckable
+47 |   R7 = 7 + 7; // uncheckable
 
 error: Typing[4520] `EnumConcatClassConst` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `PREFIXED` cannot be checked [2]
 
-enum_uncheckable_values.php:63:6
-61 | //    real code becomes uncheckable, and it is not covered by the arithmetic
-62 | //    case above.
-63 | enum EnumConcatClassConst: string as string {
+enum_uncheckable_values.php:58:6
+56 | //    real code becomes uncheckable, and it is not covered by the arithmetic
+57 | //    case above.
+58 | enum EnumConcatClassConst: string as string {
    |      ^^^^^^^^^^^^^^^^^^^^ [1]
-64 |   PREFIXED = Prefixes::P.'suffix'; // uncheckable
+59 |   PREFIXED = Prefixes::P.'suffix'; // uncheckable
    |   ^^^^^^^^ [2]
-65 |   LITERAL = 'plain';
-66 | }
+60 |   LITERAL = 'plain';
+61 | }
 
 error: Typing[4520] `EnumConcatSelfConst` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
 -> `DERIVED` cannot be checked [2]
 
-enum_uncheckable_values.php:70:6
-68 | // 9. Concatenation onto another member of the same enum, deriving a value from
-69 | //    a sibling rather than an outside constant.
-70 | enum EnumConcatSelfConst: string as string {
+enum_uncheckable_values.php:65:6
+63 | // 9. Concatenation onto another member of the same enum, deriving a value from
+64 | //    a sibling rather than an outside constant.
+65 | enum EnumConcatSelfConst: string as string {
    |      ^^^^^^^^^^^^^^^^^^^ [1]
-71 |   BASE = 'base';
-72 |   DERIVED = self::BASE.':extra'; // uncheckable
+66 |   BASE = 'base';
+67 |   DERIVED = self::BASE.':extra'; // uncheckable
    |   ^^^^^^^ [2]
-73 | }
+68 | }
 
 6 errors found

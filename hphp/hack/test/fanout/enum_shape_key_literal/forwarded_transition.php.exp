@@ -12,6 +12,8 @@ forwarded_transition.php--derived.php [3:17-27] Enum constant `Base::A` used as 
 forwarded_transition.php--enum.php [8:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
 forwarded_transition.php--derived.php [6:11-21] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
 forwarded_transition.php--enum.php [8:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
+forwarded_transition.php--enum.php [7:6-10] `Base` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum.
+forwarded_transition.php--enum.php [8:3-4] `A` cannot be checked
 forwarded_transition.php--use.php [3:16-23] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
 forwarded_transition.php--enum.php [8:3-4] Class pointers, constant forwarding, and computed expressions are not allowed
 forwarded_transition.php--use.php [6:11-18] Enum constant `Base::A` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression
@@ -23,6 +25,7 @@ Type DS
 Type Derived
 Type S
 derived.php
+enum.php
 use.php
 --
 Errors in checked files:

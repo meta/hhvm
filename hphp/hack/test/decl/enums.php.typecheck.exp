@@ -1,1 +1,18 @@
-No errors
+error: Typing[4520] `Foo` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `BAZ` cannot be checked [2]
+-> `QUX` cannot be checked [3]
+
+enums.php:3:6
+1 | <?hh
+2 | 
+3 | enum Foo: int as int {
+  |      ^^^ [1]
+4 |   FOO = 1;
+5 |   BAR = -2;
+6 |   BAZ = Foo::FOO;
+  |   ^^^ [2]
+7 |   QUX = -Foo::BAR;
+  |   ^^^ [3]
+8 | }
+
+1 error found

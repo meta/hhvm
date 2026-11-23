@@ -8,4 +8,16 @@ fc_enum_4.php:4:6
 5 |   FOO = true;
 6 | }
 
-1 error found
+error: Typing[4520] `Foo` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `FOO` cannot be checked [2]
+
+fc_enum_4.php:4:6
+2 | 
+3 | // Should fail because bool
+4 | enum Foo: bool {
+  |      ^^^ [1]
+5 |   FOO = true;
+  |   ^^^ [2]
+6 | }
+
+2 errors found

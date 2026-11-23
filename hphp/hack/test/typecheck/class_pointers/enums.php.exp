@@ -1,3 +1,19 @@
+error: Typing[4520] `BadEnum` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `C` cannot be checked [2]
+-> `D` cannot be checked [3]
+
+enums.php:7:6
+ 5 | class D extends A {}
+ 6 | 
+ 7 | enum BadEnum: class<A> {
+   |      ^^^^^^^ [1]
+ 8 |   C = C::class;
+   |   ^ [2]
+ 9 |   D = D::class;
+   |   ^ [3]
+10 | }
+11 | 
+
 error: Typing[4482] Using `C::class` in this position will trigger an implicit runtime conversion to string, please use `nameof C` [1]
 
 enums.php:8:7
@@ -18,4 +34,4 @@ enums.php:9:7
 10 | }
 11 | 
 
-2 errors found
+3 errors found

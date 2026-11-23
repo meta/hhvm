@@ -1,5 +1,6 @@
 <?hh
 
+<<__AllowUncheckedEnumValues>>
 enum E: string {
   YXGFEBA229 = "A229";
   YXGFEBA230 = "A230";

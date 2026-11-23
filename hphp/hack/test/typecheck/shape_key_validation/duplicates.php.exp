@@ -87,4 +87,20 @@ duplicates.php:31:28
    |                            ^^^^^^^ [1]
 32 | }
 
-7 errors found
+error: Typing[4519] This enum has members `A` and `B` with the same value `1`. Duplicate enum values are not allowed. [1]
+-> `A` is declared here [2]
+-> `B` is declared here [3]
+
+duplicates.php:15:6
+13 | }
+14 | 
+15 | enum E: int as int {
+   |      ^ [1]
+16 |   A = 1;
+   |   ^ [2]
+17 |   B = 1;
+   |   ^ [3]
+18 | }
+19 | 
+
+8 errors found

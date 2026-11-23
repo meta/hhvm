@@ -46,6 +46,21 @@ const_misc1.php:5:10
 6 | }
 7 | 
 
+error: Typing[4520] `B` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `Z` cannot be checked [2]
+
+const_misc1.php:8:6
+ 6 | }
+ 7 | 
+ 8 | enum B:int as arraykey {
+   |      ^ [1]
+ 9 |   X = 1;       // decl type of X is int
+10 |   Y = "hello"; // decl type of Y is string
+11 |   Z = B::X;    // decl type of Z is TAny
+   |   ^ [2]
+12 | }
+13 | 
+
 error: Typing[4328] Constant does not match the type of the enum it is in [1]
 -> Expected `int` [2]
 -> But got `string` [3]
@@ -107,4 +122,4 @@ const_misc1.php:18:21
 19 |   const JC=1, TC = "a";       // decl type of JC is int, TC is string
 20 | }
 
-8 errors found
+9 errors found

@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<e80fea446e4ca2f6e029b6fefbd6308b>>
+// @generated SignedSource<<63411c1696e9e93a1e581427b1f43289>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -281,8 +281,6 @@ pub struct GlobalOptions {
     pub symbol_write_sym_hash_out: bool,
     /// Flag to error on using discarded nullable awaitables
     pub tco_disallow_discarded_nullable_awaitables: bool,
-    /// Flag to error on enums whose member values are not distinct
-    pub tco_check_duplicate_enum_values: bool,
     /// Type check this proportion of all files. Default is 1.0.
     /// DO NOT set to any other value except for testing purposes.
     pub tco_typecheck_sample_rate: f64,

@@ -1,3 +1,19 @@
+error: Typing[4520] `ComputedKeys` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `COMPUTED` cannot be checked [2]
+-> `FORWARDED` cannot be checked [3]
+
+enum_shape_key_literal_bad.php:7:6
+ 5 | }
+ 6 | 
+ 7 | enum ComputedKeys: string as string {
+   |      ^^^^^^^^^^^^ [1]
+ 8 |   FORWARDED = KeyPrefix::PREFIX;
+   |   ^^^^^^^^^ [3]
+ 9 |   COMPUTED = 'pre'.'fix';
+   |   ^^^^^^^^ [2]
+10 | }
+11 | 
+
 error: Typing[4534] Enum constant `ComputedKeys::FORWARDED` used as a shape key must be initialized with a string or integer literal, or a `nameof` expression [1]
 -> Class pointers, constant forwarding, and computed expressions are not allowed [2]
 
@@ -67,4 +83,4 @@ enum_shape_key_literal_bad.php:22:18
    |                  ^^^^^^^^^^^^^^^^^^^^^^^ [1]
 23 | }
 
-4 errors found
+5 errors found

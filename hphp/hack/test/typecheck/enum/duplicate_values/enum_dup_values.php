@@ -1,8 +1,5 @@
 <?hh
 
-// With check_duplicate_enum_values on (see HH_FLAGS), enum members sharing a
-// value are rejected. Without it these typecheck clean and only fail at runtime.
-
 class Foo {}
 
 // 1. Direct duplicate: two members with the same value.

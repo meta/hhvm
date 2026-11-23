@@ -19,10 +19,7 @@ from .fanout_test_parser import FanoutTest
 # pyre-fixme[24]: Generic type `re.Pattern` expects 1 type parameter.
 WHITESPACE_SPLITTER: re.Pattern = re.compile(r"\s+")
 
-DEFAULT_HH_SINGLE_FANOUT_FLAGS: List[str] = [
-    "--config",
-    "check_duplicate_enum_values=true",
-]
+DEFAULT_HH_SINGLE_FANOUT_FLAGS: List[str] = []
 
 DEFAULT_HH_SERVER_FLAGS: List[str] = [
     "--config",

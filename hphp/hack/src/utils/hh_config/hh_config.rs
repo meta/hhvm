@@ -428,10 +428,6 @@ impl HhConfig {
             symbol_write_sym_hash_out: default.symbol_write_sym_hash_out,
             tco_disallow_discarded_nullable_awaitables: default
                 .tco_disallow_discarded_nullable_awaitables,
-            tco_check_duplicate_enum_values: hhconfig.get_bool_or(
-                "check_duplicate_enum_values",
-                default.tco_check_duplicate_enum_values,
-            )?,
             tco_typecheck_sample_rate: hhconfig
                 .get_float_or("typecheck_sample_rate", default.tco_typecheck_sample_rate)?,
             tco_pessimise_builtins: hhconfig

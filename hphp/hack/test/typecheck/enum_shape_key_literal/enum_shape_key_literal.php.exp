@@ -1,1 +1,14 @@
-No errors
+error: Typing[4520] `UnusedComputed` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `X` cannot be checked [2]
+
+enum_shape_key_literal.php:19:6
+17 | }
+18 | 
+19 | enum UnusedComputed: string as string {
+   |      ^^^^^^^^^^^^^^ [1]
+20 |   X = KeyPrefix::PREFIX;
+   |   ^ [2]
+21 | }
+22 | 
+
+1 error found

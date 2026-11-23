@@ -1,3 +1,19 @@
+error: Typing[4520] `B` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `X` cannot be checked [2]
+-> `Y` cannot be checked [3]
+
+constant_cycle.bad.php:3:6
+1 | <?hh
+2 | 
+3 | enum B : int as int {
+  |      ^ [1]
+4 |   X = B::X;
+  |   ^ [2]
+5 |   Y = self::Y;
+  |   ^ [3]
+6 | }
+7 | 
+
 error: Typing[4424] Cannot declare self-referencing constant X in B [1]
 
 constant_cycle.bad.php:4:3
@@ -18,6 +34,18 @@ constant_cycle.bad.php:5:3
 6 | }
 7 | 
 
+error: Typing[4520] `E` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `X` cannot be checked [2]
+
+constant_cycle.bad.php:13:6
+11 | }
+12 | 
+13 | enum E : int as int {
+   |      ^ [1]
+14 |   X = F::X;
+   |   ^ [2]
+15 | }
+
 error: Typing[4424] Cannot declare self-referencing constant X in E [1]
 
 constant_cycle.bad.php:14:3
@@ -27,4 +55,4 @@ constant_cycle.bad.php:14:3
    |   ^ [1]
 15 | }
 
-3 errors found
+5 errors found

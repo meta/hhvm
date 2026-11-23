@@ -4,9 +4,11 @@ Fun plain
 Type Base
 --
 Errors in checked files:
-No errors
+non_shape_key_member.php--enum.php [3:6-10] `Base` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum.
+non_shape_key_member.php--enum.php [5:3-4] `B` cannot be checked
 Fun plain
 Type Base
+enum.php
 --
 Errors in checked files:
 No errors

@@ -1,1 +1,85 @@
-No errors
+error: Typing[4519] This enum has members `AlsoOne` and `One` with the same value `1`. Duplicate enum values are not allowed. [1]
+-> `AlsoOne` is declared here [2]
+-> `One` is declared here [3]
+
+enum_member_values.php:7:6
+ 5 | // Enum classes are intentionally excluded, so they keep `CVAbsent`.
+ 6 | 
+ 7 | enum Bits: int {
+   |      ^^^^ [1]
+ 8 |   Zero = 0;
+ 9 |   One = 1;
+   |   ^^^ [3]
+10 |   AlsoOne = 1; // same value as One, on purpose, to show the captured values
+   |   ^^^^^^^ [2]
+11 | }
+12 | 
+
+error: Typing[4519] This enum has members `Bin` and `Dec` with the same value `16`. Duplicate enum values are not allowed. [1]
+-> `Bin` is declared here [2]
+-> `Dec` is declared here [3]
+
+enum_member_values.php:25:6
+23 | // Integer literal forms all canonicalize to plain decimal: Dec, Hex, Bin, Oct
+24 | // (leading-zero octal) and Under are all 16.
+25 | enum IntForms: int {
+   |      ^^^^^^^^ [1]
+26 |   Dec = 16;
+   |   ^^^ [3]
+27 |   Hex = 0x10;
+28 |   Bin = 0b10000;
+   |   ^^^ [2]
+29 |   Oct = 020;
+30 |   Neg = -5;
+
+error: Typing[4519] This enum has members `Bin` and `Hex` with the same value `16`. Duplicate enum values are not allowed. [1]
+-> `Bin` is declared here [2]
+-> `Hex` is declared here [3]
+
+enum_member_values.php:25:6
+23 | // Integer literal forms all canonicalize to plain decimal: Dec, Hex, Bin, Oct
+24 | // (leading-zero octal) and Under are all 16.
+25 | enum IntForms: int {
+   |      ^^^^^^^^ [1]
+26 |   Dec = 16;
+27 |   Hex = 0x10;
+   |   ^^^ [3]
+28 |   Bin = 0b10000;
+   |   ^^^ [2]
+29 |   Oct = 020;
+30 |   Neg = -5;
+
+error: Typing[4519] This enum has members `Bin` and `Oct` with the same value `16`. Duplicate enum values are not allowed. [1]
+-> `Bin` is declared here [2]
+-> `Oct` is declared here [3]
+
+enum_member_values.php:25:6
+23 | // Integer literal forms all canonicalize to plain decimal: Dec, Hex, Bin, Oct
+24 | // (leading-zero octal) and Under are all 16.
+25 | enum IntForms: int {
+   |      ^^^^^^^^ [1]
+26 |   Dec = 16;
+27 |   Hex = 0x10;
+28 |   Bin = 0b10000;
+   |   ^^^ [2]
+29 |   Oct = 020;
+   |   ^^^ [3]
+30 |   Neg = -5;
+31 | }
+
+error: Typing[4520] `Computed` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `FromConst` cannot be checked [2]
+-> `FromExpr` cannot be checked [3]
+
+enum_member_values.php:54:6
+52 | const int GLOBAL_FIVE = 5;
+53 | 
+54 | enum Computed: int {
+   |      ^^^^^^^^ [1]
+55 |   FromConst = GLOBAL_FIVE;
+   |   ^^^^^^^^^ [2]
+56 |   FromExpr = 2 + 3;
+   |   ^^^^^^^^ [3]
+57 | }
+
+5 errors found

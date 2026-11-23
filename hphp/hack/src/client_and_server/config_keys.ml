@@ -110,8 +110,6 @@ module Hhconfig = struct
   let disallow_discarded_nullable_awaitables =
     key "disallow_discarded_nullable_awaitables"
 
-  let check_duplicate_enum_values = key "check_duplicate_enum_values"
-
   let check_duplicate_runtime_shape_keys =
     key "check_duplicate_runtime_shape_keys"
 

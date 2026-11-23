@@ -117,10 +117,7 @@ let visitor ctx =
           else
             None);
           hierarchy_check Enum_check.handler;
-          (if Typechecker_options.check_duplicate_enum_values tcopt then
-            hierarchy_check Enum_duplicate_value_check.handler
-          else
-            None);
+          hierarchy_check Enum_duplicate_value_check.handler;
           (if Typechecker_options.populate_dead_unsafe_cast_heap tcopt then
             Some Remove_dead_unsafe_casts.patch_location_collection_handler
           else

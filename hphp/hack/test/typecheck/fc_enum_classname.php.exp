@@ -1,3 +1,19 @@
+error: Typing[4520] `E` cannot be statically checked for duplicate values. Member values must be int or string literals or `nameof` to be checked; references to global constants (or other computed expressions) cannot be. Fix the flagged values and only include enums that can be checked, or add `<<__AllowUncheckedEnumValues>>` to the enum. [1]
+-> `Bar` cannot be checked [2]
+-> `FOO` cannot be checked [3]
+
+fc_enum_classname.php:9:6
+ 7 | class Bar extends Foo {}
+ 8 | 
+ 9 | enum E: classname<Foo> as classname<Foo> {
+   |      ^ [1]
+10 |   FOO = Foo::class;
+   |   ^^^ [3]
+11 |   Bar = Bar::class;
+   |   ^^^ [2]
+12 | }
+13 | 
+
 error: Typing[4482] Using `Foo::class` in this position will trigger an implicit runtime conversion to string, please use `nameof Foo` [1]
 
 fc_enum_classname.php:10:9
@@ -35,4 +51,4 @@ fc_enum_classname.php:16:3
    |   ^^^^ [1]
 17 | }
 
-3 errors found
+4 errors found

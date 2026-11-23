@@ -1,2 +1,1 @@
---config check_duplicate_enum_values=true
 --config everything_sdt=false
