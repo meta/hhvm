@@ -136,7 +136,7 @@ subscriptions = {}
 total_events = 0
 
 
-class Subscription(object):
+class Subscription:
     root = None  # Watched root
     relpath = None  # Offset to dir of interest
     name = None  # Our name for this subscription
@@ -189,7 +189,7 @@ Perhaps you should use the --pattern option?"""
         # get the initial clock value so that we only get updates
         query["since"] = client.query("clock", self.root)["clock"]
 
-        sub = client.query("subscribe", self.root, self.name, query)
+        client.query("subscribe", self.root, self.name, query)
 
     def formatField(self, fname, val):
         if fname == "name":
@@ -247,7 +247,7 @@ while deadline is None or time.time() < deadline:
         if deadline is not None:
             client.setTimeout(deadline - time.time())
         # wait for a unilateral response
-        result = client.receive()
+        client.receive()
 
         # in theory we can parse just the result variable here, but
         # the client object will accumulate all subscription results
@@ -256,13 +256,13 @@ while deadline is None or time.time() < deadline:
         for _, sub in subscriptions.items():
             sub.emit(client)
 
-    except pywatchman.SocketTimeout as ex:
+    except pywatchman.SocketTimeout:
         if deadline is not None and time.time() >= deadline:
             sys.exit(2)
 
         # Let's check to see if we're still functional
         try:
-            vers = client.query("version")
+            client.query("version")
         except Exception as ex:
             print("watchman:", str(ex), file=sys.stderr)
             sys.exit(1)

@@ -175,7 +175,7 @@ args = parser.parse_args()
 total_events = 0
 
 
-class Subscription(object):
+class Subscription:
     root = None  # Watched root
     name = None  # Our name for this subscription
     path = None
@@ -203,7 +203,7 @@ class Subscription(object):
 
         # get the initial clock value so that we only get updates
         self.query["since"] = client.query("clock", self.root)["clock"]
-        sub = client.query("subscribe", self.root, self.name, self.query)
+        client.query("subscribe", self.root, self.name, self.query)
 
     def formatField(self, fname, val):
         return str(val)
@@ -285,7 +285,6 @@ def getSubInfo(sub, keys=None):
             rslt[key] = subInfo[key]
         else:
             rslt[key] = ""
-            keyWarn = true
     return rslt
 
 
@@ -301,7 +300,6 @@ client = pywatchman.client(timeout=args.connect_timeout)
 subs = client.query("debug-get-subscriptions", path)
 matchSubs = []
 for sub in subs["subscribers"]:
-    info = sub["info"]
     if (
         (subName is None or sub["info"]["name"] == subName)
         and (subPid is None or str(sub["info"]["pid"]) == subPid)
@@ -373,7 +371,7 @@ while deadline is None or time.time() < deadline:
         if deadline is not None:
             client.setTimeout(deadline - time.time())
         # wait for a unilateral response
-        result = client.receive()
+        client.receive()
 
         # in theory we can parse just the result variable here, but
         # the client object will accumulate all subscription results
@@ -381,13 +379,13 @@ while deadline is None or time.time() < deadline:
         # for each of the subscriptions
         repSub.emit(client)
 
-    except pywatchman.SocketTimeout as ex:
+    except pywatchman.SocketTimeout:
         if deadline is not None and time.time() >= deadline:
             sys.exit(2)
 
         # Let's check to see if we're still functional
         try:
-            vers = client.query("version")
+            client.query("version")
         except Exception as ex:
             print("watchman:", str(ex), file=sys.stderr)
             sys.exit(1)

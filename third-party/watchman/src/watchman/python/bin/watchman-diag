@@ -4,7 +4,6 @@
 import glob
 import json
 import os
-import re
 import stat
 import subprocess
 import sys
@@ -29,7 +28,7 @@ def print_status(msg):
         sys.stderr.write(msg + "\n")
 
 
-class ProcessInfo(object):
+class ProcessInfo:
     def __init__(self):
         self.pid_to_name = {}
 
@@ -39,13 +38,13 @@ class ProcessInfo(object):
         name = os.readlink("/proc/%s/exe" % pid)
         try:
             name = os.path.realpath(name)
-        except Exception as e:
+        except Exception:
             pass
         self.pid_to_name[pid] = name
         return name
 
 
-class InotifyInfo(object):
+class InotifyInfo:
     """Extract information about users of inotify on the system"""
 
     def __init__(self, procinfo):
@@ -80,8 +79,8 @@ class InotifyInfo(object):
         for fddir in glob.glob("/proc/*/fd"):
             for fdnode in glob.glob(fddir + "/*"):
                 try:
-                    l = os.readlink(fdnode)
-                    if l != "anon_inode:inotify":
+                    link = os.readlink(fdnode)
+                    if link != "anon_inode:inotify":
                         continue
                     _, _, pid, _, fdnum = fdnode.split("/")
                     info = self.read_fdinfo("/proc/%s/fdinfo/%s" % (pid, fdnum))
@@ -94,7 +93,7 @@ class InotifyInfo(object):
                         (pid, self.procname(pid), fdnum, str(self.parsefdinfo(info)))
                     )
 
-                except Exception as e:
+                except Exception:
                     pass
         return watches
 
@@ -234,8 +233,6 @@ def cross_check_watch(watchman, watch, case_sensitive):
     print_status("Comparing results...")
 
     phantoms = []
-    bad_deletes = []
-    mismatched = []
     missing = []
     all_names_in_watchman = set()
 
@@ -280,7 +277,7 @@ def cross_check_watch(watchman, watch, case_sensitive):
                     print(d)
 
     for key in fs:
-        if not key in all_names_in_watchman:
+        if key not in all_names_in_watchman:
             missing.append(fs[key])
 
     print_status(

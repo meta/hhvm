@@ -20,7 +20,7 @@ def patterns_to_terms(pats):
     return terms
 
 
-class Target(object):
+class Target:
     """Base Class for a Target
 
     We track the patterns that we consider to be the dependencies for
@@ -53,7 +53,7 @@ class Target(object):
             % (" ".join(self.patterns), self.cmd),
             file=sys.stderr,
         )
-        sub = client.query("subscribe", root_dir, self.name, query)
+        client.query("subscribe", root_dir, self.name, query)
 
     def consumeEvents(self, client):
         data = client.getSubscription(self.name)
@@ -264,7 +264,7 @@ while True:
         # quite some time for this
         client.setTimeout(600)
 
-        result = client.receive()
+        client.receive()
         for _, t in targets.items():
             t.consumeEvents(client)
 
@@ -273,10 +273,10 @@ while True:
         settled = False
         while not settled:
             try:
-                result = client.receive()
+                client.receive()
                 for _, t in targets.items():
                     t.consumeEvents(client)
-            except pywatchman.SocketTimeout as ex:
+            except pywatchman.SocketTimeout:
                 # Our short settle timeout hit, so we're now settled
                 settled = True
                 break
@@ -290,10 +290,10 @@ while True:
         # to keep printing 'waiting for changes' each time we do.
         print("# waiting for changes", file=sys.stderr)
 
-    except pywatchman.SocketTimeout as ex:
+    except pywatchman.SocketTimeout:
         # Let's check to see if we're still functional
         try:
-            vers = client.query("version")
+            client.query("version")
         except Exception as ex:
             print("watchman:", str(ex), file=sys.stderr)
             sys.exit(1)
