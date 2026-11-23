@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<63411c1696e9e93a1e581427b1f43289>>
+// @generated SignedSource<<8011eef5f184a4f78cecf7e88aeeefad>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -410,6 +410,4 @@ pub struct GlobalOptions {
     pub tco_missing_targs_as_fresh_generics: bool,
     /// Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics.
     pub tco_ban_memoize_erased_generic_return: bool,
-    /// Don't refine reads of an XHP attribute such as `$x->:attr` with `is`, `as`, null checks or `match`: each read calls `getAttribute`, which may return something else the next time.
-    pub tco_xhp_attribute_reads_not_refined: bool,
 }

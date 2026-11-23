@@ -300,8 +300,6 @@ type t = {
       (** Give a generic class named without type arguments in a `catch` clause or `C::class` fresh rigid type arguments, as `is C<_>` does, instead of inference variables. *)
   tco_ban_memoize_erased_generic_return: bool;
       (** Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics. *)
-  tco_xhp_attribute_reads_not_refined: bool;
-      (** Don't refine reads of an XHP attribute such as `$x->:attr` with `is`, `as`, null checks or `match`: each read calls `getAttribute`, which may return something else the next time. *)
 }
 [@@deriving eq, show]
 
@@ -411,7 +409,6 @@ val set :
   ?tco_tests_bypass_visibility_static_properties:bool ->
   ?tco_missing_targs_as_fresh_generics:bool ->
   ?tco_ban_memoize_erased_generic_return:bool ->
-  ?tco_xhp_attribute_reads_not_refined:bool ->
   t ->
   t
 

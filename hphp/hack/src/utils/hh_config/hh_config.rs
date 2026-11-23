@@ -604,10 +604,6 @@ impl HhConfig {
                 "ban_memoize_erased_generic_return",
                 default.tco_ban_memoize_erased_generic_return,
             )?,
-            tco_xhp_attribute_reads_not_refined: hhconfig.get_bool_or(
-                "xhp_attribute_reads_not_refined",
-                default.tco_xhp_attribute_reads_not_refined,
-            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

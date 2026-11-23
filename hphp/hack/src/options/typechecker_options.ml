@@ -298,6 +298,3 @@ let missing_targs_as_fresh_generics t =
 
 let ban_memoize_erased_generic_return t =
   t.Global_options.tco_ban_memoize_erased_generic_return
-
-let xhp_attribute_reads_not_refined t =
-  t.Global_options.tco_xhp_attribute_reads_not_refined
