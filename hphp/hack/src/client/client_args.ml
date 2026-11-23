@@ -346,6 +346,7 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
   let custom_hhi_path = ref None in
   let error_format = ref None in
   let force_dormant_start = ref false in
+  let force_streaming_diagnostics = ref false in
   let from = ref from_default in
   let show_spinner = ref None in
   let show_tast = ref false in
@@ -931,6 +932,10 @@ let parse_check_args cmd ~from_default : Client_env.client_check_env =
         " prints a list of all related classes or methods"
         ^ " to the given class",
         (Arg_user_facing, Help_modes) );
+      ( "--force-streaming-diagnostics",
+        Arg.Set force_streaming_diagnostics,
+        " Ensure errors and warnings are streamed even when the caller of `hh` is not a tty",
+        (Arg_non_user_facing, Help_options) );
       ( "--json",
         Arg.Set output_json,
         " output json for machine consumption (default: false)",
@@ -1573,6 +1578,7 @@ rewrite to the function names to something like `foo_1` and `foo_2`.
     custom_telemetry_data = !custom_telemetry_data;
     error_format = !error_format;
     force_dormant_start = !force_dormant_start;
+    force_streaming_diagnostics = !force_streaming_diagnostics;
     from = !from;
     show_spinner = Option.value ~default:is_interactive !show_spinner;
     ignore_hh_version = !ignore_hh_version;

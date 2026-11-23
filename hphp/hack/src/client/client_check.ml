@@ -248,6 +248,7 @@ let connect
     mode = _;
     output_json = _;
     output_jsonl = _;
+    force_streaming_diagnostics = _;
     sort_results = _;
     stdin_name = _;
     desc = _;

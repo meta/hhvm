@@ -560,6 +560,7 @@ let env =
       custom_telemetry_data = [];
       error_format = Some Diagnostics.Plain;
       force_dormant_start = false;
+      force_streaming_diagnostics = false;
       from = "test";
       show_spinner = false;
       ignore_hh_version = true;

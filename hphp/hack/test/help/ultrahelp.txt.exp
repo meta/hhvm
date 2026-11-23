@@ -109,6 +109,7 @@ Options:
   --from-emacs                         (deprecated) equivalent to --from emacs
   --from-vim                           (deprecated) equivalent to --from vim
   --ignore-hh-version                  ignore hh_version check when loading saved states (default: false)
+  --force-streaming-diagnostics        Ensure errors and warnings are streamed even when the caller of `hh` is not a tty
   --json                               output json for machine consumption (default: false)
   --jsonl                              output streaming jsonl (JSON Lines) for machine consumption (default: false)
   --max-errors                         Maximum number of errors to display

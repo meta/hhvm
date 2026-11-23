@@ -96,6 +96,7 @@ type client_check_env = {
   custom_telemetry_data: (string * string) list;
   error_format: Diagnostics.format option;
   force_dormant_start: bool;
+  force_streaming_diagnostics: bool;
   from: string;
   show_spinner: bool;
   ignore_hh_version: bool;

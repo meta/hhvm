@@ -30,6 +30,7 @@ let main (env : Client_env.client_check_env) (config : Server_local_config.t) :
     custom_telemetry_data = _;
     error_format = _;
     force_dormant_start = _;
+    force_streaming_diagnostics = _;
     from = _;
     show_spinner = _;
     paths = _;
