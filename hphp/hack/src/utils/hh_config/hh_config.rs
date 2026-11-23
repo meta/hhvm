@@ -287,10 +287,6 @@ impl HhConfig {
             )?,
             no_parser_readonly_check: default.no_parser_readonly_check,
             everything_sdt: hhconfig.get_bool_or("everything_sdt", default.everything_sdt)?,
-            check_duplicate_runtime_shape_keys: hhconfig.get_bool_or(
-                "check_duplicate_runtime_shape_keys",
-                default.check_duplicate_runtime_shape_keys,
-            )?,
             unwrap_concurrent: default.unwrap_concurrent,
             stack_size: default.stack_size,
             use_legacy_experimental_feature_config: false,

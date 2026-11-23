@@ -119,16 +119,8 @@ let report_duplicate_runtime_value
 let check_duplicates env symbolic_names =
   let tcopt = Tast_env.get_tcopt env in
   let custom_err_config = Typechecker_options.custom_error_config tcopt in
-  let check_runtime_values =
-    Typechecker_options.check_duplicate_runtime_shape_keys tcopt
-  in
   let check_field (seen_symbolic_names, seen_runtime_values) symbolic_name =
-    let runtime_value =
-      if check_runtime_values then
-        resolve_runtime_value env symbolic_name
-      else
-        None
-    in
+    let runtime_value = resolve_runtime_value env symbolic_name in
     let seen_runtime_values =
       match runtime_value with
       | None ->
@@ -202,9 +194,7 @@ let handler =
 
     method! at_hint env (_, hint) =
       match hint with
-      | Hshape { nsi_field_map; _ }
-        when Typechecker_options.check_duplicate_runtime_shape_keys
-               (Tast_env.get_tcopt env) ->
+      | Hshape { nsi_field_map; _ } ->
         let symbolic_names =
           List.filter_map nsi_field_map ~f:(function
               | SE_field { sfi_name; _ } -> Some sfi_name

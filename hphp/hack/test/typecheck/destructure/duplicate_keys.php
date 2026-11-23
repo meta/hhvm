@@ -13,6 +13,6 @@ function symbolic_duplicates(dynamic $row): void {
   shape(Keys::A => $c, Keys::A => $d, ...) = $row;
 }
 
-function runtime_check_disabled(dynamic $row): void {
+function runtime_duplicates(dynamic $row): void {
   shape(Keys::A => $a, ?Keys::B => $b, ...) = $row;
 }

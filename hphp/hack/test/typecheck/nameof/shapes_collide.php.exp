@@ -88,84 +88,41 @@ shapes_collide.php:15:44
 16 |   const type T4 = shape(nameof B => float, nameof C => int);
 17 | }
 
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> This field has the same runtime key `C` [2]
+
+shapes_collide.php:4:37
+2 | 
+3 | type Ts1 = shape(C::class => float, 'C' => int);
+4 | type Ts2 = shape(nameof C => float, 'C' => int);
+  |                         ^ [2]
+  |                                     ^^^ [1]
+5 | 
+6 | class B {
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 shapes_collide.php:7:48
 5 | 
 6 | class B {
 7 |   const type Tb1 = shape(C::class => float, C::class => int);
+  |                             ^^^^^ [2]
   |                                                ^^^^^ [1]
 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
 9 |   const type Tb3 = shape(nameof C => float, C::class => int);
 
-error: Naming[2015] Field name already bound [1]
-
-shapes_collide.php:8:52
- 6 | class B {
- 7 |   const type Tb1 = shape(C::class => float, C::class => int);
- 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
-   |                                                    ^ [1]
- 9 |   const type Tb3 = shape(nameof C => float, C::class => int);
-10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
-
-error: Naming[2015] Field name already bound [1]
-
-shapes_collide.php:9:48
- 7 |   const type Tb1 = shape(C::class => float, C::class => int);
- 8 |   const type Tb2 = shape(C::class => float, nameof C => int);
- 9 |   const type Tb3 = shape(nameof C => float, C::class => int);
-   |                                                ^^^^^ [1]
-10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
-11 | }
-
-error: Naming[2015] Field name already bound [1]
+error: Naming[2015] This shape field has the same key as another field [1]
+-> The conflicting shape field is here [2]
 
 shapes_collide.php:10:52
  8 |   const type Tb2 = shape(C::class => float, nameof C => int);
  9 |   const type Tb3 = shape(nameof C => float, C::class => int);
 10 |   const type Tb4 = shape(nameof C => float, nameof C => int);
+   |                                 ^ [2]
    |                                                    ^ [1]
 11 | }
 12 | class C extends B {
-
-error: Naming[2015] Field name already bound [1]
-
-shapes_collide.php:13:47
-11 | }
-12 | class C extends B {
-13 |   const type T1 = shape(B::class => float, C::class => int);
-   |                                               ^^^^^ [1]
-14 |   const type T2 = shape(B::class => float, nameof C => int);
-15 |   const type T3 = shape(nameof B => float, C::class => int);
-
-error: Naming[2015] Field name already bound [1]
-
-shapes_collide.php:14:51
-12 | class C extends B {
-13 |   const type T1 = shape(B::class => float, C::class => int);
-14 |   const type T2 = shape(B::class => float, nameof C => int);
-   |                                                   ^ [1]
-15 |   const type T3 = shape(nameof B => float, C::class => int);
-16 |   const type T4 = shape(nameof B => float, nameof C => int);
-
-error: Naming[2015] Field name already bound [1]
-
-shapes_collide.php:15:47
-13 |   const type T1 = shape(B::class => float, C::class => int);
-14 |   const type T2 = shape(B::class => float, nameof C => int);
-15 |   const type T3 = shape(nameof B => float, C::class => int);
-   |                                               ^^^^^ [1]
-16 |   const type T4 = shape(nameof B => float, nameof C => int);
-17 | }
-
-error: Naming[2015] Field name already bound [1]
-
-shapes_collide.php:16:51
-14 |   const type T2 = shape(B::class => float, nameof C => int);
-15 |   const type T3 = shape(nameof B => float, C::class => int);
-16 |   const type T4 = shape(nameof B => float, nameof C => int);
-   |                                                   ^ [1]
-17 | }
 
 error: Typing[4052] A shape field name must be an `int` or `string` [1]
 -> Not a class pointer for this [2]
@@ -444,4 +401,4 @@ shapes_collide.php:16:51
    |                                                   ^ [1]
 17 | }
 
-37 errors found
+32 errors found

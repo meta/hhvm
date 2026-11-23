@@ -102,8 +102,6 @@ module Hhconfig : sig
 
   val disallow_discarded_nullable_awaitables : string
 
-  val check_duplicate_runtime_shape_keys : string
-
   val disallow_toplevel_requires : string
 
   val disallow_unresolved_type_variables : string

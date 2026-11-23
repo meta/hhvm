@@ -22,4 +22,15 @@ duplicate_keys.php:13:30
 14 | }
 15 | 
 
-2 errors found
+error: Naming[2015] This shape field has the same key as another field [1]
+-> This field has the same runtime key `same` [2]
+
+duplicate_keys.php:17:25
+15 | 
+16 | function runtime_duplicates(dynamic $row): void {
+17 |   shape(Keys::A => $a, ?Keys::B => $b, ...) = $row;
+   |         ^^^^^^^ [2]
+   |                         ^^^^^^^ [1]
+18 | }
+
+3 errors found

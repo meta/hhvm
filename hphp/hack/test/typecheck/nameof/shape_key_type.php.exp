@@ -1,3 +1,27 @@
+error: Naming[2015] This shape field has the same key as another field [1]
+-> This field has the same runtime key `C` [2]
+
+shape_key_type.php:15:47
+13 | }
+14 | 
+15 | type ClassnameFields = shape(nameof C => int, C::NAME => string);
+   |                                     ^ [2]
+   |                                               ^^^^^^^ [1]
+16 | 
+17 | type ClassnameFirst = shape(nameof C => int, C::NUMBER => string);
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> This field has the same runtime key `C` [2]
+
+shape_key_type.php:25:29
+23 | 
+24 | function classname_fields(): void {
+25 |   $_ = shape(nameof C => 1, C::NAME => 'same type');
+   |                     ^ [2]
+   |                             ^^^^^^^ [1]
+26 | }
+27 | 
+
 error: Typing[4086] Shape field name is an int [1]
 -> But expected a classname string for C [2]
 
@@ -70,4 +94,4 @@ shape_key_type.php:31:43
    |                                           ^^^^^^^ [1]
 32 | }
 
-6 errors found
+8 errors found

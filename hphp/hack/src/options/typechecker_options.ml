@@ -115,9 +115,6 @@ let const_attribute t = t.Global_options.tco_const_attribute
 let disallow_discarded_nullable_awaitables t =
   t.Global_options.tco_disallow_discarded_nullable_awaitables
 
-let check_duplicate_runtime_shape_keys t =
-  t.Global_options.po.Parser_options.check_duplicate_runtime_shape_keys
-
 let is_systemlib t = t.Global_options.po.Parser_options.is_systemlib
 
 let enable_no_auto_dynamic t = t.Global_options.tco_enable_no_auto_dynamic

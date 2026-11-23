@@ -110,9 +110,6 @@ module Hhconfig = struct
   let disallow_discarded_nullable_awaitables =
     key "disallow_discarded_nullable_awaitables"
 
-  let check_duplicate_runtime_shape_keys =
-    key "check_duplicate_runtime_shape_keys"
-
   let disallow_toplevel_requires = key "disallow_toplevel_requires"
 
   let disallow_unresolved_type_variables =

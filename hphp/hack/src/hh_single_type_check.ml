@@ -857,8 +857,6 @@ let parse_options () =
         deregister_php_stdlib =
           !deregister_attributes >?? default.deregister_php_stdlib;
         everything_sdt = true;
-        check_duplicate_runtime_shape_keys =
-          default.check_duplicate_runtime_shape_keys;
         union_intersection_type_hints = default.union_intersection_type_hints;
         allowed_decl_fixme_codes =
           Option.value !allowed_decl_fixme_codes ~default:I_set.empty;

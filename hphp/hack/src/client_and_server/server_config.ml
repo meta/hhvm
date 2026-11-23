@@ -379,11 +379,6 @@ let load_config (config : Config_file_common.t) (options : Global_options.t) :
         everything_sdt =
           bool_opt Config_keys.Hhconfig.everything_sdt config
           >?? po_opt.everything_sdt;
-        check_duplicate_runtime_shape_keys =
-          bool_opt
-            Config_keys.Hhconfig.check_duplicate_runtime_shape_keys
-            config
-          >?? po_opt.check_duplicate_runtime_shape_keys;
         keep_user_attributes =
           bool_opt Config_keys.Hhconfig.keep_user_attributes config
           >?? po_opt.keep_user_attributes;

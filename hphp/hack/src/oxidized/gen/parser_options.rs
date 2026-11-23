@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 //
-// @generated SignedSource<<a47fdb4319ddd6cd9664fd6b72d946e1>>
+// @generated SignedSource<<3cd83b0e442763f15e547f6f86e78220>>
 //
 // To regenerate this file, run:
 //   buck run @fbcode//mode/dev-nosan-lg fbcode//hphp/hack/src:oxidized_regen
@@ -64,8 +64,6 @@ pub struct ParserOptions {
     pub auto_namespace_map: Vec<(String, String)>,
     /// All classes are implcitly marked <<__SupportDynamicType>>
     pub everything_sdt: bool,
-    /// Reject shape fields with equal statically resolved runtime keys.
-    pub check_duplicate_runtime_shape_keys: bool,
     /// Parse all user attributes rather than only the ones needed for typing
     pub keep_user_attributes: bool,
     /// Stack size to use for parallel workers inside the parser.

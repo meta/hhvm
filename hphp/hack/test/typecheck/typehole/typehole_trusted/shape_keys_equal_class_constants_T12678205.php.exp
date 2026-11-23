@@ -1,1 +1,25 @@
-No errors
+error: Naming[2015] This shape field has the same key as another field [1]
+-> This field has the same runtime key `whatevs` [2]
+
+shape_keys_equal_class_constants_T12678205.php:16:35
+14 |   public function Foo():void { echo 'Foo'; }
+15 | }
+16 | type ShapeTy = shape(C::OfB => B, C::OfC => C);
+   |                      ^^^^^^ [2]
+   |                                   ^^^^^^ [1]
+17 | function DoIt(ShapeTy $x):void {
+18 |     $c = $x[C::OfC];
+
+error: Naming[2015] This shape field has the same key as another field [1]
+-> This field has the same runtime key `whatevs` [2]
+
+shape_keys_equal_class_constants_T12678205.php:27:33
+25 | // $s = shape(C::OfB => new B(), C::OfC => new C());
+26 | // But this will
+27 |   $s = shape(C::OfC => new C(), C::OfB => new B());
+   |              ^^^^^^ [2]
+   |                                 ^^^^^^ [1]
+28 |   DoIt($s);
+29 | }
+
+2 errors found
