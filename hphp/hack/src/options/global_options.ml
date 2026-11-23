@@ -199,6 +199,7 @@ type t = {
   tco_missing_targs_as_fresh_generics: bool;
   tco_ban_memoize_erased_generic_return: bool;
   tco_ban_lsb_this_in_generic_classes: bool;
+  tco_ban_this_in_non_lsb_static_shape_fields: bool;
 }
 [@@deriving eq, show]
 
@@ -311,6 +312,7 @@ let default =
     tco_missing_targs_as_fresh_generics = false;
     tco_ban_memoize_erased_generic_return = false;
     tco_ban_lsb_this_in_generic_classes = false;
+    tco_ban_this_in_non_lsb_static_shape_fields = false;
   }
 
 let set
@@ -420,6 +422,7 @@ let set
     ?tco_missing_targs_as_fresh_generics
     ?tco_ban_memoize_erased_generic_return
     ?tco_ban_lsb_this_in_generic_classes
+    ?tco_ban_this_in_non_lsb_static_shape_fields
     options =
   let setting setting option =
     match setting with
@@ -728,6 +731,10 @@ let set
       setting
         tco_ban_lsb_this_in_generic_classes
         options.tco_ban_lsb_this_in_generic_classes;
+    tco_ban_this_in_non_lsb_static_shape_fields =
+      setting
+        tco_ban_this_in_non_lsb_static_shape_fields
+        options.tco_ban_this_in_non_lsb_static_shape_fields;
   }
 
 let so_naming_sqlite_path t = t.so_naming_sqlite_path

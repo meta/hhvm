@@ -152,6 +152,7 @@ impl Default for GlobalOptions {
             tco_missing_targs_as_fresh_generics: false,
             tco_ban_memoize_erased_generic_return: false,
             tco_ban_lsb_this_in_generic_classes: false,
+            tco_ban_this_in_non_lsb_static_shape_fields: false,
             tco_repo_stdlib_path: None,
         }
     }

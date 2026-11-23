@@ -399,7 +399,7 @@ let contains_generic_decl : Typing_defs.decl_ty -> Pos_or_decl.t option =
   with
   | FoundGeneric p -> Some p
 
-let find_this_decl ~in_type_access_roots ~in_shape_fields_and_returns :
+let find_this_decl ~in_type_access_roots ~in_shape_fields ~in_returns :
     Typing_defs.decl_ty -> Pos_or_decl.t option =
  fun ty ->
   let visitor =
@@ -414,13 +414,12 @@ let find_this_decl ~in_type_access_roots ~in_shape_fields_and_returns :
 
       method! on_tshape env r shape_ty =
         match shape_ty with
-        | Shape_simple { s_unknown_value; _ }
-          when not in_shape_fields_and_returns ->
+        | Shape_simple { s_unknown_value; _ } when not in_shape_fields ->
           this#on_type env s_unknown_value
         | _ -> super#on_tshape env r shape_ty
 
       method! on_tfun env r ft =
-        if in_shape_fields_and_returns then
+        if in_returns then
           super#on_tfun env r ft
         else
           super#on_tfun

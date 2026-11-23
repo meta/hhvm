@@ -35,6 +35,9 @@ module Hhconfig = struct
 
   let ban_lsb_this_in_generic_classes = key "ban_lsb_this_in_generic_classes"
 
+  let ban_this_in_non_lsb_static_shape_fields =
+    key "ban_this_in_non_lsb_static_shape_fields"
+
   let const_static_props = key "const_static_props"
 
   let deregister_php_stdlib = key "deregister_php_stdlib"

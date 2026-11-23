@@ -1113,6 +1113,9 @@ let check_static_property_types env tc =
     TCO.ban_lsb_this_in_generic_classes (Env.get_tcopt env)
     && not (List.is_empty (Cls.tparams tc))
   in
+  let in_shape_fields =
+    TCO.ban_this_in_non_lsb_static_shape_fields (Env.get_tcopt env)
+  in
   let class_pos = Cls.pos tc in
   let add_error pos mk_error =
     (* An inherited property's position may be in a different file *)
@@ -1130,11 +1133,12 @@ let check_static_property_types env tc =
          let declared_here = String.equal prop.ce_origin (Cls.name tc) in
          let lsb = get_ce_lsb prop in
          if (not lsb) && declared_here then
-           (* Shape fields and function return types were never checked, and
-              existing code relies on that *)
+           (* Function return types were never checked, and existing code
+              relies on that *)
            TUtils.find_this_decl
              ~in_type_access_roots:true
-             ~in_shape_fields_and_returns:false
+             ~in_shape_fields
+             ~in_returns:false
              ty
            |> Option.iter ~f:(fun this_pos ->
                   add_error this_pos (fun pos ->
@@ -1149,7 +1153,8 @@ let check_static_property_types env tc =
            | None when ban_lsb_this && lsb ->
              TUtils.find_this_decl
                ~in_type_access_roots:false
-               ~in_shape_fields_and_returns:true
+               ~in_shape_fields:true
+               ~in_returns:true
                ty
              |> Option.iter ~f:(fun this_pos ->
                     (* An inherited property is reported at the class *)

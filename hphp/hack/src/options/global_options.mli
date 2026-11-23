@@ -302,6 +302,8 @@ type t = {
       (** Error on `__Memoize`/`__MemoizeLSB` functions whose erased generics appear in an invariant or contravariant position of the return type, or appear in the return type and in the type arguments of an `IMemoizeParam` parameter: the memoization cache ignores erased generics. *)
   tco_ban_lsb_this_in_generic_classes: bool;
       (** Reject a generic class whose `<<__LSB>>` static properties, including inherited ones, mention `this` outside a type constant access such as `this::T`. Every instantiation of the class shares the property, so a value stored as one instantiation's `this` could be read back as another's. *)
+  tco_ban_this_in_non_lsb_static_shape_fields: bool;
+      (** Reject `this` in the shape field types of a non-`<<__LSB>>` static property, as elsewhere in its type. Every subclass shares the property, so a value stored as one subclass's `this` could be read back as another's. *)
 }
 [@@deriving eq, show]
 
@@ -412,6 +414,7 @@ val set :
   ?tco_missing_targs_as_fresh_generics:bool ->
   ?tco_ban_memoize_erased_generic_return:bool ->
   ?tco_ban_lsb_this_in_generic_classes:bool ->
+  ?tco_ban_this_in_non_lsb_static_shape_fields:bool ->
   t ->
   t
 

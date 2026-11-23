@@ -301,3 +301,6 @@ let ban_memoize_erased_generic_return t =
 
 let ban_lsb_this_in_generic_classes t =
   t.Global_options.tco_ban_lsb_this_in_generic_classes
+
+let ban_this_in_non_lsb_static_shape_fields t =
+  t.Global_options.tco_ban_this_in_non_lsb_static_shape_fields

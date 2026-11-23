@@ -608,6 +608,10 @@ impl HhConfig {
                 "ban_lsb_this_in_generic_classes",
                 default.tco_ban_lsb_this_in_generic_classes,
             )?,
+            tco_ban_this_in_non_lsb_static_shape_fields: hhconfig.get_bool_or(
+                "ban_this_in_non_lsb_static_shape_fields",
+                default.tco_ban_this_in_non_lsb_static_shape_fields,
+            )?,
             tco_repo_stdlib_path: hhconfig.get_str("repo_stdlib_path").map(|p| p.to_string()),
         };
         let mut c = Self::default();

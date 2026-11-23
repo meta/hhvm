@@ -1,0 +1,14 @@
+error: Typing[4279] `this` cannot be used in the type of a static property unless it is `<<__LSB>>` [1]
+-> This class and all its subclasses share the property, so `this` could be read back as another class [2]
+
+this_in_non_lsb_static_shape_field.php:6:34
+3 | // A non-LSB static is shared by every subclass, but `this` in a shape field
+4 | // of its type is never checked.
+5 | class P {
+  |       ^ [2]
+6 |   protected static ?shape('a' => this) $s = null;
+  |                                  ^^^^ [1]
+7 |   public function put(): void { static::$s = shape('a' => $this); }
+8 |   public static function get(): ?shape('a' => this) { return static::$s; }
+
+1 error found
