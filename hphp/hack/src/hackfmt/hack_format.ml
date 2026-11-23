@@ -1318,34 +1318,84 @@ let rec t (env : Env.t) (node : Syntax.t) : Doc.t =
           foreach_right_paren = right_p;
           foreach_body = body;
         } ->
+      let collection = t env collection in
+      let key = t env key in
+      (* A long `shape(...)` or `tuple(...)` pattern breaks inside its own
+         parentheses while the foreach parentheses hug it, like a trailing
+         container argument in a call. The parentheses' rule then can't be
+         Parental, so this is only done when nothing else inside them can break
+         by itself. The splits after `as` and `=>` then follow the parentheses'
+         rule, whose high cost keeps the hug whenever its first line fits. *)
+      let hug_pattern =
+        match Syntax.syntax value with
+        | Syntax.ShapeExpression
+            {
+              shape_expression_keyword = pattern_kw;
+              shape_expression_left_paren = pattern_lp;
+              _;
+            }
+        | Syntax.TupleExpression
+            {
+              tuple_expression_keyword = pattern_kw;
+              tuple_expression_left_paren = pattern_lp;
+              _;
+            } ->
+          not
+            (has_split
+               (Concat
+                  [
+                    t env left_p;
+                    collection;
+                    t env await_kw;
+                    t env as_kw;
+                    key;
+                    t env arrow;
+                    t env pattern_kw;
+                    transform_leading_trivia (Syntax.leading_trivia pattern_lp);
+                    transform_trailing_trivia (Syntax.trailing_trivia value);
+                    transform_leading_trivia (Syntax.leading_trivia right_p);
+                  ]))
+        | _ -> false
+      in
+      let (rule, binder_split) =
+        if hug_pattern then
+          (Rule.Simple Cost.High, Split)
+        else
+          (Rule.Parental, SplitWith Cost.Base)
+      in
       Concat
         [
           t env kw;
           Space;
-          delimited_nest
-            env
-            left_p
-            right_p
+          Span
             [
-              t env collection;
-              Space;
-              t env await_kw;
-              Space;
-              t env as_kw;
-              Space;
-              SplitWith Cost.Base;
-              Nest
-                [
-                  Span
+              t env left_p;
+              WithRule
+                ( rule,
+                  nest
+                    env
+                    right_p
                     [
-                      t env key;
+                      collection;
                       Space;
-                      t env arrow;
+                      t env await_kw;
                       Space;
-                      SplitWith Cost.Base;
-                      Nest [t env value];
-                    ];
-                ];
+                      t env as_kw;
+                      Space;
+                      binder_split;
+                      Nest
+                        [
+                          Span
+                            [
+                              key;
+                              Space;
+                              t env arrow;
+                              Space;
+                              binder_split;
+                              Nest [t env value];
+                            ];
+                        ];
+                    ] );
             ];
           handle_possible_compound_statement env body;
           Newline;

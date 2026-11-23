@@ -9,4 +9,9 @@ function f(vec<mixed> $v): void {
   foreach ($v as shape('long_field_name_one' => $long_field_name_one, 'long_field_name_two' => $long_field_name_two, ...)) {}
   foreach ($v as tuple($long_variable_name_one, $long_variable_name_two, $long_variable_name_three, $long_variable_name_four)) {}
   foreach ($v as tuple($long_variable_name_one, $long_variable_name_two, $long_variable_name_three, ...)) {}
+  foreach ($this->getRows() as tuple($long_variable_name_one, $long_variable_name_two, $long_variable_name_three)) {}
+  foreach ($a_really_really_really_really_long_collection_variable_name_that_goes_on as $k => tuple($a, $b)) {}
+  foreach ($v as
+    // comment
+    tuple($long_variable_name_one, $long_variable_name_two, $long_variable_name_three)) {}
 }
