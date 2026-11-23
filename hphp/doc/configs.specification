@@ -1056,6 +1056,12 @@ The format can be found in hphp/tools/configs/generate_configs.rs
 
 - bool Eval.PerfPidMapIncludeFilePath = true, UNKNOWN
 
+- bool Eval.RoarPidMapsViaFD = false, UNKNOWN
+
+  Submit ROAR JIT PID-map entries through a memory-backed file when the
+  linked toolchain exports the FD API. Otherwise, use the existing registration
+  API. The ROAR runtime must support the FD API before enabling this option.
+
 - bool Eval.PerfJitDump = false, UNKNOWN
 
 - std::string Eval.PerfJitDumpDir = "/tmp", UNKNOWN

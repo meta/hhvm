@@ -27,6 +27,7 @@
 #include "hphp/util/atomic-vector.h"
 #include "hphp/util/configs/eval.h"
 #include "hphp/util/roar.h"
+#include "hphp/util/roar-pid-map.h"
 
 #include <cerrno>
 
@@ -61,6 +62,10 @@ int __roar_api_flag_safe_function_call_sites(
 );
 extern "C"
 int __roar_api_write_pid_maps(const ROARPidMapEntryAPI*, size_t);
+
+// Missing from ROAR toolchains that predate it.
+extern "C" __attribute__((weak))
+int __roar_api_write_pid_maps_fd(int);
 
 // Missing from ROAR toolchains that predate it.
 extern "C" __attribute__((weak))
@@ -328,20 +333,34 @@ void CGMeta::processNativeCalls() {
 void CGMeta::processPidMapEntries() {
   if constexpr (use_roar) {
     if (!roarPidMapEntries.empty()) {
-      std::vector<ROARPidMapEntryAPI> entries;
-      entries.reserve(roarPidMapEntries.size());
-      for (auto const& entry : roarPidMapEntries) {
-        entries.push_back({
-          reinterpret_cast<void*>(entry.address), entry.size, entry.name.c_str()
-        });
-      }
-      auto const retval =
-        __roar_api_write_pid_maps(entries.data(), entries.size());
+      auto const retval = [&] {
+        if (Cfg::Eval::RoarPidMapsViaFD && __roar_api_write_pid_maps_fd) {
+          ROARPidMapFile file;
+          for (auto const& entry : roarPidMapEntries) {
+            if (file.append(entry.address, entry.size, entry.name.c_str())) {
+              break;
+            }
+          }
+          auto error = file.flush();
+          if (!error) {
+            error = __roar_api_write_pid_maps_fd(file.fd());
+          }
+          return error;
+        }
+
+        std::vector<ROARPidMapEntryAPI> entries;
+        entries.reserve(roarPidMapEntries.size());
+        for (auto const& entry : roarPidMapEntries) {
+          entries.push_back({
+            reinterpret_cast<void*>(entry.address), entry.size, entry.name.c_str()
+          });
+        }
+        return __roar_api_write_pid_maps(entries.data(), entries.size());
+      }();
       if (Trace::moduleEnabledRelease(Trace::mcg, 5)) {
         Trace::ftraceRelease(
-          "ROAR: registering {} PID-map entries, "
-          "__roar_api_write_pid_maps returned = {}\n",
-          entries.size(), retval
+          "ROAR: registering {} PID-map entries, returned = {}\n",
+          roarPidMapEntries.size(), retval
         );
       }
     }
