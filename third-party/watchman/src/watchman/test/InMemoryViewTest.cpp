@@ -8,6 +8,11 @@
 #include "watchman/InMemoryView.h"
 #include <folly/executors/ManualExecutor.h>
 #include <folly/portability/GTest.h>
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 #include "watchman/fs/FSDetect.h"
 #include "watchman/query/GlobTree.h"
 #include "watchman/query/Query.h"
@@ -46,6 +51,14 @@ class InMemoryViewTest : public testing::TestWithParam<bool /* pwalk */> {
   InMemoryViewTest() {
     pending.lock()->ping();
   }
+
+  /**
+   * Replaces a file by a directory, a directory by a file and a file by
+   * another file between two steps of the iothread, which is told about
+   * `reported`. Returns how a since query then describes each changed path.
+   */
+  std::map<std::string, std::string> changesAfterReplacing(
+      const std::vector<std::pair<const char*, PendingFlags>>& reported);
 };
 
 TEST_P(InMemoryViewTest, can_construct) {
@@ -522,6 +535,134 @@ TEST_P(InMemoryViewTest, directory_removal_does_not_report_parent) {
 
   // iothread will not update the view for dir/ until it sees an actual
   // notification from the watcher for that directory.
+}
+
+std::map<std::string, std::string> InMemoryViewTest::changesAfterReplacing(
+    const std::vector<std::pair<const char*, PendingFlags>>& reported) {
+  fs.defineContents({
+      FAKEFS_ROOT "root/dir/was_file",
+      FAKEFS_ROOT "root/dir/was_dir/inside",
+      FAKEFS_ROOT "root/dir/saved",
+  });
+
+  auto root = std::make_shared<Root>(
+      fs, root_path, "fs_type", w_string_to_json("{}"), config, view, [] {});
+
+  InMemoryView::IoThreadState state{std::chrono::minutes(5)};
+  EXPECT_EQ(Continue::Continue, view->stepIoThread(root, state, pending));
+
+  const auto beforeChanges = view->getMostRecentRootNumberAndTickValue();
+
+  // Each path holds something else by the time the iothread looks at it
+  // again, so the iothread never sees the path missing.
+  fs.removeRecursively(FAKEFS_ROOT "root/dir/was_file");
+  fs.defineContents({FAKEFS_ROOT "root/dir/was_file/inside"});
+  fs.removeRecursively(FAKEFS_ROOT "root/dir/was_dir");
+  fs.defineContents({FAKEFS_ROOT "root/dir/was_dir"});
+  // Another file, as a save that renames a temporary file into place leaves.
+  fs.removeRecursively(FAKEFS_ROOT "root/dir/saved");
+  fs.defineContents({FAKEFS_ROOT "root/dir/saved"});
+  for (const auto& [path, flags] : reported) {
+    pending.lock()->add(path, {}, flags);
+  }
+  pending.lock()->ping();
+  EXPECT_EQ(Continue::Continue, view->stepIoThread(root, state, pending));
+
+  Query query;
+  query.fieldList.add("name");
+  query.fieldList.add("exists");
+  query.fieldList.add("new");
+
+  QueryContext ctx{&query, root, false};
+  ctx.since = QuerySince::Clock{false, beforeChanges.ticks};
+  view->timeGenerator(&query, &ctx);
+
+  std::map<std::string, std::string> changes;
+  for (const auto& file : ctx.resultsArray) {
+    const char* change = !file.get("exists").asBool() ? "deleted"
+        : file.get("new").asBool()                    ? "new"
+                                                      : "changed";
+    changes.emplace(file.get("name").asCString(), change);
+  }
+  return changes;
+}
+
+const std::map<std::string, std::string> kChangesAfterReplacing{
+    {"dir/was_file", "new"},
+    {"dir/was_file/inside", "new"},
+    {"dir/was_dir", "new"},
+    {"dir/was_dir/inside", "deleted"},
+    {"dir/saved", "changed"},
+};
+
+TEST_P(InMemoryViewTest, path_that_changed_type_is_new) {
+  const auto changes = changesAfterReplacing({
+      {FAKEFS_ROOT "root/dir/was_file", W_PENDING_VIA_NOTIFY},
+      {FAKEFS_ROOT "root/dir/was_dir", W_PENDING_VIA_NOTIFY},
+      {FAKEFS_ROOT "root/dir/saved", W_PENDING_VIA_NOTIFY},
+  });
+
+  EXPECT_EQ(kChangesAfterReplacing, changes);
+}
+
+TEST_P(InMemoryViewTest, path_that_changed_type_is_new_when_found_by_crawl) {
+  // The watcher reports the directory only; the crawl finds what its entries
+  // hold now.
+  const auto changes = changesAfterReplacing({
+      {FAKEFS_ROOT "root/dir", W_PENDING_VIA_NOTIFY | W_PENDING_RECURSIVE},
+  });
+
+  auto expected = kChangesAfterReplacing;
+  expected.emplace("dir", "changed");
+  EXPECT_EQ(expected, changes);
+}
+
+TEST_P(InMemoryViewTest, dir_seen_after_its_entry_is_crawled) {
+  // As on Windows: the watcher reports each file, and no inode number tells
+  // that a directory is not the one the view has.
+  watcher->flags = WATCHER_HAS_PER_FILE_NOTIFICATIONS;
+  fs.defineContents({FAKEFS_ROOT "root/dir/keep"});
+
+  auto root = std::make_shared<Root>(
+      fs, root_path, "fs_type", w_string_to_json("{}"), config, view, [] {});
+
+  InMemoryView::IoThreadState state{std::chrono::minutes(5)};
+  EXPECT_EQ(Continue::Continue, view->stepIoThread(root, state, pending));
+
+  fs.defineContents({
+      FAKEFS_ROOT "root/dir/sub/reported",
+      FAKEFS_ROOT "root/dir/sub/unreported",
+  });
+  fs.updateMetadata(
+      FAKEFS_ROOT "root/dir/sub", [](FileInformation& fi) { fi.ino = 0; });
+  // The iothread takes the oldest item first, so it creates `sub` in the view
+  // for its entry before it looks at `sub` itself.
+  pending.lock()->add(
+      FAKEFS_ROOT "root/dir/sub/reported", {}, W_PENDING_VIA_NOTIFY);
+  pending.lock()->add(FAKEFS_ROOT "root/dir/sub", {}, W_PENDING_VIA_NOTIFY);
+  pending.lock()->ping();
+  EXPECT_EQ(Continue::Continue, view->stepIoThread(root, state, pending));
+
+  Query query;
+  query.fieldList.add("name");
+  query.paths.emplace();
+  query.paths->emplace_back(QueryPath{"", 2});
+
+  QueryContext ctx{&query, root, false};
+  view->pathGenerator(&query, &ctx);
+
+  std::set<std::string> names;
+  for (const auto& file : ctx.resultsArray) {
+    names.emplace(file.asCString());
+  }
+  const std::set<std::string> expected{
+      "dir",
+      "dir/keep",
+      "dir/sub",
+      "dir/sub/reported",
+      "dir/sub/unreported",
+  };
+  EXPECT_EQ(expected, names);
 }
 
 INSTANTIATE_TEST_CASE_P(

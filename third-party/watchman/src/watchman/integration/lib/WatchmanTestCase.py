@@ -7,6 +7,7 @@
 # pyre-unsafe
 
 
+import contextlib
 import errno
 import functools
 import inspect
@@ -17,7 +18,7 @@ import sys
 import tempfile
 import time
 import unittest
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterator, List
 
 import pywatchman
 
@@ -492,6 +493,15 @@ class WatchmanTestCase(TempDirPerTestMixin, unittest.TestCase):
 
     def resumeWatchman(self) -> None:
         self.watchmanInstance().resume()
+
+    @contextlib.contextmanager
+    def watchmanSuspended(self) -> Iterator[None]:
+        """Suspends watchman while the body runs."""
+        self.suspendWatchman()
+        try:
+            yield
+        finally:
+            self.resumeWatchman()
 
     def rootIsWatched(self, r) -> bool:
         r = norm_absolute_path(r)

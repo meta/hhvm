@@ -987,9 +987,10 @@ void InMemoryView::statPath(
           parentDir, file_name, getClock(pending.now));
     }
 
-    if (!file->exists) {
+    if (!file->exists || file->stat.dtype() != st.dtype()) {
       /* we're transitioning from deleted to existing,
-       * so we're effectively new again */
+       * so we're effectively new again. A path that holds another type of
+       * file went through that too, without us seeing it deleted. */
       file->ctime.ticks = mostRecentTick_;
       file->ctime.timestamp = std::chrono::system_clock::to_time_t(pending.now);
       /* if a dir was deleted and now exists again, we want
