@@ -118,14 +118,6 @@ struct StreamChangesSinceParams {
   2: eden.JournalPosition fromPosition;
 }
 
-/**
- * Argument to streamSelectedChangesSince API
- */
-struct StreamSelectedChangesSinceParams {
-  1: StreamChangesSinceParams changesParams;
-  2: list<string> globs;
-}
-
 struct TraceTaskEventsRequest {}
 
 typedef binary EdenStartStatusUpdate
@@ -226,17 +218,6 @@ service StreamingEdenService extends eden.EdenService {
   > streamChangesSince(1: StreamChangesSinceParams params) throws (
     1: eden.EdenError ex,
   );
-
-  /**
-   * Same as the API above but only returns files that match the globs in filter.
-   * This API is intend to replace the above API but it's currently under development.
-   * NOT YET READY FOR PROD USE
-   */
-  ChangesSinceResult, stream<
-    ChangedFileResult throws (1: eden.EdenError ex)
-  > streamSelectedChangesSince(
-    1: StreamSelectedChangesSinceParams params,
-  ) throws (1: eden.EdenError ex);
 
   /**
    * Returns the basic status from EdenFS as one would get from getDaemonInfo
