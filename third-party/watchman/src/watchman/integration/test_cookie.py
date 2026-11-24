@@ -60,7 +60,7 @@ class TestCookie(WatchmanTestCase.WatchmanTestCase):
         root = self.mkdtemp()
         os.mkdir(os.path.join(root, "sub"))
         self.touchRelative(root, "sub", "f")
-        watch = self.watchmanCommand("watch", root)
+        self.watchmanCommand("watch", root)
         self.assertFileList(root, files=["sub", "sub/f"])
         clock = self.watchmanCommand("clock", root)["clock"]
 
@@ -74,10 +74,6 @@ class TestCookie(WatchmanTestCase.WatchmanTestCase):
                 "query", root, {"since": clock, "fields": ["name"]}
             )
             clock = res["clock"]
-            # FIXME: a query whose cookie a crawl found reports sub without
-            # sub/f. Every query should report sub/f.
-            if watch["watcher"] == "kqueue+fsevents" and res["files"] == ["sub"]:
-                continue
             self.assertFileListContains(res["files"], ["sub/f"])
 
     def test_other_cookies(self) -> None:

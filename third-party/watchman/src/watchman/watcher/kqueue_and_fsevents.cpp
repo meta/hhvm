@@ -133,7 +133,13 @@ class KQueueAndFSEventsWatcher : public Watcher {
 KQueueAndFSEventsWatcher::KQueueAndFSEventsWatcher(
     const w_string& root_path,
     const Configuration& config)
-    : Watcher("kqueue+fsevents", WATCHER_HAS_SPLIT_WATCH),
+    : Watcher(
+          "kqueue+fsevents",
+          WATCHER_HAS_SPLIT_WATCH |
+              // The top-level directories' FSEventsWatchers read this too.
+              (config.getBool("fsevents_watch_files", true)
+                   ? WATCHER_HAS_PER_FILE_NOTIFICATIONS_BELOW_ROOT
+                   : 0)),
       kqueueWatcher_(std::make_shared<KQueueWatcher>(root_path, config, false)),
       pendingCondition_(std::make_shared<PendingEventsCond>()) {}
 
@@ -214,7 +220,6 @@ std::unique_ptr<DirHandle> KQueueAndFSEventsWatcher::startWatchDir(
             DBG,
             "Creating a new FSEventsWatcher for top-level directory {}\n",
             fullPath);
-        root->cookies.addCookieDir(fullPath);
         auto [it, _] = wlock->emplace(
             fullPath,
             std::make_shared<FSEventsWatcher>(
@@ -226,6 +231,8 @@ std::unique_ptr<DirHandle> KQueueAndFSEventsWatcher::startWatchDir(
         if (!startThread(root, watcher, pendingCondition_)) {
           throw std::runtime_error("couldn't start fsEvent");
         }
+        // FSEvents doesn't report a cookie written before its stream started.
+        root->cookies.addCookieDir(fullPath);
       }
     }
   }

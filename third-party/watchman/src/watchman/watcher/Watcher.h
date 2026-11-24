@@ -40,6 +40,9 @@ class Watcher : public std::enable_shared_from_this<Watcher> {
 #define WATCHER_HAS_PER_FILE_NOTIFICATIONS 1
   // if the watcher is comprised of multiple watchers
 #define WATCHER_HAS_SPLIT_WATCH 4
+  // if a split watcher notifies for individual files in the directories below
+  // the root, but not in the root itself
+#define WATCHER_HAS_PER_FILE_NOTIFICATIONS_BELOW_ROOT 8
   unsigned flags;
 
   Watcher(const char* name, unsigned flags);

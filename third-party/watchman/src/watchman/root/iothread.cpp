@@ -400,10 +400,13 @@ void InMemoryView::processPath(
    */
   if (root->cookies.isCookiePrefix(pending.path)) {
     bool consider_cookie;
-    if (watcher_->flags & WATCHER_HAS_PER_FILE_NOTIFICATIONS) {
+    if ((watcher_->flags & WATCHER_HAS_PER_FILE_NOTIFICATIONS) ||
+        ((watcher_->flags & WATCHER_HAS_PER_FILE_NOTIFICATIONS_BELOW_ROOT) &&
+         pending.path.dirName() != rootPath_)) {
       // The watcher gives us file level notification, thus only consider
       // cookies if this path is coming directly from the watcher, not from a
-      // recursive crawl.
+      // recursive crawl. A crawl can find a cookie before the watcher has
+      // reported the changes made ahead of it.
       consider_cookie = (pending.flags & W_PENDING_VIA_NOTIFY) ||
           !root->inner.done_initial.load(std::memory_order_acquire);
     } else {
