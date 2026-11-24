@@ -23,8 +23,8 @@ import lldb
 # and unnecessary casting
 class LLVMVersion(enum.Enum):
     LLVM15 = "15"
-    LLVM17 = "17"
     LLVM19 = "19"
+    LLVM21 = "21"
 
 
 _LLVMVersion: LLVMVersion | None = None
@@ -108,9 +108,8 @@ def get_llvm_version(target: lldb.SBTarget) -> LLVMVersion:
         data = section.GetSectionData()
         err = lldb.SBError()
         i = 0
-        # I'm seeing clang 15 found alongside clang 17
-        # when the hhvm binary was built with clang 17,
-        # so if we see clang 17, assume that it's it.
+        # Older clang versions can appear alongside the one the hhvm binary
+        # was built with, so take the first newer version we recognize.
         while i < size:
             s = data.GetString(err, i)
             if err.Fail():
@@ -118,8 +117,8 @@ def get_llvm_version(target: lldb.SBTarget) -> LLVMVersion:
                     f"Failed to get string from '.comment' section at offset {i}: {err}"
                 )
                 break
-            if re.search("clang version 17", s):
-                found_version = LLVMVersion.LLVM17
+            if re.search("clang version 21", s):
+                found_version = LLVMVersion.LLVM21
                 break
             if re.search("clang version 19", s):
                 found_version = LLVMVersion.LLVM19
@@ -130,8 +129,8 @@ def get_llvm_version(target: lldb.SBTarget) -> LLVMVersion:
         debug_print(f"Failed in get_llvm_version: {str(e)}")
 
     if found_version is None:
-        found_version = LLVMVersion.LLVM19
-        print(f"Unable to determine LLVM version, assuming it's {LLVMVersion.LLVM19}")
+        found_version = LLVMVersion.LLVM21
+        print(f"Unable to determine LLVM version, assuming it's {LLVMVersion.LLVM21}")
 
     _LLVMVersion = found_version
     return _LLVMVersion
