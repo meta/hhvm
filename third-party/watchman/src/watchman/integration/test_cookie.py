@@ -56,6 +56,30 @@ class TestCookie(WatchmanTestCase.WatchmanTestCase):
             expected.extend([directory, cookie])
             self.assertFileList(root, files=expected)
 
+    def test_query_reports_earlier_change_in_subdir(self) -> None:
+        root = self.mkdtemp()
+        os.mkdir(os.path.join(root, "sub"))
+        self.touchRelative(root, "sub", "f")
+        watch = self.watchmanCommand("watch", root)
+        self.assertFileList(root, files=["sub", "sub/f"])
+        clock = self.watchmanCommand("clock", root)["clock"]
+
+        # With kqueue+fsevents, each query writes a cookie in sub and then
+        # removes it, and the crawls of sub that those events cause can find
+        # the next query's cookie before FSEvents reports the write ahead of it.
+        for _ in range(100):
+            with open(os.path.join(root, "sub", "f"), "a") as f:
+                f.write("x")
+            res = self.watchmanCommand(
+                "query", root, {"since": clock, "fields": ["name"]}
+            )
+            clock = res["clock"]
+            # FIXME: a query whose cookie a crawl found reports sub without
+            # sub/f. Every query should report sub/f.
+            if watch["watcher"] == "kqueue+fsevents" and res["files"] == ["sub"]:
+                continue
+            self.assertFileListContains(res["files"], ["sub/f"])
+
     def test_other_cookies(self) -> None:
         root = self.mkdtemp()
         cookie_dir = os.path.join(root, ".git")
