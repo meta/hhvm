@@ -714,7 +714,7 @@ void VariableSerializerImpl<Buffer>::write(const Object& v) {
       }
     }
 
-    // m_disallowObjects not relevent in JSON path bc it's only
+    // m_disallowObjects not relevant in JSON path bc it's only
     //setable via serialize_with_options
 
     if (!m_skipJsonSerializable && v.instanceof(s_JsonSerializable)) {

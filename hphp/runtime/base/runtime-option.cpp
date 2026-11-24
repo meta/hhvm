@@ -1085,7 +1085,7 @@ void RuntimeOption::Load(
   std::vector<std::string>* messages /* = nullptr */,
   std::string cmd /* = "" */) {
 
-  // Intialize the memory manager here because various settings and
+  // Initialize the memory manager here because various settings and
   // initializations that we do here need it
   tl_heap.getCheck();
 
@@ -1396,7 +1396,7 @@ void RuntimeOption::Load(
       if (EvalJitSerdesMode != JitSerdesMode::Off) {
         if (Cfg::Server::Mode) {
           Logger::Warning("Eval.JitSerdesMode reset from " + jitSerdesMode +
-                          " to off, becasue JitRetranslateAll isn't enabled.");
+                          " to off, because JitRetranslateAll isn't enabled.");
         }
         EvalJitSerdesMode = JitSerdesMode::Off;
       }

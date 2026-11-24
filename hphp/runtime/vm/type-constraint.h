@@ -567,7 +567,7 @@ struct TypeConstraint {
    * function. For example:
    * - Nullable and soft types are always represented as `KindOfMixed`
    *   - exception: ?string returns keep the legacy `KindOfString` representation
-   * - Unresolved types are always represented as `KindOfObejct`
+   * - Unresolved types are always represented as `KindOfObject`
    * - Otherwise, grab the result of `underlyingDataType`
    */
   MaybeDataType asSystemlibType(bool isReturn) const;

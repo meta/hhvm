@@ -70,7 +70,7 @@ struct DateTime final : SweepableResourceData {
      *  Wdy, DD Mon YY HH:MM:SS TIMEZONE
      *  There is no hope of having a complete list of timezones.  Universal
      *  Time (GMT), the North American timezones (PST, PDT, MST, MDT, CST,
-     *  CDT, EST, EDT) and the +/-hhmm offset specifed in RFC-822 should be
+     *  CDT, EST, EDT) and the +/-hhmm offset specified in RFC-822 should be
      *  supported.
      */
     RFC1036,
