@@ -1,0 +1,7 @@
+<?hh
+
+<<__EntryPoint>> function skipif(): void {
+    if (!function_exists('HH\Coeffects\fb\backdoor_from_leak_safe__DO_NOT_USE')) {
+        exit('skip HH\Coeffects\fb\backdoor_from_leak_safe__DO_NOT_USE() not available in OSS');
+    }
+}

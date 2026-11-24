@@ -1,5 +1,5 @@
 %A
-%|{Detected jit::trap at 0x%s: from fbcode/hphp/runtime/vm/jit/irlower-intrinsic.cpp:%d|fbcode/hphp/runtime/vm/bytecode.cpp:%d: void HPHP::iopStaticAnalysisError(): assertion `!Cfg::Eval::CrashOnStaticAnalysisError' failed.}
+%|{Detected jit::trap at 0x%s: from %s/hphp/runtime/vm/jit/irlower-intrinsic.cpp:%d|%s/hphp/runtime/vm/bytecode.cpp:%d: void HPHP::iopStaticAnalysisError(): assertion `!Cfg::Eval::CrashOnStaticAnalysisError' failed.}
 %A
 PHP Stacktrace:
 
