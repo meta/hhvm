@@ -265,6 +265,10 @@ The types of the parameters are restricted to the following: `null`, `bool`, `in
 
 The interface type `IMemoizeParam` assists with memoizing objects passed to async functions.
 
+Note that the memoization cache does not evict elements and could therefore result in an OOM for memoized functions
+with very high cardinality parameter values. In such situations, is recommended to implement in-memory caching yourself
+instead with an appropriate eviction policy.
+
 You can clear the cache with `HH\clear_static_memoization`. This should only be used **in tests** where:
 - the component being tested is meant to be immutable/idempotent for the entire request
 - the test needs to cover multiple initial states, where only one would truly be reachable in a single request
