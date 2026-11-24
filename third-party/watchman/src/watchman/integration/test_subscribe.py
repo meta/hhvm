@@ -973,6 +973,25 @@ class TestSubscribe(WatchmanTestCase.WatchmanTestCase):
         dat = self.watchmanCommand("subscribe", root, "my_sub", {"fields": ["name"]})
         self.assertEqual(dat["warning"], "subscription name 'my_sub' is not unique")
 
+    def test_resubscribe_same_name_replaces_old(self) -> None:
+        """Re-using a subscription name must replace the old subscription,
+        not leave it running in the background."""
+        root = self.mkdtemp()
+        self.touchRelative(root, "lemon")
+        self.watchmanCommand("watch", root)
+        self.assertFileList(root, files=["lemon"])
+
+        def subscriberNames():
+            out = self.watchmanCommand("debug-get-subscriptions", root)
+            return [sub["info"]["name"] for sub in out["subscribers"]]
+
+        for _ in range(3):
+            self.watchmanCommand("subscribe", root, "my_sub", {"fields": ["name"]})
+        self.assertWaitForEqual(["my_sub"], subscriberNames)
+
+        self.watchmanCommand("unsubscribe", root, "my_sub")
+        self.assertWaitForEqual([], subscriberNames)
+
     def findSubscriptionContainingFile(self, subdata, filename):
         filename = norm_relative_path(filename)
         for dat in subdata:

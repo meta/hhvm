@@ -570,6 +570,13 @@ static UntypedResponse cmd_subscribe(Client* clientbase, const json_ref& args) {
     }
   }
 
+  // If we are replacing a subscription with the same name, drop the old one
+  // first.  Assigning over client->subscriptions[name] below would otherwise
+  // leave the old subscription in unilateralSub, where it keeps running its
+  // query and is never freed.  unsubByName resets the old subscription's
+  // weakClient, so its destructor cannot remove the new entry by name.
+  client->unsubByName(sub->name);
+
   // Connect the root to our subscription
   {
     auto client_id = w_string::build(client->unique_id);
