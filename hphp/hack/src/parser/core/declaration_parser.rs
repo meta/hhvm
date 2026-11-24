@@ -442,9 +442,12 @@ where
                 is_backslash || parser.peek_token_kind() == TokenKind::LeftBrace
             }
             TokenKind::Name => {
+                let has_trailing_newline =
+                    token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                 let token = parser.sc_mut().make_token(token);
                 let token_ref = &token as *const _;
-                let (name, is_backslash) = parser.scan_remaining_qualified_name_extended(token);
+                let (name, is_backslash) =
+                    parser.scan_remaining_qualified_name_extended(token, has_trailing_newline);
                 // Here we rely on the implementation details of
                 // scan_remaining_qualified_name_extended. It's returning
                 // *exactly* token if there is nothing except it in the name.
@@ -558,8 +561,10 @@ where
         let name = match self.peek_token_kind() {
             TokenKind::Name => {
                 let token = self.next_token();
+                let has_trailing_newline =
+                    token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                 let token = self.sc_mut().make_token(token);
-                self.scan_remaining_qualified_name(token)
+                self.scan_remaining_qualified_name(token, has_trailing_newline)
             }
             TokenKind::LeftBrace => {
                 let pos = self.pos();

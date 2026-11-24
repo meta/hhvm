@@ -13,6 +13,7 @@ use parser_core_types::syntax_error::{self as Errors};
 use parser_core_types::token_factory::TokenFactory;
 use parser_core_types::token_kind::TokenKind;
 use parser_core_types::trivia_factory::TriviaFactory;
+use parser_core_types::trivia_kind::TriviaKind;
 
 use crate::lexer;
 use crate::lexer::Lexer;
@@ -251,8 +252,10 @@ where
         let token = self.next_xhp_class_name_or_other_token();
         match token.kind() {
             TokenKind::Namespace | TokenKind::Name => {
+                let has_trailing_newline =
+                    token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                 let name_token = self.sc_mut().make_token(token);
-                self.scan_remaining_qualified_name(name_token)
+                self.scan_remaining_qualified_name(name_token, has_trailing_newline)
             }
             TokenKind::Backslash => {
                 let pos = self.pos();
@@ -416,6 +419,7 @@ where
         mut name_opt: Option<S::Output>,
         mut parts: Vec<S::Output>,
         mut has_backslash: bool,
+        mut name_has_trailing_newline: bool,
     ) -> (Vec<S::Output>, Option<S::Output>, bool) {
         loop {
             let mut parser1 = self.clone();
@@ -425,18 +429,21 @@ where
                 parser1.next_token_as_name()
             };
             match (name_opt.is_some(), token.kind()) {
-                (true, TokenKind::Backslash) => {
-                    // found backslash, create item and recurse
+                (true, TokenKind::Backslash) if !name_has_trailing_newline => {
+                    // found backslash on the same line, create item and recurse
                     self.continue_from(parser1);
                     let token = self.sc_mut().make_token(token);
                     let part = self.sc_mut().make_list_item(name_opt.unwrap(), token);
                     parts.push(part);
                     has_backslash = true;
                     name_opt = None;
+                    name_has_trailing_newline = false;
                 }
                 (false, TokenKind::Name) => {
                     // found a name, recurse to look for backslash
                     self.continue_from(parser1);
+                    name_has_trailing_newline =
+                        token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                     let token = self.sc_mut().make_token(token);
                     name_opt = Some(token);
                     has_backslash = false;
@@ -467,9 +474,10 @@ where
     fn scan_remaining_qualified_name_extended(
         &mut self,
         name_token: S::Output,
+        name_has_trailing_newline: bool,
     ) -> (S::Output, bool) {
         let (parts, name_token_opt, is_backslash) =
-            self.scan_qualified_name_worker(Some(name_token), vec![], false);
+            self.scan_qualified_name_worker(Some(name_token), vec![], false, name_has_trailing_newline);
         if parts.is_empty() {
             (name_token_opt.unwrap(), is_backslash)
         } else {
@@ -487,7 +495,7 @@ where
     ) -> (S::Output, bool) {
         let head = self.sc_mut().make_list_item(missing, backslash);
         let parts = vec![head];
-        let (parts, _, is_backslash) = self.scan_qualified_name_worker(None, parts, false);
+        let (parts, _, is_backslash) = self.scan_qualified_name_worker(None, parts, false, false);
         let pos = self.pos();
         let list_node = self.sc_mut().make_list(parts, pos);
         let name = self.sc_mut().make_qualified_name(list_node);
@@ -531,8 +539,10 @@ where
         match token.kind() {
             TokenKind::Namespace | TokenKind::Name => {
                 self.continue_from(parser1);
+                let has_trailing_newline =
+                    token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                 let token = self.sc_mut().make_token(token);
-                self.scan_remaining_qualified_name(token)
+                self.scan_remaining_qualified_name(token, has_trailing_newline)
             }
             TokenKind::Backslash => {
                 self.continue_from(parser1);
@@ -604,8 +614,10 @@ where
         match name.kind() {
             TokenKind::Namespace | TokenKind::Name | TokenKind::XHPClassName => {
                 self.continue_from(parser1);
+                let has_trailing_newline =
+                    name.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                 let token = self.sc_mut().make_token(name);
-                self.scan_remaining_qualified_name(token)
+                self.scan_remaining_qualified_name(token, has_trailing_newline)
             }
             TokenKind::Backslash => {
                 self.continue_from(parser1);
@@ -787,8 +799,10 @@ where
         match token.kind() {
             TokenKind::Namespace | TokenKind::Name => {
                 self.continue_from(parser1);
+                let has_trailing_newline =
+                    token.has_trailing_trivia_kind(TriviaKind::EndOfLine);
                 let token = self.sc_mut().make_token(token);
-                self.scan_remaining_qualified_name(token)
+                self.scan_remaining_qualified_name(token, has_trailing_newline)
             }
             TokenKind::Variable => {
                 self.continue_from(parser1);
@@ -1382,8 +1396,13 @@ where
         self.parse_double_angled_list(parse_items)
     }
 
-    fn scan_remaining_qualified_name(&mut self, name_token: S::Output) -> S::Output {
-        let (name, _) = self.scan_remaining_qualified_name_extended(name_token);
+    fn scan_remaining_qualified_name(
+        &mut self,
+        name_token: S::Output,
+        name_has_trailing_newline: bool,
+    ) -> S::Output {
+        let (name, _) =
+            self.scan_remaining_qualified_name_extended(name_token, name_has_trailing_newline);
         name
     }
 
