@@ -67,8 +67,8 @@ struct DataBlockFull : std::runtime_error {
  */
 struct DataBlock {
   DataBlock() = default;
-  DataBlock(const DataBlock&) = default;
-  DataBlock& operator=(const DataBlock&) = default;
+  DataBlock(const DataBlock&) = delete;
+  DataBlock& operator=(const DataBlock&) = delete;
   DataBlock(DataBlock&& other) = default;
   DataBlock& operator=(DataBlock&& other) = default;
 
