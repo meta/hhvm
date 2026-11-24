@@ -1,0 +1,33 @@
+Code actions available:
+------------------------------------------
+Flip around comma (CodeActionKind: "refactor") SELECTED
+
+JSON for selected code action:
+------------------------------------------
+{
+  "title": "Flip around comma",
+  "kind": "refactor",
+  "diagnostics": [],
+  "edit": {
+    "changes": {
+      "FILE.php": [
+        {
+          "range": {
+            "start": { "line": 3, "character": 8 },
+            "end": { "line": 3, "character": 65 }
+          },
+          "newText": "named string $b, named int $a"
+        }
+      ]
+    }
+  }
+}
+
+Applied edit for code action:
+------------------------------------------
+<?hh
+
+function example(): void {
+  $f = (named string $b, named int $a) ==> {};
+}
+

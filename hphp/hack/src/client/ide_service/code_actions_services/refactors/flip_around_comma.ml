@@ -93,7 +93,20 @@ let option_or_thunk opt ~f =
   | Some _ -> opt
   | None -> f ()
 
-let visitor ~(cursor : Pos.t) =
+let pos_of_named_modifier positioned_tree param_pos =
+  let module Syn = Full_fidelity_positioned_syntax in
+  let root =
+    Provider_context.PositionedSyntaxTree.root (Lazy.force positioned_tree)
+  in
+  Syn.parentage root (Pos.start_offset param_pos)
+  |> List.find_map ~f:(fun node ->
+         match Syn.syntax node with
+         | Syn.ParameterDeclaration { parameter_named; _ }
+           when not (Syn.is_missing parameter_named) ->
+           Syn.position_exclusive (Pos.filename param_pos) parameter_named
+         | _ -> None)
+
+let visitor ~(cursor : Pos.t) ~positioned_tree =
   let find_in_positions = find_candidate ~cursor in
   let find_in_positions_params params =
     let is_easy_to_flip param =
@@ -116,14 +129,23 @@ let visitor ~(cursor : Pos.t) =
            ~f:
              Aast_defs.(
                fun param ->
-                 List.fold
-                   ~init:param.param_pos
-                   ~f:Pos.merge
-                   [
-                     pos_of_expr_opt (Aast_utils.get_param_default param);
-                     pos_of_type_hint param.param_type_hint;
-                   ])
-      |> find_in_positions
+                 let named_pos =
+                   if Option.is_none param.param_named then
+                     Some Pos.none
+                   else
+                     pos_of_named_modifier positioned_tree param.param_pos
+                 in
+                 Option.map named_pos ~f:(fun named_pos ->
+                     List.fold
+                       ~init:param.param_pos
+                       ~f:Pos.merge
+                       [
+                         named_pos;
+                         pos_of_expr_opt (Aast_utils.get_param_default param);
+                         pos_of_type_hint param.param_type_hint;
+                       ]))
+      |> Option.all
+      |> Option.bind ~f:find_in_positions
     else
       None
   in
@@ -227,7 +249,10 @@ let find ~entry pos ctx =
       Tast_provider.compute_tast_quarantined ~ctx ~entry
     in
     let path = entry.Provider_context.path in
-    (visitor ~cursor:pos)#go ctx tast.Tast_with_dynamic.under_normal_assumptions
+    let positioned_tree = lazy (Ast_provider.compute_cst ~ctx ~entry) in
+    (visitor ~cursor:pos ~positioned_tree)#go
+      ctx
+      tast.Tast_with_dynamic.under_normal_assumptions
     |> Option.map ~f:(refactor_of_candidate ~path ~source_text)
     |> Option.to_list
   else
