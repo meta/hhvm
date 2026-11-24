@@ -1,4 +1,8 @@
-#!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 
 # Collect some FB specific watchman diagnostics
 import glob
@@ -314,61 +318,6 @@ def passthru(*args, **kwargs):
         print("Error while running %s %s: %s" % (args, kwargs, e))
 
 
-if not os.isatty(sys.stdout.fileno()):
-    sys.stderr.write(
-        "(most output is going to your pipe, some short summary will show here on stderr)\n"
-    )
-
-# Print the basic system info
-print("Platform: %s" % sys.platform)
-if os.name == "posix":
-    uname = os.uname()
-    print_table([uname])
-    print("Running watchman-diag as uid %d" % os.getuid())
-
-print
-
-if os.name == "posix":
-    print("RPM version: (rpm -q fb-watchman)")
-    passthru(["rpm", "-q", "fb-watchman"])
-
-if sys.platform == "win32":
-    print("choco package version:")
-    passthru(["choco", "list", "--local-only", "watchman"])
-
-print("CLI version: (watchman -v)")
-passthru(["watchman", "--no-spawn", "-v"])
-print
-
-watchman_env_vars = [v for v in os.environ.keys() if v.startswith("WATCHMAN_")]
-if watchman_env_vars:
-    print()
-    print(
-        "!!!WARNING!!! The following watchman related environment variables are set",
-        "(this is unusual and may cause problems):",
-    )
-    for var in watchman_env_vars:
-        print("%s=%s" % (var, os.getenv(var)))
-    print()
-
-procinfo = ProcessInfo()
-case_sensitive = True
-
-if sys.platform == "linux":
-    inotify = InotifyInfo(procinfo)
-    print("Inotify watch information:")
-    print_table(inotify.get_watches())
-    print
-
-if sys.platform == "darwin":
-    print("launchd info:")
-    passthru(["launchctl", "list", "com.github.facebook.watchman"])
-    case_sensitive = False
-
-if sys.platform == "win32":
-    case_sensitive = False
-
-
 def collect_state_info(path):
     try:
         print("State information from %s" % path)
@@ -395,49 +344,108 @@ def collect_state_info(path):
     print
 
 
-for root in [
-    "/var/facebook/watchman",
-    "/opt/facebook/var/run/watchman",
-    "/opt/facebook/watchman/var/run/watchman",
-    os.environ.get("TEMP"),
-    os.environ.get("TMP"),
-]:
-    if root is None or root == "":
-        continue
+def main() -> None:
+    if not os.isatty(sys.stdout.fileno()):
+        sys.stderr.write(
+            "(most output is going to your pipe, some short summary will show here on stderr)\n"
+        )
 
-    for path in glob.glob("%s/*-state" % root):
-        collect_state_info(path)
+    # Print the basic system info
+    print("Platform: %s" % sys.platform)
+    if os.name == "posix":
+        uname = os.uname()
+        print_table([uname])
+        print("Running watchman-diag as uid %d" % os.getuid())
 
-appdata = os.environ.get("LOCALAPPDATA")
-if appdata:
-    watchman_appdata = os.path.join(appdata, "watchman")
-    if os.path.exists(watchman_appdata):
-        collect_state_info(watchman_appdata)
-
-if os.name == "posix":
-    print("List of running watchman processes:")
-    passthru("ps -ef | grep watchman", shell=True)
     print
 
-# We do these last, as they depend on watchman being able to respond.
-# Skip when running as root under sudo, to avoid touching root-owned state.
-# os.getuid is POSIX-only; keep it inside the os.name guard so the type checker
-# doesn't flag it against the Windows typeshed.
-safe_to_run = True
-if os.name == "posix":
-    if os.getuid() == 0 and os.environ.get("SUDO_UID"):
-        safe_to_run = False
-if safe_to_run:
-    # Safe to run watchman commands
-    print("Watchman service information:")
-    watchman = pywatchman.client(timeout=600)
-    print(watchman.query("version"))
-    print("\nStatus:\n")
-    passthru(["watchman", "--pretty", "debug-status"])
+    if os.name == "posix":
+        print("RPM version: (rpm -q fb-watchman)")
+        passthru(["rpm", "-q", "fb-watchman"])
 
-    watches = watchman.query("watch-list")["roots"]
-    print("Watches:\n%s\n" % watches)
+    if sys.platform == "win32":
+        print("choco package version:")
+        passthru(["choco", "list", "--local-only", "watchman"])
 
-    for watch in watches:
-        cross_check_watch(watchman, watch, case_sensitive)
-        collect_watch_info(watchman, watch)
+    print("CLI version: (watchman -v)")
+    passthru(["watchman", "--no-spawn", "-v"])
+    print
+
+    watchman_env_vars = [v for v in os.environ.keys() if v.startswith("WATCHMAN_")]
+    if watchman_env_vars:
+        print()
+        print(
+            "!!!WARNING!!! The following watchman related environment variables are set",
+            "(this is unusual and may cause problems):",
+        )
+        for var in watchman_env_vars:
+            print("%s=%s" % (var, os.getenv(var)))
+        print()
+
+    procinfo = ProcessInfo()
+    case_sensitive = True
+
+    if sys.platform == "linux":
+        inotify = InotifyInfo(procinfo)
+        print("Inotify watch information:")
+        print_table(inotify.get_watches())
+        print
+
+    if sys.platform == "darwin":
+        print("launchd info:")
+        passthru(["launchctl", "list", "com.github.facebook.watchman"])
+        case_sensitive = False
+
+    if sys.platform == "win32":
+        case_sensitive = False
+
+    for root in [
+        "/var/facebook/watchman",
+        "/opt/facebook/var/run/watchman",
+        "/opt/facebook/watchman/var/run/watchman",
+        os.environ.get("TEMP"),
+        os.environ.get("TMP"),
+    ]:
+        if root is None or root == "":
+            continue
+
+        for path in glob.glob("%s/*-state" % root):
+            collect_state_info(path)
+
+    appdata = os.environ.get("LOCALAPPDATA")
+    if appdata:
+        watchman_appdata = os.path.join(appdata, "watchman")
+        if os.path.exists(watchman_appdata):
+            collect_state_info(watchman_appdata)
+
+    if os.name == "posix":
+        print("List of running watchman processes:")
+        passthru("ps -ef | grep watchman", shell=True)
+        print
+
+    # We do these last, as they depend on watchman being able to respond.
+    # Skip when running as root under sudo, to avoid touching root-owned state.
+    # os.getuid is POSIX-only; keep it inside the os.name guard so the type checker
+    # doesn't flag it against the Windows typeshed.
+    safe_to_run = True
+    if os.name == "posix":
+        if os.getuid() == 0 and os.environ.get("SUDO_UID"):
+            safe_to_run = False
+    if safe_to_run:
+        # Safe to run watchman commands
+        print("Watchman service information:")
+        watchman = pywatchman.client(timeout=600)
+        print(watchman.query("version"))
+        print("\nStatus:\n")
+        passthru(["watchman", "--pretty", "debug-status"])
+
+        watches = watchman.query("watch-list")["roots"]
+        print("Watches:\n%s\n" % watches)
+
+        for watch in watches:
+            cross_check_watch(watchman, watch, case_sensitive)
+            collect_watch_info(watchman, watch)
+
+
+if __name__ == "__main__":
+    main()

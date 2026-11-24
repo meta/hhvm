@@ -1,6 +1,6 @@
 [project]
 name = "pywatchman"
-version = "4.0.0"
+version = "4.0.1"
 authors = [
     { name = "Meta Source Control Team", email = "sourcecontrol-dev@fb.com" },
 ]
@@ -33,6 +33,12 @@ keywords = [
     "filesystem",
     "watcher",
 ]
+
+[project.scripts]
+watchman-diag = "pywatchman.watchman_diag:main"
+watchman-make = "pywatchman.watchman_make:main"
+watchman-replicate-subscription = "pywatchman.watchman_replicate_subscription:main"
+watchman-wait = "pywatchman.watchman_wait:main"
 
 [project.urls]
 Homepage = "https://github.com/meta/watchman"

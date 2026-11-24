@@ -24,10 +24,7 @@ class TestWatchmanWait(WatchmanTestCase.WatchmanTestCase):
             # Windows can't execute a .par directly.
             args = [sys.executable, wait_script] if os.name == "nt" else [wait_script]
         else:
-            args = [
-                sys.executable,
-                os.path.join(os.environ["WATCHMAN_PYTHON_BIN"], "watchman-wait"),
-            ]
+            args = [sys.executable, "-m", "pywatchman.watchman_wait"]
         args.extend(cmdArgs)
 
         env = os.environ.copy()

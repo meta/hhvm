@@ -1,4 +1,8 @@
-#!/usr/bin/env python3
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import argparse
 import os
 import subprocess
@@ -128,9 +132,23 @@ class DefineTarget(argparse.Action):
         namespace.pattern = None
 
 
-parser = argparse.ArgumentParser(
-    formatter_class=argparse.RawDescriptionHelpFormatter,
-    description="""
+def check_root(desired_root):
+    try:
+        root = os.path.abspath(desired_root)
+        os.chdir(root)
+        return root
+    except Exception as ex:
+        print(
+            "--root=%s: specified path is invalid: %s" % (desired_root, ex),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="""
 watchman-make waits for changes to files and then invokes a build tool
 (by default, `make`) or provided script to process those changes.
 It uses the watchman service to efficiently watch the appropriate files.
@@ -145,42 +163,42 @@ watchman-make will then trigger the build for the given targets or
 run the provided script as changes are detected.
 
 """,
-)
-parser.add_argument(
-    "-t",
-    "--target",
-    nargs="+",
-    type=str,
-    action=DefineTarget,
-    help="""
+    )
+    parser.add_argument(
+        "-t",
+        "--target",
+        nargs="+",
+        type=str,
+        action=DefineTarget,
+        help="""
 Specify a list of target(s) to pass to the make tool.  The --make and
 --pattern options that precede --target are used to define the trigger
 condition.
 """,
-)
-parser.add_argument(
-    "-s",
-    "--settle",
-    type=float,
-    default=0.2,
-    help="How long to wait to allow changes to settle before invoking targets",
-)
-parser.add_argument(
-    "--make",
-    type=str,
-    default="make",
-    help="""
+    )
+    parser.add_argument(
+        "-s",
+        "--settle",
+        type=float,
+        default=0.2,
+        help="How long to wait to allow changes to settle before invoking targets",
+    )
+    parser.add_argument(
+        "--make",
+        type=str,
+        default="make",
+        help="""
 The name of the make tool to use for the next --target.  The default is `make`.
 You may include additional arguments; you are not limited to just the
 path to a tool or script.
 """,
-)
-parser.add_argument(
-    "-p",
-    "--pattern",
-    type=str,
-    nargs="+",
-    help="""
+    )
+    parser.add_argument(
+        "-p",
+        "--pattern",
+        type=str,
+        nargs="+",
+        help="""
 Define filename matching patterns that will be used to trigger the next
 --target definition.
 
@@ -189,119 +207,111 @@ via '**'.
 
 --pattern is reset to empty after each --target argument.
 """,
-)
-parser.add_argument(
-    "--root",
-    type=str,
-    default=".",
-    help="""
+    )
+    parser.add_argument(
+        "--root",
+        type=str,
+        default=".",
+        help="""
 Define the root of the project.  The default is to use the PWD.
 All patterns are considered to be relative to this root, and the build
 tool is executed with this location set as its PWD.
 """,
-)
-parser.add_argument(
-    "-r",
-    "--run",
-    type=str,
-    help="""
+    )
+    parser.add_argument(
+        "-r",
+        "--run",
+        type=str,
+        help="""
 The script that should be run when changes are detected
 """,
-)
-parser.add_argument(
-    "--connect-timeout",
-    type=float,
-    default=600,
-    help="""
+    )
+    parser.add_argument(
+        "--connect-timeout",
+        type=float,
+        default=600,
+        help="""
 Initial watchman client connection timeout. It should be sufficiently large to
 prevent timeouts when watchman is busy (eg. performing a crawl). The default
 value is 600 seconds.
 """,
-)
-args = parser.parse_args()
+    )
+    args = parser.parse_args()
 
-if args.target is None and args.run is None:
-    print("# No run script or targets were specified, nothing to do.", file=sys.stderr)
-    sys.exit(1)
-
-if args.target is None:
-    args.target = []
-    if args.run is not None:
-        args.target.append(RunTarget("RunTarget", args.run, args.pattern))
-
-
-def check_root(desired_root):
-    try:
-        root = os.path.abspath(desired_root)
-        os.chdir(root)
-        return root
-    except Exception as ex:
+    if args.target is None and args.run is None:
         print(
-            "--root=%s: specified path is invalid: %s" % (desired_root, ex),
-            file=sys.stderr,
+            "# No run script or targets were specified, nothing to do.", file=sys.stderr
         )
         sys.exit(1)
 
+    if args.target is None:
+        args.target = []
+        if args.run is not None:
+            args.target.append(RunTarget("RunTarget", args.run, args.pattern))
 
-targets = {}
-client = pywatchman.client(timeout=args.connect_timeout)
-try:
-    client.capabilityCheck(required=["cmd-watch-project", "wildmatch"])
-    root = check_root(args.root)
-    print("# Relative to %s" % root, file=sys.stderr)
-    for t in args.target:
-        t.start(client, root)
-        targets[t.name] = t
-
-except pywatchman.CommandError as ex:
-    print("watchman:", str(ex), file=sys.stderr)
-    sys.exit(1)
-
-print("# waiting for changes", file=sys.stderr)
-while True:
+    targets = {}
+    client = pywatchman.client(timeout=args.connect_timeout)
     try:
-        # Wait for changes to start to occur.  We're happy to wait
-        # quite some time for this
-        client.setTimeout(600)
+        client.capabilityCheck(required=["cmd-watch-project", "wildmatch"])
+        root = check_root(args.root)
+        print("# Relative to %s" % root, file=sys.stderr)
+        for t in args.target:
+            t.start(client, root)
+            targets[t.name] = t
 
-        client.receive()
-        for _, t in targets.items():
-            t.consumeEvents(client)
-
-        # Now we wait for events to settle
-        client.setTimeout(args.settle)
-        settled = False
-        while not settled:
-            try:
-                client.receive()
-                for _, t in targets.items():
-                    t.consumeEvents(client)
-            except pywatchman.SocketTimeout:
-                # Our short settle timeout hit, so we're now settled
-                settled = True
-                break
-
-        # Now we can work on executing the targets
-        for _, t in targets.items():
-            t.execute()
-
-        # Print this at the bottom of the loop rather than the top
-        # because we may timeout every so often and it looks weird
-        # to keep printing 'waiting for changes' each time we do.
-        print("# waiting for changes", file=sys.stderr)
-
-    except pywatchman.SocketTimeout:
-        # Let's check to see if we're still functional
-        try:
-            client.query("version")
-        except Exception as ex:
-            print("watchman:", str(ex), file=sys.stderr)
-            sys.exit(1)
-
-    except pywatchman.WatchmanError as ex:
+    except pywatchman.CommandError as ex:
         print("watchman:", str(ex), file=sys.stderr)
         sys.exit(1)
 
-    except KeyboardInterrupt:
-        # suppress ugly stack trace when they Ctrl-C
-        break
+    print("# waiting for changes", file=sys.stderr)
+    while True:
+        try:
+            # Wait for changes to start to occur.  We're happy to wait
+            # quite some time for this
+            client.setTimeout(600)
+
+            client.receive()
+            for _, t in targets.items():
+                t.consumeEvents(client)
+
+            # Now we wait for events to settle
+            client.setTimeout(args.settle)
+            settled = False
+            while not settled:
+                try:
+                    client.receive()
+                    for _, t in targets.items():
+                        t.consumeEvents(client)
+                except pywatchman.SocketTimeout:
+                    # Our short settle timeout hit, so we're now settled
+                    settled = True
+                    break
+
+            # Now we can work on executing the targets
+            for _, t in targets.items():
+                t.execute()
+
+            # Print this at the bottom of the loop rather than the top
+            # because we may timeout every so often and it looks weird
+            # to keep printing 'waiting for changes' each time we do.
+            print("# waiting for changes", file=sys.stderr)
+
+        except pywatchman.SocketTimeout:
+            # Let's check to see if we're still functional
+            try:
+                client.query("version")
+            except Exception as ex:
+                print("watchman:", str(ex), file=sys.stderr)
+                sys.exit(1)
+
+        except pywatchman.WatchmanError as ex:
+            print("watchman:", str(ex), file=sys.stderr)
+            sys.exit(1)
+
+        except KeyboardInterrupt:
+            # suppress ugly stack trace when they Ctrl-C
+            break
+
+
+if __name__ == "__main__":
+    main()
