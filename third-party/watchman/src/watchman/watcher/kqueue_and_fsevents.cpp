@@ -278,6 +278,12 @@ Watcher::ConsumeNotifyRet KQueueAndFSEventsWatcher::consumeNotify(
       if (cancelSelf) {
         fsevent->stopThreads();
         root->cookies.removeCookieDir(watchpath);
+        // The crawl of the root does not look at this path if something is
+        // there again, so nothing else finds out what it holds now.
+        coll.add(
+            watchpath,
+            std::chrono::system_clock::now(),
+            W_PENDING_VIA_NOTIFY | W_PENDING_RECURSIVE);
         it = fseventWatches->erase(it);
         continue;
       } else {
