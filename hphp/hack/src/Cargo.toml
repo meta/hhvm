@@ -81,6 +81,7 @@ members = [
     "providers/cargo/decl_provider_rust",
     "shmffi/cargo/shmffi",
     "utils/arena_deserializer",
+    "utils/cargo/hhbc_string_utils_rust_ffi",
     "utils/cargo/repo_root_rust_ffi",
     "utils/config_file/rust/ffi",
     "utils/core",

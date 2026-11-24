@@ -50,6 +50,23 @@
    repo_root_rust_ffi)))
 
 (library
+ (name hhbc_string_utils)
+ (wrapped false)
+ (modules hhbc_string_utils)
+ (foreign_archives hhbc_string_utils_rust_ffi))
+
+(rule
+ (targets libhhbc_string_utils_rust_ffi.a)
+ (deps
+  (source_tree %{workspace_root}/hack/src))
+ (locks /cargo)
+ (action
+  (run
+   %{workspace_root}/hack/scripts/invoke_cargo.sh
+   hhbc_string_utils_rust_ffi
+   hhbc_string_utils_rust_ffi)))
+
+(library
  (name utils_www_root)
  (wrapped false)
  (modules wwwroot)

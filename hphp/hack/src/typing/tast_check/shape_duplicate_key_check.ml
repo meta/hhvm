@@ -30,32 +30,12 @@ let symbolic_name_span = function
   | Ast_defs.SFclass_const ((class_pos, _), (member_pos, _)) ->
     Pos.btw class_pos member_pos
 
-(* Keep in sync with hackc's [hhbc::ClassName::mangle] in [hackc/hhbc/id.rs],
-   including [hhbc_string_utils::mangle] and [hhbc_string_utils::mangle_xhp_id]
-   in [hackc/utils/string_utils.rs]. *)
-let runtime_class_name class_name =
-  let class_name = Utils.strip_ns class_name in
-  let (namespace, name) =
-    match String.rsplit2 class_name ~on:'\\' with
-    | Some (namespace, name) -> (namespace ^ "\\", name)
-    | None -> ("", class_name)
-  in
-  let name =
-    if String.is_prefix name ~prefix:":" then
-      "xhp_"
-      ^ (String.drop_prefix name 1
-        |> String.substr_replace_all ~pattern:":" ~with_:"__"
-        |> String.substr_replace_all ~pattern:"-" ~with_:"_")
-    else
-      name
-  in
-  namespace ^ name
-
 let resolve_runtime_value env = function
   | Ast_defs.SFlit_str (_, value) -> Some (Const_value.SKVString value)
   | Ast_defs.SFclassname (_, class_name) ->
     let (_ : Folded_class.t Decl_entry.t) = Tast_env.get_class env class_name in
-    Some (Const_value.SKVString (runtime_class_name class_name))
+    Some
+      (Const_value.SKVString (Hhbc_string_utils.mangle_class_name class_name))
   | Ast_defs.SFclass_const ((_, class_name), (_, member_name)) ->
     (match Tast_env.get_class env class_name with
     | Decl_entry.Found cls -> Tast_env.get_const env cls member_name
