@@ -81,7 +81,8 @@ let pos_of_shape_field_name =
     function
     | SFlit_str (pos, _) -> pos
     | SFclassname (pos, _) -> pos
-    | SFclass_const (_, (pos, _)) -> pos)
+    | SFclass_const ((class_pos, _), (const_pos, _)) ->
+      Pos.merge class_pos const_pos)
 
 let pos_of_type_hint : 'a Aast_defs.type_hint -> Pos.t = function
   | (_, Some (pos, _)) -> pos

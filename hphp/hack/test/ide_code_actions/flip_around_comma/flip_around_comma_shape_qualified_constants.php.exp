@@ -1,0 +1,40 @@
+Code actions available:
+------------------------------------------
+Flip around comma (CodeActionKind: "refactor") SELECTED
+
+JSON for selected code action:
+------------------------------------------
+{
+  "title": "Flip around comma",
+  "kind": "refactor",
+  "diagnostics": [],
+  "edit": {
+    "changes": {
+      "FILE.php": [
+        {
+          "range": {
+            "start": { "line": 10, "character": 8 },
+            "end": { "line": 10, "character": 93 }
+          },
+          "newText": "\\ShapeKeys\\Keys::SECOND => 2, \\ShapeKeys\\Keys::FIRST => 1"
+        }
+      ]
+    }
+  }
+}
+
+Applied edit for code action:
+------------------------------------------
+<?hh
+
+namespace ShapeKeys;
+
+enum Keys: string {
+  FIRST = 'first';
+  SECOND = 'second';
+}
+
+function values(): void {
+  shape(\ShapeKeys\Keys::SECOND => 2, \ShapeKeys\Keys::FIRST => 1);
+}
+

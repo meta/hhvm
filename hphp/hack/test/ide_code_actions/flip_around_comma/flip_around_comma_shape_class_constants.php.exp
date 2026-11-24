@@ -1,0 +1,40 @@
+Code actions available:
+------------------------------------------
+Flip around comma (CodeActionKind: "refactor") SELECTED
+
+JSON for selected code action:
+------------------------------------------
+{
+  "title": "Flip around comma",
+  "kind": "refactor",
+  "diagnostics": [],
+  "edit": {
+    "changes": {
+      "FILE.php": [
+        {
+          "range": {
+            "start": { "line": 10, "character": 8 },
+            "end": { "line": 10, "character": 71 }
+          },
+          "newText": "Keys::SECOND => 2, Keys::FIRST => 1"
+        }
+      ]
+    }
+  }
+}
+
+Applied edit for code action:
+------------------------------------------
+<?hh
+
+class Keys {
+  <<__ShapeKey>>
+  const string FIRST = 'first';
+  <<__ShapeKey>>
+  const string SECOND = 'second';
+}
+
+function values(): void {
+  shape(Keys::SECOND => 2, Keys::FIRST => 1);
+}
+
