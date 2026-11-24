@@ -202,7 +202,6 @@ namespace {
     ): \HH\FIXME\MISSING_RETURN_TYPE {}
     public function escapeString(string $data): string {}
     public function close(): void {}
-    public function releaseConnection(): \HH\FIXME\MISSING_RETURN_TYPE {}
     public function isValid(): bool {}
     public function serverInfo(): string {}
     public function sslSessionReused(): bool {}
