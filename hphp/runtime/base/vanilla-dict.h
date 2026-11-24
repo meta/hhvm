@@ -102,7 +102,7 @@ struct VanillaDictElm {
     }
   }
 
-  // Members below here are required for HashTable implemenation.
+  // Members below here are required for HashTable implementation.
   ALWAYS_INLINE const TypedValue* datatv() const {
     return &data;
   }

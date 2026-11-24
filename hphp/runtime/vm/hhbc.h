@@ -513,7 +513,7 @@ OffsetSet instrSuccOffsets(PC opc, const Func* func);
  * Some CF instructions can be treated as non-CF instructions for most analysis
  * purposes, such as bytecode verification and HHBBC. These instructions change
  * vmpc() to point somewhere in a different function, but the runtime
- * guarantees that if excution ever returns to the original frame, it will be
+ * guarantees that if execution ever returns to the original frame, it will be
  * at the location immediately following the instruction in question. This
  * creates the illusion that the instruction fell through normally to the
  * instruction after it, within the context of its execution frame.

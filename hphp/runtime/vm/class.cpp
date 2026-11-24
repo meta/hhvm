@@ -1602,7 +1602,7 @@ TypedValue Class::clsCnsGet(const StringData* clsCnsName,
   auto& cns = m_constants[clsCnsInd];
   // When a child extends a parent, rather than the child having
   // distinct copies of the constants defined by their parent we prefer
-  // those constants be shared. Aside from saving memeory and avoiding
+  // those constants be shared. Aside from saving memory and avoiding
   // multiple initializations of the same logical constant, this
   // establishes the property that a constant accessed through a child
   // class will compare equal to the same constant accessed through the
@@ -1774,7 +1774,7 @@ TypedValue Class::clsCnsGet(const StringData* clsCnsName,
 
   // Wrap the call to 'invokeFuncFew' and call 'raise_error' if an
   // 'Object' exception is encountered. The effect of this is to treat
-  // constant intialization errors as terminal.
+  // constant initialization errors as terminal.
   auto invokeFuncFew = [&]() -> TypedValue {
     try {
       return g_context->invokeFuncFew(

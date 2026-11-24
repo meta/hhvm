@@ -307,7 +307,7 @@ private:
   bool m_edWarn{false};          // warn when attempting on empty darrays
   bool m_vdWarn{false};          // warn when attempting on vec-like darrays
   bool m_ddWarn{false};          // warn when attempting on non-vec-like darrays
-  bool m_ignoreLateInit{false};  // ignore uninitalized late init props
+  bool m_ignoreLateInit{false};  // ignore uninitialized late init props
   bool m_skipJsonSerializable{false};  // skip JsonSerializable handling for JSON
   bool m_disallowObjects{false};  // throw if serializing non-collection object
   bool m_disallowCollections{false}; // throw if serializing collection object
