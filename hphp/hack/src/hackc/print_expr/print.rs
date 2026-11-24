@@ -577,7 +577,7 @@ fn print_expr(
             let (_, litstr) = &cg.1;
             w.write_all(litstr.as_bytes())
         }
-        Expr_::Nameof(box cid) => {
+        Expr_::Nameof(deref!(cid)) => {
             w.write_all(b"nameof ")?;
             match &cid.2 {
                 ast::ClassId_::CIexpr(e) => match e.2.as_id() {
@@ -689,12 +689,14 @@ fn print_expr(
             w.write_all(b" is ")?;
             print_hint(w, true, &i.1)
         }
-        Expr_::As(box ast::As_ {
-            expr,
-            hint,
-            is_nullable,
-            enforce_deep: _,
-        }) => {
+        Expr_::As(
+            deref!(ast::As_ {
+                expr,
+                hint,
+                is_nullable,
+                enforce_deep: _,
+            }),
+        ) => {
             print_expr(ctx, w, env, expr)?;
             w.write_all(if *is_nullable { b" ?as " } else { b" as " })?;
             print_hint(w, true, hint)
@@ -791,7 +793,7 @@ fn print_expr(
                 .into())
             }
         }
-        Expr_::ETSplice(box ast::EtSplice { spliced_expr, .. }) => {
+        Expr_::ETSplice(deref!(ast::EtSplice { spliced_expr, .. })) => {
             w.write_all(b"${")?;
             print_expr(ctx, w, env, spliced_expr)?;
             w.write_all(b"}")
@@ -871,7 +873,7 @@ fn print_xml(
         match (&es[0], &es[1]) {
             (
                 Expr(_, _, Expr_::Shape(attrs)),
-                Expr(_, _, Expr_::ValCollection(box ((_, ast::VcKind::Vec), _, children))),
+                Expr(_, _, Expr_::ValCollection(deref!(((_, ast::VcKind::Vec), _, children)))),
             ) => (attrs, children),
             _ => return Err(syntax_error().into()),
         }
@@ -935,7 +937,7 @@ fn print_block(
 ) -> Result<()> {
     match block {
         [] | [ast::Stmt(_, ast::Stmt_::Noop)] => Ok(()),
-        [ast::Stmt(_, ast::Stmt_::Block(box (_, b)))] if b.len() == 1 => {
+        [ast::Stmt(_, ast::Stmt_::Block(deref!((_, b))))] if b.len() == 1 => {
             print_block_(ctx, w, env, b)
         }
         [_, _, ..] => print_block_(ctx, w, env, block),
@@ -1002,7 +1004,7 @@ fn print_statement(
             };
             Ok(())
         }
-        S_::Block(box (_, block)) => print_block_(ctx, w, env, block),
+        S_::Block(deref!((_, block))) => print_block_(ctx, w, env, block),
         S_::Noop => Ok(()),
         /* TODO(T29869930) */
         _ => w.write_all(b"TODO Unimplemented NYI: Default value printing"),

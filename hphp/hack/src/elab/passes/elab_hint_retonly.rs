@@ -18,14 +18,14 @@ pub struct ElabHintRetonlyPass {
 impl Pass for ElabHintRetonlyPass {
     fn on_ty_hint_top_down(&mut self, env: &Env, elem: &mut Hint) -> ControlFlow<()> {
         match elem {
-            Hint(pos, box Hint_::Hprim(Tprim::Tvoid)) if !self.allow_retonly => {
+            Hint(pos, deref!(Hint_::Hprim(Tprim::Tvoid))) if !self.allow_retonly => {
                 env.emit_error(NamingError::ReturnOnlyTypehint {
                     pos: pos.clone(),
                     kind: ReturnOnlyHint::Hvoid,
                 });
                 Break(())
             }
-            Hint(pos, box Hint_::Hprim(Tprim::Tnoreturn)) if !self.allow_retonly => {
+            Hint(pos, deref!(Hint_::Hprim(Tprim::Tnoreturn))) if !self.allow_retonly => {
                 env.emit_error(NamingError::ReturnOnlyTypehint {
                     pos: pos.clone(),
                     kind: ReturnOnlyHint::Hnoreturn,
@@ -111,7 +111,7 @@ mod tests {
         assert!(env.into_errors().is_empty());
         assert!(matches!(
             elem.ret.1,
-            Some(Hint(_, box Hint_::Hprim(Tprim::Tvoid)))
+            Some(Hint(_, deref!(Hint_::Hprim(Tprim::Tvoid))))
         ))
     }
 
@@ -136,7 +136,7 @@ mod tests {
         assert!(env.into_errors().is_empty());
         assert!(matches!(
             elem.return_ty,
-            Hint(_, box Hint_::Hprim(Tprim::Tvoid))
+            Hint(_, deref!(Hint_::Hprim(Tprim::Tvoid)))
         ))
     }
 
@@ -157,8 +157,10 @@ mod tests {
 
         assert!(env.into_errors().is_empty());
         assert!(match elem {
-            Hint(_, box Hint_::Happly(_, hints)) =>
-                matches!(hints.as_slice(), [Hint(_, box Hint_::Hprim(Tprim::Tvoid))]),
+            Hint(_, deref!(Hint_::Happly(_, hints))) => matches!(
+                hints.as_slice(),
+                [Hint(_, deref!(Hint_::Hprim(Tprim::Tvoid)))]
+            ),
 
             _ => false,
         })
@@ -176,7 +178,10 @@ mod tests {
         elem.transform(&env, &mut pass);
 
         assert!(env.into_errors().is_empty());
-        assert!(matches!(elem.1, Hint(_, box Hint_::Hprim(Tprim::Tvoid))))
+        assert!(matches!(
+            elem.1,
+            Hint(_, deref!(Hint_::Hprim(Tprim::Tvoid)))
+        ))
     }
 
     #[test]

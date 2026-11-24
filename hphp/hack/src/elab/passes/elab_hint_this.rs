@@ -115,7 +115,7 @@ impl ElabHintThisPass {
 
 impl Pass for ElabHintThisPass {
     fn on_ty_hint_top_down(&mut self, env: &Env, elem: &mut Hint) -> ControlFlow<()> {
-        let Hint(pos, box hint_) = elem;
+        let Hint(pos, deref!(hint_)) = elem;
         match &hint_ {
             Hint_::Hthis if self.forbid_this() || self.forbid_in_extends() => {
                 // We have a `this` hint in a forbidden position; raise an error
@@ -386,8 +386,8 @@ mod tests {
         // Expect no errors
         assert!(env.into_errors().is_empty());
         assert!(match elem.extends.pop() {
-            Some(Hint(_, box Hint_::Happly(_, hints))) => match hints.as_slice() {
-                [Hint(_, box Hint_::Hthis)] => true,
+            Some(Hint(_, deref!(Hint_::Happly(_, hints)))) => match hints.as_slice() {
+                [Hint(_, deref!(Hint_::Hthis))] => true,
                 _ => false,
             },
             _ => false,
@@ -429,8 +429,8 @@ mod tests {
         // Expect no errors
         assert!(env.into_errors().is_empty());
         assert!(match elem.extends.pop() {
-            Some(Hint(_, box Hint_::Happly(_, hints))) => match hints.as_slice() {
-                [Hint(_, box Hint_::Hthis)] => true,
+            Some(Hint(_, deref!(Hint_::Happly(_, hints)))) => match hints.as_slice() {
+                [Hint(_, deref!(Hint_::Hthis))] => true,
                 _ => false,
             },
             _ => false,
@@ -595,7 +595,10 @@ mod tests {
         let TypeHint(_, hint_opt) = elem.type_;
         assert!(matches!(
             hint_opt,
-            Some(Hint(_, box Hint_::Hoption(Hint(_, box Hint_::Hthis))))
+            Some(Hint(
+                _,
+                deref!(Hint_::Hoption(Hint(_, deref!(Hint_::Hthis))))
+            ))
         ));
     }
 

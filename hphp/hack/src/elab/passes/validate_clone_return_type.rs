@@ -18,7 +18,7 @@ impl Pass for ValidateCloneReturnType {
         if m.name.name() == sn::members::__CLONE {
             let ret = &m.ret;
             match &ret.1 {
-                Some(Hint(_, box Hint_::Hprim(Tprim::Tvoid))) => {}
+                Some(Hint(_, deref!(Hint_::Hprim(Tprim::Tvoid)))) => {}
                 Some(Hint(pos, _)) => env.emit_error(NastCheckError::CloneReturnType(pos.clone())),
                 None => {}
             }

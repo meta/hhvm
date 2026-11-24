@@ -21,7 +21,7 @@ impl Pass for ElabBlockPass {
         let mut q: VecDeque<_> = elem.drain(0..).collect();
         while let Some(Stmt(pos, stmt_)) = q.pop_front() {
             match stmt_ {
-                Stmt_::Block(box (_, xs)) => xs.into_iter().rev().for_each(|x| q.push_front(x)),
+                Stmt_::Block(deref!((_, xs))) => xs.into_iter().rev().for_each(|x| q.push_front(x)),
                 _ => elem.push(Stmt(pos, stmt_)),
             }
         }
@@ -36,7 +36,7 @@ impl Pass for ElabBlockPass {
         let mut q: VecDeque<_> = elem.drain(0..).collect();
         while let Some(Stmt(pos, stmt_)) = q.pop_front() {
             match stmt_ {
-                Stmt_::Block(box (_, xs)) => xs.into_iter().rev().for_each(|x| q.push_front(x)),
+                Stmt_::Block(deref!((_, xs))) => xs.into_iter().rev().for_each(|x| q.push_front(x)),
                 _ => elem.push(Stmt(pos, stmt_)),
             }
         }

@@ -72,7 +72,7 @@ impl Visitor {
                 ShapeExprField::SFField(_, e) => self.add_local_defs_from_lvalue(e),
                 ShapeExprField::SFSplat(_) => {}
             }),
-            Expr_::Lvar(box lid) => self.add_local_def(lid.clone()),
+            Expr_::Lvar(deref!(lid)) => self.add_local_def(lid.clone()),
             _ => {}
         }
     }
@@ -98,14 +98,14 @@ impl<'ast> VisitorMut<'ast> for Visitor {
                 self.add_local_ref(lv);
                 e.recurse(env, self.object())
             }
-            Expr_::Assign(box (lhs, _, _)) => {
+            Expr_::Assign(deref!((lhs, _, _))) => {
                 // Introducing a new local variable.
                 //
                 //     $x = ...
                 self.add_local_defs_from_lvalue(lhs);
                 e.recurse(env, self.object())
             }
-            Expr_::Lfun(box (f, idl)) => {
+            Expr_::Lfun(deref!((f, idl))) => {
                 let outer_vars = std::mem::take(self);
 
                 // We want to know about free variables inside the lambda, but
@@ -150,7 +150,7 @@ impl<'ast> VisitorMut<'ast> for Visitor {
         //       $x = await foo();
         //       await bar();
         //     }
-        if let nast::Stmt_::Awaitall(box (el, _)) = s {
+        if let nast::Stmt_::Awaitall(deref!((el, _))) = s {
             for (lid, _) in el {
                 self.add_local_def(lid.clone())
             }

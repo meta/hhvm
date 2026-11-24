@@ -1,5 +1,5 @@
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 
 use proc_macro2::Delimiter;
 use proc_macro2::Span;
@@ -558,8 +558,8 @@ impl State {
         let tokenizer = &self.tokenizer;
         match ast {
             Ast::Code { code } => code,
-            Ast::CommaSeparated(box sub) => match sub {
-                Ast::ZeroOrMore(box sub) => {
+            Ast::CommaSeparated(deref!(sub)) => match sub {
+                Ast::ZeroOrMore(deref!(sub)) => {
                     let sub = self.emit_ast(sub, context);
                     quote!(
                         if ! #tokenizer.peek_is(Token::is_close) {
@@ -569,7 +569,7 @@ impl State {
                         }
                     )
                 }
-                Ast::OneOrMore(box sub) => {
+                Ast::OneOrMore(deref!(sub)) => {
                     let sub = self.emit_ast(sub, context);
                     quote!( #tokenizer.parse_comma_list(false, |#tokenizer| { Ok(#sub) })? )
                 }
@@ -611,7 +611,7 @@ impl State {
                 }
 
                 // else
-                if let Some(box else_case) = else_case {
+                if let Some(deref!(else_case)) = else_case {
                     let mut var_decl = TokenStream::new();
                     Self::collect_var_decl(&else_case, &mut var_decl);
 
@@ -647,13 +647,13 @@ impl State {
             }
             Ast::VarBind {
                 name_use,
-                value: box value,
+                value: deref!(value),
                 ..
             } => {
                 let value = self.emit_ast(value, context);
                 quote!(#name_use = #value)
             }
-            Ast::ZeroOrMore(box sub) => {
+            Ast::ZeroOrMore(deref!(sub)) => {
                 match sub {
                     Ast::Predicate(Predicate::AnyIdentifier) => {
                         // id
@@ -676,7 +676,7 @@ impl State {
                     }
                 }
             }
-            Ast::ZeroOrOne(box sub) => self.emit_ast(sub, Context::Optional),
+            Ast::ZeroOrOne(deref!(sub)) => self.emit_ast(sub, Context::Optional),
         }
     }
 }

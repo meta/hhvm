@@ -28,7 +28,7 @@ impl ElabHintWildcardPass {
 
 impl Pass for ElabHintWildcardPass {
     fn on_ty_hint_top_down(&mut self, env: &Env, elem: &mut Hint) -> ControlFlow<()> {
-        let Hint(pos, box hint_) = elem;
+        let Hint(pos, deref!(hint_)) = elem;
         match &hint_ {
             Hint_::Hwildcard => {
                 if self.allow_wildcard && self.depth >= 1 {
@@ -125,7 +125,7 @@ mod tests {
 
     fn is_wildcard(hint: &Hint) -> bool {
         match hint {
-            Hint(_, box Hint_::Hwildcard) => true,
+            Hint(_, deref!(Hint_::Hwildcard)) => true,
             _ => false,
         }
     }
@@ -177,16 +177,20 @@ mod tests {
 
         assert!(env.into_errors().is_empty());
         assert!(match elem {
-            Expr_::Is(box (
-                _,
-                Hint(
+            Expr_::Is(
+                deref!((
                     _,
-                    box Hint_::Htuple(nast::TupleInfo {
-                        required: mut hints,
-                        ..
-                    }),
-                ),
-            )) => hints.pop().map_or(false, |hint| is_wildcard(&hint)),
+                    Hint(
+                        _,
+                        deref!(
+                            Hint_::Htuple(nast::TupleInfo {
+                                required: mut hints,
+                                ..
+                            })
+                        ),
+                    ),
+                )),
+            ) => hints.pop().map_or(false, |hint| is_wildcard(&hint)),
             _ => false,
         })
     }

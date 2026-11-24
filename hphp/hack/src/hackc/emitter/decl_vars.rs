@@ -2,7 +2,7 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 
 use ffi::Just;
 use ffi::Maybe;
@@ -109,7 +109,7 @@ impl<'ast, 'a> Visitor<'ast> for DeclvarVisitor<'a> {
     fn visit_expr_(&mut self, env: &mut (), e: &Expr_) -> Result<(), String> {
         use aast::Expr_;
         match e {
-            Expr_::Assign(box (lhs, _, rhs)) => {
+            Expr_::Assign(deref!((lhs, _, rhs))) => {
                 match &rhs.2 {
                     Expr_::Await(_) | Expr_::Yield(_) => {
                         // Visit e2 before e1. The ordering of declvars in async
@@ -126,14 +126,14 @@ impl<'ast, 'a> Visitor<'ast> for DeclvarVisitor<'a> {
             }
 
             // For an Lfun, we don't want to recurse, because it's a separate scope.
-            Expr_::Lfun(box lfun) => {
+            Expr_::Lfun(deref!(lfun)) => {
                 if self.context.capture_debugger_vars {
                     visit(self, env, &lfun.0.body)?;
                 }
                 Ok(())
             }
 
-            Expr_::Efun(box efun) => {
+            Expr_::Efun(deref!(efun)) => {
                 // at this point AST is already rewritten so use lists on EFun nodes
                 // contain list of captured variables. However if use list was initially absent
                 // it is not correct to traverse such nodes to collect locals because it will impact
@@ -160,14 +160,16 @@ impl<'ast, 'a> Visitor<'ast> for DeclvarVisitor<'a> {
                 Ok(())
             }
 
-            Expr_::Call(box aast::CallExpr {
-                func,
-                args,
-                unpacked_arg,
-                ..
-            }) => {
+            Expr_::Call(
+                deref!(aast::CallExpr {
+                    func,
+                    args,
+                    unpacked_arg,
+                    ..
+                }),
+            ) => {
                 match &func.2 {
-                    Expr_::Id(box ast_defs::Id(_, call_name)) => {
+                    Expr_::Id(deref!(ast_defs::Id(_, call_name))) => {
                         if call_name == emitter_special_functions::SET_FRAME_METADATA {
                             self.add_local("$86metadata");
                         }
@@ -178,7 +180,7 @@ impl<'ast, 'a> Visitor<'ast> for DeclvarVisitor<'a> {
                             self.add_local("$86productAttributionData");
                         }
                     }
-                    Expr_::ClassGet(box (id, _prop, pom)) if *pom == PropOrMethod::IsMethod => {
+                    Expr_::ClassGet(deref!((id, _prop, pom))) if *pom == PropOrMethod::IsMethod => {
                         self.on_class_get(id)?
                     }
                     _ => self.visit_expr(env, func)?,
@@ -191,7 +193,7 @@ impl<'ast, 'a> Visitor<'ast> for DeclvarVisitor<'a> {
                 }
                 Ok(())
             }
-            Expr_::ExpressionTree(box oxidized::ast::ExpressionTree { runtime_expr, .. }) => {
+            Expr_::ExpressionTree(deref!(oxidized::ast::ExpressionTree { runtime_expr, .. })) => {
                 self.visit_expr(env, runtime_expr)
             }
 

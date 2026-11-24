@@ -27,52 +27,60 @@ impl Pass for ElabDynamicClassNamePass {
         };
 
         match &mut elem.2 {
-            Expr_::New(box (class_id, _, _, _, _)) if is_dynamic(class_id) => {
+            Expr_::New(deref!((class_id, _, _, _, _))) if is_dynamic(class_id) => {
                 env.emit_error(NamingError::DynamicNewInStrictMode(class_id.1.clone()));
                 class_id.2 = ClassId_::CI(Id(class_id.1.clone(), sn::classes::UNKNOWN.to_string()));
                 Continue(())
             }
-            Expr_::ClassGet(box (class_id, ClassGetExpr::CGstring(..), _))
+            Expr_::ClassGet(deref!((class_id, ClassGetExpr::CGstring(..), _)))
                 if !is_dynamic(class_id) =>
             {
                 Continue(())
             }
-            Expr_::ClassGet(box (
-                class_id,
-                ClassGetExpr::CGexpr(cg_expr),
-                PropOrMethod::IsMethod,
-            )) if !is_dynamic(class_id) => {
+            Expr_::ClassGet(
+                deref!((
+                    class_id,
+                    ClassGetExpr::CGexpr(cg_expr),
+                    PropOrMethod::IsMethod,
+                )),
+            ) if !is_dynamic(class_id) => {
                 env.emit_error(NamingError::DynamicMethodAccess(cg_expr.1.clone()));
                 Continue(())
             }
-            Expr_::ClassGet(box (
-                ClassId(_, _, ClassId_::CIexpr(ci_expr)),
-                ClassGetExpr::CGstring(..)
-                | ClassGetExpr::CGexpr(Expr(_, _, Expr_::Lvar(..) | Expr_::This)),
-                _,
-            )) => {
+            Expr_::ClassGet(
+                deref!((
+                    ClassId(_, _, ClassId_::CIexpr(ci_expr)),
+                    ClassGetExpr::CGstring(..)
+                        | ClassGetExpr::CGexpr(Expr(_, _, Expr_::Lvar(..) | Expr_::This)),
+                    _,
+                )),
+            ) => {
                 env.emit_error(NamingError::DynamicClassNameInStrictMode(ci_expr.1.clone()));
                 invalid(&mut elem.2)
             }
-            Expr_::ClassGet(box (
-                ClassId(_, _, ClassId_::CIexpr(ci_expr)),
-                ClassGetExpr::CGexpr(cg_expr),
-                _,
-            )) => {
+            Expr_::ClassGet(
+                deref!((
+                    ClassId(_, _, ClassId_::CIexpr(ci_expr)),
+                    ClassGetExpr::CGexpr(cg_expr),
+                    _,
+                )),
+            ) => {
                 env.emit_error(NamingError::DynamicClassNameInStrictMode(ci_expr.1.clone()));
                 env.emit_error(NamingError::DynamicClassNameInStrictMode(cg_expr.1.clone()));
                 invalid(&mut elem.2)
             }
-            Expr_::ClassGet(box (_, ClassGetExpr::CGexpr(cg_expr), _)) => {
+            Expr_::ClassGet(deref!((_, ClassGetExpr::CGexpr(cg_expr), _))) => {
                 env.emit_error(NamingError::DynamicClassNameInStrictMode(cg_expr.1.clone()));
                 invalid(&mut elem.2)
             }
-            Expr_::FunctionPointer(box (FunctionPtrId::FPClassConst(class_id, _), _))
+            Expr_::FunctionPointer(deref!((FunctionPtrId::FPClassConst(class_id, _), _)))
                 if is_dynamic(class_id) =>
             {
                 invalid(&mut elem.2)
             }
-            Expr_::ClassConst(box (class_id, _)) if is_dynamic(class_id) => invalid(&mut elem.2),
+            Expr_::ClassConst(deref!((class_id, _))) if is_dynamic(class_id) => {
+                invalid(&mut elem.2)
+            }
             _ => Continue(()),
         }
     }
@@ -141,7 +149,7 @@ mod tests {
         let Expr(_, _, expr_) = elem;
         assert!(matches!(
             expr_,
-            Expr_::New(box (ClassId(_, _, ClassId_::CIself), _, _, _, _))
+            Expr_::New(deref!((ClassId(_, _, ClassId_::CIself), _, _, _, _)))
         ));
     }
 
@@ -173,7 +181,7 @@ mod tests {
         let Expr(_, _, expr_) = elem;
         assert!(matches!(
             expr_,
-            Expr_::New(box (ClassId(_, _, ClassId_::CI(..)), _, _, _, _))
+            Expr_::New(deref!((ClassId(_, _, ClassId_::CI(..)), _, _, _, _)))
         ))
     }
 
@@ -197,10 +205,10 @@ mod tests {
         let Expr(_, _, expr_) = elem;
         assert!(matches!(
             expr_,
-            Expr_::FunctionPointer(box (
+            Expr_::FunctionPointer(deref!((
                 FunctionPtrId::FPClassConst(ClassId(_, _, ClassId_::CIself), _),
                 _,
-            ))
+            )))
         ));
     }
 
@@ -241,7 +249,11 @@ mod tests {
         assert!(env.into_errors().is_empty());
         assert!(matches!(
             elem,
-            Expr(_, _, Expr_::ClassConst(box (ClassId(_, _, ClassId_::CIself), _)))
+            Expr(
+                _,
+                _,
+                Expr_::ClassConst(deref!((ClassId(_, _, ClassId_::CIself), _)))
+            )
         ))
     }
 
@@ -263,11 +275,11 @@ mod tests {
             Expr(
                 _,
                 _,
-                Expr_::Invalid(box Some(Expr(
+                Expr_::Invalid(deref!(Some(Expr(
                     _,
                     _,
-                    Expr_::ClassConst(box (ClassId(_, _, ClassId_::CIexpr(..)), _)),
-                ))),
+                    Expr_::ClassConst(deref!((ClassId(_, _, ClassId_::CIexpr(..)), _))),
+                )))),
             )
         ))
     }
@@ -292,7 +304,11 @@ mod tests {
         assert!(env.into_errors().is_empty());
         assert!(matches!(
             elem,
-            Expr(_, _, Expr_::ClassGet(box (ClassId(_, _, ClassId_::CIself), _, _)))
+            Expr(
+                _,
+                _,
+                Expr_::ClassGet(deref!((ClassId(_, _, ClassId_::CIself), _, _)))
+            )
         ))
     }
 

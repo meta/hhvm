@@ -50,7 +50,7 @@ impl Reason {
         match self {
             NoReason | Invalid => None,
             FromWitnessDecl(witness) => Some(witness.pos()),
-            Typeconst(box NoReason, (pos, _), _, _) => Some(pos),
+            Typeconst(deref!(NoReason), (pos, _), _, _) => Some(pos),
             Typeconst(t, _, _, _) | ExprDepType(t, _, _) | Instantiate { type__: t, .. } => t.pos(),
         }
     }

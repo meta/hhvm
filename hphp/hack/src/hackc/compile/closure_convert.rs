@@ -2,7 +2,7 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 use std::borrow::Cow;
 use std::sync::Arc;
 
@@ -1490,7 +1490,7 @@ fn is_meth_caller(x: &CallExpr) -> bool {
 
 fn is_parent_call(x: &CallExpr) -> bool {
     match &x.func.2 {
-        Expr_::ClassGet(box (ci, _, _)) | Expr_::ClassConst(box (ci, _)) => {
+        Expr_::ClassGet(deref!((ci, _, _))) | Expr_::ClassConst(deref!((ci, _))) => {
             matches!(&ci.2, ClassId_::CIparent)
         }
         _ => false,

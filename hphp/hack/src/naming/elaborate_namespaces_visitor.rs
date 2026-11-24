@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 
 use std::sync::Arc;
 use std::sync::LazyLock;
@@ -84,11 +84,13 @@ impl Env {
     }
 
     fn handle_special_calls(&self, call: &mut Expr_) {
-        if let Expr_::Call(box CallExpr {
-            func: Expr(_, _, Expr_::Id(id)),
-            args,
-            ..
-        }) = call
+        if let Expr_::Call(
+            deref!(CallExpr {
+                func: Expr(_, _, Expr_::Id(id)),
+                args,
+                ..
+            }),
+        ) = call
         {
             if !self.in_codegen()
                 && args.len() == 2
@@ -207,7 +209,7 @@ impl ElaborateNamespacesVisitor {
             }
         }
         match h {
-            Hint(_, box Hint_::Happly(ctx, hl)) if !is_reserved_type_hint(&ctx.1) => {
+            Hint(_, deref!(Hint_::Happly(ctx, hl))) if !is_reserved_type_hint(&ctx.1) => {
                 if is_ctx_user_defined(&ctx.1) {
                     env.elaborate_type_name(ctx)
                 } else {
@@ -215,12 +217,12 @@ impl ElaborateNamespacesVisitor {
                 };
                 hl.recurse(env, self.object())?;
             }
-            Hint(_, box Hint_::Hintersection(ctxs)) => {
+            Hint(_, deref!(Hint_::Hintersection(ctxs))) => {
                 for ctx in ctxs {
                     self.on_ctx_hint_ns(ctx_ns, env, ctx)?;
                 }
             }
-            Hint(_, box Hint_::Haccess(root, _)) => root.recurse(env, self.object())?,
+            Hint(_, deref!(Hint_::Haccess(root, _))) => root.recurse(env, self.object())?,
             _ => h.recurse(ctx_env, self.object())?,
         }
         Ok(())
@@ -370,17 +372,19 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
     fn visit_expr_(&mut self, env: &mut Env, e: &mut Expr_) -> Result<(), ()> {
         // Sets env for lambdas
         match e {
-            Expr_::Collection(box (id, c_targ_opt, flds)) if !env.in_codegen() => {
+            Expr_::Collection(deref!((id, c_targ_opt, flds))) if !env.in_codegen() => {
                 namespaces::elaborate_id(&env.namespace, namespaces::ElaborateKind::Class, id);
                 c_targ_opt.accept(env, self.object())?;
                 flds.accept(env, self.object())?;
             }
-            Expr_::Call(box CallExpr {
-                func,
-                targs,
-                args,
-                unpacked_arg,
-            }) => {
+            Expr_::Call(
+                deref!(CallExpr {
+                    func,
+                    targs,
+                    args,
+                    unpacked_arg,
+                }),
+            ) => {
                 // Recurse first due to borrow order
                 targs.accept(env, self.object())?;
                 args.accept(env, self.object())?;
@@ -399,7 +403,7 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
                     func.accept(env, self.object())?;
                 }
             }
-            Expr_::FunctionPointer(box (fpid, targs, _)) => {
+            Expr_::FunctionPointer(deref!((fpid, targs, _))) => {
                 if let Some(sid) = fpid.as_fpid_mut() {
                     namespaces::elaborate_id(&env.namespace, namespaces::ElaborateKind::Fun, sid);
                 } else if let Some(cc) = fpid.as_fpclass_const_mut() {
@@ -416,7 +420,7 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
                 }
                 targs.accept(env, self.object())?;
             }
-            Expr_::ObjGet(box (obj, expr, nullsafe, _)) => {
+            Expr_::ObjGet(deref!((obj, expr, nullsafe, _))) => {
                 if let Expr_::Id(..) = expr.2 {
                 } else {
                     expr.accept(env, self.object())?;
@@ -428,7 +432,7 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
             Expr_::Id(sid) if !((sid.1 == "NAN" || sid.1 == "INF") && env.in_codegen()) => {
                 namespaces::elaborate_id(&env.namespace, namespaces::ElaborateKind::Const, sid);
             }
-            Expr_::New(box (class_id, targs, args, unpacked_el, _)) => {
+            Expr_::New(deref!((class_id, targs, args, unpacked_el, _))) => {
                 if let Some(e) = class_id.2.as_ciexpr_mut() {
                     if let Some(sid) = e.2.as_id_mut() {
                         env.elaborate_type_name(sid);
@@ -442,7 +446,7 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
                 args.accept(env, self.object())?;
                 unpacked_el.accept(env, self.object())?;
             }
-            Expr_::ClassConst(box (type_, _)) => {
+            Expr_::ClassConst(deref!((type_, _))) => {
                 if let Some(e) = type_.2.as_ciexpr_mut() {
                     if let Some(sid) = e.2.as_id_mut() {
                         env.elaborate_type_name(sid);
@@ -453,7 +457,7 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
                     type_.accept(env, self.object())?;
                 }
             }
-            Expr_::ClassGet(box (class_id, class_get_expr, _)) => {
+            Expr_::ClassGet(deref!((class_id, class_get_expr, _))) => {
                 if let Some(e) = class_id.2.as_ciexpr_mut() {
                     if let Some(sid) = e.2.as_id_mut() {
                         env.elaborate_type_name(sid);
@@ -465,7 +469,7 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
                 }
                 class_get_expr.accept(env, self.object())?;
             }
-            Expr_::Xml(box (xml_id, attributes, el)) => {
+            Expr_::Xml(deref!((xml_id, attributes, el))) => {
                 /* if XHP element mangling is disabled, namespaces are supported */
                 if !env.in_codegen() || env.namespace.disable_xhp_element_mangling {
                     env.elaborate_type_name(xml_id);
@@ -473,10 +477,10 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
                 attributes.recurse(env, self.object())?;
                 el.recurse(env, self.object())?;
             }
-            Expr_::EnumClassLabel(box (Some(sid), _)) if !env.in_codegen() => {
+            Expr_::EnumClassLabel(deref!((Some(sid), _))) if !env.in_codegen() => {
                 env.elaborate_type_name(sid);
             }
-            Expr_::Nameof(box target) => {
+            Expr_::Nameof(deref!(target)) => {
                 if let Some(e) = target.2.as_ciexpr_mut() {
                     if let Some(sid) = e.2.as_id_mut() {
                         env.elaborate_type_name(sid);
@@ -485,15 +489,15 @@ impl<'ast> VisitorMut<'ast> for ElaborateNamespacesVisitor {
                     }
                 }
             }
-            Expr_::ExpressionTree(box ExpressionTree { class, .. }) => {
+            Expr_::ExpressionTree(deref!(ExpressionTree { class, .. })) => {
                 env.elaborate_type_name(class);
                 e.recurse(env, self.object())?
             }
-            Expr_::Lfun(box (fun_, _)) => {
+            Expr_::Lfun(deref!((fun_, _))) => {
                 env.extend_hint_tparams(&fun_.tparams);
                 e.recurse(env, self.object())?
             }
-            Expr_::Efun(box efun) => {
+            Expr_::Efun(deref!(efun)) => {
                 env.extend_hint_tparams(&efun.fun.tparams);
                 e.recurse(env, self.object())?
             }

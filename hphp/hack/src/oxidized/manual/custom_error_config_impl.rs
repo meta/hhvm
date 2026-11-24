@@ -598,7 +598,7 @@ mod tests {
         assert!(matches!(
             patt,
             PattLoclTy::Or {
-                snd: box PattLoclTy::Invalid(..),
+                snd: deref!(PattLoclTy::Invalid(..)),
                 ..
             }
         ));
@@ -618,7 +618,7 @@ mod tests {
         assert!(matches!(
             patt,
             PattLoclTy::Or {
-                fst: box PattLoclTy::Invalid(..),
+                fst: deref!(PattLoclTy::Invalid(..)),
                 ..
             }
         ));
@@ -646,10 +646,10 @@ mod tests {
         assert!(matches!(
             patt,
             PattLoclTy::Apply {
-                params: box Params::Cons {
+                params: deref!(Params::Cons {
                     hd: PattLoclTy::Invalid(..),
                     ..
-                },
+                }),
                 ..
             }
         ))
@@ -679,7 +679,7 @@ mod tests {
         assert!(matches!(
             patt,
             PattLoclTy::Or {
-                snd: box PattLoclTy::Invalid(..),
+                snd: deref!(PattLoclTy::Invalid(..)),
                 ..
             }
         ));
@@ -1688,7 +1688,7 @@ mod tests {
         assert!(matches!(
             err,
             PattTypingError::Or {
-                snd: box PattTypingError::InvalidTyping { .. },
+                snd: deref!(PattTypingError::InvalidTyping { .. }),
                 ..
             }
         ));
@@ -1719,7 +1719,7 @@ mod tests {
         assert!(matches!(
             err,
             PattTypingError::Or {
-                fst: box PattTypingError::InvalidTyping { .. },
+                fst: deref!(PattTypingError::InvalidTyping { .. }),
                 ..
             }
         ));

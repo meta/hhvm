@@ -26,7 +26,7 @@ impl Pass for ElabExprCallHhInvariantPass {
         match check_call(env, elem) {
             Check::Ignore => Continue(()),
             Check::Invalidate => {
-                if let Stmt_::Expr(box expr) = elem {
+                if let Stmt_::Expr(deref!(expr)) = elem {
                     let inner_expr = std::mem::replace(expr, elab_utils::expr::null());
                     *expr = elab_utils::expr::invalid(inner_expr);
                 }
@@ -34,16 +34,18 @@ impl Pass for ElabExprCallHhInvariantPass {
             }
             Check::Elaborate => {
                 let old_stmt_ = std::mem::replace(elem, Stmt_::Noop);
-                if let Stmt_::Expr(box Expr(
-                    annot,
-                    expr_pos,
-                    Expr_::Call(box CallExpr {
-                        func: Expr(fn_expr_annot, fn_expr_pos, Expr_::Id(box Id(fn_name_pos, _))),
-                        targs,
-                        mut args,
-                        unpacked_arg,
-                    }),
-                )) = old_stmt_
+                if let Stmt_::Expr(
+                    deref!(Expr(
+                        annot,
+                        expr_pos,
+                        Expr_::Call(deref!(CallExpr {
+                            func: Expr(fn_expr_annot, fn_expr_pos, Expr_::Id(deref!(Id(fn_name_pos, _)))),
+                            targs,
+                            mut args,
+                            unpacked_arg,
+                        })),
+                    )),
+                ) = old_stmt_
                 {
                     let (pk, arg) = args.remove(0);
                     // Raise error if this is an inout param
@@ -109,15 +111,17 @@ enum Check {
 
 fn check_call(env: &Env, stmt: &Stmt_) -> Check {
     match stmt {
-        Stmt_::Expr(box Expr(
-            _,
-            _,
-            Expr_::Call(box CallExpr {
-                func: Expr(_, fn_expr_pos, Expr_::Id(box Id(_, fn_name))),
-                args,
-                ..
-            }),
-        )) if fn_name == sn::autoimported_functions::INVARIANT => match args.get(0..1) {
+        Stmt_::Expr(
+            deref!(Expr(
+                _,
+                _,
+                Expr_::Call(deref!(CallExpr {
+                    func: Expr(_, fn_expr_pos, Expr_::Id(deref!(Id(_, fn_name)))),
+                    args,
+                    ..
+                })),
+            )),
+        ) if fn_name == sn::autoimported_functions::INVARIANT => match args.get(0..1) {
             None | Some(&[]) => {
                 env.emit_error(NamingPhaseError::Naming(NamingError::TooFewArguments(
                     fn_expr_pos.clone(),
@@ -172,24 +176,30 @@ mod tests {
         assert!(env.into_errors().is_empty());
 
         assert!(match elem {
-            Stmt_::If(box (
-                Expr(_, _, Expr_::Unop(box (Uop::Unot, Expr(_, _, Expr_::Null)))),
-                Block(mut ts),
-                Block(mut fs),
-            )) => {
+            Stmt_::If(
+                deref!(
+                    (
+                        Expr(_, _, Expr_::Unop(deref!((Uop::Unot, Expr(_, _, Expr_::Null))))),
+                        Block(mut ts),
+                        Block(mut fs),
+                    )
+                ),
+            ) => {
                 match ts.pop().zip(fs.pop()) {
                     Some((
                         Stmt(
                             _,
-                            Stmt_::Expr(box Expr(
-                                _,
-                                _,
-                                Expr_::Call(box CallExpr {
-                                    func: Expr(_, _, Expr_::Id(box Id(_, fn_name))),
-                                    args,
-                                    ..
-                                }),
-                            )),
+                            Stmt_::Expr(
+                                deref!(Expr(
+                                    _,
+                                    _,
+                                    Expr_::Call(deref!(CallExpr {
+                                        func: Expr(_, _, Expr_::Id(deref!(Id(_, fn_name)))),
+                                        args,
+                                        ..
+                                    })),
+                                )),
+                            ),
                         ),
                         Stmt(_, Stmt_::Noop),
                     )) => {
@@ -234,15 +244,17 @@ mod tests {
         assert!(env.into_errors().is_empty());
 
         assert!(match elem {
-            Stmt_::Expr(box Expr(
-                _,
-                _,
-                Expr_::Call(box CallExpr {
-                    func: Expr(_, _, Expr_::Id(box Id(_, fn_name))),
-                    args,
-                    ..
-                }),
-            )) => fn_name == sn::autoimported_functions::INVARIANT_VIOLATION && args.is_empty(),
+            Stmt_::Expr(
+                deref!(Expr(
+                    _,
+                    _,
+                    Expr_::Call(deref!(CallExpr {
+                        func: Expr(_, _, Expr_::Id(deref!(Id(_, fn_name)))),
+                        args,
+                        ..
+                    })),
+                )),
+            ) => fn_name == sn::autoimported_functions::INVARIANT_VIOLATION && args.is_empty(),
             _ => false,
         })
     }
@@ -280,7 +292,7 @@ mod tests {
         // Expect our original expression to be wrapped in `Invalid`
         assert!(matches!(
             elem,
-            Stmt_::Expr(box Expr(_, _, Expr_::Invalid(_)))
+            Stmt_::Expr(deref!(Expr(_, _, Expr_::Invalid(_))))
         ))
     }
 }

@@ -86,23 +86,25 @@ impl Pass for ValidateIllegalNamePass {
 
     fn on_ty_expr__bottom_up(&mut self, env: &Env, elem: &mut Expr_) -> ControlFlow<()> {
         match elem {
-            Expr_::Id(box id)
+            Expr_::Id(deref!(id))
                 if id.name() == sn::pseudo_consts::G__CLASS__ && self.classish_kind.is_none() =>
             {
                 env.emit_error(NamingError::IllegalCLASS(id.pos().clone()))
             }
 
-            Expr_::Id(box id) if id.name() == sn::pseudo_consts::G__TRAIT__ && !self.in_trait() => {
+            Expr_::Id(deref!(id))
+                if id.name() == sn::pseudo_consts::G__TRAIT__ && !self.in_trait() =>
+            {
                 env.emit_error(NamingError::IllegalTRAIT(id.pos().clone()))
             }
 
-            Expr_::ClassConst(box (ClassId(_, _, ClassId_::CIparent), (_, meth_name)))
+            Expr_::ClassConst(deref!((ClassId(_, _, ClassId_::CIparent), (_, meth_name))))
                 if self.is_current_func(meth_name) =>
             {
                 ()
             }
 
-            Expr_::ClassConst(box (_, (pos, meth_name)))
+            Expr_::ClassConst(deref!((_, (pos, meth_name))))
                 if is_magic(meth_name) && !self.is_current_func(meth_name) =>
             {
                 env.emit_error(NastCheckError::Magic {
@@ -111,14 +113,16 @@ impl Pass for ValidateIllegalNamePass {
                 })
             }
 
-            Expr_::ObjGet(box (_, Expr(_, _, Expr_::Id(box id)), _, _)) if is_magic(id.name()) => {
+            Expr_::ObjGet(deref!((_, Expr(_, _, Expr_::Id(deref!(id))), _, _)))
+                if is_magic(id.name()) =>
+            {
                 env.emit_error(NastCheckError::Magic {
                     pos: id.pos().clone(),
                     meth_name: id.name().to_string(),
                 })
             }
 
-            Expr_::MethodCaller(box (_, (pos, meth_name))) if is_magic(meth_name) => env
+            Expr_::MethodCaller(deref!((_, (pos, meth_name)))) if is_magic(meth_name) => env
                 .emit_error(NastCheckError::Magic {
                     pos: pos.clone(),
                     meth_name: meth_name.clone(),

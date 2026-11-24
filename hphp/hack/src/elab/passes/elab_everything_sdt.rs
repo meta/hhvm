@@ -135,20 +135,20 @@ impl Pass for ElabEverythingSdtPass {
             return Continue(());
         }
         match hint {
-            Hint(_, box (Hint_::Hmixed | Hint_::Hnonnull)) if !self.in_is_as => {
+            Hint(_, deref!((Hint_::Hmixed | Hint_::Hnonnull))) if !self.in_is_as => {
                 wrap_supportdyn_mut(hint);
             }
             Hint(
                 _,
-                box Hint_::Hshape(NastShapeInfo {
+                deref!(Hint_::Hshape(NastShapeInfo {
                     allows_unknown_fields: true,
                     ..
-                }),
+                })),
             ) => {
                 wrap_supportdyn_mut(hint);
             }
             // Return types and inout parameter types are pessimised.
-            Hint(_, box Hint_::Hfun(hint_fun)) if !self.under_no_auto_likes => {
+            Hint(_, deref!(Hint_::Hfun(hint_fun))) if !self.under_no_auto_likes => {
                 for (p, ty) in std::iter::zip(&hint_fun.param_info, &mut hint_fun.param_tys) {
                     if matches!(
                         p,
@@ -229,9 +229,9 @@ impl Pass for ElabEverythingSdtPass {
 
         for c in consts {
             match &mut c.type_ {
-                Some(Hint(_, box Hint_::Happly(Id(_, c_member_of), hints)))
+                Some(Hint(_, deref!(Hint_::Happly(Id(_, c_member_of), hints))))
                     if c_member_of == sn::classes::MEMBER_OF
-                        && matches!(&hints[..], [Hint(_, box Hint_::Happly(_, _)), _]) =>
+                        && matches!(&hints[..], [Hint(_, deref!(Hint_::Happly(_, _))), _]) =>
                 {
                     wrap_like_mut(&mut hints[1]);
                     hints[1].0 = hints[0].0.clone(); // Match OCaml.

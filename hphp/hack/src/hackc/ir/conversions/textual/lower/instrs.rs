@@ -530,7 +530,7 @@ impl LowerInstrs<'_> {
                 // textual builtin.
                 if let Instr::Special(Special::Textual(Textual::HackBuiltin {
                     target,
-                    values: box [cid],
+                    values: deref!([cid]),
                     loc: _,
                 })) = class_instr
                 {
@@ -573,10 +573,12 @@ impl TransformInstr for LowerInstrs<'_> {
             // matter and it's hard to rewrite them to preserve those details
             // properly.
             Instr::Call(
-                box mut call @ Call {
-                    detail: CallDetail::FCallCtor,
-                    ..
-                },
+                deref!(
+                    mut call @ Call {
+                        detail: CallDetail::FCallCtor,
+                        ..
+                    }
+                ),
             ) => {
                 let flavor = ObjMethodOp::NullThrows;
                 let method = MethodName::constructor();
@@ -584,7 +586,7 @@ impl TransformInstr for LowerInstrs<'_> {
                 Instr::Call(Box::new(call))
             }
             Instr::Call(
-                box call @ Call {
+                deref!(call @ Call {
                     detail:
                         CallDetail::FCallObjMethod {
                             flavor: ObjMethodOp::NullSafe,
@@ -595,7 +597,7 @@ impl TransformInstr for LowerInstrs<'_> {
                             ..
                         },
                     ..
-                },
+                }),
             ) => rewrite_nullsafe_call(iid, builder, call, state),
             Instr::Hhbc(Hhbc::BareThis(_op, loc)) => {
                 let this = ir::intern(special_idents::THIS);

@@ -28,7 +28,7 @@ impl Pass for ValidateFunctionHintOptionalParametersPass {
     // e.g. (function(int,optional bool,string):void)
     fn on_ty_hint_bottom_up(&mut self, env: &Env, hint: &mut Hint) -> ControlFlow<()> {
         match hint {
-            Hint(pos, box Hint_::Hfun(hint_fun)) => {
+            Hint(pos, deref!(Hint_::Hfun(hint_fun))) => {
                 let mut previous_optional_param = None;
                 for p in &hint_fun.param_info {
                     if is_optional_param(p) {

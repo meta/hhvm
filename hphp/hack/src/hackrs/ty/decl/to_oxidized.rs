@@ -132,7 +132,7 @@ impl<R: Reason> ToOxidized for Ty_<R> {
         use o::typing_defs;
         match self {
             Ty_::Tthis => typing_defs::Ty_::Tthis,
-            Ty_::Tapply(box (name, tyl)) => {
+            Ty_::Tapply(deref!((name, tyl))) => {
                 typing_defs::Ty_::Tapply(name.to_oxidized(), tyl.to_oxidized())
             }
             Ty_::Tmixed => typing_defs::Ty_::Tmixed,
@@ -145,7 +145,7 @@ impl<R: Reason> ToOxidized for Ty_<R> {
             Ty_::Tprim(x) => typing_defs::Ty_::Tprim(x),
             Ty_::Tfun(x) => typing_defs::Ty_::Tfun(x.to_oxidized()),
             Ty_::Ttuple(tuple) => {
-                let box TupleType(required, optional, extra) = tuple;
+                let deref!(TupleType(required, optional, extra)) = tuple;
                 let required = required.to_oxidized();
                 let optional = optional.to_oxidized();
                 let extra = match extra {
@@ -188,7 +188,7 @@ impl<R: Reason> ToOxidized for Ty_<R> {
             Ty_::Tgeneric(name) => typing_defs::Ty_::Tgeneric(name.to_oxidized()),
             Ty_::Tunion(x) => typing_defs::Ty_::Tunion(x.to_oxidized()),
             Ty_::Tintersection(x) => typing_defs::Ty_::Tintersection(x.to_oxidized()),
-            Ty_::TvecOrDict(box (tk, tv)) => {
+            Ty_::TvecOrDict(deref!((tk, tv))) => {
                 typing_defs::Ty_::TvecOrDict(tk.to_oxidized(), tv.to_oxidized())
             }
             Ty_::Taccess(x) => typing_defs::Ty_::Taccess(x.to_oxidized()),

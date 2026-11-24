@@ -31,12 +31,14 @@ impl Pass for ElabExprCallHhMethCallerPass {
         };
 
         match elem {
-            Expr_::Call(box CallExpr {
-                func: Expr(_, fn_expr_pos, Expr_::Id(box id)),
-                args: fn_param_exprs,
-                unpacked_arg: fn_variadic_param_opt,
-                ..
-            }) if id.name() == sn::autoimported_functions::METH_CALLER => {
+            Expr_::Call(
+                deref!(CallExpr {
+                    func: Expr(_, fn_expr_pos, Expr_::Id(deref!(id))),
+                    args: fn_param_exprs,
+                    unpacked_arg: fn_variadic_param_opt,
+                    ..
+                }),
+            ) if id.name() == sn::autoimported_functions::METH_CALLER => {
                 // Raise an error if we have a variadic arg
                 if let Some(Expr(_, pos, _)) = fn_variadic_param_opt {
                     env.emit_error(NamingError::TooFewArguments(pos.clone()))
@@ -51,7 +53,7 @@ impl Pass for ElabExprCallHhMethCallerPass {
                         (ParamKind::Pnormal, Expr(_, rcvr_pos, rcvr)),
                         (ParamKind::Pnormal, Expr(_, meth_pos, Expr_::String(meth))),
                     ] => match rcvr {
-                        Expr_::ClassConst(box (ClassId(_, _, ClassId_::CI(id)), (_, mem)))
+                        Expr_::ClassConst(deref!((ClassId(_, _, ClassId_::CI(id)), (_, mem))))
                             if mem == sn::members::M_CLASS =>
                         {
                             *elem = Expr_::MethodCaller(Box::new((

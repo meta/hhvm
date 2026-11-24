@@ -19,7 +19,7 @@ impl Pass for ElabExprPackagePass {
     fn on_ty_expr_top_down(&mut self, _: &Env, elem: &mut Expr) -> ControlFlow<()> {
         let Expr(_, pos, expr) = elem;
         match expr {
-            Expr_::Package(box pkg) => {
+            Expr_::Package(deref!(pkg)) => {
                 *expr = Expr_::Call(Box::new(CallExpr {
                     func: Expr::new(
                         (),
@@ -63,11 +63,13 @@ mod tests {
 
         let Expr(_, _, expr) = elem;
         assert!(match expr {
-            Expr_::Call(box CallExpr {
-                func: Expr(_, _, Expr_::Id(box Id(_, fn_name))),
-                args,
-                ..
-            }) if fn_name == pseudo_functions::PACKAGE_EXISTS => {
+            Expr_::Call(
+                deref!(CallExpr {
+                    func: Expr(_, _, Expr_::Id(deref!(Id(_, fn_name)))),
+                    args,
+                    ..
+                }),
+            ) if fn_name == pseudo_functions::PACKAGE_EXISTS => {
                 if let [ast::Argument::Anormal(Expr(_, _, Expr_::String(fn_param_name)))] =
                     &args[..]
                 {

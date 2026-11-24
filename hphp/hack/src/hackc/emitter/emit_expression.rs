@@ -489,7 +489,7 @@ pub fn emit_expr<'a>(
             Expr_::Assign(_) => emit_assign(emitter, env, pos, expression),
             Expr_::Pipe(e) => emit_pipe(emitter, env, e),
             Expr_::Is(is_expr) => emit_is_expr(emitter, env, pos, is_expr),
-            Expr_::As(box e) => emit_as(emitter, env, pos, e),
+            Expr_::As(deref!(e)) => emit_as(emitter, env, pos, e),
             Expr_::Upcast(e) => emit_expr(emitter, env, &e.0),
             Expr_::Cast(e) => emit_cast(emitter, env, pos, &(e.0).1, &e.1),
             Expr_::Eif(e) => emit_conditional_expr(emitter, env, pos, &e.0, e.1.as_ref(), &e.2),
@@ -541,7 +541,7 @@ pub fn emit_expr<'a>(
                 unimplemented!("TODO(hrust) Codegen after naming pass on AAST")
             }
             Expr_::ExpressionTree(et) => emit_expr(emitter, env, &et.runtime_expr),
-            Expr_::ETSplice(box aast::EtSplice { spliced_expr, .. }) => {
+            Expr_::ETSplice(deref!(aast::EtSplice { spliced_expr, .. })) => {
                 emit_expr(emitter, env, spliced_expr)
             }
             Expr_::Invalid(_) => Err(Error::unrecoverable(
@@ -3234,7 +3234,7 @@ fn emit_special_function<'a>(
             let hint = targs[0].hint();
             match hint.1.as_ref() {
                 aast_defs::Hint_::Haccess(
-                    aast_defs::Hint(_, box aast_defs::Hint_::Happly(ast_defs::Id(_, id), hs2)),
+                    aast_defs::Hint(_, deref!(aast_defs::Hint_::Happly(ast_defs::Id(_, id), hs2))),
                     hs,
                 ) if hs.len() == 1
                     && hs2.is_empty()
@@ -6196,10 +6196,12 @@ fn emit_lval_op<'a>(
 fn can_use_as_rhs_in_list_assignment(expr: &ast::Expr_) -> Result<bool> {
     use aast::Expr_;
     Ok(match expr {
-        Expr_::Call(box aast::CallExpr {
-            func: ast::Expr(_, _, Expr_::Id(id)),
-            ..
-        }) if id.1 == pre_namespaced_functions::ECHO => false,
+        Expr_::Call(
+            deref!(aast::CallExpr {
+                func: ast::Expr(_, _, Expr_::Id(id)),
+                ..
+            }),
+        ) if id.1 == pre_namespaced_functions::ECHO => false,
         Expr_::ObjGet(o) if o.as_ref().3 == ast::PropOrMethod::IsProp => true,
         Expr_::ClassGet(c) if c.as_ref().2 == ast::PropOrMethod::IsProp => true,
         Expr_::Lvar(_)

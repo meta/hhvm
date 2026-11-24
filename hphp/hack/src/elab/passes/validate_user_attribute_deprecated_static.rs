@@ -53,11 +53,13 @@ fn is_static_string(expr: &Expr) -> Option<Pos> {
     let mut exprs = vec![expr];
     while let Some(expr) = exprs.pop() {
         match &expr.2 {
-            Expr_::Binop(box Binop {
-                bop: Bop::Dot,
-                lhs,
-                rhs,
-            }) => {
+            Expr_::Binop(
+                deref!(Binop {
+                    bop: Bop::Dot,
+                    lhs,
+                    rhs,
+                }),
+            ) => {
                 exprs.push(lhs);
                 exprs.push(rhs);
             }

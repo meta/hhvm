@@ -15,7 +15,7 @@ pub struct ValidateDynamicHintPass;
 impl Pass for ValidateDynamicHintPass {
     fn on_ty_expr__bottom_up(&mut self, env: &Env, expr: &mut Expr_) -> ControlFlow<()> {
         match &*expr {
-            Expr_::Is(box (_, Hint(p, box Hint_::Hdynamic))) => {
+            Expr_::Is(deref!((_, Hint(p, deref!(Hint_::Hdynamic))))) => {
                 env.emit_error(NamingError::DynamicHintDisallowed(p.clone()));
                 Continue(())
             }

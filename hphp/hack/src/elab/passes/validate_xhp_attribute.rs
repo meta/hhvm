@@ -14,7 +14,7 @@ pub struct ValidateXhpAttributePass;
 
 impl Pass for ValidateXhpAttributePass {
     fn on_ty_expr__bottom_up(&mut self, env: &Env, expr: &mut Expr_) -> ControlFlow<()> {
-        if let Expr_::Xml(box (_, attrs, _)) = expr {
+        if let Expr_::Xml(deref!((_, attrs, _))) = expr {
             error_if_repeated_attribute(env, attrs);
         }
         Continue(())

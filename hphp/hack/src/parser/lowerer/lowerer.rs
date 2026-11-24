@@ -4905,7 +4905,7 @@ fn p_fun_pos<'a>(node: S<'a>, env: &Env<'_>) -> Pos {
 
 fn p_block<'a>(remove_noop: bool, node: S<'a>, env: &mut Env<'a>) -> Result<ast::Block> {
     let ast::Stmt(p, stmt_) = p_stmt(node, env)?;
-    if let ast::Stmt_::Block(box (_, blk)) = stmt_ {
+    if let ast::Stmt_::Block(deref!((_, blk))) = stmt_ {
         if remove_noop && blk.len() == 1 && blk[0].1.is_noop() {
             return Ok(Default::default());
         }
@@ -4921,7 +4921,7 @@ fn p_finally_block<'a>(
     env: &mut Env<'a>,
 ) -> Result<ast::FinallyBlock> {
     let ast::Stmt(p, stmt_) = p_stmt(node, env)?;
-    if let ast::Stmt_::Block(box (_, blk)) = stmt_ {
+    if let ast::Stmt_::Block(deref!((_, blk))) = stmt_ {
         check_continue_break(env, TK::Finally, &blk);
         if remove_noop && blk.len() == 1 && blk[0].1.is_noop() {
             return Ok(Default::default());
@@ -7032,7 +7032,7 @@ fn insert_default_module_if_missing_module_membership(program: &mut Vec<ast::Def
     let mut insert_pos = None;
     for (idx, def) in program.iter().enumerate() {
         match def {
-            Def::Stmt(box Stmt(_, Markup(_))) => {
+            Def::Stmt(deref!(Stmt(_, Markup(_)))) => {
                 insert_pos = Some(idx + 1);
             }
             Def::SetModule(_) => {

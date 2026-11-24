@@ -21,11 +21,13 @@ impl Pass for DropUnsafeCast {
         // Checked UNSAFE_NONNULL_CAST is not yet implemented, so it is
         // unconditionally removed
         match expr_ {
-            Expr_::Call(box CallExpr {
-                func: Expr(_, _, Expr_::Id(box Id(_, fn_name))),
-                args,
-                ..
-            }) if !args.is_empty()
+            Expr_::Call(
+                deref!(CallExpr {
+                    func: Expr(_, _, Expr_::Id(deref!(Id(_, fn_name)))),
+                    args,
+                    ..
+                }),
+            ) if !args.is_empty()
                 && (fn_name == sn::pseudo_functions::UNSAFE_NONNULL_CAST
                     || (!self.emit_checked_unsafe_cast
                         && fn_name == sn::pseudo_functions::UNSAFE_CAST)) =>

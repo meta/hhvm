@@ -136,25 +136,25 @@ mod tests {
         // First def is Break
         assert!(matches!(
             q.pop_front(),
-            Some(Def::Stmt(box Stmt(_, Stmt_::Break)))
+            Some(Def::Stmt(deref!(Stmt(_, Stmt_::Break))))
         ));
 
         // Second def is Fallthrough
         assert!(matches!(
             q.pop_front(),
-            Some(Def::Stmt(box Stmt(_, Stmt_::Fallthrough)))
+            Some(Def::Stmt(deref!(Stmt(_, Stmt_::Fallthrough))))
         ));
 
         // Third def is Break
         assert!(matches!(
             q.pop_front(),
-            Some(Def::Stmt(box Stmt(_, Stmt_::Break)))
+            Some(Def::Stmt(deref!(Stmt(_, Stmt_::Break))))
         ));
 
         // Last def is Fallthrough
         assert!(matches!(
             q.pop_front(),
-            Some(Def::Stmt(box Stmt(_, Stmt_::Fallthrough)))
+            Some(Def::Stmt(deref!(Stmt(_, Stmt_::Fallthrough))))
         ));
     }
 }

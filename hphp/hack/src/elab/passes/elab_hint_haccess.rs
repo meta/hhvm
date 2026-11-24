@@ -166,7 +166,7 @@ mod tests {
 
         assert!(env.into_errors().is_empty());
         assert!(match elem {
-            Hint(_, box Hint_::Haccess(Hint(_, box Hint_::Happly(id, hints)), _)) =>
+            Hint(_, deref!(Hint_::Haccess(Hint(_, deref!(Hint_::Happly(id, hints))), _))) =>
                 id.name() == class_name && hints.is_empty(),
             _ => false,
         })
@@ -200,7 +200,7 @@ mod tests {
 
         assert!(env.into_errors().is_empty());
         assert!(match elem {
-            Hint(_, box Hint_::Haccess(Hint(_, box Hint_::Happly(id, hints)), _)) =>
+            Hint(_, deref!(Hint_::Haccess(Hint(_, deref!(Hint_::Happly(id, hints))), _))) =>
                 id.name() == class_name && hints.is_empty(),
             _ => false,
         })
@@ -253,7 +253,7 @@ mod tests {
         assert!(env.into_errors().is_empty());
         assert!(matches!(
             elem,
-            Hint(_, box Hint_::Haccess(Hint(_, box Hint_::Hthis), _))
+            Hint(_, deref!(Hint_::Haccess(Hint(_, deref!(Hint_::Hthis)), _)))
         ))
     }
 
@@ -318,7 +318,10 @@ mod tests {
         let Contexts(_, mut hints) = elem;
         assert!(matches!(
             hints.pop(),
-            Some(Hint(_, box Hint_::Haccess(Hint(_, box Hint_::Habstr(..)), _)))
+            Some(Hint(
+                _,
+                deref!(Hint_::Haccess(Hint(_, deref!(Hint_::Habstr(..))), _))
+            ))
         ))
     }
 
@@ -348,7 +351,10 @@ mod tests {
         let WhereConstraintHint(hint, _, _) = elem;
         assert!(matches!(
             hint,
-            Hint(_, box Hint_::Haccess(Hint(_, box Hint_::Habstr(..)), _))
+            Hint(
+                _,
+                deref!(Hint_::Haccess(Hint(_, deref!(Hint_::Habstr(..))), _))
+            )
         ))
     }
 

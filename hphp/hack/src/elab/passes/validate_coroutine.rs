@@ -46,24 +46,30 @@ impl ValidateCoroutinePass {
 impl Pass for ValidateCoroutinePass {
     fn on_ty_stmt_bottom_up(&mut self, env: &Env, elem: &mut Stmt) -> ControlFlow<()> {
         match &elem.1 {
-            Stmt_::Using(box UsingStmt {
-                has_await, exprs, ..
-            }) if *has_await && self.is_sync() => {
+            Stmt_::Using(
+                deref!(UsingStmt {
+                    has_await,
+                    exprs,
+                    ..
+                }),
+            ) if *has_await && self.is_sync() => {
                 env.emit_error(NastCheckError::AwaitInSyncFunction {
                     pos: exprs.0.clone(),
                     func_pos: None,
                     keyword: "await".into(),
                 })
             }
-            Stmt_::Foreach(box (_, AsExpr::AwaitAsV(pos, _) | AsExpr::AwaitAsKv(pos, _, _), _))
-                if self.is_sync() =>
-            {
-                env.emit_error(NastCheckError::AwaitInSyncFunction {
-                    pos: pos.clone(),
-                    func_pos: None,
-                    keyword: "await".into(),
-                })
-            }
+            Stmt_::Foreach(
+                deref!((
+                    _,
+                    AsExpr::AwaitAsV(pos, _) | AsExpr::AwaitAsKv(pos, _, _),
+                    _
+                )),
+            ) if self.is_sync() => env.emit_error(NastCheckError::AwaitInSyncFunction {
+                pos: pos.clone(),
+                func_pos: None,
+                keyword: "await".into(),
+            }),
             Stmt_::Awaitall(..) if self.is_sync() => {
                 env.emit_error(NastCheckError::AwaitInSyncFunction {
                     pos: elem.0.clone(),

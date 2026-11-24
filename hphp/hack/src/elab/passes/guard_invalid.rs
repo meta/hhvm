@@ -69,11 +69,11 @@ mod tests {
 
         assert!(matches!(
                 elem,
-                Expr_::Binop(box Binop{
-                    lhs:Expr(_, _, Expr_::Invalid(box Some(Expr(_, _, Expr_::Int(n))))),
+                Expr_::Binop(deref!(Binop{
+                    lhs:Expr(_, _, Expr_::Invalid(deref!(Some(Expr(_, _, Expr_::Int(n)))))),
                     rhs:Expr(_, _, Expr_::Int(m)),
                     ..
-        })
+        }))
                 if n == "42" && m == "0"
             ));
     }

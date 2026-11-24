@@ -81,7 +81,7 @@ impl Pass for ElabEnumClassPass {
                 || sn::user_attributes::MEMOIZE_LSB == attr_name
             {
                 ua.params.iter_mut().for_each(|expr| {
-                    if let Expr_::EnumClassLabel(box (cnm_opt, _)) = &mut expr.2 {
+                    if let Expr_::EnumClassLabel(deref!((cnm_opt, _))) = &mut expr.2 {
                         match &cnm_opt {
                             Some(id) => {
                                 if id.name() != sn::hh::MEMOIZE_OPTION {

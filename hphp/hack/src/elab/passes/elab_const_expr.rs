@@ -107,10 +107,12 @@ impl Pass for ElabConstExprPass {
                 Expr_::ClassConst(_) => Continue(()),
 
                 // -- conditionally valid --------------------------------------
-                Expr_::As(box nast::As_ {
-                    hint: Hint(_, box hint_),
-                    ..
-                }) => match hint_ {
+                Expr_::As(
+                    deref!(nast::As_ {
+                        hint: Hint(_, deref!(hint_)),
+                        ..
+                    }),
+                ) => match hint_ {
                     // NB we can perform this top-down since the all valid hints
                     // are already in canonical
                     // TODO[mjt] another example of inconsistency around error positions
@@ -123,39 +125,41 @@ impl Pass for ElabConstExprPass {
                         invalid(expr_)
                     }
                 },
-                Expr_::Unop(box (uop, _)) => match uop {
+                Expr_::Unop(deref!((uop, _))) => match uop {
                     Uop::Uplus | Uop::Uminus | Uop::Utild | Uop::Unot => Continue(()),
                     _ => {
                         env.emit_error(NamingError::IllegalConstant(pos.clone()));
                         invalid(expr_)
                     }
                 },
-                Expr_::Binop(box Binop { bop, .. }) => match bop {
+                Expr_::Binop(deref!(Binop { bop, .. })) => match bop {
                     Bop::Eq(_) => {
                         env.emit_error(NamingError::IllegalConstant(pos.clone()));
                         invalid(expr_)
                     }
                     _ => Continue(()),
                 },
-                Expr_::ValCollection(box ((_, vc_kind), _, _)) => match vc_kind {
+                Expr_::ValCollection(deref!(((_, vc_kind), _, _))) => match vc_kind {
                     VcKind::Vec | VcKind::Keyset => Continue(()),
                     _ => {
                         env.emit_error(NamingError::IllegalConstant(pos.clone()));
                         invalid(expr_)
                     }
                 },
-                Expr_::KeyValCollection(box ((_, kvc_kind), _, _)) => match kvc_kind {
+                Expr_::KeyValCollection(deref!(((_, kvc_kind), _, _))) => match kvc_kind {
                     KvcKind::Dict => Continue(()),
                     _ => {
                         env.emit_error(NamingError::IllegalConstant(pos.clone()));
                         invalid(expr_)
                     }
                 },
-                Expr_::Call(box CallExpr {
-                    func: Expr(_, _, call_expr_),
-                    ..
-                }) => match call_expr_ {
-                    Expr_::Id(box id)
+                Expr_::Call(
+                    deref!(CallExpr {
+                        func: Expr(_, _, call_expr_),
+                        ..
+                    }),
+                ) => match call_expr_ {
+                    Expr_::Id(deref!(id))
                         if id.name() == sn::std_lib_functions::ARRAY_MARK_LEGACY
                             || id.name() == sn::pseudo_functions::UNSAFE_CAST
                             || id.name() == sn::pseudo_functions::UNSAFE_NONNULL_CAST =>
@@ -231,8 +235,8 @@ impl Pass for ElabConstExprPass {
             };
 
             match expr_ {
-                Expr_::Nameof(box ClassId(_, _, class_id_))
-                | Expr_::ClassConst(box (ClassId(_, _, class_id_), _)) => match class_id_ {
+                Expr_::Nameof(deref!(ClassId(_, _, class_id_)))
+                | Expr_::ClassConst(deref!((ClassId(_, _, class_id_), _))) => match class_id_ {
                     ClassId_::CIstatic => {
                         env.emit_error(NamingError::IllegalConstant(pos.clone()));
                         invalid(expr_)

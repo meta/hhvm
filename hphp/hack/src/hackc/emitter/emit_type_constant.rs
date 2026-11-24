@@ -793,7 +793,7 @@ pub(crate) fn typedef_to_type_structure(
     let tmp;
     let kind = match (is_case_type, &typedef.runtime_type) {
         (false, kind) => kind,
-        (true, kind @ Hint(_, box Hint_::Hunion(_))) => kind,
+        (true, kind @ Hint(_, deref!(Hint_::Hunion(_)))) => kind,
         (true, hint @ Hint(pos, _)) => {
             tmp = Hint(pos.clone(), Box::new(Hint_::Hunion(vec![hint.clone()])));
             &tmp

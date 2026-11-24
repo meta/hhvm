@@ -10,7 +10,7 @@
 //!   hackc compile-infer test/infer/basic.hack > basic.sil
 //!   ./infer/bin/infer compile --capture-textual basic.sil
 
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 
 pub static KEEP_GOING: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 

@@ -37,7 +37,7 @@ pub fn unasync(func: &mut Func) {
             );
 
             match term {
-                Terminator::CallAsync(box call, [lazy, eager]) => {
+                Terminator::CallAsync(deref!(call), [lazy, eager]) => {
                     // Remove the (now unreachable) terminator from the block.
                     changed = true;
                     builder.cur_block_mut().iids.pop();

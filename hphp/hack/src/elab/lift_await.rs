@@ -128,7 +128,7 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
         | Expr_::Lfun(_)
         | Expr_::Lplaceholder(_)
         | Expr_::MethodCaller(_)
-        | Expr_::Invalid(box None)
+        | Expr_::Invalid(deref!(None))
         | Expr_::EnumClassLabel(_)
         | Expr_::ClassConst(_)
         | Expr_::Nameof(_)
@@ -139,51 +139,57 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
         | Expr_::DestructureTuple(_) => NoAwait,
 
         // Expressions with exactly one sub-expression that we can lift an await out of
-        Expr_::Invalid(box Some(expr))
-        | Expr_::Clone(box expr)
-        | Expr_::PrefixedString(box (_, expr))
-        | Expr_::ReadonlyExpr(box expr)
-        | Expr_::Delay(box expr)
-        | Expr_::Cast(box (_, expr))
-        | Expr_::Is(box (expr, _))
-        | Expr_::As(box nast::As_ { expr, .. })
-        | Expr_::Upcast(box (expr, _))
-        | Expr_::Import(box (_, expr))
-        | Expr_::Hole(box (expr, _, _, _))
-        | Expr_::Yield(box Afield::AFvalue(expr))
-        | Expr_::ETSplice(box nast::EtSplice {
-            spliced_expr: expr, ..
-        })
-        | Expr_::Unop(box (_, expr))
-        | Expr_::ArrayGet(box (expr, None)) => check_await_usage(expr),
+        Expr_::Invalid(deref!(Some(expr)))
+        | Expr_::Clone(deref!(expr))
+        | Expr_::PrefixedString(deref!((_, expr)))
+        | Expr_::ReadonlyExpr(deref!(expr))
+        | Expr_::Delay(deref!(expr))
+        | Expr_::Cast(deref!((_, expr)))
+        | Expr_::Is(deref!((expr, _)))
+        | Expr_::As(deref!(nast::As_ { expr, .. }))
+        | Expr_::Upcast(deref!((expr, _)))
+        | Expr_::Import(deref!((_, expr)))
+        | Expr_::Hole(deref!((expr, _, _, _)))
+        | Expr_::Yield(deref!(Afield::AFvalue(expr)))
+        | Expr_::ETSplice(
+            deref!(nast::EtSplice {
+                spliced_expr: expr,
+                ..
+            }),
+        )
+        | Expr_::Unop(deref!((_, expr)))
+        | Expr_::ArrayGet(deref!((expr, None))) => check_await_usage(expr),
 
         // Expressions with exactly two sub-expressions that we can lift an await out of
         // and run concurrently
-        Expr_::ArrayGet(box (expr1, Some(expr2)))
-        | Expr_::Pair(box (_, expr1, expr2))
-        | Expr_::ObjGet(box (expr1, expr2, _, _))
-        | Expr_::Yield(box Afield::AFkvalue(expr1, expr2))
-        | Expr_::Binop(box nast::Binop {
-            bop: _, // Can't have await in || or && (parse error)
-            lhs: expr1,
-            rhs: expr2,
-        })
-        | Expr_::Assign(box (expr1, _, expr2)) => {
+        Expr_::ArrayGet(deref!((expr1, Some(expr2))))
+        | Expr_::Pair(deref!((_, expr1, expr2)))
+        | Expr_::ObjGet(deref!((expr1, expr2, _, _)))
+        | Expr_::Yield(deref!(Afield::AFkvalue(expr1, expr2)))
+        | Expr_::Binop(
+            deref!(nast::Binop {
+                bop: _, // Can't have await in || or && (parse error)
+                lhs: expr1,
+                rhs: expr2,
+            }),
+        )
+        | Expr_::Assign(deref!((expr1, _, expr2))) => {
             combine_con(check_await_usage(expr1), check_await_usage(expr2))
         }
 
         // Expressions with lists of sub-expressions that we can lift an await out of
         // and run concurrently
-        Expr_::KeyValCollection(box (_, _, args)) => args
+        Expr_::KeyValCollection(deref!((_, _, args))) => args
             .iter()
             .map(|nast::Field(arg_k, arg_v)| {
                 combine_con(check_await_usage(arg_k), check_await_usage(arg_v))
             })
             .fold(NoAwait, combine_con),
-        Expr_::Tuple(args) | Expr_::String2(args) | Expr_::ValCollection(box (_, _, args)) => args
-            .iter()
-            .map(check_await_usage)
-            .fold(NoAwait, combine_con),
+        Expr_::Tuple(args) | Expr_::String2(args) | Expr_::ValCollection(deref!((_, _, args))) => {
+            args.iter()
+                .map(check_await_usage)
+                .fold(NoAwait, combine_con)
+        }
         Expr_::Shape(fields) => fields
             .iter()
             .map(|f| match f {
@@ -191,12 +197,14 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
                 ShapeExprField::SFSplat(expr) => check_await_usage(expr),
             })
             .fold(NoAwait, combine_con),
-        Expr_::Call(box nast::CallExpr {
-            func,
-            targs: _,
-            args,
-            unpacked_arg,
-        }) => {
+        Expr_::Call(
+            deref!(nast::CallExpr {
+                func,
+                targs: _,
+                args,
+                unpacked_arg,
+            }),
+        ) => {
             let res = args
                 .iter()
                 .map(|arg| check_await_usage(arg.to_expr_ref()))
@@ -206,7 +214,7 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
                 .map(check_await_usage)
                 .fold(res, combine_con)
         }
-        Expr_::New(box (nast::ClassId(_, _, cid), _, args, unpacked_arg, _)) => {
+        Expr_::New(deref!((nast::ClassId(_, _, cid), _, args, unpacked_arg, _))) => {
             let mut res = match cid {
                 ClassId_::CIexpr(expr) => check_await_usage(expr),
                 ClassId_::CIparent
@@ -224,7 +232,7 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
                 .map(check_await_usage)
                 .fold(res, combine_con)
         }
-        Expr_::Xml(box (_, attrs, exprs)) => {
+        Expr_::Xml(deref!((_, attrs, exprs))) => {
             let res = attrs
                 .iter()
                 .map(|attr| match attr {
@@ -236,7 +244,7 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
                 .fold(NoAwait, combine_con);
             exprs.iter().map(check_await_usage).fold(res, combine_con)
         }
-        Expr_::Collection(box (_, _, afields)) => afields
+        Expr_::Collection(deref!((_, _, afields))) => afields
             .iter()
             .map(|afield| match afield {
                 Afield::AFvalue(expr) => check_await_usage(expr),
@@ -246,13 +254,13 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
             })
             .fold(NoAwait, combine_con),
         // Await
-        Expr_::Await(box expr1) => match check_await_usage(expr1) {
+        Expr_::Await(deref!(expr1)) => match check_await_usage(expr1) {
             NoAwait => ContainsAwait,
             ContainsAwait | Sequential | ConcurrentAwait => Sequential,
             Error(p) => Error(p),
         },
         // Seq
-        Expr_::Pipe(box (_, expr1, expr2, _)) => {
+        Expr_::Pipe(deref!((_, expr1, expr2, _))) => {
             match check_await_usage(expr2) {
                 Error(p) => Error(p),
                 // If the rhs contains an await, then we need to finish the lhs
@@ -261,7 +269,7 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
                 NoAwait => check_await_usage(expr1),
             }
         }
-        Expr_::Eif(box (cond, t, f)) => {
+        Expr_::Eif(deref!((cond, t, f))) => {
             let branches = match t {
                 Some(expr) => combine_con(check_await_usage(expr), check_await_usage(f)),
                 None => check_await_usage(f),
@@ -274,11 +282,13 @@ fn check_await_usage(expr: &Expr) -> AwaitUsage {
                 (_, Error(Some(pos))) => Error(Some(pos)),
             }
         }
-        Expr_::ExpressionTree(box nast::ExpressionTree {
-            class: _,
-            runtime_expr,
-            free_vars: _,
-        }) => check_await_usage(runtime_expr),
+        Expr_::ExpressionTree(
+            deref!(nast::ExpressionTree {
+                class: _,
+                runtime_expr,
+                free_vars: _,
+            }),
+        ) => check_await_usage(runtime_expr),
         Expr_::List(exprs) => exprs
             .iter()
             .map(check_await_usage)
@@ -350,7 +360,7 @@ fn extract_subexprs(expr: &mut nast::Expr) -> Vec<&mut nast::Expr> {
         | Expr_::Lvar(_)
         | Expr_::Efun(_)
         | Expr_::Lfun(_)
-        | Expr_::Invalid(box Some(_))
+        | Expr_::Invalid(deref!(Some(_)))
         | Expr_::Clone(_)
         | Expr_::PrefixedString(_)
         | Expr_::ReadonlyExpr(_)
@@ -393,7 +403,7 @@ fn extract_subexprs(expr: &mut nast::Expr) -> Vec<&mut nast::Expr> {
         | Expr_::String(_)
         | Expr_::Lplaceholder(_)
         | Expr_::MethodCaller(_)
-        | Expr_::Invalid(box None)
+        | Expr_::Invalid(deref!(None))
         | Expr_::EnumClassLabel(_)
         | Expr_::Nameof(_)
         | Expr_::FunctionPointer(_)
@@ -412,9 +422,12 @@ fn extract_subexprs(expr: &mut nast::Expr) -> Vec<&mut nast::Expr> {
     };
 
     match &mut expr.2 {
-        Expr_::ArrayGet(box (expr1, None)) | Expr_::Unop(box (_, expr1)) => extract_subexprs(expr1),
+        Expr_::ArrayGet(deref!((expr1, None))) | Expr_::Unop(deref!((_, expr1))) => {
+            extract_subexprs(expr1)
+        }
 
-        Expr_::ArrayGet(box (expr1, Some(expr2))) | Expr_::ObjGet(box (expr1, expr2, _, _)) => {
+        Expr_::ArrayGet(deref!((expr1, Some(expr2))))
+        | Expr_::ObjGet(deref!((expr1, expr2, _, _))) => {
             let mut subexp = extract_subexprs(expr1);
             subexp.push(expr2);
             subexp
@@ -498,7 +511,7 @@ impl LiftAwait {
         tmps: &mut Vec<Lid>,
     ) {
         match &mut expr.2 {
-            Expr_::ArrayGet(box (_, Some(key))) | Expr_::ObjGet(box (_, key, _, _)) => {
+            Expr_::ArrayGet(deref!((_, Some(key)))) | Expr_::ObjGet(deref!((_, key, _, _))) => {
                 match key.2 {
                     // These member keys have no side-effects and can be left
                     // as is.
@@ -512,7 +525,7 @@ impl LiftAwait {
                     | Expr_::Int(_)
                     | Expr_::Float(_)
                     | Expr_::String(_)
-                    | Expr_::Invalid(box None)
+                    | Expr_::Invalid(deref!(None))
                     | Expr_::EnumClassLabel(_)
                     | Expr_::Nameof(_) => {}
 
@@ -731,7 +744,7 @@ impl LiftAwait {
         tmps: &mut Vec<Lid>,
     ) {
         match e {
-            Expr_::Pipe(box (_, expr1, expr2, OperatorNullFlavor::Nullsafe))
+            Expr_::Pipe(deref!((_, expr1, expr2, OperatorNullFlavor::Nullsafe)))
                 if check_await_usage(expr2) != AwaitUsage::NoAwait =>
             {
                 let tmp = self.gen_tmp_local();
@@ -753,7 +766,7 @@ impl LiftAwait {
                 tmps.push(Lid(pos.clone(), tmp.clone()));
                 *e = Expr_::Lvar(Box::new(Lid(pos.clone(), tmp)));
             }
-            Expr_::Pipe(box (_, expr1, expr2, _)) => {
+            Expr_::Pipe(deref!((_, expr1, expr2, _))) => {
                 let mut con1 = vec![];
                 let mut seq1 = vec![];
                 let mut tmps1 = vec![];
@@ -822,7 +835,7 @@ impl LiftAwait {
         let mut seq1 = vec![];
         let mut tmps1 = vec![];
         match e {
-            Expr_::Await(box sub_expr) => {
+            Expr_::Await(deref!(sub_expr)) => {
                 let mut awaited_expr = Expr((), Pos::NONE, Expr_::Null);
                 std::mem::swap(&mut awaited_expr, sub_expr);
                 self.extract_await(&mut awaited_expr, &mut con1, &mut seq1, &mut tmps1);
@@ -888,7 +901,7 @@ impl LiftAwait {
         let Expr((), pos, e) = expr;
 
         match e {
-            Expr_::Lvar(box Lid(_, id)) if id.1 == special_idents::DOLLAR_DOLLAR => {
+            Expr_::Lvar(deref!(Lid(_, id))) if id.1 == special_idents::DOLLAR_DOLLAR => {
                 if let Some(replace_expr) = &self.replace_dd {
                     *e = replace_expr.clone();
                 }
@@ -911,7 +924,7 @@ impl LiftAwait {
             | Expr_::String(_)
             | Expr_::Lplaceholder(_)
             | Expr_::MethodCaller(_)
-            | Expr_::Invalid(box None)
+            | Expr_::Invalid(deref!(None))
             | Expr_::EnumClassLabel(_)
             | Expr_::Nameof(_)
             | Expr_::FunctionPointer(_)
@@ -920,8 +933,8 @@ impl LiftAwait {
             | Expr_::DestructureTuple(_) => {}
 
             // Expressions that can't contain an await, but might contain a $$ to replace
-            Expr_::ClassGet(box (nast::ClassId(_, _, nast::ClassId_::CIexpr(expr)), _, _))
-            | Expr_::ClassConst(box (nast::ClassId(_, _, nast::ClassId_::CIexpr(expr)), _)) => {
+            Expr_::ClassGet(deref!((nast::ClassId(_, _, nast::ClassId_::CIexpr(expr)), _, _)))
+            | Expr_::ClassConst(deref!((nast::ClassId(_, _, nast::ClassId_::CIexpr(expr)), _))) => {
                 self.extract_await(expr, con, seq, tmps)
             }
             Expr_::ClassConst(_) | Expr_::ClassGet(_) => {}
@@ -935,33 +948,36 @@ impl LiftAwait {
             }
 
             // Expressions with exactly one sub-expression that we can lift an await out of
-            Expr_::Invalid(box Some(expr))
-            | Expr_::Clone(box expr)
-            | Expr_::PrefixedString(box (_, expr))
-            | Expr_::ReadonlyExpr(box expr)
-            | Expr_::Delay(box expr)
-            | Expr_::Cast(box (_, expr))
-            | Expr_::Is(box (expr, _))
-            | Expr_::As(box nast::As_ { expr, .. })
-            | Expr_::Upcast(box (expr, _))
-            | Expr_::Import(box (_, expr))
-            | Expr_::Hole(box (expr, _, _, _))
-            | Expr_::Yield(box Afield::AFvalue(expr))
-            | Expr_::ETSplice(box nast::EtSplice {
-                spliced_expr: expr, ..
-            })
-            | Expr_::Unop(box (_, expr))
-            | Expr_::ArrayGet(box (expr, None)) => self.extract_await(expr, con, seq, tmps),
+            Expr_::Invalid(deref!(Some(expr)))
+            | Expr_::Clone(deref!(expr))
+            | Expr_::PrefixedString(deref!((_, expr)))
+            | Expr_::ReadonlyExpr(deref!(expr))
+            | Expr_::Delay(deref!(expr))
+            | Expr_::Cast(deref!((_, expr)))
+            | Expr_::Is(deref!((expr, _)))
+            | Expr_::As(deref!(nast::As_ { expr, .. }))
+            | Expr_::Upcast(deref!((expr, _)))
+            | Expr_::Import(deref!((_, expr)))
+            | Expr_::Hole(deref!((expr, _, _, _)))
+            | Expr_::Yield(deref!(Afield::AFvalue(expr)))
+            | Expr_::ETSplice(
+                deref!(nast::EtSplice {
+                    spliced_expr: expr,
+                    ..
+                }),
+            )
+            | Expr_::Unop(deref!((_, expr)))
+            | Expr_::ArrayGet(deref!((expr, None))) => self.extract_await(expr, con, seq, tmps),
 
             // Expressions with exactly two sub-expressions that we can lift an await out of
             // and run concurrently
-            Expr_::ArrayGet(box (expr1, Some(expr2)))
-            | Expr_::Pair(box (_, expr1, expr2))
-            | Expr_::ObjGet(box (expr1, expr2, _, _))
-            | Expr_::Yield(box Afield::AFkvalue(expr1, expr2)) => {
+            Expr_::ArrayGet(deref!((expr1, Some(expr2))))
+            | Expr_::Pair(deref!((_, expr1, expr2)))
+            | Expr_::ObjGet(deref!((expr1, expr2, _, _)))
+            | Expr_::Yield(deref!(Afield::AFkvalue(expr1, expr2))) => {
                 self.concurrentise(pos, vec![expr1, expr2], con, seq, tmps)
             }
-            Expr_::Binop(box nast::Binop { bop, lhs, rhs }) => match bop {
+            Expr_::Binop(deref!(nast::Binop { bop, lhs, rhs })) => match bop {
                 Bop::Ampamp | Bop::Barbar | Bop::QuestionQuestion
                     if check_await_usage(rhs) != AwaitUsage::NoAwait =>
                 {
@@ -1002,7 +1018,7 @@ impl LiftAwait {
                 }
                 _ => self.concurrentise(pos, vec![lhs, rhs], con, seq, tmps),
             },
-            Expr_::Assign(box (lhs, bop, rhs)) => {
+            Expr_::Assign(deref!((lhs, bop, rhs))) => {
                 match (bop, check_await_usage(lhs), check_await_usage(rhs)) {
                     // Unlike other await expressions handled here, there is no
                     // simple syntactic transform to handle all possible forms
@@ -1090,7 +1106,7 @@ impl LiftAwait {
             }
             // Expressions with lists of sub-expressions that we can lift an await out of
             // and run concurrently
-            Expr_::KeyValCollection(box (_, _, args)) => {
+            Expr_::KeyValCollection(deref!((_, _, args))) => {
                 let mut exprs = vec![];
                 for nast::Field(arg_k, arg_v) in args.iter_mut() {
                     exprs.push(arg_k);
@@ -1098,7 +1114,9 @@ impl LiftAwait {
                 }
                 self.concurrentise(pos, exprs, con, seq, tmps)
             }
-            Expr_::Tuple(args) | Expr_::String2(args) | Expr_::ValCollection(box (_, _, args)) => {
+            Expr_::Tuple(args)
+            | Expr_::String2(args)
+            | Expr_::ValCollection(deref!((_, _, args))) => {
                 self.concurrentise(pos, args.iter_mut().collect(), con, seq, tmps)
             }
             Expr_::Shape(fields) => {
@@ -1111,15 +1129,17 @@ impl LiftAwait {
                 }
                 self.concurrentise(pos, exprs, con, seq, tmps)
             }
-            Expr_::Call(box nast::CallExpr {
-                func,
-                targs: _,
-                args,
-                unpacked_arg,
-            }) => {
+            Expr_::Call(
+                deref!(nast::CallExpr {
+                    func,
+                    targs: _,
+                    args,
+                    unpacked_arg,
+                }),
+            ) => {
                 let mut exprs = vec![];
                 if matches!(func, Expr((), _, Expr_::ObjGet(_))) {
-                    let Expr_::ObjGet(box (expr1, expr2, _, _)) = &mut func.2 else {
+                    let Expr_::ObjGet(deref!((expr1, expr2, _, _))) = &mut func.2 else {
                         unreachable!("checked")
                     };
                     exprs.push(expr1);
@@ -1135,7 +1155,7 @@ impl LiftAwait {
                 }
                 self.concurrentise(pos, exprs, con, seq, tmps)
             }
-            Expr_::New(box (nast::ClassId(_, _, cid), _, args, unpacked_arg, _)) => {
+            Expr_::New(deref!((nast::ClassId(_, _, cid), _, args, unpacked_arg, _))) => {
                 match cid {
                     ClassId_::CIexpr(expr) => self.extract_await(expr, con, seq, tmps),
                     ClassId_::CIparent
@@ -1153,7 +1173,7 @@ impl LiftAwait {
                 }
                 self.concurrentise(pos, exprs, con, seq, tmps)
             }
-            Expr_::Xml(box (_, attrs, exprs)) => {
+            Expr_::Xml(deref!((_, attrs, exprs))) => {
                 let mut exprs1 = vec![];
                 for attr in attrs.iter_mut() {
                     match attr {
@@ -1168,7 +1188,7 @@ impl LiftAwait {
                 }
                 self.concurrentise(pos, exprs1, con, seq, tmps)
             }
-            Expr_::Collection(box (_, _, afields)) => {
+            Expr_::Collection(deref!((_, _, afields))) => {
                 let mut exprs = vec![];
                 for afield in afields.iter_mut() {
                     match afield {
@@ -1187,7 +1207,7 @@ impl LiftAwait {
             Expr_::Await(_) => self.do_await(leave_await, pos, e, con, seq, tmps),
             // Seq
             Expr_::Pipe(_) => self.do_pipe(e, pos, con, seq, tmps),
-            Expr_::Eif(box (cond, t, f)) => {
+            Expr_::Eif(deref!((cond, t, f))) => {
                 let branch_awaits = match t {
                     Some(expr) => combine_con(check_await_usage(expr), check_await_usage(f)),
                     None => check_await_usage(f),
@@ -1235,11 +1255,13 @@ impl LiftAwait {
                 }
             }
 
-            Expr_::ExpressionTree(box nast::ExpressionTree {
-                class: _,
-                runtime_expr,
-                free_vars: _,
-            }) => self.extract_await(runtime_expr, con, seq, tmps),
+            Expr_::ExpressionTree(
+                deref!(nast::ExpressionTree {
+                    class: _,
+                    runtime_expr,
+                    free_vars: _,
+                }),
+            ) => self.extract_await(runtime_expr, con, seq, tmps),
 
             Expr_::List(exprs) => {
                 let subexp = exprs.iter_mut().flat_map(extract_subexprs).collect();
@@ -1290,7 +1312,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
         let mut seq = vec![];
         let mut tmps = vec![];
         match &mut stmt_ {
-            Stmt_::Expr(box expr) | Stmt_::Return(box Some(expr)) => {
+            Stmt_::Expr(deref!(expr)) | Stmt_::Return(deref!(Some(expr))) => {
                 expr.accept(env, self.object())?;
                 self.leave_await = true;
                 self.check_and_extract_await(env, expr, &mut con, &mut seq, &mut tmps);
@@ -1298,13 +1320,13 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 sequentialise_stmt(&pos, elem, stmt_, con, seq, tmps);
                 Ok(())
             }
-            Stmt_::Throw(box expr) => {
+            Stmt_::Throw(deref!(expr)) => {
                 expr.accept(env, self.object())?;
                 self.check_and_extract_await(env, expr, &mut con, &mut seq, &mut tmps);
                 sequentialise_stmt(&pos, elem, stmt_, con, seq, tmps);
                 Ok(())
             }
-            Stmt_::Return(box None) => {
+            Stmt_::Return(deref!(None)) => {
                 sequentialise_stmt(&pos, elem, stmt_, vec![], vec![], vec![]);
                 Ok(())
             }
@@ -1328,12 +1350,14 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 *elem = Stmt(pos, Stmt_::Block(Box::new((None, nested_block))));
                 elem.recurse(env, self.object())
             }
-            Stmt_::Using(box nast::UsingStmt {
-                is_block_scoped: _,
-                has_await: _,
-                exprs: (_, exprs),
-                block,
-            }) => {
+            Stmt_::Using(
+                deref!(nast::UsingStmt {
+                    is_block_scoped: _,
+                    has_await: _,
+                    exprs: (_, exprs),
+                    block,
+                }),
+            ) => {
                 for expr in exprs {
                     expr.accept(env, self.object())?;
                     self.leave_await = true;
@@ -1344,7 +1368,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 sequentialise_stmt(&pos, elem, stmt_, con, seq, tmps);
                 Ok(())
             }
-            Stmt_::If(box (expr, b1, b2)) => {
+            Stmt_::If(deref!((expr, b1, b2))) => {
                 expr.accept(env, self.object())?;
                 self.check_and_extract_await(env, expr, &mut con, &mut seq, &mut tmps);
                 b1.accept(env, self.object())?;
@@ -1352,7 +1376,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 sequentialise_stmt(&pos, elem, stmt_, con, seq, tmps);
                 Ok(())
             }
-            Stmt_::For(box (init_exprs, test, update, block)) => {
+            Stmt_::For(deref!((init_exprs, test, update, block))) => {
                 for expr in init_exprs {
                     expr.accept(env, self.object())?;
                     let mut init_con = vec![];
@@ -1389,7 +1413,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 sequentialise_stmt(&pos, elem, stmt_, con, seq, tmps);
                 Ok(())
             }
-            Stmt_::Switch(box (case, block, default)) => {
+            Stmt_::Switch(deref!((case, block, default))) => {
                 // No await in the case expression positions (parse error)
                 case.accept(env, self.object())?;
                 self.check_and_extract_await(env, case, &mut con, &mut seq, &mut tmps);
@@ -1398,7 +1422,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 sequentialise_stmt(&pos, elem, stmt_, con, seq, tmps);
                 Ok(())
             }
-            Stmt_::Foreach(box (expr, as_expr, block)) => {
+            Stmt_::Foreach(deref!((expr, as_expr, block))) => {
                 expr.accept(env, self.object())?;
                 self.check_and_extract_await(env, expr, &mut con, &mut seq, &mut tmps);
                 as_expr.accept(env, self.object())?;
@@ -1406,7 +1430,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                 sequentialise_stmt(&pos, elem, stmt_, con, seq, tmps);
                 Ok(())
             }
-            Stmt_::Do(box (body, cond)) | Stmt_::While(box (cond, body)) => {
+            Stmt_::Do(deref!((body, cond))) | Stmt_::While(deref!((cond, body))) => {
                 cond.accept(env, self.object())?;
                 self.extract_cond(env, &pos, cond);
 
@@ -1438,7 +1462,9 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                     match stmt {
                         Stmt(
                             _,
-                            Stmt_::Expr(box Expr(_, pos, Expr_::Assign(box (lhs, bop, rhs)))),
+                            Stmt_::Expr(
+                                deref!(Expr(_, pos, Expr_::Assign(deref!((lhs, bop, rhs))))),
+                            ),
                         ) => {
                             if matches!(bop, Some(Bop::QuestionQuestion)) {
                                 env.emit_error(NamingPhaseError::Parsing(ParsingError::ParsingError {
@@ -1454,7 +1480,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                             exprs.append(&mut extract_subexprs(lhs));
                             exprs.push(rhs);
                         }
-                        Stmt(_, Stmt_::Expr(box expr)) => {
+                        Stmt(_, Stmt_::Expr(deref!(expr))) => {
                             expr.accept(env, self.object())?;
                             exprs.push(expr);
                         }
@@ -1485,11 +1511,13 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                     match stmt {
                         Stmt(
                             _,
-                            Stmt_::Expr(box Expr(
-                                _,
-                                pos,
-                                Expr_::Assign(box (_, Some(Bop::QuestionQuestion), _)),
-                            )),
+                            Stmt_::Expr(
+                                deref!(Expr(
+                                    _,
+                                    pos,
+                                    Expr_::Assign(deref!((_, Some(Bop::QuestionQuestion), _))),
+                                )),
+                            ),
                         ) => {
                             env.emit_error(NamingPhaseError::Parsing(ParsingError::ParsingError {
                                 pos: pos.clone(),
@@ -1498,7 +1526,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                                 quickfixes: vec![],
                             }))
                         }
-                        Stmt(_, Stmt_::Expr(box expr)) => {
+                        Stmt(_, Stmt_::Expr(deref!(expr))) => {
                             expr.accept(env, self.object())?;
                             let is_await = expr.2.is_await();
                             match check_await_usage(expr) {
@@ -1549,7 +1577,7 @@ impl<'a> VisitorMut<'a> for LiftAwait {
                     }
                     if let Stmt(
                         p1,
-                        Stmt_::Expr(box Expr((), p2, Expr_::Assign(box (e1, op, e2)))),
+                        Stmt_::Expr(deref!(Expr((), p2, Expr_::Assign(deref!((e1, op, e2)))))),
                     ) = n
                     {
                         let tv = match tmp_vars.next() {

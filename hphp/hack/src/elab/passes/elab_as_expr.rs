@@ -78,7 +78,7 @@ mod tests {
             [NamingPhaseError::Naming(NamingError::ExpectedVariable(..))]
         ));
         assert!(match elem {
-            AsExpr::AsV(Expr(_, _, Expr_::Lvar(box Lid(_, lid)))) =>
+            AsExpr::AsV(Expr(_, _, Expr_::Lvar(deref!(Lid(_, lid))))) =>
                 lid.1 == "__internal_placeholder",
             _ => false,
         })
@@ -111,7 +111,7 @@ mod tests {
             [NamingPhaseError::Naming(NamingError::ExpectedVariable(..))]
         ));
         assert!(match elem {
-            AsExpr::AsKv(Expr(_, _, Expr_::Lvar(box Lid(_, lid))), Expr(_, _, Expr_::Null)) =>
+            AsExpr::AsKv(Expr(_, _, Expr_::Lvar(deref!(Lid(_, lid)))), Expr(_, _, Expr_::Null)) =>
                 lid.1 == "__internal_placeholder",
             _ => false,
         })

@@ -28,7 +28,7 @@ impl Pass for ValidateExprFunctionPointerPass {
         self.is_trait = class_.kind.is_ctrait();
         self.class_name = Some(Rc::new(class_.name.name().to_string()));
         self.parent_name = match class_.extends.as_slice() {
-            [Hint(_, box Hint_::Happly(id, _)), ..] => Some(Rc::new(id.name().to_string())),
+            [Hint(_, deref!(Hint_::Happly(id, _))), ..] => Some(Rc::new(id.name().to_string())),
             _ => None,
         };
         ControlFlow::Continue(())
@@ -36,7 +36,7 @@ impl Pass for ValidateExprFunctionPointerPass {
 
     fn on_ty_expr__bottom_up(&mut self, env: &Env, expr: &mut Expr_) -> ControlFlow<()> {
         match &expr {
-            Expr_::FunctionPointer(box (FunctionPtrId::FPId(Id(pos, name)), _)) => {
+            Expr_::FunctionPointer(deref!((FunctionPtrId::FPId(Id(pos, name)), _))) => {
                 // If this comes up more often, we may consider partitioning pseudofunctions
                 // into hhi-defined and non-hhi-defined, then just error on all of the hhi-defined ones.
                 if name == naming_special_names_rust::pseudo_functions::UNSAFE_CAST {
@@ -46,10 +46,12 @@ impl Pass for ValidateExprFunctionPointerPass {
                     });
                 }
             }
-            Expr_::FunctionPointer(box (
-                FunctionPtrId::FPClassConst(ClassId(_, pos, class_id_), (_, meth_name)),
-                _,
-            )) => match class_id_ {
+            Expr_::FunctionPointer(
+                deref!((
+                    FunctionPtrId::FPClassConst(ClassId(_, pos, class_id_), (_, meth_name)),
+                    _,
+                )),
+            ) => match class_id_ {
                 ClassId_::CIself if !self.in_final_class => {
                     env.emit_error(NamingError::SelfInNonFinalFunctionPointer {
                         pos: pos.clone(),

@@ -2,7 +2,7 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 
 use itertools::Itertools;
 use proc_macro2::Literal;
@@ -327,8 +327,8 @@ impl DeclTy {
     fn tokenize(&self) -> (TokenStream, bool) {
         match self {
             // a couple special cases first
-            DeclTy::Ptr(_, box DeclTy::Void(_)) => (quote!(textual::Ty::VoidPtr), false),
-            DeclTy::Ptr(_, box DeclTy::Type(id)) if id == "HackMixed" => {
+            DeclTy::Ptr(_, deref!(DeclTy::Void(_))) => (quote!(textual::Ty::VoidPtr), false),
+            DeclTy::Ptr(_, deref!(DeclTy::Type(id))) if id == "HackMixed" => {
                 (quote!(textual::Ty::mixed_ptr()), false)
             }
 
@@ -336,7 +336,7 @@ impl DeclTy {
             DeclTy::Float(_) => (quote!(textual::Ty::Float), true),
             DeclTy::Int(_) => (quote!(textual::Ty::Int), true),
             DeclTy::Noreturn(_) => (quote!(textual::Ty::Noreturn), true),
-            DeclTy::Ptr(_, box sub) => {
+            DeclTy::Ptr(_, deref!(sub)) => {
                 let (mut sub, sub_owned) = sub.tokenize();
                 if !sub_owned {
                     sub = quote!(#sub.clone());

@@ -17,16 +17,19 @@ pub struct ValidateExprCastPass;
 impl Pass for ValidateExprCastPass {
     fn on_ty_expr__bottom_up(&mut self, env: &Env, expr: &mut Expr_) -> ControlFlow<()> {
         match &*expr {
-            Expr_::Cast(box (Hint(_, box Hint_::Hprim(Tint | Tbool | Tfloat | Tstring)), _)) => {
-                Continue(())
-            }
-            Expr_::Cast(box (Hint(_, box Hint_::Happly(Id(_, tycon_nm), _)), _))
+            Expr_::Cast(
+                deref!((
+                    Hint(_, deref!(Hint_::Hprim(Tint | Tbool | Tfloat | Tstring))),
+                    _
+                )),
+            ) => Continue(()),
+            Expr_::Cast(deref!((Hint(_, deref!(Hint_::Happly(Id(_, tycon_nm), _))), _)))
                 if tycon_nm == sn::collections::DICT || tycon_nm == sn::collections::VEC =>
             {
                 Continue(())
             }
-            Expr_::Cast(box (Hint(_, box Hint_::HvecOrDict(_, _)), _)) => Continue(()),
-            Expr_::Cast(box (Hint(p, _), _)) => {
+            Expr_::Cast(deref!((Hint(_, deref!(Hint_::HvecOrDict(_, _))), _))) => Continue(()),
+            Expr_::Cast(deref!((Hint(p, _), _))) => {
                 env.emit_error(NamingError::ObjectCast(p.clone()));
                 Continue(())
             }

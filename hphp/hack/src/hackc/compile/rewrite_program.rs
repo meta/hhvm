@@ -2,7 +2,7 @@
 //
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -109,12 +109,12 @@ pub fn rewrite_program(
 
 fn update_awaitall(stmts: &mut [Stmt], return_val: &ast::LocalId) {
     match stmts.last_mut() {
-        Some(Stmt(_, Stmt_::Block(box (_, ast::Block(stmts))))) => {
+        Some(Stmt(_, Stmt_::Block(deref!((_, ast::Block(stmts)))))) => {
             update_awaitall(stmts, return_val);
         }
-        Some(Stmt(_, Stmt_::Awaitall(box (_, block)))) => match block.last_mut() {
+        Some(Stmt(_, Stmt_::Awaitall(deref!((_, block))))) => match block.last_mut() {
             Some(s) => match s {
-                Stmt(_, Stmt_::Expr(box Expr(_, p, e))) => {
+                Stmt(_, Stmt_::Expr(deref!(Expr(_, p, e)))) => {
                     let e_inner = Expr((), std::mem::take(p), std::mem::replace(e, Expr_::False));
                     *s = hack_stmt!("#{lvar(clone(return_val))} = #e_inner;");
                 }
@@ -158,7 +158,7 @@ fn extract_debugger_main(
 
         fn visit_stmt(&mut self, env: &mut Ctx, e: &'node mut ast::Stmt) -> Result<()> {
             match e {
-                Stmt(p, Stmt_::Return(box value @ Some(_))) => {
+                Stmt(p, Stmt_::Return(deref!(value @ Some(_)))) => {
                     let value = value.take();
                     let return_val = &env.return_val;
                     let expr: Expr = value.unwrap();
@@ -195,7 +195,7 @@ fn extract_debugger_main(
         defs.iter()
             .filter(|def| match def {
                 // Ignore the default module that was artificially inserted in the lowerer
-                Def::SetModule(box Id(_, md)) if md == special_modules::DEFAULT => false,
+                Def::SetModule(deref!(Id(_, md))) if md == special_modules::DEFAULT => false,
                 _ => true,
             })
             .count()

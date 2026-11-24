@@ -3,7 +3,7 @@
 // This source code is licensed under the MIT license found in the
 // LICENSE file in the "hack" directory of this source tree.
 
-#![feature(box_patterns)]
+#![feature(deref_patterns)]
 use std::fmt;
 use std::hash::Hash;
 
@@ -266,7 +266,9 @@ impl ToOxidized for BPos {
     fn to_oxidized(self) -> Self::Output {
         let file = self.file().to_oxidized();
         match self.0 {
-            PosImpl::Small { box span, .. } => {
+            PosImpl::Small {
+                span: deref!(span), ..
+            } => {
                 let (start, end) = span;
                 oxidized::pos::Pos::from_raw_span(
                     file.into(),
@@ -276,7 +278,9 @@ impl ToOxidized for BPos {
                     },
                 )
             }
-            PosImpl::Large { box span, .. } => {
+            PosImpl::Large {
+                span: deref!(span), ..
+            } => {
                 let (start, end) = span;
                 oxidized::pos::Pos::from_raw_span(file.into(), PosSpanRaw { start, end })
             }

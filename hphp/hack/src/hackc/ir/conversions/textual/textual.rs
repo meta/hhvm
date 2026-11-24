@@ -698,7 +698,7 @@ impl Ty {
 
     pub(crate) fn try_deref(&self) -> Option<Ty> {
         match self {
-            Ty::Ptr(box sub) => Some(sub.clone()),
+            Ty::Ptr(deref!(sub)) => Some(sub.clone()),
             Ty::VoidPtr => Some(Ty::Void),
             Ty::SpecialPtr(special) => Some(Ty::Special(*special)),
             Ty::Float
@@ -1512,7 +1512,7 @@ impl VarCache for HashMapVarCache {
 
     fn load(&mut self, src: &Expr, sid: Sid) {
         match src {
-            Expr::Deref(box Expr::Var(var)) => {
+            Expr::Deref(deref!(Expr::Var(var))) => {
                 self.cache.insert(var.clone(), sid);
             }
             _ => {}
@@ -1521,7 +1521,7 @@ impl VarCache for HashMapVarCache {
 
     fn clear_expr(&mut self, target: &Expr) {
         match target {
-            Expr::Deref(box Expr::Var(var)) => {
+            Expr::Deref(deref!(Expr::Var(var))) => {
                 self.cache.remove(var);
             }
             _ => {}
@@ -1530,7 +1530,7 @@ impl VarCache for HashMapVarCache {
 
     fn store(&mut self, target: &Expr, value: Expr) {
         match target {
-            Expr::Deref(box Expr::Var(var)) => {
+            Expr::Deref(deref!(Expr::Var(var))) => {
                 // If we're storing into a local then clear it.
                 match value {
                     Expr::Sid(sid) => {
@@ -1549,7 +1549,7 @@ impl VarCache for HashMapVarCache {
 
     fn lookup(&self, expr: &Expr) -> Option<Sid> {
         match expr {
-            Expr::Deref(box Expr::Var(var)) => self.cache.get(var).cloned(),
+            Expr::Deref(deref!(Expr::Var(var))) => self.cache.get(var).cloned(),
             _ => None,
         }
     }

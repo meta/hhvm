@@ -305,10 +305,10 @@ impl fmt::Display for FmtTypeName<'_> {
         let FmtTypeName(name) = *self;
         match name {
             TypeName::Class(cid) => f.write_str(&cid.as_str().as_bytes().mangle()),
-            TypeName::Curry(box FunctionName::Function(fid)) => {
+            TypeName::Curry(deref!(FunctionName::Function(fid))) => {
                 write!(f, "{}$curry", fid.as_str().as_bytes().mangle())
             }
-            TypeName::Curry(box FunctionName::Method(ty, mid)) => {
+            TypeName::Curry(deref!(FunctionName::Method(ty, mid))) => {
                 write!(f, "{}_{}$curry", ty.display(), mid.as_bytes().mangle())
             }
             TypeName::Curry(_) => panic!("Unable to name curry type {name:?}"),

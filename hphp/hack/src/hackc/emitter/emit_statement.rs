@@ -101,7 +101,7 @@ fn set_bytes_kind(name: &str) -> Option<SetRange> {
 
 fn is_single_await_all_block(lids: &[a::Lid], stmts: &[ast::Stmt]) -> bool {
     matches!((lids, stmts),
-        ([lid], [a::Stmt(_, a::Stmt_::Awaitall(box (inits, _)))]) if inits.len() == 1 && &inits[0].0 == lid
+        ([lid], [a::Stmt(_, a::Stmt_::Awaitall(deref!((inits, _))))]) if inits.len() == 1 && &inits[0].0 == lid
     )
 }
 
@@ -113,16 +113,18 @@ pub fn emit_stmt<'a>(e: &mut Emitter, env: &mut Env<'a>, stmt: &ast::Stmt) -> Re
         a::Stmt_::Expr(e_) => match &e_.2 {
             a::Expr_::Await(a) => emit_await_(e, env, e_, pos, a),
             a::Expr_::Call(c) => emit_call(e, env, e_, pos, c),
-            a::Expr_::Assign(box (lhs, bop, rhs)) => emit_assign(e, env, e_, pos, lhs, bop, rhs),
+            a::Expr_::Assign(deref!((lhs, bop, rhs))) => {
+                emit_assign(e, env, e_, pos, lhs, bop, rhs)
+            }
             _ => emit_expr::emit_ignored_expr(e, env, pos, e_),
         },
         a::Stmt_::Return(r_opt) => emit_return_(e, env, (**r_opt).as_ref(), pos),
-        a::Stmt_::Block(box (Some(lids), a::Block(block)))
+        a::Stmt_::Block(deref!((Some(lids), a::Block(block))))
             if is_single_await_all_block(lids, block) =>
         {
             emit_block_awaitall_single(e, env, block)
         }
-        a::Stmt_::Block(box (lids, b)) => emit_block_with_temps(env, e, lids, b),
+        a::Stmt_::Block(deref!((lids, b))) => emit_block_with_temps(env, e, lids, b),
         a::Stmt_::If(f) => emit_if(e, env, pos, &f.0, &f.1, &f.2),
         a::Stmt_::While(x) => emit_while(e, env, &x.0, &x.1),
         a::Stmt_::Using(x) => emit_using(e, env, x),
@@ -388,7 +390,7 @@ fn emit_block_awaitall_single<'a>(
     block: &[ast::Stmt],
 ) -> Result<InstrSeq> {
     match block {
-        [a::Stmt(pos, a::Stmt_::Awaitall(box (init, block)))] => {
+        [a::Stmt(pos, a::Stmt_::Awaitall(deref!((init, block))))] => {
             let (lval, expr) = &init[0];
             let lvals = vec![lval.clone()];
             let a::Lid(_, id) = lval;
@@ -491,7 +493,7 @@ fn emit_using<'a>(e: &mut Emitter, env: &mut Env<'a>, using: &ast::UsingStmt) ->
     } else {
         e.local_scope(|e| {
             let (local, preamble) = match &(using.exprs.1[0].2) {
-                ast::Expr_::Assign(box (lhs, bop, _)) => match (bop, lhs.2.as_lvar()) {
+                ast::Expr_::Assign(deref!((lhs, bop, _))) => match (bop, lhs.2.as_lvar()) {
                     (None, Some(ast::Lid(pos, id))) => (
                         emit_expr::get_local(e, env, pos, &id.1)?,
                         InstrSeq::gather(vec![
@@ -512,7 +514,7 @@ fn emit_using<'a>(e: &mut Emitter, env: &mut Env<'a>, using: &ast::UsingStmt) ->
                         )
                     }
                 },
-                ast::Expr_::Lvar(box ast::Lid(pos, id)) => (
+                ast::Expr_::Lvar(deref!(ast::Lid(pos, id))) => (
                     emit_expr::get_local(e, env, pos, &id.1)?,
                     InstrSeq::gather(vec![
                         emit_expr::emit_expr(e, env, &(using.exprs.1[0]))?,
@@ -1046,7 +1048,7 @@ fn check_l_iter<'a>(
                 }
                 // DestructureShape/DestructureTuple only bind variables, so they can't mutate the iterated array.
                 ast::Expr_::List(exprs) => exprs.iter().any(|expr| self.check_lval(expr, is_unset)),
-                ast::Expr_::ArrayGet(box (base, Some(index))) => {
+                ast::Expr_::ArrayGet(deref!((base, Some(index)))) => {
                     let ast::Expr(_, _, b) = base;
                     let ast::Expr(_, _, i) = index;
 
@@ -1060,7 +1062,7 @@ fn check_l_iter<'a>(
                         _ => self.check_lval(base, is_unset),
                     }
                 }
-                ast::Expr_::ArrayGet(box (base, None)) => self.check_lval(base, is_unset),
+                ast::Expr_::ArrayGet(deref!((base, None))) => self.check_lval(base, is_unset),
                 _ => false,
             }
         }
@@ -1095,9 +1097,9 @@ fn check_l_iter<'a>(
             }
 
             match p {
-                ast::Expr_::Unop(box (Uop::Uincr | Uop::Udecr | Uop::Upincr | Uop::Updecr, e)) => {
-                    self.visit_lval(e, false)
-                }
+                ast::Expr_::Unop(
+                    deref!((Uop::Uincr | Uop::Udecr | Uop::Upincr | Uop::Updecr, e)),
+                ) => self.visit_lval(e, false),
 
                 ast::Expr_::Assign(e) => {
                     let (left, _, _) = &**e;
@@ -1123,7 +1125,7 @@ fn check_l_iter<'a>(
                     }
                 }
 
-                ast::Expr_::ObjGet(box (lhs, _, _, _)) => self.visit_lval(lhs, false),
+                ast::Expr_::ObjGet(deref!((lhs, _, _, _))) => self.visit_lval(lhs, false),
 
                 _ => (),
             }
@@ -1934,7 +1936,7 @@ pub fn emit_final_stmt<'a>(
 ) -> Result<InstrSeq> {
     match &stmt.1 {
         a::Stmt_::Throw(_) | a::Stmt_::Return(_) | a::Stmt_::YieldBreak => emit_stmt(e, env, stmt),
-        a::Stmt_::Block(box (None, stmts)) => emit_final_stmts(env, e, stmts),
+        a::Stmt_::Block(deref!((None, stmts))) => emit_final_stmts(env, e, stmts),
         _ => {
             let ret = emit_dropthrough_return(e, env)?;
             Ok(InstrSeq::gather(vec![emit_stmt(e, env, stmt)?, ret]))

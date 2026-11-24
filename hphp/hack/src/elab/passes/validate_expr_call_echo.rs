@@ -16,11 +16,13 @@ pub struct ValidateExprCallEchoPass;
 impl Pass for ValidateExprCallEchoPass {
     fn on_ty_expr__bottom_up(&mut self, env: &Env, elem: &mut Expr_) -> ControlFlow<()> {
         match elem {
-            Expr_::Call(box CallExpr {
-                func: Expr(_, _, Expr_::Id(box Id(_, fn_name))),
-                unpacked_arg: Some(Expr(_, pos, _)),
-                ..
-            }) if fn_name == sn::pre_namespaced_functions::ECHO => {
+            Expr_::Call(
+                deref!(CallExpr {
+                    func: Expr(_, _, Expr_::Id(deref!(Id(_, fn_name)))),
+                    unpacked_arg: Some(Expr(_, pos, _)),
+                    ..
+                }),
+            ) if fn_name == sn::pre_namespaced_functions::ECHO => {
                 env.emit_error(NamingError::TooFewTypeArguments(pos.clone()))
             }
             _ => (),

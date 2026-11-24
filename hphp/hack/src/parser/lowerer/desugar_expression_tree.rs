@@ -1329,7 +1329,7 @@ impl RewriteState {
                     // Source: MyDsl`Foo::bar()`
                     // Virtualized: (MyDsl::symbolType($0smXX)->__unwrap())()
                     // Desugared: $0v->visitCall(new ExprPos(...), $0v->visitStaticMethod(new ExprPos(...), $0smXX, vec[])
-                    ClassConst(box (cid, s)) => {
+                    ClassConst(deref!((cid, s))) => {
                         let is_supported = match &cid {
                             ClassId(_, _, ClassId_::CIself | ClassId_::CIparent) => false,
                             ClassId(_, _, ClassId_::CIreified(_)) => true,
@@ -1355,7 +1355,7 @@ impl RewriteState {
                                 ClassId_::CIexpr(Expr(
                                     _,
                                     _,
-                                    aast::Expr_::Id(box ast_defs::Id(_, name)),
+                                    aast::Expr_::Id(deref!(ast_defs::Id(_, name))),
                                 )),
                             ) if name == visitor_name => match s.1.as_ref() {
                                 // type check any special function calls
@@ -1571,13 +1571,15 @@ impl RewriteState {
             // Desugared to $0v->macro_splice(new ExprPos(...), '$0splice', $0splice, vec!['$x', '$y'])
             // Where there is an await inside of the splice, the lambda created is async.
             // Further, the desugared expression calls async_macro_splice, rather than macro_splice
-            ETSplice(box aast::EtSplice {
-                spliced_expr,
-                contains_await,
-                extract_client_type: _,
-                macro_variables,
-                temp_lid: _,
-            }) => {
+            ETSplice(
+                deref!(aast::EtSplice {
+                    spliced_expr,
+                    contains_await,
+                    extract_client_type: _,
+                    macro_variables,
+                    temp_lid: _,
+                }),
+            ) => {
                 let len = self.splices.len();
                 let expr_pos = spliced_expr.1.clone();
                 let is_macro = macro_variables.is_some();
@@ -1687,7 +1689,7 @@ impl RewriteState {
             // Source: MyDsl`ClientMap {...}`
             // Virtualized: ClientMap::__make(...)
             // Desugared: $0v->visitKeyedCollection('ClientMap', ...)
-            Collection(box (ast::Id(name_pos, name), targ, fields)) => {
+            Collection(deref!((ast::Id(name_pos, name), targ, fields))) => {
                 let mut rewritten_fields_virtual = vec![];
                 let mut rewritten_fields_desugar = vec![];
                 for kv in fields {
@@ -1813,7 +1815,7 @@ impl RewriteState {
             // Source: MyDsl`MyClass::FOO`
             // Virtualized: ${MyClass::FOO}
             // Desugared: $0v->visitClassConstant(new ExprPos(...), nameof MyClass, 'FOO', MyClass::FOO)
-            ClassConst(box (cid, s)) => {
+            ClassConst(deref!((cid, s))) => {
                 let is_supported = match &cid {
                     ClassId(_, _, ClassId_::CIself | ClassId_::CIparent) => false,
                     ClassId(_, _, ClassId_::CIreified(_)) => true,
@@ -1888,7 +1890,7 @@ impl RewriteState {
                     .push((pos, "`yield` is not supported in expression trees.".into()));
                 unchanged_result
             }
-            ValCollection(box (kind, targ, values)) => match &kind.1 {
+            ValCollection(deref!((kind, targ, values))) => match &kind.1 {
                 aast::VcKind::Vector | aast::VcKind::ImmVector => {
                     self.errors.push((
                         pos,
@@ -1964,7 +1966,7 @@ impl RewriteState {
                     }
                 }
             },
-            KeyValCollection(box (kind, targ, fields)) => match &kind.1 {
+            KeyValCollection(deref!((kind, targ, fields))) => match &kind.1 {
                 aast::KvcKind::Map | aast::KvcKind::ImmMap => {
                     self.errors.push((
                         pos,
@@ -2653,17 +2655,17 @@ impl LiveVars {
     fn update_for_stmts(&mut self, stmts: &[Stmt]) {
         for Stmt(_pos, stmt) in stmts.iter().rev() {
             match stmt {
-                Stmt_::Expr(box e) | Stmt_::Return(box Some(e)) => {
+                Stmt_::Expr(deref!(e)) | Stmt_::Return(deref!(Some(e))) => {
                     self.visit_expr(&mut (), e).unwrap();
                 }
-                Stmt_::If(box (cond, ast::Block(then), ast::Block(els))) => {
+                Stmt_::If(deref!((cond, ast::Block(then), ast::Block(els)))) => {
                     let then_lvs = Self::new_from_statement(then);
                     let els_lvs = Self::new_from_statement(els);
                     let combined_lvs = then_lvs.merge(els_lvs);
                     self.update_for_more_live_vars(combined_lvs);
                     self.visit_expr(&mut (), cond).unwrap();
                 }
-                Stmt_::While(box (ast::LoopCond(_, _, test), body)) => {
+                Stmt_::While(deref!((ast::LoopCond(_, _, test), body))) => {
                     // We don't need to iterate to a fixed point, because we are
                     // only looking at the used variables on entry to the loop,
                     // rather than trying to use them at program points inside
@@ -2679,7 +2681,7 @@ impl LiveVars {
                     // We relay on there being no assignments in the expr
                     self.visit_expr(&mut (), test).unwrap();
                 }
-                Stmt_::For(box (init, test, inc, body)) => {
+                Stmt_::For(deref!((init, test, inc, body))) => {
                     let mut body_lvs = LiveVars {
                         used: BTreeMap::default(),
                         assigned: BTreeMap::default(),
@@ -2766,7 +2768,7 @@ impl LiveVars {
     fn visit_lvalue(&mut self, env: &mut (), Expr(_, _, e): &Expr) {
         match e {
             Expr_::List(lv) => lv.iter().for_each(|e| self.visit_lvalue(env, e)),
-            Expr_::Lvar(box lid) => self.add_assign(lid),
+            Expr_::Lvar(deref!(lid)) => self.add_assign(lid),
             _ => {
                 self.visit_expr_(env, e).unwrap();
             }
@@ -2802,7 +2804,7 @@ impl<'ast> Visitor<'ast> for LiveVars {
 
     fn visit_expr_(&mut self, env: &mut (), e: &Expr_) -> Result<(), ()> {
         match e {
-            Expr_::Assign(box (lhs, bop, rhs)) => {
+            Expr_::Assign(deref!((lhs, bop, rhs))) => {
                 if bop.is_none() {
                     self.visit_lvalue(env, lhs);
                     rhs.recurse(env, self.object())
@@ -2814,9 +2816,12 @@ impl<'ast> Visitor<'ast> for LiveVars {
                 }
             }
             Expr_::ExpressionTree(_) => Ok(()),
-            Expr_::ETSplice(box EtSplice {
-                macro_variables, ..
-            }) => {
+            Expr_::ETSplice(
+                deref!(EtSplice {
+                    macro_variables,
+                    ..
+                }),
+            ) => {
                 if let Some(vars) = macro_variables {
                     for v in vars {
                         self.add_use(v);
@@ -2824,7 +2829,7 @@ impl<'ast> Visitor<'ast> for LiveVars {
                 }
                 Ok(())
             }
-            Expr_::Lfun(box (f, _idl)) => {
+            Expr_::Lfun(deref!((f, _idl))) => {
                 // functions create a new scope
                 let ast::Block(stmts) = &f.body.fb_ast;
                 let mut lv = LiveVars::new_from_statement(stmts);
