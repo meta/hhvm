@@ -14,8 +14,14 @@
    +----------------------------------------------------------------------+
 */
 
+#include "hphp/runtime/base/array-data.h"
+#include "hphp/runtime/base/static-string-table.h"
+#include "hphp/runtime/test/test-context.h"
 #include "hphp/runtime/vm/jit/cg-meta.h"
 #include "hphp/runtime/vm/jit/abi.h"
+#include "hphp/runtime/vm/jit/code-gen-helpers.h"
+#include "hphp/runtime/vm/jit/ir-unit.h"
+#include "hphp/runtime/vm/jit/irlower-internal.h"
 #include "hphp/runtime/vm/jit/phys-reg.h"
 #include "hphp/runtime/vm/jit/relocation.h"
 #include "hphp/runtime/vm/jit/vasm.h"
@@ -40,6 +46,7 @@
 #endif
 
 #include <optional>
+#include <cstring>
 
 #include <gtest/gtest.h>
 
@@ -198,6 +205,76 @@ TEST(Vasm, Move128ARM) {
   });
 }
 
+TEST(Vasm, LoadedTypeCheckIgnoresNonTypeBytes) {
+  using Check = bool (*)(const TypedValue*);
+  for (auto const op : {LdLoc, LdStk}) {
+    for (auto const type : {TVec, TDict, TKeyset, TStr, TBool}) {
+      SCOPED_TRACE(opcodeName(op));
+      SCOPED_TRACE(type.toString());
+      test_function<Check>([&] (Vout& v) {
+        IRUnit unit{test_context};
+        auto const bcctx = BCContext{test_marker(), 0};
+        auto const base = unit.gen(Conjure, bcctx,
+                                  op == LdLoc ? TFramePtr : TStkPtr);
+        auto const load = op == LdLoc
+          ? unit.gen(LdLoc, bcctx, TCell, LocalId{0}, base->dst())
+          : unit.gen(LdStk, bcctx, TCell,
+                     IRSPRelOffsetData{IRSPRelOffset{0}}, base->dst());
+        auto const taken = unit.defBlock();
+        auto const check = unit.gen(CheckType, bcctx, type, taken, load->dst());
+
+        irlower::IRLS env{unit};
+        env.vmain = &v;
+        env.labels[taken] = v.makeBlock();
+        env.locs[base->dst()] = Vloc{rarg(0)};
+        env.locs[load->dst()] = Vloc{v.makeReg(), v.makeReg()};
+        env.locs[check->dst()] = Vloc{v.makeReg()};
+        if (op == LdLoc) {
+          v << lea{rarg(0)[sizeof(TypedValue)], rarg(0)};
+          irlower::cgLdLoc(env, load);
+        } else {
+          irlower::cgLdStk(env, load);
+        }
+        irlower::cgCheckType(env, check);
+        v << ldimmb{1, rret()};
+        v << ret{RegSet{rret()}};
+        v = env.labels[taken];
+        v << ldimmb{0, rret()};
+        v << ret{RegSet{rret()}};
+
+        auto& entry = v.unit().blocks[v.unit().entry].code;
+        ASSERT_EQ(entry.back().op, Vinstr::jcc);
+        auto const branch = entry.back().jcc_;
+        ASSERT_EQ(branch.targets[1], env.labels[taken]);
+        entry.back() = setcc{ccNegate(branch.cc), branch.sf, rret()};
+        entry.emplace_back(ret{RegSet{rret()}});
+        optimize(v.unit(), abi(CodeKind::Helper), true);
+      }, [&] (Check check) {
+        TypedValue value{};
+        value.m_type = type.toDataType();
+        if (type == TVec) value.m_data.parr = staticEmptyVec();
+        if (type == TDict) value.m_data.parr = staticEmptyDictArray();
+        if (type == TKeyset) value.m_data.parr = staticEmptyKeysetArray();
+        if (type == TStr) value.m_data.pstr = staticEmptyString();
+        if (type == TBool) value.m_data.num = 1;
+
+        for (auto const extra : {uint64_t{0}, uint64_t{0x100},
+                                 uint64_t{0x10000}, uint64_t{0x80000000},
+                                 uint64_t{0xffffffff00000000}}) {
+          SCOPED_TRACE(extra);
+          auto const word = extra | static_cast<uint8_t>(value.m_type);
+          std::memcpy(&value.m_type, &word, sizeof(word));
+          ASSERT_TRUE(tvIsPlausible(value));
+          EXPECT_TRUE(check(&value));
+        }
+        value.m_type = KindOfInt64;
+        value.m_data.num = 42;
+        EXPECT_FALSE(check(&value));
+      });
+    }
+  }
+}
+
 TEST(Vasm, PrintVptr) {
   auto v0 = Vreg{Vreg::V0};
   auto v1 = Vreg{Vreg::V0 + 1};
@@ -219,6 +296,33 @@ TEST(Vasm, PrintVptr) {
 }
 
 #ifdef __aarch64__
+
+TEST(Vasm, LoadTVPreservesAux) {
+  using Load = uint64_t (*)(const TypedValue*);
+  for (auto const type : {TCell, TBool}) {
+    SCOPED_TRACE(type.toString());
+    test_function<Load>([&] (Vout& v) {
+      loadTV(v, type, Vloc{rarg(1), rarg(2)},
+             rarg(0)[TVOFF(m_type)], rarg(0)[TVOFF(m_data)], true);
+      v << copy{rarg(2), rret()};
+      v << ret{RegSet{rret()}};
+      optimize(v.unit(), abi(CodeKind::Helper), true);
+    }, [] (Load load) {
+      TypedValue value{};
+      value.m_data.num = 1;
+      for (auto const aux : {0u, 1u, 0x80000000u, 0xffffffffu}) {
+        for (auto const extra : {0u, 0xffffff00u}) {
+          SCOPED_TRACE(aux);
+          SCOPED_TRACE(extra);
+          auto const word = (uint64_t{aux} << 32) | extra |
+                            static_cast<uint8_t>(KindOfBoolean);
+          std::memcpy(&value.m_type, &word, sizeof(word));
+          EXPECT_EQ(load(&value), word);
+        }
+      }
+    });
+  }
+}
 
 TEST(Vasm, ArmNearLiteralLoadStaysLiteralLdr) {
   test_emission(4096, [] (Vout& v) {

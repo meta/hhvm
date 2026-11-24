@@ -44,6 +44,31 @@ TRACE_SET_MOD(irlower)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+namespace {
+
+void loadLocOrStk(IRLS& env, const IRInstruction* inst, Vptr src) {
+  auto& v = vmain(env);
+  auto const dst = dstLoc(env, inst, 0);
+  if (!arch::any<arch::ARM>() || !inst->dst()->type().needsReg() ||
+      dst.isFullSIMD()) {
+    loadTV(v, inst->dst(), dst, src);
+    return;
+  }
+
+  assertx(dst.hasReg(1));
+  auto const type = v.makeReg();
+  loadTV(v, inst->dst(), Vloc{dst.reg(0), type}, src, true);
+  // The wide type load can pair with the value load, but includes non-type
+  // bytes. ARM byte comparisons use W registers, so bits 8..31 must be zero.
+  // movtqb emits UXTB to extract the type tag; auxiliary bits are unused
+  // in local and stack slots.
+  v << movtqb{type, dst.reg(1)};
+}
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 void cgKillActRec(IRLS& env, const IRInstruction* inst) {
   auto& v = vmain(env);
   v << killeffects{};
@@ -67,12 +92,7 @@ void cgLdLoc(IRLS& env, const IRInstruction* inst) {
   auto const fp = srcLoc(env, inst, 0).reg();
   auto const off = localOffset(inst->extra<LdLoc>()->locId);
 
-  // For ARM, if we need to load the type, then request 'aux' too -- even though
-  // the value is unneeded, it allows for the type and the value to be merged
-  // into a single loadpair.
-  const bool loadAux = arch::any<arch::ARM>() && inst->dst()->type().needsReg();
-
-  loadTV(vmain(env), inst->dst(), dstLoc(env, inst, 0), fp[off], loadAux);
+  loadLocOrStk(env, inst, fp[off]);
 }
 
 void cgLdLocForeign(IRLS& env, const IRInstruction* inst) {
@@ -160,12 +180,7 @@ void cgLdStk(IRLS& env, const IRInstruction* inst) {
   auto const sp = srcLoc(env, inst, 0).reg();
   auto const off = cellsToBytes(inst->extra<LdStk>()->offset.offset);
 
-  // For ARM, if we need to load the type, then request 'aux' too -- even though
-  // the value is unneeded, it allows for the type and the value to be merged
-  // into a single loadpair.
-  const bool loadAux = arch::any<arch::ARM>() && inst->dst()->type().needsReg();
-
-  loadTV(vmain(env), inst->dst(), dstLoc(env, inst, 0), sp[off], loadAux);
+  loadLocOrStk(env, inst, sp[off]);
 }
 
 void cgLdStkAddr(IRLS& env, const IRInstruction* inst) {
