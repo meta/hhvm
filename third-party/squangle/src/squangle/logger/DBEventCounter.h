@@ -121,6 +121,11 @@ class DBCounterBase {
   // SSL session reuse tracking, split by TLS version (e.g. "TLSv1.2")
   virtual void incrReusedSSLSessions(std::string_view tlsVersion) = 0;
   virtual void incrSSLSessionNotReused(std::string_view tlsVersion) = 0;
+
+  // A pooled connect that timed out while the client's event loop was stalled.
+  // The connect still fails with SQ_ERRNO_POOL_CONN_TIMEOUT, which callers
+  // retry on; this tells that case apart from a pool short of connections.
+  virtual void incrPoolConnTimeoutsLoopStalled() {}
 };
 
 // Holds the stats for a client, thread safe and allows some good stats in
@@ -200,6 +205,14 @@ class SimpleDbCounter : public DBCounterBase {
 
   void incrSSLSessionNotReused(std::string_view /* tlsVersion */) override {}
 
+  uint64_t numPoolConnTimeoutsLoopStalled() {
+    return pool_conn_timeouts_loop_stalled_.load(std::memory_order_relaxed);
+  }
+
+  void incrPoolConnTimeoutsLoopStalled() override {
+    pool_conn_timeouts_loop_stalled_.fetch_add(1, std::memory_order_relaxed);
+  }
+
   // For logging porpuses
   void printStats();
 
@@ -210,6 +223,7 @@ class SimpleDbCounter : public DBCounterBase {
   std::atomic<uint64_t> failed_queries_;
   std::atomic<uint64_t> succeeded_queries_;
   std::atomic<uint64_t> reused_ssl_sessions_;
+  std::atomic<uint64_t> pool_conn_timeouts_loop_stalled_{0};
 };
 
 class PoolStats {

@@ -67,15 +67,20 @@ class MysqlConnectPoolOperationImpl : public MysqlConnectOperationImpl,
             key_stats.pending_connections,
             locked_pool->perKeyLimit());
 
+        bool loop_stalled = false;
         auto errorStr = generateTimeoutError(
             opElapsedMs(),
-            [](bool /*stalled*/) {
+            [&loop_stalled](bool stalled) {
+              loop_stalled = stalled;
               return static_cast<uint16_t>(
                   SquangleErrno::SQ_ERRNO_POOL_CONN_TIMEOUT);
             },
             "Connection",
             std::move(location),
             std::nullopt);
+        if (loop_stalled) {
+          client().stats()->incrPoolConnTimeoutsLoopStalled();
+        }
 
         op.setAsyncClientError(
             static_cast<uint16_t>(SquangleErrno::SQ_ERRNO_POOL_CONN_TIMEOUT),
