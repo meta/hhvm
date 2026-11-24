@@ -769,6 +769,14 @@ class CommonTests(BarebonesTests):
         self.test_driver.check_cmd_and_json_cmd(
             [],
             [
+                '[{{"full_name":"UninitializedPropClass::prop","pos":{{"filename":"{root}class_uninit_prop.php","line":4,"char_start":17,"char_end":21}},"kind":"property"}}]'
+            ],
+            options=["--identify", "UninitializedPropClass::prop"],
+        )
+
+        self.test_driver.check_cmd_and_json_cmd(
+            [],
+            [
                 '[{{"full_name":"CONST_SOME_COOL_VALUE","pos":{{"filename":"{root}const_1.php","line":3,"char_start":11,"char_end":31}},"kind":"const"}}]'
             ],
             options=["--identify", "CONST_SOME_COOL_VALUE"],
@@ -796,6 +804,15 @@ class CommonTests(BarebonesTests):
                 '[{{"full_name":"f","pos":{{"filename":"{root}foo_1.php","line":3,"char_start":18,"char_end":18}},"kind":"function"}}]'
             ],
             options=["--identify", "f"],
+        )
+
+        # XHP attribute names keep their leading ':', hence ':::'
+        self.test_driver.check_cmd_and_json_cmd(
+            [],
+            [
+                '[{{"full_name":":xhp:helloworld:::x","pos":{{"filename":"{root}xhp_1.php","line":6,"char_start":17,"char_end":17}},"kind":"property"}}]'
+            ],
+            options=["--identify", ":xhp:helloworld:::x"],
         )
 
     def test_list_files(self) -> None:

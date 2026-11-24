@@ -272,7 +272,6 @@ let handle :
           [
             get_def_opt (SO.Method (SO.ClassName c_name, member)) "";
             get_def_opt (SO.Property (SO.ClassName c_name, member)) "";
-            get_def_opt (SO.XhpLiteralAttr (c_name, member)) "";
             get_def_opt (SO.ClassConst (SO.ClassName c_name, member)) "";
             get_def_opt (SO.Typeconst (c_name, member)) "";
           ]
