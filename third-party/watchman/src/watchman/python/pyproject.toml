@@ -5,7 +5,6 @@ authors = [
     { name = "Meta Source Control Team", email = "sourcecontrol-dev@fb.com" },
 ]
 description = "Watchman client for Python"
-license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
