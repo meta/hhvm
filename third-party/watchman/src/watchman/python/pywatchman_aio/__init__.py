@@ -262,7 +262,7 @@ class AIOClient:
     async def pop_log(self):
         """Get one log from the log queue."""
         self._check_receive_loop()
-        res = self.log_queue.get()
+        res = await self.log_queue.get()
         self._check_error(res)
         return res
 
@@ -338,7 +338,7 @@ class AIOClient:
     def _check_error(self, res):
         if isinstance(res, Exception):
             raise res
-        if "error" in res:
+        if isinstance(res, dict) and "error" in res:
             raise CommandError(res["error"])
 
     def _check_receive_loop(self):
