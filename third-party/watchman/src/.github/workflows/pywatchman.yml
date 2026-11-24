@@ -1,0 +1,113 @@
+# Copyright (c) Meta Platforms, Inc. and affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+name: pywatchman
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - watchman/python/**
+    - .github/workflows/pywatchman.yml
+  pull_request:
+    branches:
+    - main
+    paths:
+    - watchman/python/**
+    - .github/workflows/pywatchman.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read  #  to fetch code (actions/checkout)
+
+jobs:
+  # A release is a change to the version in pyproject.toml: main publishes
+  # whenever PyPI doesn't have that version yet.
+  check-version:
+    runs-on: ubuntu-24.04
+    outputs:
+      publish: ${{ steps.check.outputs.publish }}
+    steps:
+    - uses: actions/checkout@v6
+    - name: Look for this version on PyPI
+      id: check
+      run: |
+        version=$(python3 -c "import tomllib; print(tomllib.load(open('watchman/python/pyproject.toml', 'rb'))['project']['version'])")
+        status=$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/pywatchman/$version/json")
+        echo "pywatchman $version on PyPI: HTTP $status"
+        if [ "$status" = 404 ]; then
+          echo "publish=true" >> "$GITHUB_OUTPUT"
+        elif [ "$status" = 200 ]; then
+          echo "publish=false" >> "$GITHUB_OUTPUT"
+        else
+          exit 1
+        fi
+
+  sdist:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+    - name: Install build tools
+      run: python -m pip install build twine
+    - name: Build the sdist
+      run: python -m build --sdist --outdir dist watchman/python
+    - name: Check its metadata
+      run: python -m twine check dist/*
+    - uses: actions/upload-artifact@v6
+      with:
+        name: dist-sdist
+        path: dist/*.tar.gz
+
+  # cibuildwheel builds and tests a wheel for each Python that pyproject.toml
+  # supports. It builds for the runner's own CPU, so each one needs a runner.
+  wheels:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+        - ubuntu-24.04
+        - ubuntu-24.04-arm
+        - macos-15
+        - windows-2022
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.13"
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==4.3.5
+    - name: Build and test the wheels
+      run: python -m cibuildwheel --output-dir wheelhouse watchman/python
+    - uses: actions/upload-artifact@v6
+      with:
+        name: dist-wheels-${{ matrix.os }}
+        path: wheelhouse/*.whl
+
+  publish:
+    needs: [check-version, sdist, wheels]
+    if: >-
+      github.event_name != 'pull_request'
+      && github.ref == 'refs/heads/main'
+      && needs.check-version.outputs.publish == 'true'
+    runs-on: ubuntu-24.04
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pywatchman
+    permissions:
+      id-token: write  #  to authenticate to PyPI as a trusted publisher
+    steps:
+    - uses: actions/download-artifact@v7
+      with:
+        pattern: dist-*
+        merge-multiple: true
+        path: dist
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip-existing: true

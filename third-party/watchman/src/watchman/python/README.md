@@ -16,3 +16,9 @@ This also installs `watchman-wait`, `watchman-make`,
 ```sh
 python -m build
 ```
+
+## Release
+
+To cut a new release, manually bump `project.version` in `pyproject.toml` and land
+the change. The next weekly ShipIt cont job exports it to GitHub, where the
+`pywatchman` workflow builds and publishes the release to PyPI.

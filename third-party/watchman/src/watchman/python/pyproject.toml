@@ -48,3 +48,16 @@ Issues = "https://github.com/meta/watchman/issues"
 [build-system]
 requires = ["setuptools>=61.0", "wheel>=0.37.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+# 64-bit only: x86_64 and aarch64 on Linux, arm64 on macOS, AMD64 on Windows.
+archs = ["auto64"]
+# bser doesn't declare that it is safe without the GIL, so a free-threaded
+# Python turns the GIL back on to load it, with a warning.
+skip = ["cp3??t-*"]
+test-command = "python {package}/tests/tests.py"
+
+[tool.cibuildwheel.windows]
+# tests.py isn't run on Windows anywhere else. This checks that the wheel
+# installs and that pip's launcher starts a tool.
+test-command = "watchman-wait --help"
