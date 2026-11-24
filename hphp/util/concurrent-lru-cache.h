@@ -283,6 +283,7 @@ insert(const TKey& key, const TValue& value) {
     delete node;
     return false;
   }
+  hashAccessor.release();
 
   // Evict if necessary, now that we know the hashmap insertion was successful.
   size_t size = m_size.load();
