@@ -31,7 +31,9 @@ let rec int_keys p top bottom acc_i =
       p
       (top - 1)
       bottom
-      (TSFregex_group (Pos_or_decl.of_raw_pos p, string_of_int top) :: acc_i)
+      (TShapeField.make
+         (TSFregex_group (Pos_or_decl.of_raw_pos p, string_of_int top))
+      :: acc_i)
 
 (* Assumes that names_numbers is sorted in DECREASING order of numbers *)
 let rec keys_aux p top names_numbers acc =
@@ -42,7 +44,7 @@ let rec keys_aux p top names_numbers acc =
       p
       (number - 1)
       t
-      (TSFlit_str (Pos_or_decl.of_raw_pos p, name)
+      (TShapeField.make (TSFlit_str (Pos_or_decl.of_raw_pos p, name))
       :: (int_keys p top number [] @ acc))
 
 (*
@@ -88,7 +90,10 @@ let type_match p s ~flags =
   in
   (* Any Regex\Match will contain the entire matched substring at key 0 *)
   let shape_map =
-    TShapeMap.add (TSFregex_group (Pos_or_decl.of_raw_pos p, "0")) sft shape_map
+    TShapeMap.add
+      (TShapeField.make (TSFregex_group (Pos_or_decl.of_raw_pos p, "0")))
+      sft
+      shape_map
   in
   MakeType.closed_shape r shape_map
 

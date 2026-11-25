@@ -48,7 +48,7 @@ let dummy_env () =
 
 let r = Reason.none
 
-let key name = TSFlit_str (Pos_or_decl.none, name)
+let key name = TShapeField.make (TSFlit_str (Pos_or_decl.none, name))
 
 let test_pos line =
   let file = Relative_path.from_root ~suffix:"provenance.php" in
@@ -58,7 +58,8 @@ let test_pos line =
     ~pos_start:(line, offset, offset)
     ~pos_end:(line, offset, offset + 1)
 
-let positioned_key pos name = TSFlit_str (Pos_or_decl.of_raw_pos pos, name)
+let positioned_key pos name =
+  TShapeField.make (TSFlit_str (Pos_or_decl.of_raw_pos pos, name))
 
 let sset names =
   List.fold names ~init:TShapeSet.empty ~f:(fun acc n ->

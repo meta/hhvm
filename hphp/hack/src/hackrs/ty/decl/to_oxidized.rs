@@ -97,10 +97,10 @@ impl<R: Reason> ToOxidized for ShapeFieldType<R> {
 fn oxidize_shape_field_name<P: Pos>(
     name: TshapeFieldName,
     field_name_pos: ShapeFieldNamePos<P>,
-) -> o::typing_defs::TshapeFieldName {
+) -> o::t_shape_map::TShapeField {
     use ShapeFieldNamePos as SfnPos;
     use o::typing_defs::TshapeFieldName as O;
-    match (name, field_name_pos) {
+    let declared = match (name, field_name_pos) {
         (TshapeFieldName::TSFregexGroup(x), SfnPos::Simple(p)) => {
             O::TSFregexGroup(o::typing_defs::PosString(p.to_oxidized(), x.to_oxidized()))
         }
@@ -120,14 +120,14 @@ fn oxidize_shape_field_name<P: Pos>(
         (TshapeFieldName::TSFclassConst(_, _), SfnPos::Simple(_)) => {
             panic!("expected ShapeFieldNamePos::ClassConst")
         }
-    }
+    };
+    o::t_shape_map::TShapeField::new(declared)
 }
 
 impl<R: Reason> ToOxidized for Ty_<R> {
     type Output = o::typing_defs::Ty_;
 
     fn to_oxidized(self) -> Self::Output {
-        use o::t_shape_map::TShapeField;
         use o::t_shape_map::TShapeMap;
         use o::typing_defs;
         match self {
@@ -167,7 +167,7 @@ impl<R: Reason> ToOxidized for Ty_<R> {
                     let mut shape_fields = TShapeMap::new();
                     for (k, v) in shape_field_type_map.into_iter() {
                         let k = oxidize_shape_field_name(k, v.field_name_pos.clone());
-                        shape_fields.insert(TShapeField(k), v.to_oxidized());
+                        shape_fields.insert(k, v.to_oxidized());
                     }
                     let shape_kind = shape_kind.to_oxidized();
                     let shape_origin = typing_defs::TypeOrigin::MissingOrigin;

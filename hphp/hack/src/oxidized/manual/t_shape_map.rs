@@ -22,6 +22,13 @@ use crate::typing_defs_core::TshapeFieldName;
 #[derive(FromOcamlRep, EqModuloPos, NoPosHash, ToOcamlRep)]
 pub struct TShapeField(pub TshapeFieldName);
 
+impl TShapeField {
+    /// A symbolic key as emitted by the declaration parser.
+    pub fn new(declared: TshapeFieldName) -> Self {
+        Self(declared)
+    }
+}
+
 /// Ord implementation that ignores pos
 impl Ord for TShapeField {
     fn cmp(&self, other: &Self) -> Ordering {

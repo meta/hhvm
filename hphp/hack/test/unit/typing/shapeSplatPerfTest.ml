@@ -62,7 +62,7 @@ let field ty = { sft_optional = false; sft_ty = ty }
 
 let opt_field ty = { sft_optional = true; sft_ty = ty }
 
-let key name = TSFlit_str (Pos_or_decl.none, name)
+let key name = TShapeField.make (TSFlit_str (Pos_or_decl.none, name))
 
 let simple ?(unknown = tnothing) kvs =
   {

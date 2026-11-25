@@ -18,7 +18,7 @@ let shape ~unknown fields =
   let fields =
     List.fold fields ~init:TShapeMap.empty ~f:(fun fields (name, ty) ->
         TShapeMap.add
-          (TSFlit_str (Pos_or_decl.none, name))
+          (TShapeField.make (TSFlit_str (Pos_or_decl.none, name)))
           { sft_optional = false; sft_ty = ty }
           fields)
   in

@@ -67,6 +67,8 @@ type tshape_field_name =
 module TShapeField = struct
   type t = tshape_field_name [@@deriving hash, show { with_path = false }]
 
+  let make declared = declared
+
   let pos : t -> Pos_or_decl.t = function
     | TSFregex_group (p, _)
     | TSFlit_str (p, _) ->
@@ -80,13 +82,14 @@ module TShapeField = struct
       s
     | TSFclass_const ((_, s1), (_, s2)) -> s1 ^ "::" ^ s2
 
-  let of_ast : (Pos.t -> Pos_or_decl.t) -> Ast_defs.shape_field_name -> t =
-   fun convert_pos -> function
-    | Ast_defs.SFlit_str (p, s) -> TSFlit_str (convert_pos p, s)
-    | Ast_defs.SFclassname (p, cls) ->
-      TSFclass_const ((convert_pos p, cls), (convert_pos p, "class"))
-    | Ast_defs.SFclass_const ((pcls, cls), (pconst, const)) ->
-      TSFclass_const ((convert_pos pcls, cls), (convert_pos pconst, const))
+  let of_ast convert_pos name =
+    make
+      (match name with
+      | Ast_defs.SFlit_str (p, s) -> TSFlit_str (convert_pos p, s)
+      | Ast_defs.SFclassname (p, cls) ->
+        TSFclass_const ((convert_pos p, cls), (convert_pos p, "class"))
+      | Ast_defs.SFclass_const ((pcls, cls), (pconst, const)) ->
+        TSFclass_const ((convert_pos pcls, cls), (convert_pos pconst, const)))
 
   (* This ignores positions!
    * We include span information in tshape_field_name to improve error

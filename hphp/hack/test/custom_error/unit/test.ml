@@ -334,11 +334,11 @@ let test_patt_tysub _ =
              s_fields =
                TShapeMap.of_list
                  [
-                   ( TSFlit_str (pod_none, "c"),
+                   ( TShapeField.make (TSFlit_str (pod_none, "c")),
                      { sft_optional = false; sft_ty = mk_ty (Tdynamic None) } );
-                   ( TSFlit_str (pod_none, "a"),
+                   ( TShapeField.make (TSFlit_str (pod_none, "a")),
                      { sft_optional = false; sft_ty = mk_ty (Tdynamic None) } );
-                   ( TSFlit_str (pod_none, "b"),
+                   ( TShapeField.make (TSFlit_str (pod_none, "b")),
                      { sft_optional = false; sft_ty = mk_ty (Tdynamic None) } );
                  ];
            }))
@@ -432,11 +432,11 @@ let test_patt_tysub_or_pattern _ =
              s_fields =
                TShapeMap.of_list
                  [
-                   ( TSFlit_str (pod_none, "c"),
+                   ( TShapeField.make (TSFlit_str (pod_none, "c")),
                      { sft_optional = false; sft_ty = mk_ty (Tdynamic None) } );
-                   ( TSFlit_str (pod_none, "a"),
+                   ( TShapeField.make (TSFlit_str (pod_none, "a")),
                      { sft_optional = false; sft_ty = mk_ty (Tdynamic None) } );
-                   ( TSFlit_str (pod_none, "b"),
+                   ( TShapeField.make (TSFlit_str (pod_none, "b")),
                      { sft_optional = false; sft_ty = mk_ty (Tdynamic None) } );
                  ];
            }))

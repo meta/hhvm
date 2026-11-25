@@ -101,7 +101,7 @@ let simple_shape fields ~open_ =
              s_fields =
                List.fold fields ~init:TShapeMap.empty ~f:(fun acc (l, ty) ->
                    TShapeMap.add
-                     (TSFlit_str (Pos_or_decl.none, l))
+                     (TShapeField.make (TSFlit_str (Pos_or_decl.none, l)))
                      (field ty)
                      acc);
            }) )
@@ -115,7 +115,9 @@ let simple_shape_field name fd =
              s_origin = Missing_origin;
              s_unknown_value = MakeType.nothing r;
              s_fields =
-               TShapeMap.singleton (TSFlit_str (Pos_or_decl.none, name)) fd;
+               TShapeMap.singleton
+                 (TShapeField.make (TSFlit_str (Pos_or_decl.none, name)))
+                 fd;
            }) )
 
 let open_shape = simple_shape [] ~open_:true
@@ -126,7 +128,8 @@ let open_shape = simple_shape [] ~open_:true
    nobody wrote down. The second is a distinct path through the code and is where
    the first soundness bug in this area was found, so every check below runs over
    both. *)
-let labels = [Some (TSFlit_str (Pos_or_decl.none, "x")); None]
+let labels =
+  [Some (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x"))); None]
 
 let describe_label = function
   | None -> "the unnamed fields"
@@ -695,7 +698,7 @@ let params prefix count =
 let assignment_frontier_for_rows env sub super params =
   let live = Typing_corners.Splat_elem.Set.of_list params in
   let cache = Typing_corners.Cache.create () in
-  let label = Some (TSFlit_str (Pos_or_decl.none, "x")) in
+  let label = Some (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x"))) in
   let (_env, assignments) =
     Typing_corners.corner_assignments cache env live label r
   in
@@ -797,7 +800,7 @@ let neighbours =
                        MakeType.nothing r);
                    s_fields =
                      TShapeMap.singleton
-                       (TSFlit_str (Pos_or_decl.none, "x"))
+                       (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x")))
                        { sft_optional = true; sft_ty = MakeType.int r };
                  }) );
       ])
@@ -855,7 +858,8 @@ let all_rows =
           let fields =
             match state with
             | None -> []
-            | Some fd -> [(TSFlit_str (Pos_or_decl.none, "x"), fd)]
+            | Some fd ->
+              [(TShapeField.make (TSFlit_str (Pos_or_decl.none, "x")), fd)]
           in
           {
             s_origin = Missing_origin;
@@ -1491,7 +1495,10 @@ let multi_label_rows =
           MakeType.nothing r);
       s_fields =
         List.fold fields ~init:TShapeMap.empty ~f:(fun acc (n, fd) ->
-            TShapeMap.add (TSFlit_str (Pos_or_decl.none, n)) fd acc);
+            TShapeMap.add
+              (TShapeField.make (TSFlit_str (Pos_or_decl.none, n)))
+              fd
+              acc);
     }
   in
   List.concat_map [false; true] ~f:(fun open_ ->
@@ -1736,7 +1743,7 @@ let cyclic_bound_projection_requires_an_assignment _ =
   let t1 = tgeneric "T1" and t2 = tgeneric "T2" in
   let env = Env.add_upper_bound (dummy_env ()) "T1" (splat [t2]) in
   let env = Env.add_upper_bound env "T2" (splat [t1]) in
-  let label = Some (TSFlit_str (Pos_or_decl.none, "x")) in
+  let label = Some (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x"))) in
   let (_env, bounds) =
     Typing_corners.field_bounds
       env
@@ -1766,7 +1773,7 @@ let unsupported_cycle_is_reported_before_projection _ =
       env
       ~sub:row
       ~super:row
-      (Some (TSFlit_str (Pos_or_decl.none, "x")))
+      (Some (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x"))))
       r
       ~init:(fun env -> (env, true))
       ~conj:(fun (env, left) next ->
@@ -1798,7 +1805,7 @@ let unsupported_cycle_is_not_an_empty_assignment_set _ =
       (Typing_corners.Cache.create ())
       env
       roots
-      (Some (TSFlit_str (Pos_or_decl.none, "x")))
+      (Some (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x"))))
       r
   in
   match expect_ok result with
@@ -1819,7 +1826,7 @@ let inconsistent_exact_bounds_are_empty _ =
       (Typing_corners.Cache.create ())
       env
       (Typing_corners.Splat_elem.Set.singleton key)
-      (Some (TSFlit_str (Pos_or_decl.none, "x")))
+      (Some (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x"))))
       r
   in
   match expect_ok result with
@@ -1840,7 +1847,7 @@ let proven_equal_parameters_share_each_assignment _ =
       (Typing_corners.Cache.create ())
       env
       (Typing_corners.Splat_elem.Set.singleton t1)
-      (Some (TSFlit_str (Pos_or_decl.none, "x")))
+      (Some (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x"))))
       r
   in
   let assignments = result |> expect_ok |> expect_computed in
@@ -1865,7 +1872,9 @@ let unsupported_cycles_widen_reads_and_preserve_right_masking _ =
   | Tshape (Shape_simple { s_fields; s_unknown_value; _ }) ->
     let x =
       Option.value_exn
-        (TShapeMap.find_opt (TSFlit_str (Pos_or_decl.none, "x")) s_fields)
+        (TShapeMap.find_opt
+           (TShapeField.make (TSFlit_str (Pos_or_decl.none, "x")))
+           s_fields)
     in
     assert_bool "the explicit right field stays required" (not x.sft_optional);
     assert_bool

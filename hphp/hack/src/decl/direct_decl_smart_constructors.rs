@@ -2310,7 +2310,7 @@ impl<'o, 't> DirectDeclSmartConstructors<'o, 't> {
     }
 
     fn make_t_shape_field_name(&mut self, ShapeField(field): ShapeField) -> TShapeField {
-        TShapeField(match field {
+        TShapeField::new(match field {
             ShapeFieldName::SFlitStr((pos, x)) => TshapeFieldName::TSFlitStr(PosByteString(pos, x)),
             ShapeFieldName::SFclassname(id) => {
                 let pos = id.0.clone();

@@ -42,7 +42,9 @@ let solve ~as_data (env : Typing_env_types.env) inf_env dynamic_locals =
             in
             match index_expr with
             | Aast.String s ->
-              let field_name = TSFlit_str (Pos_or_decl.none, s) in
+              let field_name =
+                TShapeField.make (TSFlit_str (Pos_or_decl.none, s))
+              in
               let sft_ty =
                 match get_node val_ty with
                 | Tunion tyl ->
@@ -84,7 +86,9 @@ let solve ~as_data (env : Typing_env_types.env) inf_env dynamic_locals =
             in
             match index_expr with
             | Aast.String s ->
-              let field_name = TSFlit_str (Pos_or_decl.none, s) in
+              let field_name =
+                TShapeField.make (TSFlit_str (Pos_or_decl.none, s))
+              in
               Some
                 (mk
                    ( r,

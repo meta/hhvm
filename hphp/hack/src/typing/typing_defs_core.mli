@@ -75,6 +75,8 @@ type tshape_field_name =
 module TShapeField : sig
   type t = tshape_field_name [@@deriving show]
 
+  val make : tshape_field_name -> t
+
   val pos : t -> Pos_or_decl.t
 
   val name : t -> string

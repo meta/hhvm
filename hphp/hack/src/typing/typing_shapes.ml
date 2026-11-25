@@ -188,7 +188,7 @@ let tshape_field_name_with_ty_err env (_, pos, field) =
   let p = Pos_or_decl.of_raw_pos pos in
   let map_pos = Tuple.T2.map_fst ~f:Pos_or_decl.of_raw_pos in
   let class_const_field sid y =
-    let field_name = TSFclass_const (sid, map_pos y) in
+    let field_name = TShapeField.make (TSFclass_const (sid, map_pos y)) in
     (match Env.get_class env (snd sid) with
     | Decl_entry.Found cls ->
       (match Env.get_const env cls (snd y) with
@@ -204,8 +204,8 @@ let tshape_field_name_with_ty_err env (_, pos, field) =
     Ok field_name
   in
   match field with
-  | Aast.Int name -> Ok (TSFregex_group (p, name))
-  | Aast.String name -> Ok (TSFlit_str (p, name))
+  | Aast.Int name -> Ok (TShapeField.make (TSFregex_group (p, name)))
+  | Aast.String name -> Ok (TShapeField.make (TSFlit_str (p, name)))
   | Aast.Class_const ((_, _, ((Aast.CI _ | Aast.CIself) as cid)), (_, "class"))
     ->
     Error
@@ -215,13 +215,15 @@ let tshape_field_name_with_ty_err env (_, pos, field) =
              { pos; cls_name = Typing_class_pointers.string_of_class_id_ cid })
   | Aast.Class_const ((_, _, Aast.CI x), y) -> class_const_field (map_pos x) y
   | Aast.Nameof (_, _, Aast.CI x) ->
-    Ok (TSFclass_const (map_pos x, (p, "class")))
+    Ok (TShapeField.make (TSFclass_const (map_pos x, (p, "class"))))
   | Aast.Class_const ((_, _, Aast.CIself), y) ->
     let self_id = resolve_self env in
     Result.bind ~f:(fun sid -> class_const_field sid y) self_id
   | Aast.Nameof (_, _, Aast.CIself) ->
     let self_id = resolve_self env in
-    Result.map ~f:(fun sid -> TSFclass_const (sid, (p, "class"))) self_id
+    Result.map
+      ~f:(fun sid -> TShapeField.make (TSFclass_const (sid, (p, "class"))))
+      self_id
   | _ ->
     let err =
       Typing_error.Primary.Shape.(

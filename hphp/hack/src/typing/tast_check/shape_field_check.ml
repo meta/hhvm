@@ -55,7 +55,7 @@ let shapes_key_exists env shape field_name =
 
 let trivial_shapes_key_exists_check pos1 env shape field_name =
   let (status, optional) =
-    shapes_key_exists env shape (TSFlit_str field_name)
+    shapes_key_exists env shape (TShapeField.make (TSFlit_str field_name))
   in
   (* Shapes::keyExists only supports non optional shapes, so an error
    * would already have been raised.
@@ -83,7 +83,7 @@ let trivial_shapes_key_exists_check pos1 env shape field_name =
 let shapes_method_access_with_non_existent_field
     pos1 env method_name shape field_name =
   let (status, optional_shape) =
-    shapes_key_exists env shape (TSFlit_str field_name)
+    shapes_key_exists env shape (TShapeField.make (TSFlit_str field_name))
   in
   match (status, optional_shape) with
   | (`DoesExist _, false) ->
@@ -108,7 +108,7 @@ let shapes_method_access_with_non_existent_field
 
 let shape_access_with_non_existent_field pos1 env shape field_name =
   let (status, optional) =
-    shapes_key_exists env shape (TSFlit_str field_name)
+    shapes_key_exists env shape (TShapeField.make (TSFlit_str field_name))
   in
   match (status, optional) with
   | (`DoesNotExist (decl_pos, reason), _) ->

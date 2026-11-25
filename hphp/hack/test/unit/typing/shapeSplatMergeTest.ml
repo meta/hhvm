@@ -62,7 +62,7 @@ let tdynamic = MakeType.dynamic r
 
 let field ?(optional = false) ty = { sft_optional = optional; sft_ty = ty }
 
-let key name = TSFlit_str (Pos_or_decl.none, name)
+let key name = TShapeField.make (TSFlit_str (Pos_or_decl.none, name))
 
 let mk_fields kvs =
   List.fold kvs ~init:TShapeMap.empty ~f:(fun acc (k, v) ->

@@ -38,7 +38,7 @@ let shape ~unknown_fields_type fields =
       ~init:TShapeMap.empty
       ~f:(fun fields (name, optional, ty) ->
         TShapeMap.add
-          (TSFlit_str (Pos_or_decl.none, name))
+          (TShapeField.make (TSFlit_str (Pos_or_decl.none, name)))
           { sft_optional = optional; sft_ty = ty }
           fields)
   in

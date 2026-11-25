@@ -235,7 +235,7 @@ let tint = MakeType.int r
 
 let tbool = MakeType.bool r
 
-let key name = TSFlit_str (Pos_or_decl.none, name)
+let key name = TShapeField.make (TSFlit_str (Pos_or_decl.none, name))
 
 let rec hack_of_ty : ty -> locl_ty = function
   | TNothing -> MakeType.nothing r

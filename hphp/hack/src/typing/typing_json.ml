@@ -609,11 +609,10 @@ let to_locl_ty
               * locl_phase Typing_defs.shape_field_type,
               deserialization_error )
             result =
-          get_val "name" (field_json, keytrace) >>= fun (name, name_keytrace) ->
           (* We don't need position information for shape field names. They're
            * only used for error messages and the like. *)
           let dummy_pos = Pos_or_decl.none in
-          begin
+          let field_name_of_json name ~keytrace =
             match name with
             | `Int n ->
               Ok (Typing_defs.TSFregex_group (dummy_pos, string_of_int n))
@@ -628,9 +627,11 @@ let to_locl_ty
             | _ ->
               deserialization_error
                 ~message:"Unexpected format for shape field name"
-                ~keytrace:name_keytrace
-          end
-          >>= fun shape_field_name ->
+                ~keytrace
+          in
+          get_val "name" (field_json, keytrace) >>= fun (name, name_keytrace) ->
+          field_name_of_json name ~keytrace:name_keytrace >>= fun declared ->
+          let shape_field_name = TShapeField.make declared in
           (* Optional field may be absent for shape-like arrays. *)
           begin
             match get_val "optional" (field_json, keytrace) with
