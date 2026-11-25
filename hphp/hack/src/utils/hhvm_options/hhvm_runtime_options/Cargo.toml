@@ -17,7 +17,7 @@ colored = "3.1.1"
 cxx = "1.0.194"
 hdf = { path = "../../hdf" }
 log = { version = "0.4.35", features = ["kv_unstable", "kv_unstable_std"] }
-md-5 = "0.10"
+md-5 = "0.10.6"
 regex = "1.13.1"
 
 [build-dependencies]

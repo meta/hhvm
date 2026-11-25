@@ -21,7 +21,7 @@ hh24_types = { path = "../../../utils/hh24_types" }
 intern = { version = "0.1.0", path = "../../../utils/intern" }
 lru = { version = "0.19.0", default-features = false }
 lz4 = "1.28.1"
-md-5 = "0.10"
+md-5 = "0.10.6"
 measure = { path = "../../../utils/rust/measure" }
 ocaml_blob = { path = "../ocaml_blob" }
 ocamlrep = { version = "0.1.0", git = "https://github.com/facebook/ocamlrep/", branch = "main" }

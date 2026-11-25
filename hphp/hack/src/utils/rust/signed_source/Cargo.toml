@@ -13,6 +13,6 @@ path = "../signed_source.rs"
 [dependencies]
 bstr = { version = "1.13.1", features = ["serde", "std", "unicode"] }
 hex = { version = "0.4.3", features = ["alloc"] }
-md-5 = "0.10"
+md-5 = "0.10.6"
 regex = "1.13.1"
 thiserror = "2.0.21"
