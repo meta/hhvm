@@ -652,7 +652,10 @@ module ErrorsRead = struct
         Error (OKilled finale_data, "Errors-file is from defunct PID")
       else
         Ok { pid; clock; timestamp }
-    | _ -> failwith "impossible message combination"
+    | _ ->
+      Error
+        ( ORead_error Malformed,
+          "Errors-file does not start with VersionHeader and Header" )
 
   type read_result =
     | RItem of errors_file_item

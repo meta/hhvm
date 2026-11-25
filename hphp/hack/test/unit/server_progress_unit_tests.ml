@@ -444,18 +444,21 @@ let test_start_read_killed () : bool Lwt.t =
         let errors_file_path = Server_files.errors_file_path root in
         Sys_utils.write_file ~file:errors_file_path "a";
         let fd = Unix.openfile errors_file_path [Unix.O_RDONLY] 0 in
-        (* files are created atomically; there should be no way to read
-           an empty file, not even if the creating process got killed. *)
-        let is_ok =
-          try
-            let _ = Server_progress.ErrorsRead.openfile fd in
-            true
-          with
-          | _ -> false
-        in
+        (* files are created atomically, but a host crash can still leave
+           an incomplete file behind. *)
+        begin
+          match Server_progress.ErrorsRead.openfile fd with
+          | Error (Server_progress.(ErrorsRead.ORead_error Malformed), _) -> ()
+          | Ok _ -> failwith "Expected a malformed failure, not success"
+          | Error (e, msg) ->
+            failwith
+              ("Expected ORead_error Malformed, not ("
+              ^ Server_progress.ErrorsRead.show_open_error e
+              ^ ", "
+              ^ msg
+              ^ ")")
+        end;
         Unix.close fd;
-        if is_ok then
-          failwith "we shouldn't be able to openfile on an impossible file";
         Lwt.return_unit)
   in
   Lwt.return_true
