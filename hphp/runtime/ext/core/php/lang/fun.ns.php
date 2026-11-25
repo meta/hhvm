@@ -114,7 +114,7 @@ namespace HH {
  *
  * @guide /hack/callables/special-functions
  */
-function meth_caller(classname $class, string $method)[] {
+function meth_caller(class_or_classname<mixed> $class, string $method)[] {
   // TODO(T168044199) Persist class pointer through MethCallerHelper
   return new \__SystemLib\MethCallerHelper(\HH\class_to_classname($class), $method);
 }
