@@ -293,6 +293,7 @@ struct TClientBufferedStream : SystemLib::ClassLoader<"TClientBufferedStream"> {
     }
     outstanding_ = bufferOptions_.chunkSize;
     payloadDataSize_ = 0;
+    readyBatchReturned_ = false;
   }
 
   void endStream() {
@@ -304,6 +305,14 @@ struct TClientBufferedStream : SystemLib::ClassLoader<"TClientBufferedStream"> {
       return true;
     }
     return use16KBBufferingPolicy_ && (payloadDataSize_ >= kRequestCreditPayloadSize);
+  }
+
+  void requestMoreIfNeeded() {
+    if (shouldRequestMore()) {
+      streamBridge_->requestN(bufferOptions_.chunkSize - outstanding_);
+      outstanding_ = bufferOptions_.chunkSize;
+      payloadDataSize_ = 0;
+    }
   }
 
   BufferAndErrorPair clientQueueToVec() {
@@ -371,6 +380,7 @@ struct TClientBufferedStream : SystemLib::ClassLoader<"TClientBufferedStream"> {
   int32_t outstanding_ = 0;
   size_t payloadDataSize_ = 0;
   bool use16KBBufferingPolicy_ = true;
+  bool readyBatchReturned_ = false;
   static constexpr size_t kRequestCreditPayloadSize = 16384;
 };
 
@@ -478,6 +488,37 @@ inline OptString ioBufToString(const folly::IOBuf& ioBuf) {
   return OptString::attach(resultStringData);
 }
 
+inline Array thriftStreamResponseToArray(
+    std::vector<std::unique_ptr<folly::IOBuf>>& buffer,
+    thrift::TClientStreamError& error,
+    bool streamEnded) {
+  OptString errorStr = null_string;
+  if (error.errorMsg_) {
+    if (error.isEncoded_) {
+      // Encoded stream exceptions need to be deserialized by generated code.
+      // Adding it at the end of the buffer vec so that it will be decoded
+      // along with other payloads and will throw exception after returning
+      // all payloads to client.
+      buffer.push_back(std::move(error.errorMsg_));
+    } else {
+      errorStr = ioBufToString(*error.errorMsg_);
+    }
+  }
+
+  Array bufferVec;
+  // Header-only batches can be empty while the stream is still open.
+  if (buffer.empty() && streamEnded) {
+    bufferVec = null_array;
+  } else {
+    VecInit resArr(buffer.size());
+    for (auto& ioBuf : buffer) {
+      resArr.append(ioBufToString(*ioBuf));
+    }
+    bufferVec = resArr.toArray();
+  }
+  return make_vec_array(bufferVec, errorStr);
+}
+
 struct Thrift2StreamEvent final : AsioExternalThreadEvent {
   Thrift2StreamEvent() {}
 
@@ -507,32 +548,9 @@ struct Thrift2StreamEvent final : AsioExternalThreadEvent {
               ));
     }
 
-    OptString errorStr = null_string;
-    if (error_.errorMsg_) {
-      if (error_.isEncoded_) {
-        // Encoded stream exceptions need to be deserialized by generated code.
-        // Adding it at the end of the buffer vec so that it will be decoded
-        // along with other payloads and will throw exception after returning
-        // all payloads to client.
-        buffer_.push_back(std::move(error_.errorMsg_));
-      } else {
-        errorStr = ioBufToString(*error_.errorMsg_);
-      }
-    }
-
-    Array bufferVec;
-    // Header-only batches can be empty while the stream is still open.
-    if (buffer_.empty() && streamEnded_) {
-      bufferVec = null_array;
-    } else {
-      VecInit resArr(buffer_.size());
-      for (auto& ioBuf : buffer_) {
-        resArr.append(ioBufToString(*ioBuf));
-      }
-      bufferVec = resArr.toArray();
-    }
     tvCopy(
-        make_array_like_tv(make_vec_array(bufferVec, errorStr).detach()),
+        make_array_like_tv(
+            thriftStreamResponseToArray(buffer_, error_, streamEnded_).detach()),
         result);
   }
 

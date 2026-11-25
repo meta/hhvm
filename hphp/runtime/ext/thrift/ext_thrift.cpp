@@ -29,6 +29,14 @@ namespace HPHP::thrift {
 
 const int64_t k_THRIFT_MARK_LEGACY_ARRAYS = 1LL << 0;
 
+namespace {
+bool canInlineThriftBufferedRead(AsioSession* session) {
+  return !session->hasOnExternalThreadEventCreate() &&
+         !session->hasOnExternalThreadEventSuccess() &&
+         !session->hasOnExternalThreadEventFail();
+}
+}
+
 Object HHVM_METHOD(
     TClientSink,
     genCreditsOrFinalResponse) {
@@ -40,9 +48,7 @@ Object HHVM_METHOD(
   auto const session = AsioSession::Get();
   if (!std::exchange(data->readyBatchReturned_, false) &&
       Cfg::Eval::EnableThriftSinkBufferedReadFastPath &&
-      !session->hasOnExternalThreadEventCreate() &&
-      !session->hasOnExternalThreadEventSuccess() &&
-      !session->hasOnExternalThreadEventFail()) {
+      canInlineThriftBufferedRead(session)) {
     auto messages = data->sinkBridge_->getMessages();
     if (!messages.empty()) {
       data->readyBatchReturned_ = true;
@@ -172,17 +178,24 @@ Object HHVM_METHOD(TClientBufferedStream, genNext) {
   if (!data->streamBridge_) {
     return null_object;
   }
+  if (!std::exchange(data->readyBatchReturned_, false) &&
+      Cfg::Eval::EnableThriftStreamBufferedReadFastPath &&
+      canInlineThriftBufferedRead(AsioSession::Get()) &&
+      !data->queue_.empty()) {
+    data->requestMoreIfNeeded();
+    data->readyBatchReturned_ = true;
+    auto bufferAndError = data->clientQueueToVec();
+    return Object::attach(c_StaticWaitHandle::CreateSucceeded(
+      make_array_like_tv(thriftStreamResponseToArray(
+        bufferAndError.first, bufferAndError.second, !data->streamBridge_
+      ).detach())));
+  }
   auto event = new Thrift2StreamEvent();
 
   // Make sure event is abandoned, in case of an error
   auto guard = folly::makeGuard([=] { event->abandon(); });
 
-  if (data->shouldRequestMore()) {
-    data->streamBridge_->requestN(
-        data->bufferOptions_.chunkSize - data->outstanding_);
-    data->outstanding_ = data->bufferOptions_.chunkSize;
-    data->payloadDataSize_ = 0;
-  }
+  data->requestMoreIfNeeded();
 
   if (!data->queue_.empty()) {
     auto bufferAndError = data->clientQueueToVec();
