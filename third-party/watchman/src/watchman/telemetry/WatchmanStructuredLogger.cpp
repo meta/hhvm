@@ -7,6 +7,8 @@
 
 #include "watchman/telemetry/WatchmanStructuredLogger.h"
 
+#include <folly/Indestructible.h>
+
 #include "eden/common/telemetry/StructuredLoggerFactory.h"
 #include "watchman/WatchmanConfig.h"
 #include "watchman/telemetry/WatchmanStats.h"
@@ -128,8 +130,7 @@ std::shared_ptr<StructuredLogger> makeWatchmanXplatStructuredLogger(
 #endif // WATCHMAN_FACEBOOK_INTERNAL
 
 std::shared_ptr<StructuredLogger> getLogger() {
-  static std::shared_ptr<StructuredLogger> logger =
-      []() -> std::shared_ptr<StructuredLogger> {
+  auto makeLogger = []() -> std::shared_ptr<StructuredLogger> {
     auto sessionInfo = facebook::eden::makeSessionInfo(
         UserInfo::lookup(), facebook::eden::getHostname(), PACKAGE_VERSION);
 #ifdef WATCHMAN_FACEBOOK_INTERNAL
@@ -147,8 +148,11 @@ std::shared_ptr<StructuredLogger> getLogger() {
             cfg_get_string("scribe-category", ""),
             std::move(sessionInfo),
             getWatchmanStats());
-  }();
-  return logger;
+  };
+  // Never destroyed: detached threads can still log events during exit.
+  static folly::Indestructible<std::shared_ptr<StructuredLogger>> logger{
+      makeLogger()};
+  return *logger;
 }
 
 DynamicEvent WatchmanStructuredLogger::populateDefaultFields(

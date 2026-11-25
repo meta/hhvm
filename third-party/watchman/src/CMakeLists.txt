@@ -769,4 +769,6 @@ t_test(pendingcollection watchman/test/PendingCollectionTest.cpp)
 t_test(result watchman/test/ResultTest.cpp)
 t_test(ringbuffer watchman/test/RingBufferTest.cpp)
 t_test(string watchman/test/StringTest.cpp)
+# Linking this test needs the targets graph to be cleaned up.
+#t_test(structured_logger_exit watchman/test/StructuredLoggerExitTest.cpp)
 t_test(wildmatch watchman/test/WildmatchTest.cpp)
