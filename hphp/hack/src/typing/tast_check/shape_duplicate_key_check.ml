@@ -16,6 +16,8 @@ module Runtime_value_map = Stdlib.Map.Make (struct
   let compare = Const_value.compare_concrete_value
 end)
 
+module Shape_key = Typing_shape_key.Make (Tast_env)
+
 let symbolic_name_pos symbolic_name =
   match symbolic_name with
   | Ast_defs.SFlit_str (pos, _)
@@ -31,22 +33,13 @@ let symbolic_name_span = function
     Pos.btw class_pos member_pos
 
 let resolve_runtime_value env = function
-  | Ast_defs.SFlit_str (_, value) -> Some (Const_value.SKVString value)
-  | Ast_defs.SFclassname (_, class_name) ->
-    let (_ : Folded_class.t Decl_entry.t) = Tast_env.get_class env class_name in
-    Some
-      (Const_value.SKVString (Hhbc_string_utils.mangle_class_name class_name))
-  | Ast_defs.SFclass_const ((_, class_name), (_, member_name)) ->
-    (match Tast_env.get_class env class_name with
-    | Decl_entry.Found cls -> Tast_env.get_const env cls member_name
-    | Decl_entry.DoesNotExist
-    | Decl_entry.NotYetAvailable ->
-      None)
-    |> Option.bind ~f:(fun const ->
-           match const.cc_abstract with
-           | CCAbstract _ -> None
-           | CCConcrete ->
-             Const_value.concrete_value ~member_name const.cc_value)
+  (* The parser keeps [C::class] in the AST after reporting an error.
+     [TShapeField.of_ast] would give it the same key as [nameof C]. *)
+  | Ast_defs.SFclass_const (_, (_, "class")) -> None
+  | symbolic_name ->
+    Shape_key.runtime_value
+      env
+      (TShapeField.of_ast Pos_or_decl.of_raw_pos symbolic_name)
 
 let report_duplicate_symbolic_name
     custom_err_config ~symbolic_name ~first_symbolic_name =

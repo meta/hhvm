@@ -1,5 +1,6 @@
 (library
  (name typing_env)
+ (modules deps typing_env)
  (libraries
   decl_provider
   provider_context
@@ -9,3 +10,15 @@
   yojson)
  (preprocess
   (pps ppx_deriving.std)))
+
+(library
+ (name typing_shape_key)
+ (wrapped false)
+ (modules typing_shape_key)
+ (libraries
+  decl_provider
+  hhbc_string_utils
+  typechecker_options
+  typing_defs
+  typing_env
+  typing_env_types))

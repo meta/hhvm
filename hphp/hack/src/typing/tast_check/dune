@@ -7,13 +7,13 @@
   ast
   core_kernel
   analyze_list_logger_types
-  hhbc_string_utils
   nast
   remove_dead_unsafe_casts
   simplihack
   tast_env
   typing_deps
   typing_pessimisation_deps
+  typing_shape_key
   utils_core
   yojson)
  (preprocess
