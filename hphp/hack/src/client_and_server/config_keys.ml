@@ -384,9 +384,6 @@ module Hhconf = struct
 
   let experiments_config_update = hhconf_key "experiments_config_update"
 
-  let experiments_config_use_client_cert =
-    hhconf_key "experiments_config_use_client_cert"
-
   let log_categories = hhconf_key "log_categories"
 
   let log_inference_constraints = hhconf_key "log_inference_constraints"

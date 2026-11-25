@@ -345,8 +345,6 @@ module Hhconf : sig
 
   val experiments_config_update : string
 
-  val experiments_config_use_client_cert : string
-
   val log_categories : string
 
   val log_inference_constraints : string

@@ -295,20 +295,7 @@ let apply_overrides
       in
       let meta =
         if update then
-          let use_client_cert =
-            bool_
-              Config_keys.Hhconf.experiments_config_use_client_cert
-              ~default:false
-              config
-          in
-          match
-            Experiments_config_file.update
-              ~silent
-              ~file
-              ~source
-              ~ttl
-              ~use_client_cert
-          with
+          match Experiments_config_file.update ~silent ~file ~source ~ttl with
           | Ok meta -> meta
           | Error message -> message
         else
