@@ -1,0 +1,12 @@
+zz_named_req_z
+  INSERT zz_named_req_z=${1:\$zz_named_req_z}
+  int (required named parameter)
+zz_named_req_a
+  INSERT zz_named_req_a=${1:\$zz_named_req_a}
+  float (required named parameter)
+zz_named_opt_z
+  INSERT zz_named_opt_z=${1:\$zz_named_opt_z}
+  string (optional named parameter)
+zz_named_opt_a
+  INSERT zz_named_opt_a=${1:\$zz_named_opt_a}
+  bool (optional named parameter)

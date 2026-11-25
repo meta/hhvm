@@ -2128,6 +2128,9 @@ let visitor
           autocomplete_enum_value_in_call env ft args
         | _ -> ()
       end
+      | (_, _, Aast.New (_, _, args, _, ctor_ty)) ->
+        Option.iter (expand_fun env ctor_ty) ~f:(fun ft ->
+            autocomplete_named_argument_in_call env ft args)
       | (_, p, Aast.EnumClassLabel (opt_cname, n)) when is_auto_complete n ->
         autocomplete_enum_class_label env opt_cname (p, n) None
       | (_, _, Aast.Efun { Aast.ef_fun = f; _ })
