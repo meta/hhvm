@@ -231,6 +231,11 @@ The format can be found in hphp/tools/configs/generate_configs.rs
   Query strings are ignored. No prefix matching or URL decoding.
 
 - bool Server.EnableSSL = false, UNKNOWN
+- bool Server.SSLStrict = false, UNKNOWN
+
+  Fail HTTPS initialization when a configured certificate, key, or CA cannot
+  be loaded.
+
 - int Server.SSLPort = 443, UNKNOWN
 - int Server.SSLPortFd = -1, UNKNOWN, nobind
 - std::string Server.SSLCertificateFile = "", UNKNOWN

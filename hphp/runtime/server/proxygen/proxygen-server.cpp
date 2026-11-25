@@ -797,7 +797,7 @@ bool ProxygenServer::enableSSL(int port) {
   address.setPort(port);
 
   m_httpsConfig->bindAddress = address;
-  m_httpsConfig->strictSSL = false;
+  m_httpsConfig->strictSSL = Cfg::Server::SSLStrict;
 
   m_httpsConfig->sslContextConfigs.emplace_back(
       createContextConfig({
