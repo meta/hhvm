@@ -33,9 +33,9 @@ test `integration/cppclient.cpp` also in the Watchman source.
 The C++ client library and its API make heavy use of the Folly library and as
 such familiarity with this is highly recommended. Specifically, the client
 library makes extensive use of
-[Folly's async features](https://github.com/facebook/folly/blob/master/folly/io/async/README.md)
+[Folly's async features](https://github.com/meta/folly/blob/main/folly/io/async/README.md)
 to provide high-performance asynchronous I/O, and
-[Folly's dynamics](https://github.com/facebook/folly/blob/master/folly/docs/Dynamic.md)
+[Folly's dynamics](https://github.com/meta/folly/blob/main/folly/docs/Dynamic.md)
 to avoid needing to construct/process raw JSON in C++.
 
 ## Using the C++ client in your application's build

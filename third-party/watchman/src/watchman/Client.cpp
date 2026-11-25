@@ -34,7 +34,7 @@ constexpr size_t kResponseLogLimit = 0;
 folly::Synchronized<std::unordered_set<UserClient*>> clients;
 
 // TODO: If used in a hot loop, EdenFS has a faster implementation.
-// https://github.com/facebookexperimental/eden/blob/c745d644d969dae1e4c0d184c19320fac7c27ae5/eden/fs/utils/IDGen.h
+// https://github.com/meta/sapling/blob/c745d644d969dae1e4c0d184c19320fac7c27ae5/eden/fs/utils/IDGen.h
 std::atomic<uint64_t> id_generator{1};
 } // namespace
 
