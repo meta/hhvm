@@ -26,6 +26,7 @@
 #include <filesystem>
 
 #include <fmt/format.h>
+#include <folly/CppAttributes.h>
 #include <folly/Random.h>
 #include <folly/String.h>
 #include <folly/portability/SysMman.h>
@@ -5576,28 +5577,14 @@ static ALWAYS_INLINE bool interpCollectCoverage() {
 // This path is only compiled when the toolchain guarantees a tail call. It
 // works on any architecture the compiler targets (notably x86-64 and arm64).
 
-#if defined(__has_cpp_attribute)
-#  if __has_cpp_attribute(clang::musttail)
-#    define HHVM_MUSTTAIL [[clang::musttail]]
-#    define HHVM_HAS_MUSTTAIL 1
-#  elif __has_cpp_attribute(gnu::musttail)
-#    define HHVM_MUSTTAIL [[gnu::musttail]]
-#    define HHVM_HAS_MUSTTAIL 1
-#  endif
-#endif
-#ifndef HHVM_HAS_MUSTTAIL
+#if __has_cpp_attribute(clang::musttail) || \
+    __has_cpp_attribute(gnu::musttail) || __has_cpp_attribute(msvc::musttail)
+#  define HHVM_HAS_MUSTTAIL 1
+#else
 #  define HHVM_HAS_MUSTTAIL 0
-#  define HHVM_MUSTTAIL
 #endif
 
-#if defined(__has_attribute)
-#  if __has_attribute(preserve_none)
-#    define HHVM_TAIL_CALL_CC __attribute__((preserve_none))
-#  endif
-#endif
-#ifndef HHVM_TAIL_CALL_CC
-#  define HHVM_TAIL_CALL_CC
-#endif
+#define HHVM_TAIL_CALL_CC [[FOLLY_ATTR_CLANG_PRESERVE_NONE]]
 
 #if HHVM_HAS_MUSTTAIL
 
@@ -5610,8 +5597,8 @@ enum class TCDispatchMode : uint8_t {
 };
 
 struct TCDispatchTable;
-using TCDispatchFn =
-  JitResumeAddr (HHVM_TAIL_CALL_CC *)(PC, const TCDispatchTable*);
+using TCDispatchFn HHVM_TAIL_CALL_CC =
+  JitResumeAddr (*)(PC, const TCDispatchTable*);
 struct TCDispatchTable {
   TCDispatchFn entries[Op_count];
 };
@@ -5711,7 +5698,7 @@ tcDispatchPost(PC pc, JitResumeAddr retAddr) {
       table = tcDispatchTable(interpCollectCoverage());                 \
     }                                                                   \
     auto const next = decode_op(pc);                                    \
-    HHVM_MUSTTAIL return table->entries[size_t(next)](                  \
+    FOLLY_ATTR_MUSTTAIL return table->entries[size_t(next)](                  \
       pc, table);                                                       \
   }                                                                     \
   template<TCDispatchMode mode>                                         \
@@ -5719,7 +5706,7 @@ tcDispatchPost(PC pc, JitResumeAddr retAddr) {
   tcDispatchInstrumented_##name(                                       \
       PC pc, const TCDispatchTable* table) {                            \
     tcDispatchInstrument<mode>();                                       \
-    HHVM_MUSTTAIL return tcDispatchBody_##name(pc, table);              \
+    FOLLY_ATTR_MUSTTAIL return tcDispatchBody_##name(pc, table);              \
   }
 OPCODES
 #undef O
