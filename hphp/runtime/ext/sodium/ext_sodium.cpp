@@ -2338,6 +2338,12 @@ struct SodiumExtension final : Extension {
                 crypto_generichash_KEYBYTES_MIN);
     HHVM_RC_INT(SODIUM_CRYPTO_GENERICHASH_KEYBYTES_MAX,
                 crypto_generichash_KEYBYTES_MAX);
+    HHVM_RC_INT(SODIUM_CRYPTO_GENERICHASH_BYTES,
+                crypto_generichash_BYTES);
+    HHVM_RC_INT(SODIUM_CRYPTO_GENERICHASH_BYTES_MIN,
+                crypto_generichash_BYTES_MIN);
+    HHVM_RC_INT(SODIUM_CRYPTO_GENERICHASH_BYTES_MAX,
+                crypto_generichash_BYTES_MAX);
     HHVM_FE(sodium_crypto_generichash);
     HHVM_FE(sodium_crypto_generichash_init);
     HHVM_FE(sodium_crypto_generichash_update);
