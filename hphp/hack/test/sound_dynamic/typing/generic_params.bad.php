@@ -1,6 +1,5 @@
 <?hh
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 class Box<<<__RequireDynamic>> T> {
@@ -15,9 +14,9 @@ class SimpleBox<<<__RequireDynamic>> T> {
 }
 
 function testit():void {
-  new Box<int>(3) upcast dynamic;
-  new SimpleBox<string>("a") upcast dynamic;
-  new KeyBox<int>(3) upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new Box<int>(3));
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new SimpleBox<string>("a"));
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new KeyBox<int>(3));
 }
 
 <<__SupportDynamicType>>

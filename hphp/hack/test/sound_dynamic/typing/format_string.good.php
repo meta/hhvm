@@ -1,7 +1,6 @@
 <?hh
 // (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
 
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 function getStrings():~vec<string> {
@@ -20,7 +19,7 @@ function getFloats():~vec<float> {
 
 <<__SupportDynamicType>>
 function getDyn():dynamic {
-  return 2.4 upcast dynamic;
+  return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(2.4);
 }
 
 <<__SupportDynamicType>>

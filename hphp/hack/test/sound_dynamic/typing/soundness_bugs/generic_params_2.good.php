@@ -1,6 +1,5 @@
 <?hh
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 class Box<<<__RequireDynamic>> T> {
@@ -8,7 +7,7 @@ class Box<<<__RequireDynamic>> T> {
   public function get() : T { return $this->x; }
   public function set(T $x) : void { $this->x = $x; }
   public function call_set() : void {
-    $this->set("1" upcast dynamic);
+    $this->set(\HH\FIXME\UNSAFE_CAST<string, dynamic>("1"));
   }
 }
 

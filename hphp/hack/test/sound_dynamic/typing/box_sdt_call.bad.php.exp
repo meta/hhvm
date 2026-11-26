@@ -2,28 +2,28 @@ error: Typing[4426] Method  `__construct` in class `ROBox` is not dynamically ca
 -> Cannot write to property `x` through dynamic type because private property in `ROBox` does not have an enforceable type [1]
 -> Property `x` has type `T` [2]
 
-box_sdt_call.bad.php:14:41
-12 | <<__SupportDynamicType>>
-13 | class ROBox<T> {
-14 |   public function __construct(private T $x) {}
+box_sdt_call.bad.php:13:41
+11 | <<__SupportDynamicType>>
+12 | class ROBox<T> {
+13 |   public function __construct(private T $x) {}
    |                                       ^ [2]
    |                                         ^^ [1]
-15 |   public function get() : T { return $this->x; }
-16 | }
+14 |   public function get() : T { return $this->x; }
+15 | }
 
 error: Typing[4110] Typing error [1]
 -> Expected `dynamic` [2]
 -> Type `Box<int>` is not a subtype of `dynamic` under dynamic-aware subtyping [2]
 
-box_sdt_call.bad.php:27:5
-23 | <<__EntryPoint>>
-24 | function main() : void {
-25 |   $v1 = new Box<int>(1);
+box_sdt_call.bad.php:26:5
+22 | <<__EntryPoint>>
+23 | function main() : void {
+24 |   $v1 = new Box<int>(1);
    |             ^^^ [2]
-26 |   $v2 = new ROBox<string>("abcd") upcast dynamic;
-27 |   f($v1, $v2);
+25 |   $v2 = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new ROBox<string>("abcd"));
+26 |   f($v1, $v2);
    |     ^^^ [1]
-28 |   print $v1->get();
-29 | }
+27 |   print $v1->get();
+28 | }
 
 2 errors found

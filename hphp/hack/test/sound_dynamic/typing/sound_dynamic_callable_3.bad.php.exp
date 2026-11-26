@@ -1,17 +1,1 @@
-error: Typing[4110] Method  `foo` in class `C` is not dynamically callable. [1]
--> Typing error [1]
--> Expected `vec<int>` [2]
--> But got `dynamic` because method must be callable in a dynamic context [3]
-
-sound_dynamic_callable_3.bad.php:8:5
- 5 | class C {
- 6 |   <<__SupportDynamicType>>
- 7 |   public function foo(vec<int> $x):int {
-   |                                ^^ [3]
- 8 |     $x upcast vec<int>;
-   |     ^^^^^^^^^^^^^^^^^^ [1]
-   |               ^^^^^^^^ [2]
- 9 |     return $x[0];
-10 |   }
-
-1 error found
+No errors

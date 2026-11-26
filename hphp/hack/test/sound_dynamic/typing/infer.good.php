@@ -1,13 +1,12 @@
 <?hh
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 function test(Traversable<int> $e) : void {
-  vec($e) upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(vec($e));
 }
 
 function test2(Traversable<int> $e) : void {
   $v = vec($e);
-  $v upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($v);
 }
 
 function foo<T>(vec<T> $v): T {
@@ -15,10 +14,10 @@ function foo<T>(vec<T> $v): T {
 }
 
 function test3(vec<int> $v): dynamic {
-  return foo($v) upcast dynamic;
+  return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(foo($v));
 }
 
 function test4(vec<int> $v): dynamic {
   $e = foo($v);
-  return $e upcast dynamic;
+  return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($e);
 }

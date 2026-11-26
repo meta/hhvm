@@ -1,7 +1,6 @@
 <?hh
 // (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
 
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 enum E : int as int { A = 3; }
 enum F : int as int { B = 5; }
@@ -14,7 +13,7 @@ class EBox {
 <<__EntryPoint>>
 function main():void {
   $d = new EBox(E::A);
-  $dd = $d upcast dynamic;
+  $dd = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($d);
   $dd->item = F::B;
   $x = $d->item;
   // Now I think I've got an E but I've actually got an F

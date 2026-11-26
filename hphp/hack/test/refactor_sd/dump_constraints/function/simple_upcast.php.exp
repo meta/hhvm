@@ -1,8 +1,0 @@
-=== Sound Dynamic analysis results for simple_upcast.php
-Constraints for \f:
-
-Constraints for \h:
-Introduction at [8:3-6]
-Upcast at ?1
-[8:3-6] ⊆ ?1
-

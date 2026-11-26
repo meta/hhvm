@@ -1,19 +1,19 @@
 error: Typing[4366] This generic parameter is redundant because it only appears in a covariant (output) position. Consider replacing uses of generic parameter with nothing or specifying <<__Explicit>> on the generic parameter [1]
 
-sdt_lambda.good.php:7:24
-    5 | function expectSupportDynamic(supportdyn<nonnull> $_):void { }
-    6 | function expectDynamic(dynamic $_):void { }
-[1] 7 | function expectPrecise<T1,T2>((function(T1):T2) $_):void { }
-    8 | function expectLike<T1,T2>(~(function(T1):T2) $_):void { }
-    9 | 
+sdt_lambda.good.php:6:24
+    4 | function expectSupportDynamic(supportdyn<nonnull> $_):void { }
+    5 | function expectDynamic(dynamic $_):void { }
+[1] 6 | function expectPrecise<T1,T2>((function(T1):T2) $_):void { }
+    7 | function expectLike<T1,T2>(~(function(T1):T2) $_):void { }
+    8 | 
 
 error: Typing[4366] This generic parameter is redundant because it only appears in a covariant (output) position. Consider replacing uses of generic parameter with nothing or specifying <<__Explicit>> on the generic parameter [1]
 
-sdt_lambda.good.php:8:21
-    6 | function expectDynamic(dynamic $_):void { }
-    7 | function expectPrecise<T1,T2>((function(T1):T2) $_):void { }
-[1] 8 | function expectLike<T1,T2>(~(function(T1):T2) $_):void { }
-    9 | 
-   10 | // Explicit SDT lambda, enforced parameter type
+sdt_lambda.good.php:7:21
+    5 | function expectDynamic(dynamic $_):void { }
+    6 | function expectPrecise<T1,T2>((function(T1):T2) $_):void { }
+[1] 7 | function expectLike<T1,T2>(~(function(T1):T2) $_):void { }
+    8 | 
+    9 | // Explicit SDT lambda, enforced parameter type
 
 2 errors found

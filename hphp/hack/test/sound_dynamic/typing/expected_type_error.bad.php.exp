@@ -1,64 +1,64 @@
 warning: Warn[12044] Returning a value of type `dynamic` through a non-fully-enforced return type `~T` [1]
 -> This return type is not fully enforced at runtime [2]
 
-expected_type_error.bad.php:15:10
-12 | 
-13 | <<__NoAutoDynamic>>
-14 | function e<T as supportdyn<mixed>>(~C<Box<T>> $param): ~T {
+expected_type_error.bad.php:14:10
+11 | 
+12 | <<__NoAutoDynamic>>
+13 | function e<T as supportdyn<mixed>>(~C<Box<T>> $param): ~T {
    |                                                        ^^ [2]
-15 |   return 1 upcast dynamic;
-   |          ^^^^^^^^^^^^^^^^ [1]
-16 | }
-17 | 
+14 |   return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(1);
+   |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+15 | }
+16 | 
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `int` [2]
 -> But got `string` [3]
 -> This type argument to `Box` must match exactly (it is invariant) [3]
 
-expected_type_error.bad.php:26:16
- 5 | 
- 6 | <<__NoAutoDynamic>>
- 7 | function expect_int(~int $_): void {}
+expected_type_error.bad.php:25:16
+ 4 | 
+ 5 | <<__NoAutoDynamic>>
+ 6 | function expect_int(~int $_): void {}
    |                      ^^^ [2]
- 8 | 
- 9 | <<__SupportDynamicType>>
+ 7 | 
+ 8 | <<__SupportDynamicType>>
    :
-17 | 
-18 | <<__NoAutoDynamic>>
-19 | function get_C() : C<~Box<string>> { return new C<Box<string>>();}
+16 | 
+17 | <<__NoAutoDynamic>>
+18 | function get_C() : C<~Box<string>> { return new C<Box<string>>();}
    |                           ^^^^^^ [3]
-20 | 
-21 | <<__SupportDynamicType>>
+19 | 
+20 | <<__SupportDynamicType>>
    :
-24 | <<__NoAutoDynamic>>
-25 | function testit(): void {
-26 |   expect_int(e(get_C()));
+23 | <<__NoAutoDynamic>>
+24 | function testit(): void {
+25 |   expect_int(e(get_C()));
    |                ^^^^^^^ [1]
-27 | }
+26 | }
 
 error: Typing[4110] Invalid argument [1]
 -> Expected `~Box<_>` [2]
 -> But got `~Box<string>` [3]
 
-expected_type_error.bad.php:26:16
-12 | 
-13 | <<__NoAutoDynamic>>
-14 | function e<T as supportdyn<mixed>>(~C<Box<T>> $param): ~T {
+expected_type_error.bad.php:25:16
+11 | 
+12 | <<__NoAutoDynamic>>
+13 | function e<T as supportdyn<mixed>>(~C<Box<T>> $param): ~T {
    |                                       ^^^^^^ [2]
-15 |   return 1 upcast dynamic;
-16 | }
-17 | 
-18 | <<__NoAutoDynamic>>
-19 | function get_C() : C<~Box<string>> { return new C<Box<string>>();}
+14 |   return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(1);
+15 | }
+16 | 
+17 | <<__NoAutoDynamic>>
+18 | function get_C() : C<~Box<string>> { return new C<Box<string>>();}
    |                      ^^^^^^^^^^^^ [3]
-20 | 
-21 | <<__SupportDynamicType>>
+19 | 
+20 | <<__SupportDynamicType>>
    :
-24 | <<__NoAutoDynamic>>
-25 | function testit(): void {
-26 |   expect_int(e(get_C()));
+23 | <<__NoAutoDynamic>>
+24 | function testit(): void {
+25 |   expect_int(e(get_C()));
    |                ^^^^^^^ [1]
-27 | }
+26 | }
 
 3 errors found

@@ -1,5 +1,4 @@
 <?hh
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 class C<T as supportdyn<mixed>> {
@@ -12,5 +11,5 @@ class C<T as supportdyn<mixed>> {
 }
 
 function f() : void {
-  new C<int>(1) upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new C<int>(1));
 }

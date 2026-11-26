@@ -1,21 +1,21 @@
 warning: Warn[12038] Method invoked on a value of type dynamic [1]
 -> This expression has type dynamic [2]
 
-coerce_to_dyn.good.php:38:7
-    35 |   $s upcast dynamic;
-    36 |   $r upcast dynamic;
-[2] 37 |   $c = new C() upcast dynamic;
-[1] 38 |   $c->m() upcast dynamic;
-    39 |   null upcast dynamic;
-    40 |   $ak upcast dynamic;
+coerce_to_dyn.good.php:37:57
+    34 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($s);
+    35 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($r);
+[2] 36 |   $c = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new C());
+[1] 37 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($c->m());
+    38 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(null);
+    39 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($ak);
 
 warning: Warn[12010] This is check is always false. The expression on the left has type int which shares no values with E. [1]
 
-coerce_to_dyn.good.php:106:7
-    104 | 
-    105 | function test_inter(int $i, bool $b) : void {
-[1] 106 |   if ($i is E) {
-    107 |     $i upcast dynamic;
-    108 |   }
+coerce_to_dyn.good.php:97:7
+    95 | 
+    96 | function test_inter(int $i, bool $b) : void {
+[1] 97 |   if ($i is E) {
+    98 |     \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($i);
+    99 |   }
 
 2 errors found

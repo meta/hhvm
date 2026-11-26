@@ -1,6 +1,5 @@
 <?hh
 
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 class C {}
@@ -26,7 +25,7 @@ function f(
   hh_expect_equivalent<bool>($r4);
   $r5 = $h($c, $w);
   hh_expect_equivalent<bool>($r5);
-  $r6 = ($m upcast dynamic)(1);
+  $r6 = (\HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($m))(1);
   hh_expect_equivalent<dynamic>($r6);
   return $r1;
 }

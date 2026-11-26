@@ -1,7 +1,6 @@
 <?hh
 // (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
 
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 class Box<T> {
   public function __construct(private T $x) {}
@@ -23,7 +22,7 @@ function f(Box<int> $v1, ROBox<int> $v2) : void {
 <<__EntryPoint>>
 function main() : void {
   $v1 = new Box<int>(1);
-  $v2 = new ROBox<string>("abcd") upcast dynamic;
+  $v2 = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new ROBox<string>("abcd"));
   f($v1, $v2);
   print $v1->get();
 }

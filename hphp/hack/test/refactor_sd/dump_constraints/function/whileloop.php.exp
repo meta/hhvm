@@ -1,8 +1,0 @@
-=== Sound Dynamic analysis results for whileloop.php
-Constraints for \f:
-
-Constraints for \h:
-Introduction at [10:5-8]
-Upcast at ?1
-[10:5-8] ⊆ ?1
-

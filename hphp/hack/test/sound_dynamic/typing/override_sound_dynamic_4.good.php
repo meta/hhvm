@@ -1,7 +1,6 @@
 <?hh
 // (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
 
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 interface I {
@@ -11,7 +10,7 @@ interface I {
 <<__SupportDynamicType>>
 class C {
   public async function foo():Awaitable<dynamic> {
-    return "A" upcast dynamic;
+    return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>("A");
   }
 }
 <<__SupportDynamicType>>

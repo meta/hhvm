@@ -1,10 +1,9 @@
 <?hh
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 class C {
   public function foo(int $_):void { }
-  public function bar(): dynamic { return ("A" upcast dynamic); }
+  public function bar(): dynamic { return (\HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>("A")); }
 }
 class D extends C {
   public function foo(dynamic $_):void { }

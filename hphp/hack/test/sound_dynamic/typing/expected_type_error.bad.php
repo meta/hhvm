@@ -1,7 +1,6 @@
 <?hh
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
 
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__NoAutoDynamic>>
 function expect_int(~int $_): void {}
@@ -12,7 +11,7 @@ class Box<T> {
 
 <<__NoAutoDynamic>>
 function e<T as supportdyn<mixed>>(~C<Box<T>> $param): ~T {
-  return 1 upcast dynamic;
+  return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(1);
 }
 
 <<__NoAutoDynamic>>

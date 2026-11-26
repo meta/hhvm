@@ -1,168 +1,168 @@
 warning: Warn[12042] Property accessed on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-private_dynamic.bad.php:25:9
-21 |     return false;
-22 |   }
-23 |   private function bad1(dynamic $d):void {
+private_dynamic.bad.php:24:9
+20 |     return false;
+21 |   }
+22 |   private function bad1(dynamic $d):void {
    |                         ^^^^^^^ [2]
-24 |     // Illegal, as there exists a private member items of non-enforceable type
-25 |     $d->items = vec["A"];
+23 |     // Illegal, as there exists a private member items of non-enforceable type
+24 |     $d->items = vec["A"];
    |         ^^^^^ [1]
-26 |   }
-27 | }
+25 |   }
+26 | }
 
 warning: Warn[12042] Property accessed on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-private_dynamic.bad.php:36:16
-32 |   private D $item;
-33 |   public function __construct() { $this->item = new D(); }
-34 |   private function bad2(dynamic $d):dynamic {
+private_dynamic.bad.php:35:16
+31 |   private D $item;
+32 |   public function __construct() { $this->item = new D(); }
+33 |   private function bad2(dynamic $d):dynamic {
    |                         ^^^^^^^ [2]
-35 |     // Illegal, as there exists a private member items of type not subtype of dynamic
-36 |     return $d->item;
+34 |     // Illegal, as there exists a private member items of type not subtype of dynamic
+35 |     return $d->item;
    |                ^^^^ [1]
-37 |   }
-38 | }
+36 |   }
+37 | }
 
 warning: Warn[12042] Property accessed on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-private_dynamic.bad.php:45:9
-42 |   private vec<int> $item2;
-43 |   public function __construct() { $this->item1 = new D(); $this->item2 = vec[]; }
-44 |   public function bad3(dynamic $d):void {
+private_dynamic.bad.php:44:9
+41 |   private vec<int> $item2;
+42 |   public function __construct() { $this->item1 = new D(); $this->item2 = vec[]; }
+43 |   public function bad3(dynamic $d):void {
    |                        ^^^^^^^ [2]
-45 |     $d->item2 = vec["A"];
+44 |     $d->item2 = vec["A"];
    |         ^^^^^ [1]
-46 |   }
-47 |   public function bad4(dynamic $d):dynamic {
+45 |   }
+46 |   public function bad4(dynamic $d):dynamic {
 
 warning: Warn[12042] Property accessed on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-private_dynamic.bad.php:48:16
-45 |     $d->item2 = vec["A"];
-46 |   }
-47 |   public function bad4(dynamic $d):dynamic {
+private_dynamic.bad.php:47:16
+44 |     $d->item2 = vec["A"];
+45 |   }
+46 |   public function bad4(dynamic $d):dynamic {
    |                        ^^^^^^^ [2]
-48 |     return $d->item1;
+47 |     return $d->item1;
    |                ^^^^^ [1]
-49 |   }
-50 |   public function get():int {
+48 |   }
+49 |   public function get():int {
 
 warning: Warn[12038] Method invoked on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-private_dynamic.bad.php:62:7
-59 | <<__EntryPoint>>
-60 | function main():void {
-61 |   $d = new Dyn() upcast dynamic;
-   |                         ^^^^^^^ [2]
-62 |   $d->bad3($d);
+private_dynamic.bad.php:61:7
+58 | <<__EntryPoint>>
+59 | function main():void {
+60 |   $d = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new Dyn());
+   |                                                 ^^^^^^^ [2]
+61 |   $d->bad3($d);
    |       ^^^^ [1]
-63 |   $x = $d->get();
-64 | }
+62 |   $x = $d->get();
+63 | }
 
 warning: Warn[12038] Method invoked on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-private_dynamic.bad.php:63:12
-59 | <<__EntryPoint>>
-60 | function main():void {
-61 |   $d = new Dyn() upcast dynamic;
-   |                         ^^^^^^^ [2]
-62 |   $d->bad3($d);
-63 |   $x = $d->get();
+private_dynamic.bad.php:62:12
+58 | <<__EntryPoint>>
+59 | function main():void {
+60 |   $d = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new Dyn());
+   |                                                 ^^^^^^^ [2]
+61 |   $d->bad3($d);
+62 |   $x = $d->get();
    |            ^^^ [1]
-64 | }
+63 | }
 
 error: Typing[4426] Method  `setItems` in class `C` is not dynamically callable. [1]
 -> Cannot write to property `items` through dynamic type because private property in `C` does not have an enforceable type [1]
 -> Property `items` has type `vec<int>` [2]
 
-private_dynamic.bad.php:13:12
- 8 | class C {
- 9 |   // Legal, as we don't check signatures for private members
-10 |   private vec<int> $items;
+private_dynamic.bad.php:12:12
+ 7 | class C {
+ 8 |   // Legal, as we don't check signatures for private members
+ 9 |   private vec<int> $items;
    |           ^^^^^^^^ [2]
-11 |   private function setItems(vec<int> $vi):void {
-12 |     // Unfortunately illegal, as setItems might be called through dynamic
-13 |     $this->items = $vi;
+10 |   private function setItems(vec<int> $vi):void {
+11 |     // Unfortunately illegal, as setItems might be called through dynamic
+12 |     $this->items = $vi;
    |            ^^^^^ [1]
-14 |   }
-15 | 
+13 |   }
+14 | 
 
 error: Typing[4426] Cannot write to property `items` through dynamic type because private property in `C` does not have an enforceable type [1]
 -> Property `items` has type `vec<int>` [2]
 
-private_dynamic.bad.php:25:9
- 8 | class C {
- 9 |   // Legal, as we don't check signatures for private members
-10 |   private vec<int> $items;
+private_dynamic.bad.php:24:9
+ 7 | class C {
+ 8 |   // Legal, as we don't check signatures for private members
+ 9 |   private vec<int> $items;
    |           ^^^^^^^^ [2]
-11 |   private function setItems(vec<int> $vi):void {
-12 |     // Unfortunately illegal, as setItems might be called through dynamic
+10 |   private function setItems(vec<int> $vi):void {
+11 |     // Unfortunately illegal, as setItems might be called through dynamic
    :
-23 |   private function bad1(dynamic $d):void {
-24 |     // Illegal, as there exists a private member items of non-enforceable type
-25 |     $d->items = vec["A"];
+22 |   private function bad1(dynamic $d):void {
+23 |     // Illegal, as there exists a private member items of non-enforceable type
+24 |     $d->items = vec["A"];
    |         ^^^^^ [1]
-26 |   }
-27 | }
+25 |   }
+26 | }
 
 error: Typing[4425] Typing error [1]
 -> Cannot read from property `item` through dynamic type because private property in `Wrap` cannot be assigned to dynamic [2]
 -> Property `item` has type `D` [3]
 
-private_dynamic.bad.php:36:12
-30 | class Wrap {
-31 |   // Legal, as we don't check signatures for private members
-32 |   private D $item;
+private_dynamic.bad.php:35:12
+29 | class Wrap {
+30 |   // Legal, as we don't check signatures for private members
+31 |   private D $item;
    |           ^ [3]
-33 |   public function __construct() { $this->item = new D(); }
-34 |   private function bad2(dynamic $d):dynamic {
-35 |     // Illegal, as there exists a private member items of type not subtype of dynamic
-36 |     return $d->item;
+32 |   public function __construct() { $this->item = new D(); }
+33 |   private function bad2(dynamic $d):dynamic {
+34 |     // Illegal, as there exists a private member items of type not subtype of dynamic
+35 |     return $d->item;
    |            ^^ [1]
    |                ^^^^ [2]
-37 |   }
-38 | }
+36 |   }
+37 | }
 
 error: Typing[4426] Cannot write to property `item2` through dynamic type because private property in `NonDyn` does not have an enforceable type [1]
 -> Property `item2` has type `vec<int>` [2]
 
-private_dynamic.bad.php:45:9
-40 | class NonDyn {
-41 |   private D $item1;
-42 |   private vec<int> $item2;
+private_dynamic.bad.php:44:9
+39 | class NonDyn {
+40 |   private D $item1;
+41 |   private vec<int> $item2;
    |           ^^^^^^^^ [2]
-43 |   public function __construct() { $this->item1 = new D(); $this->item2 = vec[]; }
-44 |   public function bad3(dynamic $d):void {
-45 |     $d->item2 = vec["A"];
+42 |   public function __construct() { $this->item1 = new D(); $this->item2 = vec[]; }
+43 |   public function bad3(dynamic $d):void {
+44 |     $d->item2 = vec["A"];
    |         ^^^^^ [1]
-46 |   }
-47 |   public function bad4(dynamic $d):dynamic {
+45 |   }
+46 |   public function bad4(dynamic $d):dynamic {
 
 error: Typing[4425] Typing error [1]
 -> Cannot read from property `item1` through dynamic type because private property in `NonDyn` cannot be assigned to dynamic [2]
 -> Property `item1` has type `D` [3]
 
-private_dynamic.bad.php:48:12
-39 | 
-40 | class NonDyn {
-41 |   private D $item1;
+private_dynamic.bad.php:47:12
+38 | 
+39 | class NonDyn {
+40 |   private D $item1;
    |           ^ [3]
-42 |   private vec<int> $item2;
-43 |   public function __construct() { $this->item1 = new D(); $this->item2 = vec[]; }
+41 |   private vec<int> $item2;
+42 |   public function __construct() { $this->item1 = new D(); $this->item2 = vec[]; }
    :
-46 |   }
-47 |   public function bad4(dynamic $d):dynamic {
-48 |     return $d->item1;
+45 |   }
+46 |   public function bad4(dynamic $d):dynamic {
+47 |     return $d->item1;
    |            ^^ [1]
    |                ^^^^^ [2]
-49 |   }
-50 |   public function get():int {
+48 |   }
+49 |   public function get():int {
 
 11 errors found

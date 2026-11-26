@@ -1,6 +1,5 @@
 <?hh
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 class C { }
 function test1(
@@ -8,10 +7,10 @@ function test1(
   (function(mixed, dynamic):mixed) $f2,
   (function():vec<mixed>) $f3,
   (function():C) $f4):void {
-  $f1 upcast dynamic;
-  $f2 upcast dynamic;
-  $f3 upcast dynamic;
-  $f4 upcast dynamic;
-  ((int $x) ==> $x+1) upcast dynamic;
-  ($x ==> new C()) upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f1);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f2);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f3);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f4);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>((int $x) ==> $x+1);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x ==> new C());
 }

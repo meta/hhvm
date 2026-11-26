@@ -1,5 +1,0 @@
-=== Sound Dynamic analysis results for whileloop.php
-Summary for \f:
-No upcast
-Summary for \h:
-Upcast exists at [10:6-24]

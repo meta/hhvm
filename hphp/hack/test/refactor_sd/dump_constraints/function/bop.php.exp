@@ -1,8 +1,0 @@
-=== Sound Dynamic analysis results for bop.php
-Constraints for \f:
-
-Constraints for \h:
-Introduction at [8:20-23]
-Upcast at ?1
-[8:20-23] ⊆ ?1
-

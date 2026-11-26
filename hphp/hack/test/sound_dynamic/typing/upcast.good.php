@@ -1,33 +1,32 @@
 <?hh
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 function f(int $x) : void {
-  $y = $x upcast dynamic;
+  $y = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x);
   hh_expect_equivalent<dynamic>($y);
 }
 
 function g<T as int>(T $x) : void {
-  $y = $x upcast dynamic;
+  $y = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x);
   hh_expect_equivalent<dynamic>($y);
 }
 
 function h(vec<int> $x) : void {
-  $y = $x upcast vec<dynamic>;
+  $y = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, vec<dynamic>>($x);
   hh_expect_equivalent<vec<dynamic>>($y);
-  $z = $x upcast dynamic;
+  $z = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x);
   hh_expect_equivalent<dynamic>($z);
 }
 
 function k() : void {
-  $z = 1 upcast dynamic;
+  $z = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(1);
   hh_expect_equivalent<dynamic>($z);
 }
 
 function j<T as int>(T $x) : void {
-  $z = ($x + 1) upcast dynamic;
+  $z = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x + 1);
   hh_expect_equivalent<dynamic>($z);
 }
 
 class C {
-  public dynamic $d = 3 upcast dynamic;
+  public dynamic $d = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(3);
 }

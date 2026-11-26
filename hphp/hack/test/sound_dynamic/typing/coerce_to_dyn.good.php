@@ -1,5 +1,4 @@
 <?hh
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 class C {
@@ -23,42 +22,42 @@ enum E4: string as string {
 }
 
 function test_enum_type(E4 $e) : void {
-  $e upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($e);
 }
 
 function test_prim(bool $b, int $i, float $f, num $n, string $s, arraykey $ak, resource $r)
   : void {
-  $b upcast dynamic;
-  $i upcast dynamic;
-  $f upcast dynamic;
-  $n upcast dynamic;
-  $s upcast dynamic;
-  $r upcast dynamic;
-  $c = new C() upcast dynamic;
-  $c->m() upcast dynamic;
-  null upcast dynamic;
-  $ak upcast dynamic;
-  E1::CONST1 upcast dynamic;
-  E2::CONST2 upcast dynamic;
-  E3::CONST3 upcast dynamic;
-  E4::CONST4 upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($b);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($i);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($n);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($s);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($r);
+  $c = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(new C());
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($c->m());
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(null);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($ak);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(E1::CONST1);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(E2::CONST2);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(E3::CONST3);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(E4::CONST4);
 }
 
 function test_contain((string, int) $t, vec<int> $v, dict<string, int> $di,
                       keyset<arraykey> $ks, darray<arraykey, vec<C>> $da,
                       varray<int> $va, ?int $oi)
   : void {
-  $t upcast dynamic;
-  $v upcast dynamic;
-  $di upcast dynamic;
-  $ks upcast dynamic;
-  $da upcast dynamic;
-  $va upcast dynamic;
-  $oi upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($t);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($v);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($di);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($ks);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($da);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($va);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($oi);
 }
 
 function test_shape(shape('x' => int, ?'y' => vec<C>) $s) : void {
-  $s upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($s);
 }
 
 <<__SupportDynamicType>>
@@ -68,29 +67,21 @@ class D<T> {}
 class E {}
 
 function test_class(C $c, D<int> $di, D<E> $de) : void {
-  $c upcast dynamic;
-  $di upcast dynamic;
-  $de upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($c);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($di);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($de);
 }
 
 function test_container_context(vec<int> $v,
                                 dict<int, C> $d,
                                 ?int $o) : void {
-  $v upcast vec<dynamic>;
-  $d upcast dict<arraykey, dynamic>;
-  $o upcast ?dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, vec<dynamic>>($v);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dict<arraykey, dynamic>>($d);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, ?dynamic>($o);
 }
 
 function test_shape_context(shape('x' => int, ?'y' => vec<C>) $s) : void {
-  $s upcast shape('x' => dynamic, ?'y' => dynamic);
-}
-
-class V2<+T> {};
-class V3<-T> {};
-
-function test_class_context(V2<int> $v2, V3<mixed> $v3) : void {
-  $v2 upcast V2<dynamic>;
-  $v3 upcast V3<dynamic>;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, shape('x' => dynamic, ?'y' => dynamic)>($s);
 }
 
 function test_union(int $i, C $c, bool $b) : void {
@@ -99,12 +90,12 @@ function test_union(int $i, C $c, bool $b) : void {
   } else {
     $x = $c;
   }
-  $x upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x);
 }
 
 function test_inter(int $i, bool $b) : void {
   if ($i is E) {
-    $i upcast dynamic;
+    \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($i);
   }
 }
 
@@ -113,10 +104,10 @@ function test_expression_helper() : int {
 }
 
 function test_expression(int $i) : void {
-  $x = test_expression_helper() upcast dynamic;
-  $y = ($i + 1) upcast dynamic;
-  $z = 1 upcast dynamic;
-  $m = (1 upcast int) + 1;
-  $n = 1 + (1 upcast int);
-  $o = 1 upcast int + 1;
+  $x = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(test_expression_helper());
+  $y = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($i + 1);
+  $z = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(1);
+  $m = (\HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, int>(1)) + 1;
+  $n = 1 + (\HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, int>(1));
+  $o = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, int>(1) + 1;
 }

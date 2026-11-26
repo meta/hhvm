@@ -1,5 +1,0 @@
-=== Sound Dynamic analysis results for uop.php
-Summary for \f:
-No upcast
-Summary for \h:
-Upcast exists at [8:6-24]

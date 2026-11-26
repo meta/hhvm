@@ -1,8 +1,0 @@
-=== Sound Dynamic analysis results for if.php
-Summary for \f:
-No upcast
-Summary for \g:
-No upcast
-Summary for \h:
-Upcast exists at [22:4-21]
-Upcast exists at [12:6-24]

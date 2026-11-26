@@ -1,5 +1,4 @@
 <?hh
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 class C {
   const type T = supportdyn<nonnull>;
@@ -38,7 +37,7 @@ function test1(D $d, C $c):void {
 }
 
 function test2(supportdyn<mixed> $sd):dynamic {
-  return $sd upcast dynamic;
+  return \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($sd);
 }
 
 function test3(supportdyn<mixed> $sd):?supportdyn<nonnull> {

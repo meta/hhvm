@@ -1,9 +1,0 @@
-=== Sound Dynamic analysis results for switch3.php
-Summary for \e:
-No upcast
-Summary for \f:
-No upcast
-Summary for \g:
-No upcast
-Summary for \h:
-Upcast exists at [18:8-25]

@@ -1,11 +1,10 @@
 <?hh
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 class C {
   <<__SupportDynamicType>>
   public function foo(vec<int> $x):int {
-    $x upcast vec<int>;
+    \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, vec<int>>($x);
     return $x[0];
   }
 }

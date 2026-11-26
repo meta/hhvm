@@ -1,8 +1,0 @@
-=== Sound Dynamic analysis results for one_assignment.php
-Constraints for \f:
-
-Constraints for \h:
-Introduction at [8:8-11]
-Upcast at ?1
-[8:8-11] ⊆ ?1
-

@@ -1,26 +1,26 @@
 warning: Warn[12042] Property accessed on a value of type `dynamic` [1]
 -> This expression has type `dynamic` [2]
 
-enumbox.bad.php:18:8
-15 | function main():void {
-16 |   $d = new EBox(E::A);
-17 |   $dd = $d upcast dynamic;
-   |                   ^^^^^^^ [2]
-18 |   $dd->item = F::B;
+enumbox.bad.php:17:8
+14 | function main():void {
+15 |   $d = new EBox(E::A);
+16 |   $dd = \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($d);
+   |                                                  ^^^^^^^ [2]
+17 |   $dd->item = F::B;
    |        ^^^^ [1]
-19 |   $x = $d->item;
-20 |   // Now I think I've got an E but I've actually got an F
+18 |   $x = $d->item;
+19 |   // Now I think I've got an E but I've actually got an F
 
 error: Typing[4402] Class `EBox` cannot support dynamic because property `item` does not have an enforceable type [1]
 -> Property `item` has type `E` [2]
 
-enumbox.bad.php:11:40
- 9 | <<__SupportDynamicType>>
-10 | class EBox {
-11 |   public function __construct(public E $item) { }
+enumbox.bad.php:10:40
+ 8 | <<__SupportDynamicType>>
+ 9 | class EBox {
+10 |   public function __construct(public E $item) { }
    |                                      ^ [2]
    |                                        ^^^^^ [1]
-12 | }
-13 | 
+11 | }
+12 | 
 
 2 errors found

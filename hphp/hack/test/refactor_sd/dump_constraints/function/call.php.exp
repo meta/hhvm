@@ -1,9 +1,0 @@
-=== Sound Dynamic analysis results for call.php
-Constraints for \f:
-
-Constraints for \h:
-?1 ⊆ [9:3-7]
-Function call at [9:3-7]
-Introduction at [8:8-11]
-[8:8-11] ⊆ ?1
-

@@ -1,100 +1,145 @@
-error: Typing[4110] Typing error [1]
+error: Typing[4110] Invalid argument [1]
 -> Expected `dynamic` [2]
--> Type `(function(int): int)` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
+->   via this generic `Tin` [3]
+-> Type `(function(int): int)` is not a subtype of `dynamic` under dynamic-aware subtyping [4]
 
-sub_function_type_dynamic.bad.php:11:3
- 5 | class C { }
- 6 | function test1(
- 7 |   (function(int):int) $f1,
-   |   ^^^^^^^^^^^^^^^^^^^ [3]
- 8 |   (function(mixed, dynamic):mixed) $f2,
- 9 |   (function():vec<mixed>) $f3,
-10 |   (function():C) $f4):void {
-11 |   $f1 upcast dynamic;
-   |   ^^^^^^^^^^^^^^^^^^ [1]
-   |              ^^^^^^^ [2]
-12 |   $f2 upcast dynamic;
-13 |   $f3 upcast dynamic;
+sub_function_type_dynamic.bad.php:10:53
+ 4 | class C { }
+ 5 | function test1(
+ 6 |   (function(int):int) $f1,
+   |   ^^^^^^^^^^^^^^^^^^^ [4]
+ 7 |   (function(mixed, dynamic):mixed) $f2,
+ 8 |   (function():vec<mixed>) $f3,
+ 9 |   (function():C) $f4):void {
+10 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f1);
+   |                         ^^^^^^^^^^^^^^^^^ [2]
+   |                                                     ^^^ [1]
+11 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f2);
+12 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f3);
 
-error: Typing[4110] Typing error [1]
+soundness.hhi:32:3
+30 |  */
+31 | function UNSAFE_CAST<<<__Explicit>> Tin as supportdyn<mixed>, <<__Explicit>> Tout as supportdyn<mixed>>(
+32 |   Tin $t,
+   |   ^^^ [3]
+33 |   ?\HH\FormatString<nothing> $msg = null,
+34 | )[]: ~Tout;
+
+error: Typing[4110] Invalid argument [1]
 -> Expected `dynamic` [2]
--> Type `(function(mixed, dynamic): mixed)` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
+->   via this generic `Tin` [3]
+-> Type `(function(mixed, dynamic): mixed)` is not a subtype of `dynamic` under dynamic-aware subtyping [4]
 
-sub_function_type_dynamic.bad.php:12:3
- 6 | function test1(
- 7 |   (function(int):int) $f1,
- 8 |   (function(mixed, dynamic):mixed) $f2,
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [3]
- 9 |   (function():vec<mixed>) $f3,
-10 |   (function():C) $f4):void {
-11 |   $f1 upcast dynamic;
-12 |   $f2 upcast dynamic;
-   |   ^^^^^^^^^^^^^^^^^^ [1]
-   |              ^^^^^^^ [2]
-13 |   $f3 upcast dynamic;
-14 |   $f4 upcast dynamic;
+sub_function_type_dynamic.bad.php:11:53
+ 5 | function test1(
+ 6 |   (function(int):int) $f1,
+ 7 |   (function(mixed, dynamic):mixed) $f2,
+   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [4]
+ 8 |   (function():vec<mixed>) $f3,
+ 9 |   (function():C) $f4):void {
+10 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f1);
+11 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f2);
+   |                         ^^^^^^^^^^^^^^^^^ [2]
+   |                                                     ^^^ [1]
+12 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f3);
+13 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f4);
 
-error: Typing[4110] Typing error [1]
+soundness.hhi:32:3
+30 |  */
+31 | function UNSAFE_CAST<<<__Explicit>> Tin as supportdyn<mixed>, <<__Explicit>> Tout as supportdyn<mixed>>(
+32 |   Tin $t,
+   |   ^^^ [3]
+33 |   ?\HH\FormatString<nothing> $msg = null,
+34 | )[]: ~Tout;
+
+error: Typing[4110] Invalid argument [1]
 -> Expected `dynamic` [2]
--> Type `(function(): vec<mixed>)` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
+->   via this generic `Tin` [3]
+-> Type `(function(): vec<mixed>)` is not a subtype of `dynamic` under dynamic-aware subtyping [4]
 
-sub_function_type_dynamic.bad.php:13:3
- 7 |   (function(int):int) $f1,
- 8 |   (function(mixed, dynamic):mixed) $f2,
- 9 |   (function():vec<mixed>) $f3,
-   |   ^^^^^^^^^^^^^^^^^^^^^^^ [3]
-10 |   (function():C) $f4):void {
-11 |   $f1 upcast dynamic;
-12 |   $f2 upcast dynamic;
-13 |   $f3 upcast dynamic;
-   |   ^^^^^^^^^^^^^^^^^^ [1]
-   |              ^^^^^^^ [2]
-14 |   $f4 upcast dynamic;
-15 |   ((int $x) ==> $x+1) upcast dynamic;
+sub_function_type_dynamic.bad.php:12:53
+ 6 |   (function(int):int) $f1,
+ 7 |   (function(mixed, dynamic):mixed) $f2,
+ 8 |   (function():vec<mixed>) $f3,
+   |   ^^^^^^^^^^^^^^^^^^^^^^^ [4]
+ 9 |   (function():C) $f4):void {
+10 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f1);
+11 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f2);
+12 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f3);
+   |                         ^^^^^^^^^^^^^^^^^ [2]
+   |                                                     ^^^ [1]
+13 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f4);
+14 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>((int $x) ==> $x+1);
 
-error: Typing[4110] Typing error [1]
+soundness.hhi:32:3
+30 |  */
+31 | function UNSAFE_CAST<<<__Explicit>> Tin as supportdyn<mixed>, <<__Explicit>> Tout as supportdyn<mixed>>(
+32 |   Tin $t,
+   |   ^^^ [3]
+33 |   ?\HH\FormatString<nothing> $msg = null,
+34 | )[]: ~Tout;
+
+error: Typing[4110] Invalid argument [1]
 -> Expected `dynamic` [2]
--> Type `(function(): C)` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
+->   via this generic `Tin` [3]
+-> Type `(function(): C)` is not a subtype of `dynamic` under dynamic-aware subtyping [4]
 
-sub_function_type_dynamic.bad.php:14:3
- 8 |   (function(mixed, dynamic):mixed) $f2,
- 9 |   (function():vec<mixed>) $f3,
-10 |   (function():C) $f4):void {
-   |   ^^^^^^^^^^^^^^ [3]
-11 |   $f1 upcast dynamic;
-12 |   $f2 upcast dynamic;
-13 |   $f3 upcast dynamic;
-14 |   $f4 upcast dynamic;
-   |   ^^^^^^^^^^^^^^^^^^ [1]
-   |              ^^^^^^^ [2]
-15 |   ((int $x) ==> $x+1) upcast dynamic;
-16 |   ($x ==> new C()) upcast dynamic;
+sub_function_type_dynamic.bad.php:13:53
+ 7 |   (function(mixed, dynamic):mixed) $f2,
+ 8 |   (function():vec<mixed>) $f3,
+ 9 |   (function():C) $f4):void {
+   |   ^^^^^^^^^^^^^^ [4]
+10 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f1);
+11 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f2);
+12 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f3);
+13 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f4);
+   |                         ^^^^^^^^^^^^^^^^^ [2]
+   |                                                     ^^^ [1]
+14 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>((int $x) ==> $x+1);
+15 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x ==> new C());
 
-error: Typing[4110] Typing error [1]
+soundness.hhi:32:3
+30 |  */
+31 | function UNSAFE_CAST<<<__Explicit>> Tin as supportdyn<mixed>, <<__Explicit>> Tout as supportdyn<mixed>>(
+32 |   Tin $t,
+   |   ^^^ [3]
+33 |   ?\HH\FormatString<nothing> $msg = null,
+34 | )[]: ~Tout;
+
+error: Typing[4110] Invalid argument [1]
 -> Expected `dynamic` [2]
--> Type `(function(int $x): int)` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
+->   via this generic `Tin` [3]
+-> Type `(function(int $x): int)` is not a subtype of `dynamic` under dynamic-aware subtyping [1]
 
-sub_function_type_dynamic.bad.php:15:3
-13 |   $f3 upcast dynamic;
-14 |   $f4 upcast dynamic;
-15 |   ((int $x) ==> $x+1) upcast dynamic;
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-   |    ^^^^^^^^^^^^^^^^^ [3]
-   |                              ^^^^^^^ [2]
-16 |   ($x ==> new C()) upcast dynamic;
-17 | }
+sub_function_type_dynamic.bad.php:14:53
+12 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f3);
+13 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f4);
+14 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>((int $x) ==> $x+1);
+   |                         ^^^^^^^^^^^^^^^^^ [2]
+   |                                                     ^^^^^^^^^^^^^^^^^ [1]
+15 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x ==> new C());
+16 | }
 
-error: Typing[4110] Typing error [1]
--> Expected `dynamic` [2]
--> Type `(function(mixed $x): C)` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
+soundness.hhi:32:3
+30 |  */
+31 | function UNSAFE_CAST<<<__Explicit>> Tin as supportdyn<mixed>, <<__Explicit>> Tout as supportdyn<mixed>>(
+32 |   Tin $t,
+   |   ^^^ [3]
+33 |   ?\HH\FormatString<nothing> $msg = null,
+34 | )[]: ~Tout;
 
-sub_function_type_dynamic.bad.php:16:3
-14 |   $f4 upcast dynamic;
-15 |   ((int $x) ==> $x+1) upcast dynamic;
-16 |   ($x ==> new C()) upcast dynamic;
-   |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
-   |    ^^^^^^^^^^^^^^ [3]
-   |                           ^^^^^^^ [2]
-17 | }
+error: Typing[4110] Function  `;anonymous` is not dynamically callable. [1]
+-> Invalid return type [1]
+-> Expected `dynamic` because method or function was called on dynamic or like-type [2]
+-> Type `C` is not a subtype of `dynamic` under dynamic-aware subtyping [3]
+
+sub_function_type_dynamic.bad.php:15:60
+13 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f4);
+14 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>((int $x) ==> $x+1);
+15 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x ==> new C());
+   |                                                     ^^^^^^^^^^^^^^ [2]
+   |                                                            ^^^^^^^ [1]
+   |                                                                ^ [3]
+16 | }
 
 6 errors found

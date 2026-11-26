@@ -1,6 +1,5 @@
 <?hh
 // Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-<<file:__EnableUnstableFeatures('upcast_expression')>>
 
 <<__SupportDynamicType>>
 class C { }
@@ -18,13 +17,13 @@ function test1(
   (function((string|dynamic),dynamic...):float) $f3,
   (function():void) $f4,
   (function():C) $f5):void {
-  $f1 upcast dynamic;
-  $f2 upcast dynamic;
-  $f3 upcast dynamic;
-  $f4 upcast dynamic;
-  $f5 upcast dynamic;
-  ($x ==> $x) upcast dynamic;
-  ((dynamic $d) ==> $d->foo()) upcast dynamic;
-  foo<> upcast dynamic;
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f1);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f2);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f3);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f4);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f5);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x ==> $x);
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>((dynamic $d) ==> $d->foo());
+  \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(foo<>);
   expectFun(foo<>);
 }

@@ -1,11 +1,11 @@
 warning: Warn[12038] Method invoked on a value of type dynamic [1]
 -> This expression has type dynamic [2]
 
-sub_function_type_dynamic.good.php:27:25
-      25 |   $f5 upcast dynamic;
-      26 |   ($x ==> $x) upcast dynamic;
-[1,2] 27 |   ((dynamic $d) ==> $d->foo()) upcast dynamic;
-      28 |   foo<> upcast dynamic;
-      29 |   expectFun(foo<>);
+sub_function_type_dynamic.good.php:26:74
+      24 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($f5);
+      25 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($x ==> $x);
+[1,2] 26 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>((dynamic $d) ==> $d->foo());
+      27 |   \HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>(foo<>);
+      28 |   expectFun(foo<>);
 
 1 error found

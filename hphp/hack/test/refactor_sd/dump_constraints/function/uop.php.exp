@@ -1,8 +1,0 @@
-=== Sound Dynamic analysis results for uop.php
-Constraints for \f:
-
-Constraints for \h:
-Introduction at [8:6-9]
-Upcast at ?1
-[8:6-9] ⊆ ?1
-

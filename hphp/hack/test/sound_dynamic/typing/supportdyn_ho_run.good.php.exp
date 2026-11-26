@@ -1,11 +1,11 @@
 warning: Warn[12039] Value of type dynamic called as a function [1]
 -> This expression has type dynamic [2]
 
-supportdyn_ho_run.good.php:29:10
-      27 |   $r5 = $h($c, $w);
-      28 |   hh_expect_equivalent<bool>($r5);
-[1,2] 29 |   $r6 = ($m upcast dynamic)(1);
-      30 |   hh_expect_equivalent<dynamic>($r6);
-      31 |   return $r1;
+supportdyn_ho_run.good.php:28:10
+      26 |   $r5 = $h($c, $w);
+      27 |   hh_expect_equivalent<bool>($r5);
+[1,2] 28 |   $r6 = (\HH\FIXME\UNSAFE_CAST<supportdyn<mixed>, dynamic>($m))(1);
+      29 |   hh_expect_equivalent<dynamic>($r6);
+      30 |   return $r1;
 
 1 error found
