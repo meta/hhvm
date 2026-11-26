@@ -1,1 +1,1 @@
---enable-xhp-class-modifier --tast
+--config enable_xhp_class_modifier=true --tast

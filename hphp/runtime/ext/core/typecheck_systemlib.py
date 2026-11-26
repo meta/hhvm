@@ -47,10 +47,10 @@ FLAGS: List[str] = [
     "is_systemlib=true",
     "--config",
     "enable_no_auto_dynamic=true",
-    "--allowed-fixme-codes-strict",
-    ",".join(map(str, FIXME_CODES)),
-    "--allowed-decl-fixme-codes",
-    ",".join(map(str, FIXME_CODES)),
+    "--config",
+    "allowed_fixme_codes_strict=" + ",".join(map(str, FIXME_CODES)),
+    "--config",
+    "allowed_decl_fixme_codes=" + ",".join(map(str, FIXME_CODES)),
 ]
 
 

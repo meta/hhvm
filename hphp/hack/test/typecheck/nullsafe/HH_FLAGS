@@ -1,3 +1,3 @@
---allowed-fixme-codes-strict 4030
---allowed-decl-fixme-codes 4030
+--config allowed_fixme_codes_strict=4030
+--config allowed_decl_fixme_codes=4030
 --error-format plain_highlighted

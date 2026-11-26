@@ -44,9 +44,8 @@ def main() -> None:
     # pessimise all the current tests
     # 1. run hh_single_type_check to collect pessimisation targets
     cmd: List[str] = (
-        [hh_stc_path]
+        [hh_stc_path, "--config", 'log_levels={"pessimise":1}']
         + hh_stc_arguments
-        + ["--hh-log-level", "pessimise", "1"]
         + ["--config", "like_casts=true"]
         + ["--error-format", "plain"]
         + files

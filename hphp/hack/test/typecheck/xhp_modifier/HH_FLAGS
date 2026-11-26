@@ -1,3 +1,3 @@
---disable-xhp-element-mangling --enable-xhp-class-modifier
+--config disable_xhp_element_mangling=true --config enable_xhp_class_modifier=true
 --extra-builtin ../../hhi/XHPTest.hhi
 --error-format plain_highlighted

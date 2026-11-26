@@ -1,4 +1,4 @@
 --config disallow_discarded_nullable_awaitables=true
---allowed-fixme-codes-strict 1002,2049,2053,2063,4009,4029,4030,4051,4054,4055,4064,4090,4101,4102,4110,4123,4323,4338,4341,9999
---allowed-decl-fixme-codes 1002,2049,2053,4030,4054,4101,4338,4341
+--config allowed_fixme_codes_strict=1002,2049,2053,2063,4009,4029,4030,4051,4054,4055,4064,4090,4101,4102,4110,4123,4323,4338,4341,9999
+--config allowed_decl_fixme_codes=1002,2049,2053,4030,4054,4101,4338,4341
 --error-format plain_highlighted

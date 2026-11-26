@@ -1,2 +1,2 @@
---timeout 8
+--config timeout=8
 --error-format plain_highlighted

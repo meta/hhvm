@@ -1,3 +1,3 @@
 --extra-builtin ../expr_tree.php
---auto-namespace-map '{"TheNs": "TheNamespace"}'
+--config 'auto_namespace_map={"TheNs": "TheNamespace"}'
 --extra-builtin ../hhi/the_namespace.hhi

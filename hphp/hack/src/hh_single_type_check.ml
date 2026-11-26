@@ -258,7 +258,6 @@ let parse_options () =
   let usage = Printf.sprintf "Usage: %s filename\n" Sys.argv.(0) in
   let mode = ref Errors in
   let no_builtins = ref false in
-  let log_levels = ref S_map.empty in
   let max_errors = ref None in
   let batch_mode = ref false in
   let set_mode x () =
@@ -268,54 +267,31 @@ let parse_options () =
   in
   let config_overrides = ref [] in
   let error_format = ref None in
-  let deregister_attributes = ref None in
   let auto_namespace_map = ref None in
   let log_inference_constraints = ref None in
-  let timeout = ref None in
   let set_bool x () = x := Some true in
-  let set_bool_ x () = x := true in
   let rust_provider_backend = ref Hh_server_provider_backend.is_supported in
   let skip_hierarchy_checks = ref false in
   let skip_tast_checks = ref false in
-  let skip_check_under_dynamic = ref false in
   let out_extension = ref ".out" in
   let strict_contexts = ref true in
 
   let enable_supportdyn_hint = ref false in
-  let glean_reponame = ref (Glean_options.reponame Global_options.default) in
-  let disable_xhp_element_mangling = ref false in
-  let keep_user_attributes = ref false in
-  let enable_xhp_class_modifier = ref false in
   let allowed_fixme_codes_strict = ref None in
-  let allowed_decl_fixme_codes = ref None in
   let report_pos_from_reason = ref false in
-  let consider_type_const_enforceable = ref false in
-  let interpret_soft_types_as_like_types = ref false in
-  let meth_caller_only_public_visibility = ref true in
   let naming_table = ref None in
   let root = ref None in
   let sharedmem_config = ref Shared_mem.default_config in
   let print_position = ref true in
   let custom_hhi_path = ref None in
   let force_allow_builtins_in_custom_hhi_path = ref false in
-  let explicit_consistent_constructors = ref 0 in
-  let require_types_class_consts = ref 0 in
-  let type_printer_fuel =
-    ref (Typechecker_options.type_printer_fuel Global_options.default)
-  in
   let profile_type_check_multi = ref None in
-  let profile_top_level_definitions =
-    ref
-      (Typechecker_options.profile_top_level_definitions Global_options.default)
-  in
   let memtrace = ref None in
   let enable_global_access_check = ref false in
   let custom_error_config_path = ref None in
   let allow_all_files_for_module_declarations = ref true in
   let loop_iteration_upper_bound = ref None in
   let get_some_file_deps_full_hierarchy = ref false in
-  let disallow_non_annotated_memoize = ref false in
-  let treat_non_annotated_memoize_as_kbic = ref false in
   let options =
     [
       ( "--config",
@@ -350,15 +326,6 @@ let parse_options () =
                    ());
            ]),
         " Run the flow analysis" );
-      ( "--deregister-attributes",
-        Arg.Unit (set_bool deregister_attributes),
-        " Ignore all functions with attribute '__PHPStdLib'" );
-      ( "--auto-namespace-map",
-        Arg.String
-          (fun m ->
-            auto_namespace_map :=
-              Some (Server_config.convert_auto_namespace_to_map m)),
-        " Alias namespaces" );
       ( "--no-strict-contexts",
         Arg.Unit (fun () -> strict_contexts := false),
         " Do not enforce contexts to be defined within Contexts namespace" );
@@ -547,18 +514,6 @@ let parse_options () =
       ( "--log-inference-constraints",
         Arg.Unit (set_bool log_inference_constraints),
         " Log inference constraints to Scuba." );
-      ( "--timeout",
-        Arg.Int (fun secs -> timeout := Some secs),
-        " Timeout in seconds for checking a function or a class." );
-      ( "--hh-log-level",
-        (let log_key = ref "" in
-         Arg.Tuple
-           [
-             Arg.String (( := ) log_key);
-             Arg.Int
-               (fun level -> log_levels := S_map.add !log_key level !log_levels);
-           ]),
-        " Set the log level for a key" );
       ( "--batch-files",
         Arg.Set batch_mode,
         " Typecheck each file passed in independently" );
@@ -568,59 +523,17 @@ let parse_options () =
       ( "--skip-tast-checks",
         Arg.Set skip_tast_checks,
         " Do not apply checks using TAST visitors" );
-      ( "--skip-check-under-dynamic",
-        Arg.Set skip_check_under_dynamic,
-        " Do not apply second check to functions and methods under dynamic assumptions"
-      );
-      ( "--implicit-pess",
-        Arg.Unit (fun () -> set_bool_ enable_supportdyn_hint ()),
-        " Enables implicit pessimisation" );
       ( "--explicit-pess",
         Arg.String
           (fun dir ->
-            set_bool_ enable_supportdyn_hint ();
+            enable_supportdyn_hint := true;
             custom_hhi_path := Some dir),
         " Enables checking explicitly pessimised files. Requires path to pessimised .hhi files "
       );
-      ( "--enable-supportdyn-hint",
-        Arg.Set enable_supportdyn_hint,
-        " Allow the supportdyn type hint" );
-      ( "--glean-reponame",
-        Arg.String (fun str -> glean_reponame := str),
-        " glean repo name" );
-      ( "--disable-xhp-element-mangling",
-        Arg.Set disable_xhp_element_mangling,
-        " Disable mangling of XHP elements :foo. That is, :foo:bar is now \\foo\\bar, not xhp_foo__bar"
-      );
-      ( "--keep-user-attributes",
-        Arg.Set keep_user_attributes,
-        " Keep user attributes when parsing decls" );
-      ( "--enable-xhp-class-modifier",
-        Arg.Set enable_xhp_class_modifier,
-        " Enable the XHP class modifier, xhp class name {} will define an xhp class."
-      );
-      ( "--allowed-fixme-codes-strict",
-        Arg.String
-          (fun s -> allowed_fixme_codes_strict := Some (comma_string_to_iset s)),
-        " List of fixmes that are allowed in strict mode." );
-      ( "--allowed-decl-fixme-codes",
-        Arg.String
-          (fun s -> allowed_decl_fixme_codes := Some (comma_string_to_iset s)),
-        " List of fixmes that are allowed in declarations." );
       ( "--report-pos-from-reason",
         Arg.Set report_pos_from_reason,
         " Flag errors whose position is derived from reason information in types."
       );
-      ( "--consider-type-const-enforceable",
-        Arg.Set consider_type_const_enforceable,
-        " Consider type constants to potentially be enforceable." );
-      ( "--interpret-soft-types-as-like-types",
-        Arg.Set interpret_soft_types_as_like_types,
-        " Types declared with <<__Soft>> (runtime logs but doesn't throw) become like types."
-      );
-      ( "--meth-caller-only-public-visibility",
-        Arg.Bool (fun x -> meth_caller_only_public_visibility := x),
-        " Controls whether meth_caller can be used on non-public methods" );
       ( "--hover",
         (let line = ref 0 in
          Arg.Tuple
@@ -666,31 +579,15 @@ let parse_options () =
       ( "--force-allow-builtins-in-custom-hhi-path-FLAKEY",
         Arg.Set force_allow_builtins_in_custom_hhi_path,
         " (FLAKEY) allow builtins to be written into the custom hhi path" );
-      ( "--explicit-consistent-constructors",
-        Arg.Int (( := ) explicit_consistent_constructors),
-        " Raise an error for <<__ConsistentConstruct>> without an explicit constructor; 1 for traits, 2 for all "
-      );
-      ( "--require-types-class-consts",
-        Arg.Int (( := ) require_types_class_consts),
-        " Raise an error for class constants missing types; 1 for abstract constants, 2 for all "
-      );
       ( "--profile-type-check-twice",
         Arg.Unit (fun () -> profile_type_check_multi := Some 1),
         " Typecheck the file twice" );
       ( "--profile-type-check-multi",
         Arg.Int (fun n -> profile_type_check_multi := Some n),
         " Typecheck the files n times extra (!)" );
-      ( "--profile-top-level-definitions",
-        Arg.Set profile_top_level_definitions,
-        " Profile typechecking of top-level definitions" );
       ( "--memtrace",
         Arg.String (fun s -> memtrace := Some s),
         " Write memtrace to this file (typical extension .ctf)" );
-      ( "--type-printer-fuel",
-        Arg.Int (( := ) type_printer_fuel),
-        " Sets the amount of fuel that the type printer can use to display an individual type. Default: "
-        ^ string_of_int
-            (Typechecker_options.type_printer_fuel Global_options.default) );
       ( "--enable-global-access-check",
         Arg.Set enable_global_access_check,
         " Run global access checker to check global writes and reads" );
@@ -830,48 +727,11 @@ let parse_options () =
   let po =
     Parser_options.
       {
-        (* These don't have command-line flags, so init them to their defaults. *)
-        hhvm_compat_mode = default.hhvm_compat_mode;
-        hhi_mode = default.hhi_mode;
-        codegen = default.codegen;
-        stack_size = default.stack_size;
-        unwrap_concurrent = default.unwrap_concurrent;
-        no_parser_readonly_check = default.no_parser_readonly_check;
-        experimental_features = default.experimental_features;
-        consider_unspecified_experimental_features_released =
-          default.consider_unspecified_experimental_features_released;
-        (* These are set specifically for single type check *)
+        default with
         use_legacy_experimental_feature_config = false;
         allow_unstable_features = true;
-        (* The remainder are set by the command line options *)
-        is_systemlib = default.is_systemlib;
-        const_static_props = default.const_static_props;
-        abstract_static_props = default.abstract_static_props;
-        disable_xhp_element_mangling = !disable_xhp_element_mangling;
-        disable_xhp_children_declarations =
-          default.disable_xhp_children_declarations;
-        enable_xhp_class_modifier = !enable_xhp_class_modifier;
-        interpret_soft_types_as_like_types = !interpret_soft_types_as_like_types;
-        keep_user_attributes = !keep_user_attributes;
-        auto_namespace_map = !auto_namespace_map >?? default.auto_namespace_map;
-        deregister_php_stdlib =
-          !deregister_attributes >?? default.deregister_php_stdlib;
         everything_sdt = true;
-        union_intersection_type_hints = default.union_intersection_type_hints;
-        allowed_decl_fixme_codes =
-          Option.value !allowed_decl_fixme_codes ~default:I_set.empty;
-        package_info = default.package_info;
-        package_support_multifile_tests =
-          default.package_support_multifile_tests;
-        disallow_non_annotated_memoize = !disallow_non_annotated_memoize;
-        treat_non_annotated_memoize_as_kbic =
-          !treat_non_annotated_memoize_as_kbic;
-        ignore_string_methods = default.ignore_string_methods;
-        enable_intrinsics_extension = default.enable_intrinsics_extension;
-        expression_tree_shape_no_unwrap =
-          default.expression_tree_shape_no_unwrap;
-        allow_single_statement_concurrent =
-          default.allow_single_statement_concurrent;
+        auto_namespace_map = !auto_namespace_map >?? default.auto_namespace_map;
       }
   in
 
@@ -880,23 +740,13 @@ let parse_options () =
       ~po
       ~tco_saved_state:Global_options.default_saved_state
       ?tco_log_inference_constraints:!log_inference_constraints
-      ?tco_timeout:!timeout
       ~allowed_fixme_codes_strict:
         (Option.value !allowed_fixme_codes_strict ~default:I_set.empty)
       ~tco_skip_hierarchy_checks:!skip_hierarchy_checks
       ~tco_skip_tast_checks:!skip_tast_checks
       ~tco_strict_contexts:!strict_contexts
       ~tco_like_casts:false
-      ~log_levels:!log_levels
-      ~glean_reponame:!glean_reponame
-      ~tco_skip_check_under_dynamic:!skip_check_under_dynamic
       ~tco_global_access_check_enabled:!enable_global_access_check
-      ~tco_meth_caller_only_public_visibility:
-        !meth_caller_only_public_visibility
-      ~tco_explicit_consistent_constructors:!explicit_consistent_constructors
-      ~tco_require_types_class_consts:!require_types_class_consts
-      ~tco_type_printer_fuel:!type_printer_fuel
-      ~tco_profile_top_level_definitions:!profile_top_level_definitions
       ~tco_allow_all_files_for_module_declarations:
         !allow_all_files_for_module_declarations
       ~tco_loop_iteration_upper_bound:!loop_iteration_upper_bound
@@ -914,14 +764,6 @@ let parse_options () =
     if !enable_supportdyn_hint then
       S_set.add
         Typechecker_options.experimental_supportdynamic_type_hint
-        tco_legacy_experimental_features
-    else
-      tco_legacy_experimental_features
-  in
-  let tco_legacy_experimental_features =
-    if !consider_type_const_enforceable then
-      S_set.add
-        Typechecker_options.experimental_consider_type_const_enforceable
         tco_legacy_experimental_features
     else
       tco_legacy_experimental_features

@@ -1,2 +1,2 @@
---allowed-fixme-codes-strict 4063
+--config allowed_fixme_codes_strict=4063
 --error-format plain_highlighted

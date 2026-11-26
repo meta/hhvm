@@ -1,4 +1,4 @@
---hh-log-level fbid_igid_type 1
+--config 'log_levels={"fbid_igid_type":1}'
 --extra-builtin fbid_igid_builtin.hhi
 --error-format plain
 --config named_variadic_type=true

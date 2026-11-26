@@ -1,4 +1,4 @@
---auto-namespace-map '{"Dict":"HH\\Lib\\Dict"}' --enable-xhp-class-modifier
---allowed-fixme-codes-strict 2001,2035,2071,4030
---allowed-decl-fixme-codes 2001,2035,2071,4030
---keep-user-attributes
+--config 'auto_namespace_map={"Dict":"HH\\Lib\\Dict"}' --config enable_xhp_class_modifier=true
+--config allowed_fixme_codes_strict=2001,2035,2071,4030
+--config allowed_decl_fixme_codes=2001,2035,2071,4030
+--config keep_user_attributes=true

@@ -1,2 +1,2 @@
 --nast
---interpret-soft-types-as-like-types
+--config interpret_soft_types_as_like_types=true

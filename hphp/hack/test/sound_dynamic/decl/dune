@@ -21,7 +21,7 @@
    --flags
    --error-format
    plain_highlighted
-   --enable-supportdyn-hint)))
+   --config enable_experimental_tc_features=supportdynamic_type_hint)))
 
 (alias
  (name runtest)

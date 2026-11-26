@@ -1,1 +1,1 @@
---skip-check-under-dynamic
+--config skip_check_under_dynamic=true

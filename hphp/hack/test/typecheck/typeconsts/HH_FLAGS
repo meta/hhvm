@@ -1,3 +1,3 @@
---allowed-decl-fixme-codes 4101
---allowed-fixme-codes-strict 4101
+--config allowed_decl_fixme_codes=4101
+--config allowed_fixme_codes_strict=4101
 --error-format plain_highlighted

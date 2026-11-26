@@ -1,1 +1,1 @@
---hh-log-level list_logger 1
+--config 'log_levels={"list_logger":1}'

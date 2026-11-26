@@ -1,2 +1,2 @@
---auto-namespace-map '{"Dict": "HH\\Lib\\Dict"}'
+--config 'auto_namespace_map={"Dict": "HH\\Lib\\Dict"}'
 --error-format plain_highlighted

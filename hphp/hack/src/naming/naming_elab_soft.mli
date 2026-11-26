@@ -8,7 +8,7 @@
 
 (* This elaboration pass will replace Hsoft(_)` hints, with either
    - the inner hint to which the constructor is applied; OR
-   - `Hlike`, when the `--interpret-soft-types-as-like-types` typechecker option
+   - `Hlike`, when the `interpret_soft_types_as_like_types` typechecker option
      is enabled
 *)
 val pass : Naming_phase_env.t Naming_phase_pass.t

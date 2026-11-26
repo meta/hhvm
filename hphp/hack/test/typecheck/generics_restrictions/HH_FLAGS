@@ -1,2 +1,2 @@
---allowed-fixme-codes-strict 4336
+--config allowed_fixme_codes_strict=4336
 --error-format plain_highlighted

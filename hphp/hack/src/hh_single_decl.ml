@@ -445,6 +445,7 @@ let () =
   let interpret_soft_types_as_like_types = ref false in
   let everything_sdt = ref false in
   let rust_provider_backend = ref Hh_server_provider_backend.is_supported in
+  let config_overrides = ref [] in
   let ignored_flag flag = (flag, Arg.Unit (fun _ -> ()), "(ignored)") in
   let ignored_arg flag = (flag, Arg.String (fun _ -> ()), "(ignored)") in
   Arg.parse
@@ -516,7 +517,9 @@ let () =
       ignored_flag "--skip-tast-checks";
       ignored_flag "--expression-tree-virtualize-functions";
       ignored_flag "--enable-supportdyn-hint";
-      ignored_arg "--config";
+      ( "--config",
+        Arg.String (fun s -> config_overrides := s :: !config_overrides),
+        "<option=value> Set a parser option" );
     ]
     set_file
     usage;
@@ -560,6 +563,48 @@ let () =
       ~keep_user_attributes
       ~interpret_soft_types_as_like_types
       ~everything_sdt
+  in
+  let config =
+    List.fold
+      (List.rev !config_overrides)
+      ~init:(Config_file_common.empty ())
+      ~f:(fun config setting ->
+        Config_file_common.apply_overrides
+          ~config
+          ~overrides:(Config_file_common.parse_contents setting)
+          ~log_reason:None)
+  in
+  let popt =
+    let open Config_file.Getters in
+    Parser_options.
+      {
+        popt with
+        auto_namespace_map =
+          Option.value
+            (string_opt Config_keys.Hhconfig.auto_namespace_map config
+            |> Option.map ~f:Server_config.convert_auto_namespace_to_map)
+            ~default:popt.auto_namespace_map;
+        enable_xhp_class_modifier =
+          bool_
+            Config_keys.Hhconfig.enable_xhp_class_modifier
+            ~default:popt.enable_xhp_class_modifier
+            config;
+        disable_xhp_element_mangling =
+          bool_
+            Config_keys.Hhconfig.disable_xhp_element_mangling
+            ~default:popt.disable_xhp_element_mangling
+            config;
+        keep_user_attributes =
+          bool_
+            Config_keys.Hhconfig.keep_user_attributes
+            ~default:popt.keep_user_attributes
+            config;
+        interpret_soft_types_as_like_types =
+          bool_
+            Config_keys.Hhconfig.interpret_soft_types_as_like_types
+            ~default:popt.interpret_soft_types_as_like_types
+            config;
+      }
   in
   let tcopt = Global_options.{ default with po = popt } in
   let ctx =

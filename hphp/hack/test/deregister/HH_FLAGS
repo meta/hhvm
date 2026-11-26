@@ -1,1 +1,1 @@
---deregister-attributes
+--config deregister_php_stdlib=true

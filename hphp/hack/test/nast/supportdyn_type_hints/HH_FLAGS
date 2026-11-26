@@ -1,2 +1,2 @@
 --nast
---enable-supportdyn-hint
+--config enable_experimental_tc_features=supportdynamic_type_hint

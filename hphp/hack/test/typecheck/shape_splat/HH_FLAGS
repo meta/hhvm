@@ -1,3 +1,3 @@
 --config enable_experimental_stx_features='{"shape_splat_concrete": "Unstable", "shape_splat_type_parameters": "Unstable", "shape_splat_expression": "Unstable", "union_intersection_type_hints": "Unstable", "like_type_hints": "Unstable", "case_types": "Unstable", "representable_as": "Unstable", "newtype_super_bounds": "Unstable"}'
---enable-supportdyn-hint
+--config enable_experimental_tc_features=supportdynamic_type_hint
 --error-format plain_highlighted

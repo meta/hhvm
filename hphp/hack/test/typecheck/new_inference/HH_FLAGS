@@ -1,3 +1,3 @@
---allowed-fixme-codes-strict 2053,4110
---allowed-decl-fixme-codes 2053
+--config allowed_fixme_codes_strict=2053,4110
+--config allowed_decl_fixme_codes=2053
 --error-format plain_highlighted

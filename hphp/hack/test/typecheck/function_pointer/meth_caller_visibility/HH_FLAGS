@@ -1,2 +1,2 @@
---meth-caller-only-public-visibility=false
+--config meth_caller_only_public_visibility=false
 --error-format plain_highlighted

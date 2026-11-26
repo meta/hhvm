@@ -1,2 +1,2 @@
---keep-user-attributes
+--config keep_user_attributes=true
 --error-format plain_highlighted

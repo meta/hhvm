@@ -1,2 +1,2 @@
---config enable_experimental_stx_features='{"shape_splat_concrete": "Unstable", "shape_splat_type_parameters": "Unstable", "shape_splat_expression": "Unstable", "union_intersection_type_hints": "Unstable"}' --enable-supportdyn-hint --config everything_sdt=false --config pessimise_builtins=true
+--config enable_experimental_stx_features='{"shape_splat_concrete": "Unstable", "shape_splat_type_parameters": "Unstable", "shape_splat_expression": "Unstable", "union_intersection_type_hints": "Unstable"}' --config enable_experimental_tc_features=supportdynamic_type_hint --config everything_sdt=false --config pessimise_builtins=true
 --error-format plain_highlighted

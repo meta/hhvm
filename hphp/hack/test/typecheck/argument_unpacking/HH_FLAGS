@@ -1,2 +1,2 @@
---allowed-fixme-codes-strict 4009
+--config allowed_fixme_codes_strict=4009
 --error-format plain_highlighted

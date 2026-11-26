@@ -1,2 +1,2 @@
---explicit-consistent-constructors 1
+--config explicit_consistent_constructors=1
 --error-format plain_highlighted

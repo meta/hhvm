@@ -1,2 +1,2 @@
---require-types-class-consts 2
+--config require_types_tco_require_types_class_consts=2
 --error-format plain_highlighted
