@@ -1,0 +1,5 @@
+exit_code: 0
+WARN: File "<repo>/warnings_only_from_tool.php", line 3, characters 7-21:
+Invalid comparison: This expression will always return `true`.
+A value of type `null` can never be equal to a value of type `vec<int>` (Warn[12007])
+

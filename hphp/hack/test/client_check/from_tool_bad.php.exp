@@ -1,0 +1,12 @@
+exit_code: 0
+ERROR: File "<repo>/from_tool_bad.php", line 5, characters 39-45:
+Invalid return type (Typing[4110])
+  File "<repo>/from_tool_bad.php", line 5, characters 26-28:
+  Expected `int`
+  File "<repo>/from_tool_bad.php", line 5, characters 39-45:
+  But got `string`
+
+WARN: File "<repo>/from_tool_bad.php", line 3, characters 7-21:
+Invalid comparison: This expression will always return `true`.
+A value of type `null` can never be equal to a value of type `vec<int>` (Warn[12007])
+
