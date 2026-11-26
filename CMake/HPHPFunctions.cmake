@@ -121,6 +121,17 @@ function(embed_sections TARGET DEST)
     COMMENT "Generating Repo Schema ID and Compiler ID"
     VERBATIM)
 
+  if (HPHP_ENABLE_TYPE_SCANNERS)
+    # Generate a dynamic list for HHVM targets, needed so that the requisite
+    # symbols are visible for type scanners.
+    add_custom_command(
+      TARGET ${TARGET} PRE_BUILD
+      COMMAND ${CMAKE_COMMAND} -E env OUT=${CMAKE_CURRENT_BINARY_DIR}/generated-dynamic-functions.txt
+        "${HPHP_HOME}/hphp/hhvm/generate-dynamic-functions.sh" "on"
+      COMMENT "Generating dynamic list for linking"
+      VERBATIM)
+  endif()
+
   if (APPLE)
     set(COMPILER_ID -Wl,-sectcreate,__text,"compiler_id","${CMAKE_BINARY_DIR}/hphp/util/generated-compiler-id.txt")
     set(COMPILER_TIMESTAMP -Wl,-sectcreate,__text,"compiler_ts","${CMAKE_BINARY_DIR}/hphp/util/generated-compiler-timestamp.txt")
@@ -128,6 +139,10 @@ function(embed_sections TARGET DEST)
     set(BUILD_ID -Wl,-sectcreate,__text,"build_id","${CMAKE_BINARY_DIR}/hphp/util/generated-build-id.txt")
     target_link_libraries(${TARGET} ${${TARGET}_SLIBS} ${COMPILER_ID} ${COMPILER_TIMESTAMP} ${REPO_SCHEMA} ${BUILD_ID})
   else()
+    if (HPHP_ENABLE_TYPE_SCANNERS)
+      target_link_libraries(${TARGET} "-Wl,--dynamic-list=${CMAKE_CURRENT_BINARY_DIR}/generated-dynamic-functions.txt")
+    endif()
+
     add_custom_command(TARGET ${TARGET} POST_BUILD
       COMMAND "objcopy"
       ARGS "--add-section" "compiler_id=${CMAKE_BINARY_DIR}/hphp/util/generated-compiler-id.txt"

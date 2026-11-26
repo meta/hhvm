@@ -29,9 +29,42 @@ if (ENABLE_SPLIT_DWARF)
   target_link_libraries(hhvm debug "-Wl,--gdb-index")
 endif()
 
-embed_all_systemlibs(
-  hhvm "${CMAKE_CURRENT_BINARY_DIR}/.." "${CMAKE_CURRENT_BINARY_DIR}/hhvm"
-)
+if (HPHP_ENABLE_TYPE_SCANNERS AND ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+  target_compile_options(hhvm PRIVATE "-fstandalone-debug")
+endif()
+
+embed_all_systemlibs(hhvm "${CMAKE_CURRENT_BINARY_DIR}/.." "${CMAKE_CURRENT_BINARY_DIR}/hhvm")
+
+if (HPHP_ENABLE_TYPE_SCANNERS)
+  set(GENERATED_TYPE_SCANNERS ${CMAKE_CURRENT_BINARY_DIR}/generated-type-scanners.cpp)
+  add_custom_command(
+    COMMAND $<TARGET_FILE:gen-type-scanners>
+    ARGS --source_file $<TARGET_FILE:hhvm> --output_file ${GENERATED_TYPE_SCANNERS}
+    OUTPUT ${GENERATED_TYPE_SCANNERS}
+    COMMENT "Generating type scanners"
+    DEPENDS gen-type-scanners hhvm
+    VERBATIM
+  )
+
+  add_library(hphp_type_scanners SHARED ${GENERATED_TYPE_SCANNERS})
+  target_link_libraries(hphp_type_scanners PRIVATE Folly::folly_container_f14_hash)
+  add_custom_command(
+    TARGET hphp_type_scanners POST_BUILD
+    # Write to a temporary file and rename it over hhvm instead of modifying
+    # hhvm in place: other targets' POST_BUILD steps may be executing hhvm
+    # concurrently (e.g. --compile-systemlib), and in-place rewrites of a
+    # running executable fail with ETXTBSY. rename(2) is atomic and leaves
+    # running processes on the old inode.
+    COMMAND objcopy
+      --remove-section=type_scanners
+      --add-section type_scanners=$<TARGET_FILE:hphp_type_scanners>
+      $<TARGET_FILE:hhvm> $<TARGET_FILE:hhvm>.tmp
+    COMMAND ${CMAKE_COMMAND} -E rename
+      $<TARGET_FILE:hhvm>.tmp $<TARGET_FILE:hhvm>
+    COMMENT "Embedding type scanners in HHVM"
+    VERBATIM
+  )
+endif()
 
 if (CMAKE_HOST_UNIX)
   add_custom_command(TARGET hhvm POST_BUILD
