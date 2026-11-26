@@ -75,7 +75,6 @@ type mode =
   | Enforcement of File_content.Position.t option
   | Enforcement_batch
   | Apply_quickfixes
-  | Refactor_sound_dynamic of string * string * string
   | RemoveDeadUnsafeCasts
   | CountImpreciseTypes
   | Map_reduce_mode
@@ -310,22 +309,6 @@ let parse_options () =
       ( "--extra-builtin",
         Arg.String (fun f -> extra_builtins := f :: !extra_builtins),
         " HHI file to parse and declare" );
-      ( "--refactor-sound-dynamic",
-        (let refactor_analysis_mode = ref "" in
-         let refactor_mode = ref "" in
-         Arg.Tuple
-           [
-             Arg.String (( := ) refactor_analysis_mode);
-             Arg.String (( := ) refactor_mode);
-             Arg.String
-               (fun x ->
-                 batch_mode := true;
-                 set_mode
-                   (Refactor_sound_dynamic
-                      (!refactor_analysis_mode, !refactor_mode, x))
-                   ());
-           ]),
-        " Run the flow analysis" );
       ( "--no-strict-contexts",
         Arg.Unit (fun () -> strict_contexts := false),
         " Do not enforce contexts to be defined within Contexts namespace" );
@@ -1157,57 +1140,6 @@ let sort_debug_deps deps =
 let dump_debug_deps dbg_deps =
   dbg_deps |> sort_debug_deps |> show_debug_deps |> Printf.printf "%s\n"
 
-let handle_constraint_mode
-    ~do_
-    name
-    opts
-    ctx
-    error_format
-    ~iter_over_files
-    ~profile_type_check_multi
-    ~memtrace =
-  (* Process a single typechecked file *)
-  let process_file path info =
-    match info.File_info.file_mode with
-    | Some File_info.Mstrict ->
-      let (ctx, entry) = Provider_context.add_entry_if_missing ~ctx ~path in
-      let { Tast_provider.Compute_tast.tast; _ } =
-        Tast_provider.compute_tast_unquarantined ~ctx ~entry
-      in
-      let tast = List.concat (Tast_with_dynamic.all tast) in
-      do_ opts ctx tast
-    | _ ->
-      (* We are not interested in partial files and there is nothing in HHI
-         files to analyse *)
-      ()
-  in
-  let print_errors errors =
-    List.iter
-      (Diagnostics.get_sorted_diagnostic_list errors)
-      ~f:(print_error ~oc:stdout error_format)
-  in
-  (* Process a multifile that is not typechecked *)
-  let process_multifile filename =
-    Printf.printf
-      "=== %s analysis results for %s\n%!"
-      name
-      (Relative_path.to_absolute filename);
-    let files_contents = Multifile.file_to_files filename in
-    let (parse_errors, file_info) = parse_name_and_decl ctx files_contents in
-    let check_errors =
-      check_file ctx parse_errors file_info ~profile_type_check_multi ~memtrace
-    in
-    if not (Diagnostics.has_no_errors_or_warnings check_errors) then
-      print_errors check_errors
-    else
-      Relative_path.Map.iter file_info ~f:process_file
-  in
-  let process_multifile filename =
-    Provider_utils.respect_but_quarantine_unsaved_changes ~ctx ~f:(fun () ->
-        process_multifile filename)
-  in
-  iter_over_files process_multifile
-
 module File_deps = struct
   type dep_kind =
     | Hierarchy  (** Dependencies that come from class hierarchies *)
@@ -1610,26 +1542,6 @@ let handle_mode
   in
   let iter_over_files f : unit = List.iter filenames ~f in
   match mode with
-  | Refactor_sound_dynamic (analysis_mode, refactor_mode, element_name) ->
-    let opts =
-      match
-        ( Refactor_sd_options.parse_analysis_mode analysis_mode,
-          Refactor_sd_options.parse_refactor_mode refactor_mode )
-      with
-      | (Some analysis_mode, Some refactor_mode) ->
-        Refactor_sd_options.mk ~analysis_mode ~refactor_mode
-      | (None, _) -> die "invalid refactor_sd analysis mode"
-      | (_, None) -> die "invalid refactor_sd refactor mode"
-    in
-    handle_constraint_mode
-      ~do_:(Refactor_sd.do_ element_name)
-      "Sound Dynamic"
-      opts
-      ctx
-      error_format
-      ~iter_over_files
-      ~profile_type_check_multi
-      ~memtrace
   | Cst_search ->
     let path = expect_single_file () in
     let (ctx, entry) = Provider_context.add_entry_if_missing ~ctx ~path in
