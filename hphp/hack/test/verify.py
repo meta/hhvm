@@ -375,6 +375,7 @@ def run_test_program(
     check_expected_included_in_actual: bool,
     timeout: Optional[float] = None,
     filter_glog_failures: bool = False,
+    fail_on_program_error: bool = False,
 ) -> List[Result]:
     """
     Run the program and return a list of results.
@@ -404,8 +405,16 @@ def run_test_program(
                 env=env,
             )
         except subprocess.TimeoutExpired as e:
+            if fail_on_program_error:
+                raise RuntimeError(
+                    f"{test_case.file_path}: test program timed out after {e.timeout:g}s"
+                ) from None
             output = "Timed out. " + str(e.output)
         except subprocess.CalledProcessError as e:
+            if fail_on_program_error:
+                raise RuntimeError(
+                    f"{test_case.file_path}: test program exited {e.returncode}\n{e.output}"
+                ) from None
             if e.returncode == 126:
                 # unable to execute, typically due in buck2 to "Text file is busy" because someone still has a write handle open to it.
                 # https://www.internalfb.com/intern/qa/312685/text-file-is-busy---test-is-run-before-fclose-on-e
@@ -909,6 +918,7 @@ def run_tests(
     timeout: Optional[float] = None,
     only_compare_error_lines: bool = False,
     filter_glog_failures: bool = False,
+    fail_on_program_error: bool = False,
 ) -> List[Result]:
     # for each file, create a test case
     test_cases = [
@@ -948,6 +958,7 @@ def run_tests(
             check_expected_included_in_actual=check_expected_included_in_actual,
             timeout=timeout,
             filter_glog_failures=filter_glog_failures,
+            fail_on_program_error=fail_on_program_error,
         )
 
     failures = [result for result in results if result.is_failure]
@@ -1105,6 +1116,11 @@ def main() -> None:
         "--batch", action="store_true", help="Run tests in batches to the test program"
     )
     parser.add_argument(
+        "--fail-on-program-error",
+        action="store_true",
+        help="Fail before comparing snapshots if the test program exits nonzero or times out (non-batch mode).",
+    )
+    parser.add_argument(
         "--ignore-error-text",
         action="store_true",
         help="Do not compare error text when verifying output",
@@ -1232,6 +1248,7 @@ def main() -> None:
         timeout=args.timeout,
         only_compare_error_lines=args.only_compare_error_lines,
         filter_glog_failures=args.filter_glog_failures,
+        fail_on_program_error=args.fail_on_program_error,
     )
 
     # Doesn't make sense to check failures for idempotence

@@ -11,7 +11,9 @@ in `args` are relative to .sample_repos. An optional FIND_HH executable runs the
 same case through a private production-mode launcher installation. Wrapper
 snapshots fall back to the direct-client .exp unless an override exists.
 `find_hh_expected_package` opts into package-selection checks: the named fixture
-version runs the client; other versions emit WRONG_FIND_HH_PACKAGE and exit 86.
+version runs the client; other versions record their version out of band and
+exit 86, and the runner then fails the harness instead of snapshotting that
+selection.
 
 ## Implementation notes
 
@@ -57,9 +59,11 @@ STACK_FRAME = re.compile(r"^\S.*\.(?:ml|mli) @ \d+$")
 # Generous: the daemon only has to forward a handful of samples. Exceeding this
 # means something is wedged, and failing loudly beats snapshotting partial data.
 PROCESS_GROUP_DRAIN_TIMEOUT_SECONDS = 120.0
+DEFAULT_CLIENT_TIMEOUT_SECONDS = 60.0
 WEDGED_CLIENT_TIMEOUT_SECONDS = 10.0
 PROCESS_GROUP_TERMINATION_TIMEOUT_SECONDS = 10.0
 SIGINT_BLOCK_TIMEOUT_SECONDS = 30.0
+WRONG_PACKAGE_MARKER = "wrong-find-hh-package"
 
 ProcessCleanup = Callable[[], None]
 AfterStart = Callable[[subprocess.Popen[str]], ProcessCleanup | None]
@@ -204,7 +208,7 @@ def _run_hh_client(
     env: dict[str, str],
     stdin: str,
     after_start: AfterStart | None,
-    communicate_timeout: float | None,
+    communicate_timeout: float,
     terminate_process_group_after_exit: bool,
 ) -> subprocess.CompletedProcess[str]:
     """Run hh_client in its own process group and clean up its descendants.
@@ -228,7 +232,6 @@ def _run_hh_client(
             try:
                 stdout, stderr = process.communicate(stdin, timeout=communicate_timeout)
             except subprocess.TimeoutExpired as error:
-                assert communicate_timeout is not None
                 raise TimeoutError(
                     f"hh_client did not exit within {communicate_timeout:g}s"
                 ) from error
@@ -366,8 +369,14 @@ def _find_hh_command(
                 f'exec {shlex.quote(hh_client)} "$@"\n'
             )
         else:
+            # Keep the selection out of the child's stdout/stderr: that
+            # stream is snapshotted, so a sentinel there could be blessed
+            # as an .exp. The marker file is the harness failure channel.
+            marker = temp_dir / WRONG_PACKAGE_MARKER
             executable.write_text(
-                f"#!/bin/sh\necho WRONG_FIND_HH_PACKAGE {version}\nexit 86\n"
+                "#!/bin/sh\n"
+                f"printf %s {shlex.quote(version)} > {shlex.quote(str(marker))}\n"
+                "exit 86\n"
             )
         executable.chmod(0o755)
     command = temp_dir / "wrapper" / "hh_client"
@@ -384,6 +393,29 @@ def _find_hh_command(
     return str(command)
 
 
+def _check_fixture_dispatch(
+    temp_dir: Path,
+    case_path: Path,
+    expected_package: str | None,
+    result: subprocess.CompletedProcess[str],
+) -> None:
+    if (temp_dir / "unexpected-fbpkg").exists():
+        raise RuntimeError(f"find_hh attempted a package fetch for {case_path.name}")
+    wrong_package = temp_dir / WRONG_PACKAGE_MARKER
+    if wrong_package.exists():
+        raise RuntimeError(
+            f"find_hh selected package {wrong_package.read_text()!r} for "
+            f"{case_path.name}, expected {expected_package!r}"
+        )
+    # Only an accepted fixture writes this immediately before exec. Treat
+    # shell exec failures as harness failures too, not client exit codes.
+    if not (temp_dir / "hh_client.pid").is_file() or result.returncode in (126, 127):
+        raise RuntimeError(
+            f"find_hh did not start the fixture client for {case_path.name} "
+            f"(exit {result.returncode})\n{result.stderr}"
+        )
+
+
 def main() -> None:
     if len(sys.argv) not in (4, 5):
         raise SystemExit(
@@ -393,6 +425,7 @@ def main() -> None:
     sample_repos = case_path.parent / "sample_repos"
     hh_client = sys.argv[2]
     fake_scribe_cat = sys.argv[3]
+    find_hh = sys.argv[4] if len(sys.argv) == 5 else None
     case = _load_case(case_path)
     with tempfile.TemporaryDirectory() as raw_temp_dir:
         temp_dir = Path(raw_temp_dir)
@@ -407,7 +440,7 @@ def main() -> None:
             os.mkfifo(sigint_fifo)
         after_start = (
             _sigint_after_opening_fifo(
-                sigint_fifo, temp_dir / "hh_client.pid" if len(sys.argv) == 5 else None
+                sigint_fifo, temp_dir / "hh_client.pid" if find_hh is not None else None
             )
             if sigint_fifo is not None
             else None
@@ -418,6 +451,11 @@ def main() -> None:
         bin_dir = temp_dir / "bin"
         bin_dir.mkdir()
         (bin_dir / "scribe_cat").symlink_to(fake_scribe_cat)
+        if find_hh is not None:
+            fbpkg = bin_dir / "fbpkg"
+            marker = shlex.quote(str(temp_dir / "unexpected-fbpkg"))
+            fbpkg.write_text(f"#!/bin/sh\ntouch {marker}\nexit 1\n")
+            fbpkg.chmod(0o755)
 
         env = os.environ.copy()
         env["HH_TEST_MODE"] = "1"
@@ -433,9 +471,9 @@ def main() -> None:
         )
         command = (
             _find_hh_command(
-                sys.argv[4], hh_client, temp_dir, env, case.find_hh_expected_package
+                find_hh, hh_client, temp_dir, env, case.find_hh_expected_package
             )
-            if len(sys.argv) == 5
+            if find_hh is not None
             else hh_client
         )
         result = _run_hh_client(
@@ -449,10 +487,15 @@ def main() -> None:
                 if case.wedge_scribe
                 else SIGINT_BLOCK_TIMEOUT_SECONDS
                 if sigint_fifo is not None
-                else None
+                else DEFAULT_CLIENT_TIMEOUT_SECONDS
             ),
             terminate_process_group_after_exit=case.wedge_scribe,
         )
+
+        if find_hh is not None:
+            _check_fixture_dispatch(
+                temp_dir, case_path, case.find_hh_expected_package, result
+            )
 
         print("=== hh_client result ===")
         print(f"argv: hh_client {_scrub(shlex.join(case.args), hh_client, temp_dir)}")
