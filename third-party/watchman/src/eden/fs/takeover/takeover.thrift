@@ -55,6 +55,43 @@ struct SerializedInodeMap {
 
 struct SerializedFileHandleMap {}
 
+// A FileChangeJournalDelta.
+struct SerializedFileChangeDelta {
+  1: ui64 sequenceID;
+  2: ui64 earliestSequenceID;
+  // A steady_clock time, which every process on the machine shares.
+  3: i64 timeNanos;
+  // Each path is only set when the delta has it.
+  4: optional binary path1;
+  5: bool path1ExistedBefore;
+  6: bool path1ExistedAfter;
+  7: optional binary path2;
+  8: bool path2ExistedBefore;
+  9: bool path2ExistedAfter;
+  10: i32 dtype;
+}
+
+// A RootUpdateJournalDelta.
+struct SerializedRootUpdateDelta {
+  1: ui64 sequenceID;
+  2: ui64 earliestSequenceID;
+  3: i64 timeNanos;
+  4: binary fromRoot;
+  5: list<binary> uncleanPaths;
+}
+
+// The newest part of a mount's journal, with the mount generation its
+// positions belong to, so that the journal positions clients got from the old
+// process stay valid in the new one.
+struct SerializedJournal {
+  1: ui64 mountGeneration;
+  2: ui64 nextSequence;
+  3: binary currentRoot;
+  // Both lists are ordered from oldest to newest.
+  4: list<SerializedFileChangeDelta> fileChangeDeltas;
+  5: list<SerializedRootUpdateDelta> rootUpdateDeltas;
+}
+
 // Mount protocol to use for a mount that we are taking over.
 enum TakeoverMountProtocol {
   UNKNOWN = 0,
